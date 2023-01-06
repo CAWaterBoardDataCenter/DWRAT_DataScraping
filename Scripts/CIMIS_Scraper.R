@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("December", "01", "2022", as.Date("2022-12-01"))
-EndDate = data.frame("January", "03", "2023", as.Date("2023-01-03"))
+EndDate = data.frame("January", "04", "2023", as.Date("2023-01-04"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
