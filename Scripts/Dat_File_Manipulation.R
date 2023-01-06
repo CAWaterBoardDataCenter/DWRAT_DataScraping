@@ -52,12 +52,12 @@ source(here("Scripts/CNRFC_Scraper.R"))
 source(here("Scripts/CIMIS_Scraper.R"))
 
 #Import Observed and Forecast Data----
-Files = list.files(path = here("WebData"), pattern="*.csv")
-for (i in 1:length(Files)) assign(Files[i], read.csv(file = paste0(here("WebData"), "/", Files[i])))
-
+Files = list.files(path = here("ProcessedData"), pattern="*.csv")
+for (i in 1:length(Files)) assign(Files[i], read.csv(file = paste0(here("ProcessedData"), "/", Files[i])))
 
 #Replace Missing Values with PRISM Data----
 #RAWS
+for (i in 1:nrow(RAWS_PRECIP4.csv))
 
 #CIMIS
 

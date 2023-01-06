@@ -50,7 +50,6 @@ DF_List <- list()
 #Navigate to RAWS website
 for (i in 1:nrow(Stations)){
 #i = 1
-remDr$open()
 remDr$navigate(paste0("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?ca", Stations$Station[i]))
 
 #Switch to Left Frame named "List"
