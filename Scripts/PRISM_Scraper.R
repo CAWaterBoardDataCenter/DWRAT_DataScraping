@@ -1,3 +1,7 @@
+#EXPERIMENTAL SCRIPT--this script as of 1/5/2023 is unable to download the files from the PRISM website; 
+#feel free to experiment and fix it if you're brave!
+
+
 # Set up RSelenium -------------------------------------------------------
 ## load packages
 library(RSelenium)
