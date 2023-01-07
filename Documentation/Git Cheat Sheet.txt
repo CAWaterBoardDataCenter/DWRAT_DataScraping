@@ -25,7 +25,7 @@ CLONING WITH GIT
 PUSHING And COMMITTING 
 *this is how you to update the remote version of the repository; the remote version is hosted on GitHub
 	#Syntax#
-	git add *
+	git add * #this allows you to add all the files
 	git commit -m "Message"
 	git push origin <branchname>
 
@@ -44,3 +44,4 @@ FETCHING And PULLING
 	#Example#
 	git fetch
 	git pull origin Payman
+	

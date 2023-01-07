@@ -35,7 +35,7 @@ Stations = read.csv("InputData/Raws_Stations.csv")
 
 #Define Dates
 StartDate = data.frame("December", "01", "2022", as.Date("2022-12-01"))
-EndDate = data.frame("January", "03", "2023", as.Date("2023-01-03"))
+EndDate = data.frame("January", "04", "2023", as.Date("2023-01-04"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -43,7 +43,6 @@ ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day')%>% length()
 ndays
 
 #Scrape RAWS Data----
-
 #Create list to hold RAWS dataframes
 DF_List <- list()
 
@@ -133,7 +132,6 @@ remDr$switchToFrame(GraphFrame)
 WeatherData <- remDr$findElement(using = "xpath", "//table/tbody")
 WeatherDataText <- WeatherData$getElementText() %>% unlist() %>% data.frame()
 
-
 #Extract Raw Data from WeatherDataText----
 nchar(WeatherDataText)
 Headers <-substring(WeatherDataText,1,161)
@@ -142,7 +140,7 @@ WeatherDataBody <-substring(WeatherDataText, 162,nchar(WeatherDataText))
 WeatherDataBody <- gsub("\\\n", " ", WeatherDataBody)
 WeatherDataBody <- strsplit( WeatherDataBody, " ") %>% unlist %>% data.frame()
 
-#Finalize WeatherDataBody for Exportation----
+
 #Force WeatherDataBody into dataframe with 8 columns
 WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>% data.frame %>% t() %>% data.frame()
 
@@ -160,7 +158,7 @@ RAWS_Names <- c("Date", "Year", "Day_Of_Year", "Day_Of_Run", "Tavg", "Tmax", "Tm
 for (DF in seq_along(DF_List)){
   colnames(DF_List[[DF]]) <- RAWS_Names
 }
-
+#Finalize WeatherDataBody for Exportation----
 #Extract dataframes from DF_List
 lapply(names(DF_List),function(x) 
   assign(x,DF_List[[x]],.GlobalEnv))
