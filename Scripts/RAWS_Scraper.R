@@ -1,5 +1,19 @@
-#Set up RSelenium ----
-## load packages ----
+#SCRIPT LAST UPDATED:
+    #BY: Payman Alemi
+    #ON: 1/9/2023
+
+#install packages----
+  #you should only have to do this once ever on your computer; then comment
+  #out this portion of the script
+# install.packages('RSelenium')
+# install.packages('rvest')
+# install.packages('tidyverse')
+# install.packages('netstat')
+# install.packages('here')
+# install.packages('dplyr')
+# install.packages('readr')
+
+#load packages ----
 library(RSelenium)
 library(rvest)
 library(tidyverse)
@@ -8,6 +22,7 @@ library(here)
 library(dplyr)
 library(readr)
 
+#Set up RSelenium----
 ##Set Default download folder ----
 eCaps <- list(
   chromeOptions =
