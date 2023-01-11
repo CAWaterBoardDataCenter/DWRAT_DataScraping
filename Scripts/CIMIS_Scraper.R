@@ -42,6 +42,7 @@ DF_List <- list()
 
 #Navigate to CIMIS----
 for (i in 1:nrow(Stations)){
+#i=1
 remDr$navigate(paste0("https://ipm.ucanr.edu/calludt.cgi/WXSTATIONDATA?MAP=&STN=", Stations$Alias[i]))
 
 #Input Dates
@@ -98,7 +99,7 @@ WeatherDataBody <-gsub(" ", "", WeatherDataBody) #remove blank spaces
 WeatherDataBody <- strsplit( WeatherDataBody, ",") %>% unlist %>% data.frame() #split by commas
 
 #Force WeatherDataBody into a dataframe with 19 columns
-WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=19)) %>% data.frame %>% t() %>% data.frame()
+WeatherDataBody <- split(WeatherDataBody,rep(1:(nrow(WeatherDataBody)/19),each=19)) %>% data.frame %>% t() %>% data.frame()
 
 #Drop the last 12 columns
 WeatherDataBody <-select(WeatherDataBody, -c(X8:X19))
