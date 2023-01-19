@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 1/9/2023
+    #ON: 1/11/2023
 
 #install packages----
   #you should only have to do this once ever on your computer; then comment
@@ -48,9 +48,9 @@ remDr <- rs_driver_object$client
 #Import RAWS stations
 Stations = read.csv("InputData/Raws_Stations.csv")
 
-#Define Dates
-StartDate = data.frame("December", "01", "2022", as.Date("2022-12-01"))
-EndDate = data.frame("January", "04", "2023", as.Date("2023-01-04"))
+#Define Timeframe for which you're downloading observed data
+StartDate = data.frame("December", "15", "2022", as.Date("2022-12-15"))
+EndDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")

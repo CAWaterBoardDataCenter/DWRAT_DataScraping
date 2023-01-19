@@ -35,7 +35,7 @@ remDr <- rs_driver_object$client
 
 #Navigate to CNRFC website
 for (i in 1:nrow(CNRFC_Stations)){
-CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$Stations[i])
+CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
 remDr$navigate(CNRFC)
 
 #Select Chart Menu
