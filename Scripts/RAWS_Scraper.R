@@ -37,7 +37,7 @@ default_folder = here("WebData")
 ## Open browser ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='108.0.5359.71',
+  chromever ='111.0.5563.64',
   port = free_port(),
 )
 
@@ -46,7 +46,7 @@ remDr <- rs_driver_object$client
 #Input Data----
 
 #Import RAWS stations
-Stations = read.csv("InputData/Raws_Stations.csv")
+Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
 #Define Timeframe for which you're downloading observed data
 StartDate = data.frame("December", "15", "2022", as.Date("2022-12-15"))
@@ -62,8 +62,8 @@ ndays
 DF_List <- list()
 
 #Navigate to RAWS website
-for (i in 1:nrow(Stations)){
-#i = 1
+#for (i in 1:nrow(Stations)){
+i = 1
 remDr$navigate(paste0("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?ca", Stations$Station[i]))
 
 #Switch to Left Frame named "List"
