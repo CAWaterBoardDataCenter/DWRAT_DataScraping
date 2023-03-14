@@ -37,7 +37,7 @@ default_folder = here("WebData")
 ## Open browser ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='108.0.5359.71',
+  chromever ='111.0.5563.64',
   port = free_port(),
 )
 
@@ -49,8 +49,8 @@ remDr <- rs_driver_object$client
 Stations = read.csv("InputData/Raws_Stations.csv")
 
 #Define Dates
-StartDate = data.frame("December", "01", "2022", as.Date("2022-12-01"))
-EndDate = data.frame("January", "04", "2023", as.Date("2023-01-04"))
+StartDate = data.frame("February", "01", "2023", as.Date("2023-02-01"))
+EndDate = data.frame("March", "12", "2023", as.Date("2023-03-12"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
