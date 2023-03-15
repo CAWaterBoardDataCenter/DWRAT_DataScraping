@@ -10,8 +10,8 @@ library(lubridate)
 #InputData----
 #Dates--adjust as needed
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
-StartDate = data.frame("December", "15", "2022", as.Date("2022-12-15"))
-EndDate = data.frame("January", "10", "2023", as.Date("2023-01-10"))
+StartDate = data.frame("February", "01", "2023", as.Date("2023-02-01"))
+EndDate = data.frame("March", "12", "2023", as.Date("2023-03-12"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -22,7 +22,7 @@ ndays
 # Open a chrome browser session with RSelenium 
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='108.0.5359.71',
+  chromever ='111.0.5563.64',
   port = free_port(),
 )
 
@@ -36,6 +36,7 @@ eCaps <- list(
     )
 )
 remDr <- rs_driver_object$client
+remDr$open()
 
 #Create a list to hold CIMIS dataframes
 DF_List <- list()
@@ -43,7 +44,9 @@ DF_List <- list()
 #Navigate to CIMIS----
 for (i in 1:nrow(Stations)){
 #i=1
-remDr$navigate(paste0("https://ipm.ucanr.edu/calludt.cgi/WXSTATIONDATA?MAP=&STN=", Stations$Alias[i]))
+URL <- paste0("https://ipm.ucanr.edu/calludt.cgi/WXSTATIONDATA?MAP=&STN=", Stations$Alias[i])
+URL <- toString(URL)
+remDr$navigate(URL)
 
 #Input Dates
 StartMonth <- remDr$findElement(using = "name", value = "FROMMONTH")

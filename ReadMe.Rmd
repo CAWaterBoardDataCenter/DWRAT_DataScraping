@@ -93,4 +93,7 @@ eCaps <- list(
     )
 )
 ```
-
+**Finding Versions of Chrome browser on your PC**
+```
+binman::list_versions('chromedriver')
+```

@@ -24,12 +24,13 @@ DAT_File$TimeStep <- make_date(year = DAT_File$Year,
                               month = DAT_File$month,
                               day = DAT_File$day)
 
-#Filter to timeframe of interest
+#Filter to the timeframe of interest
 #Set the start date by grabbing the first day of the current month
-Start_Date <- lubridate::floor_date(Sys.Date(), unit = "month")
+#Start_Date <- lubridate::floor_date(Sys.Date(), unit = "month")
+Start_Date <- as.Date("2023-02-01")
 #The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
 End_Date <- Sys.Date() + 5
-DAT_Shell <- subset(DAT_File, TimeStep >= '2022-12-01' & TimeStep <= "2023-01-03")
+DAT_Shell <- subset(DAT_File, TimeStep >= '2023-02-01' & TimeStep <= "2023-03-12")
 DAT_Shell
 
 #Set TimeStep as the 7th column in DAT_Shell
