@@ -1,5 +1,19 @@
-#Set up RSelenium ----
-## load packages ----
+#SCRIPT LAST UPDATED:
+    #BY: Payman Alemi
+    #ON: 3/14/2023
+
+#install packages----
+  #you should only have to do this once ever on your computer; then comment
+  #out this portion of the script
+# install.packages('RSelenium')
+# install.packages('rvest')
+# install.packages('tidyverse')
+# install.packages('netstat')
+# install.packages('here')
+# install.packages('dplyr')
+# install.packages('readr')
+
+#load packages ----
 library(RSelenium)
 library(rvest)
 library(tidyverse)
@@ -8,6 +22,7 @@ library(here)
 library(dplyr)
 library(readr)
 
+#Set up RSelenium----
 ##Set Default download folder ----
 eCaps <- list(
   chromeOptions =
@@ -22,7 +37,7 @@ default_folder = here("WebData")
 ## Open browser ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='108.0.5359.71',
+  chromever ='111.0.5563.64',
   port = free_port(),
 )
 
@@ -31,11 +46,11 @@ remDr <- rs_driver_object$client
 #Input Data----
 
 #Import RAWS stations
-Stations = read.csv("InputData/Raws_Stations.csv")
+Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
-#Define Dates
-StartDate = data.frame("December", "01", "2022", as.Date("2022-12-01"))
-EndDate = data.frame("January", "03", "2023", as.Date("2023-01-03"))
+#Define Timeframe for which you're downloading observed data
+StartDate = data.frame("January", "15", "2022", as.Date("2022-12-15"))
+EndDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -43,14 +58,12 @@ ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day')%>% length()
 ndays
 
 #Scrape RAWS Data----
-
 #Create list to hold RAWS dataframes
 DF_List <- list()
 
 #Navigate to RAWS website
-for (i in 1:nrow(Stations)){
-#i = 1
-remDr$open()
+#for (i in 1:nrow(Stations)){
+i = 1
 remDr$navigate(paste0("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?ca", Stations$Station[i]))
 
 #Switch to Left Frame named "List"
@@ -134,7 +147,6 @@ remDr$switchToFrame(GraphFrame)
 WeatherData <- remDr$findElement(using = "xpath", "//table/tbody")
 WeatherDataText <- WeatherData$getElementText() %>% unlist() %>% data.frame()
 
-
 #Extract Raw Data from WeatherDataText----
 nchar(WeatherDataText)
 Headers <-substring(WeatherDataText,1,161)
@@ -143,7 +155,7 @@ WeatherDataBody <-substring(WeatherDataText, 162,nchar(WeatherDataText))
 WeatherDataBody <- gsub("\\\n", " ", WeatherDataBody)
 WeatherDataBody <- strsplit( WeatherDataBody, " ") %>% unlist %>% data.frame()
 
-#Finalize WeatherDataBody for Exportation----
+
 #Force WeatherDataBody into dataframe with 8 columns
 WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>% data.frame %>% t() %>% data.frame()
 
@@ -161,7 +173,7 @@ RAWS_Names <- c("Date", "Year", "Day_Of_Year", "Day_Of_Run", "Tavg", "Tmax", "Tm
 for (DF in seq_along(DF_List)){
   colnames(DF_List[[DF]]) <- RAWS_Names
 }
-
+#Finalize WeatherDataBody for Exportation----
 #Extract dataframes from DF_List
 lapply(names(DF_List),function(x) 
   assign(x,DF_List[[x]],.GlobalEnv))
