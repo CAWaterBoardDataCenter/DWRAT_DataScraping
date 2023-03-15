@@ -8,7 +8,7 @@ library(dplyr)
 library(readr)
 
 # Import CNRFC Temperature stations----
-CNRFC_Stations <- read.csv("InputData/CNRFC_Stations.csv")
+CNRFC_Stations <- read.csv(here("InputData/CNRFC_Stations.csv"))
 
 ##Set Default download folder ----
 eCaps <- list(
@@ -23,19 +23,24 @@ eCaps <- list(
 
 default_folder <- eCaps$chromeOptions$prefs$download.default_directory
 #   
+
+## Find active versions of chrome on PC ----
+binman::list_versions('chromedriver') 
+
 ## Open a chrome browser session with RSelenium ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='108.0.5359.71',
+  chromever ='111.0.5563.64', #set to the version on your PC that most closely matches the chrome browser version
   port = free_port(),
   extraCapabilities = eCaps
 )
 
 remDr <- rs_driver_object$client
+remDr$open()
 
 #Navigate to CNRFC website
 for (i in 1:nrow(CNRFC_Stations)){
-CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$Stations[i])
+CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
 remDr$navigate(CNRFC)
 
 #Select Chart Menu
