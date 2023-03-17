@@ -46,7 +46,7 @@ remDr <- rs_driver_object$client
 #Input Data----
 
 #Import RAWS stations
-Stations = read.csv("InputData/Raws_Stations.csv")
+Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
 #Define Dates
 StartDate = data.frame("February", "01", "2023", as.Date("2023-02-01"))

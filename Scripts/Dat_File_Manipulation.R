@@ -30,7 +30,7 @@ DAT_File$TimeStep <- make_date(year = DAT_File$Year,
 Start_Date <- as.Date("2023-02-01")
 #The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
 End_Date <- Sys.Date() + 5
-DAT_Shell <- subset(DAT_File, TimeStep >= '2023-02-01' & TimeStep <= "2023-03-12")
+DAT_Shell <- subset(DAT_File, TimeStep >= Start_Date & TimeStep <= End_Date)
 DAT_Shell
 
 #Set TimeStep as the 7th column in DAT_Shell
@@ -63,6 +63,8 @@ for (i in 1:nrow(RAWS_PRECIP4.csv))
 #CIMIS
 
 #DOWNSIZER
+  
+#CNRFC
 
 #Set DAT_SHELL values----
 
