@@ -1,13 +1,10 @@
 ---
-title: "DWRAT Data Scraping Workflow"
+title: "DWRAT DataScraping GitHub Repository README"
 author: "Payman Alemi"
 date: "2022-12-15"
 output: html_document
 ---
 I have set up 5 folders for this project:
---Test Comment 12/16/2022--
---Test Comment Payman 12/29/2022
---Test comment Payman 12/29/2022 Part 2
 
 * **Documentation:**
 This folder contains all relevant emails, PDFs, Word Documents and other files containing instructions or information about the project.
@@ -24,76 +21,3 @@ This folder contains all scripts associated with this project
 * **WebData:** 
 This folder contains unaltered datasets scraped or downloaded from the Internet, e.g. weather station data
 
-**HTML ELEMENTS for DATA SCRAPING**
-
-**CNRFC Temperature Data**
-
-*Selecting the Chart Menu (the 3 dashes)*
-```
-<button aria-label="View chart menu" aria-expanded="false" class="highcharts-a11y-proxy-button highcharts-no-tooltip" aria-hidden="false" style="border-width: 0px; background-color: transparent; cursor: pointer; outline: none; opacity: 0.001; z-index: 999; overflow: hidden; padding: 0px; margin: 0px; display: block; position: absolute; width: 24px; height: 22px; left: 917px; top: 11px;"></button>
-  
-```
-*R Syntax for selecting by x-path*
-```
-Container <- remDr$findElement(using = "xpath", "//HTMLTag[@Attribute = "Value"])
-Container$ClickElement()
-```
-
-In our example, the HTML Tag is *button*, the attribute is *aria-label* and the attribute value is *View chart menu*. The values are case-sensitive; *View Chart Menu* won't work. The first command stores the HTML element in the HTML Element *container*. The second command selects *Container* in the browser window.
-
-*Example R Command*
-```
-ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
-ChartMenu$clickElement()
-```
-
-Selecting *Download as CSV* from the menu
-
-*HTML Elements*
-The relevant parent element is the unordered list, *ul* tag and the child element is the *li* tag, which contains the text 'CSV'"
-
-XPATH: //*[@id="highcharts-yx17ci5-0"]/div[3]/ul/li[7]
-<li class="highcharts-menu-item" tabindex="-1" style="cursor: pointer; padding: 0.5em 1em; color: rgb(51, 51, 51); background: none; font-size: 11px; transition: background 250ms ease 0s, color 250ms ease 0s;">Download CSV</li>
-
-*Example R Command**
-```
-CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
-CSVDownload$clickElement()
-```
-
-**Dealing with Frames**
-```
-#Navigate to RAWS website
-remDr$navigate("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?caucgr")
-
-#Switch to Left Frame named "List"
-ListFrame <- remDr$findElement(using = "name", value = "List")
-remDr$switchToFrame(ListFrame)
-
-#Select Daily Summary Time Series Link
-Link1 <- remDr$findElement(using = "link text", value = "Daily Summary Time Series")
-Link1$clickElement()
-
-#Switch to Right Frame named "Graph"
-remDr$switchToFrame(NA)
-GraphFrame <- remDr$findElement(using = "name", value = "Graph")
-remDr$switchToFrame(GraphFrame)
-```
-
-**Setting Default download folders**
-```
-library(here) #you need to set up an R project before you can utilize here()
-eCaps <- list(
-  chromeOptions =
-    list(prefs = list(
-      "profile.default_content_settings.popups" = 0L,
-      "download.prompt_for_download" = FALSE,
-      "download.default_directory" = gsub(pattern = '/', replacement = '\\\\', x = here("WebData")) # sets the default download folder to the WebData folder at your project location
-    )
-    )
-)
-```
-**Finding Versions of Chrome browser on your PC**
-```
-binman::list_versions('chromedriver')
-```

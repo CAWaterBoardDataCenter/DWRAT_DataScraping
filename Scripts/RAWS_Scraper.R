@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 1/9/2023
+    #ON: 3/14/2023
 
 #install packages----
   #you should only have to do this once ever on your computer; then comment
@@ -48,9 +48,9 @@ remDr <- rs_driver_object$client
 #Import RAWS stations
 Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
-#Define Dates
-StartDate = data.frame("February", "01", "2023", as.Date("2023-02-01"))
-EndDate = data.frame("March", "12", "2023", as.Date("2023-03-12"))
+#Define Timeframe for which you're downloading observed data
+StartDate = data.frame("January", "15", "2022", as.Date("2022-12-15"))
+EndDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -62,8 +62,8 @@ ndays
 DF_List <- list()
 
 #Navigate to RAWS website
-for (i in 1:nrow(Stations)){
-#i = 1
+#for (i in 1:nrow(Stations)){
+i = 1
 remDr$navigate(paste0("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?ca", Stations$Station[i]))
 
 #Switch to Left Frame named "List"
@@ -160,7 +160,6 @@ WeatherDataBody <- strsplit( WeatherDataBody, " ") %>% unlist %>% data.frame()
 WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>% data.frame %>% t() %>% data.frame()
 
 DF_List[[i]] <- WeatherDataBody 
-} 
 
 #Name the individual RAWS dataframes in the list
 names(DF_List) <- lapply(seq_along(DF_List),
