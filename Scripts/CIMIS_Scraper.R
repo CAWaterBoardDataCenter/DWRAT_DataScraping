@@ -168,5 +168,4 @@ write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names 
 # write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
 
 
-#remDr$closewindow()
-#system("taskkill /im java.exe /f")
+system("taskkill /im java.exe /f")
