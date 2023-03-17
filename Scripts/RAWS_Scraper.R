@@ -160,7 +160,6 @@ WeatherDataBody <- strsplit( WeatherDataBody, " ") %>% unlist %>% data.frame()
 WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>% data.frame %>% t() %>% data.frame()
 
 DF_List[[i]] <- WeatherDataBody 
-} 
 
 #Name the individual RAWS dataframes in the list
 names(DF_List) <- lapply(seq_along(DF_List),
