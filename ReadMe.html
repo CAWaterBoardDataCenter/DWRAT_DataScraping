@@ -13,7 +13,7 @@
 
 <meta name="date" content="2022-12-15" />
 
-<title>DWRAT Data Scraping Workflow</title>
+<title>DWRAT DataScraping GitHub Repository README</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,15 +350,15 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">DWRAT Data Scraping Workflow</h1>
+<h1 class="title toc-ignore">DWRAT DataScraping GitHub Repository
+README</h1>
 <h4 class="author">Payman Alemi</h4>
 <h4 class="date">2022-12-15</h4>
 
 </div>
 
 
-<p>I have set up 5 folders for this project: –Test Comment
-12/16/2022–</p>
+<p>I have set up 5 folders for this project:</p>
 <ul>
 <li><p><strong>Documentation:</strong> This folder contains all relevant
 emails, PDFs, Word Documents and other files containing instructions or
@@ -375,50 +375,6 @@ associated with this project</p></li>
 scraped or downloaded from the Internet, e.g. weather station
 data</p></li>
 </ul>
-<p><strong>HTML ELEMENTS for DATA SCRAPING</strong></p>
-<p><strong>CNRFC Temperature Data</strong></p>
-<p><em>Selecting the Chart Menu (the 3 dashes)</em></p>
-<pre><code>&lt;button aria-label=&quot;View chart menu&quot; aria-expanded=&quot;false&quot; class=&quot;highcharts-a11y-proxy-button highcharts-no-tooltip&quot; aria-hidden=&quot;false&quot; style=&quot;border-width: 0px; background-color: transparent; cursor: pointer; outline: none; opacity: 0.001; z-index: 999; overflow: hidden; padding: 0px; margin: 0px; display: block; position: absolute; width: 24px; height: 22px; left: 917px; top: 11px;&quot;&gt;&lt;/button&gt;
-  </code></pre>
-<p><em>R Syntax for selecting by x-path</em></p>
-<pre><code>Container &lt;- remDr$findElement(using = &quot;xpath&quot;, &quot;//HTMLTag[@Attribute = &quot;Value&quot;])
-Container$ClickElement()</code></pre>
-<p>In our example, the HTML Tag is <em>button</em>, the attribute is
-<em>aria-label</em> and the attribute value is <em>View chart menu</em>.
-The values are case-sensitive; <em>View Chart Menu</em> won’t work. The
-first command stores the HTML element in the HTML Element
-<em>container</em>. The second command selects <em>Container</em> in the
-browser window.</p>
-<p><em>Example R Command</em></p>
-<pre><code>ChartMenu &lt;- remDr$findElement(using = &quot;xpath&quot;, &quot;//button[@aria-label = &#39;View chart menu&#39;]&quot;)
-ChartMenu$clickElement()</code></pre>
-<p>Selecting <em>Download as CSV</em> from the menu</p>
-<p><em>HTML Elements</em> The relevant parent element is the unordered
-list, <em>ul</em> tag and the child element is the <em>li</em> tag,
-which contains the text ‘CSV’”</p>
-XPATH: //*<span class="citation">[@id=&quot;highcharts-yx17ci5-0&quot;]</span>/div[3]/ul/li[7]
-<li class="highcharts-menu-item" tabindex="-1" style="cursor: pointer; padding: 0.5em 1em; color: rgb(51, 51, 51); background: none; font-size: 11px; transition: background 250ms ease 0s, color 250ms ease 0s;">
-Download CSV
-</li>
-<p>*Example R Command**</p>
-<pre><code>CSVDownload &lt;- remDr$findElement(using = &quot;xpath&quot;, &quot;//ul//li[contains(., &#39;CSV&#39;)]&quot;)
-CSVDownload$clickElement()</code></pre>
-<p><strong>Dealing with Frames</strong></p>
-<pre><code>#Navigate to RAWS website
-remDr$navigate(&quot;https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?caucgr&quot;)
-
-#Switch to Left Frame named &quot;List&quot;
-ListFrame &lt;- remDr$findElement(using = &quot;name&quot;, value = &quot;List&quot;)
-remDr$switchToFrame(ListFrame)
-
-#Select Daily Summary Time Series Link
-Link1 &lt;- remDr$findElement(using = &quot;link text&quot;, value = &quot;Daily Summary Time Series&quot;)
-Link1$clickElement()
-
-#Switch to Right Frame named &quot;Graph&quot;
-remDr$switchToFrame(NA)
-GraphFrame &lt;- remDr$findElement(using = &quot;name&quot;, value = &quot;Graph&quot;)
-remDr$switchToFrame(GraphFrame)</code></pre>
 
 
 
