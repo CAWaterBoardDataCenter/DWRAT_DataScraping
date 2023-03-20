@@ -8,10 +8,10 @@ library(readr)
 library(lubridate)
 
 #InputData----
-#Dates--adjust as needed
+#Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
-StartDate = data.frame("February", "01", "2023", as.Date("2023-02-01"))
-EndDate = data.frame("March", "12", "2023", as.Date("2023-03-12"))
+StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
+EndDate = data.frame("March", "16", "2023", as.Date("2023-03-16"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -125,7 +125,6 @@ names(DF_List) <- lapply(seq_along(DF_List),
 lapply(names(DF_List), function(i)
   assign(x = i, value = DF_List[[i]], .GlobalEnv))
 
-
 #Finalize CIMIS Sanel Valley 106
 CIMIS_Sanel_Valley_106 = `CIMIS_Sanel Valley 106`
 rm(`CIMIS_Sanel Valley 106`)
@@ -143,12 +142,30 @@ CIMIS_Windsor_103$Tmin = NULL
 CIMIS_Windsor_103$Tmax = NULL
 
 #Finalize CIMIS Hopland 85 (just consists of -999)
-CIMIS_Hopland_85 <- cbind.data.frame(seq(from = StartDate$date, to = EndDate$date, by = 'day'), rep(-999,ndays))
-colnames(CIMIS_Hopland_85) <- c("Date", "Precipitation")
+CIMIS_Hopland_85 = cbind.data.frame(seq(from = StartDate$date, to = EndDate$date, by = 'day'),
+                                    rep ("Hopland_85", ndays), rep(-999,ndays))
+colnames(CIMIS_Hopland_85) = c("Date", "Station", "Precipitation")
+CIMIS_Hopland_85$Date = as.character(CIMIS_Hopland_85$Date) #convert dates to characters
+CIMIS_Hopland_85$Date = gsub("-", "", CIMIS_Hopland_85$Date) # remove dashes from dates
 
+##Consolidate the CIMIS datasets into a single dataframe----
+list_df = list(CIMIS_Hopland_85, CIMIS_Sanel_Valley_106, CIMIS_Santa_Rosa_83, CIMIS_Windsor_103)
+CIMIS_Processed = list_df %>% reduce(inner_join, by='Date')
+CIMIS_Names = c("Date", "Hopland", "Hopland_85_PRECIP6", "Sanel Valley", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa Rosa", 
+                "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4", "Windsor", "Windsor_103_PRECIP12")
+colnames(CIMIS_Processed) = CIMIS_Names
+colnames(CIMIS_Processed)
+CIMIS_Processed = select(CIMIS_Processed, -c("Hopland", "Sanel Valley", "Santa Rosa", "Windsor"))
+col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
+CIMIS_Processed = CIMIS_Processed[,col_order]
+CIMIS_Processed
+
+#Replace all missing values with -999
+CIMIS_Processed[CIMIS_Processed == ""] = -999
 
 ##Export Dataframes to CSVs----
-write.csv(CIMIS_Windsor_103, here("ProcessedData/CIMIS_PRECIP12.csv"), row.names = FALSE)
-write.csv(CIMIS_Sanel_Valley_106, here("ProcessedData/CIMIS_TEMP3.csv"), row.names = FALSE)
-write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
-write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
+write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
+# write.csv(CIMIS_Windsor_103, here("ProcessedData/CIMIS_PRECIP12.csv"), row.names = FALSE)
+# write.csv(CIMIS_Sanel_Valley_106, here("ProcessedData/CIMIS_TEMP3.csv"), row.names = FALSE)
+# write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
+# write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
