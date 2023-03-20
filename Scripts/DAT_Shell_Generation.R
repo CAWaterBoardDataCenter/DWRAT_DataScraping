@@ -46,3 +46,6 @@ for (i in 1:length(DAT_Shell)){
     DAT_Shell[i] = DAT_Shell[i]
   }
 }
+
+#write to CSV
+write.csv(DAT_Shell, here("InputData/Dat_Shell.csv"), row.names = FALSE)

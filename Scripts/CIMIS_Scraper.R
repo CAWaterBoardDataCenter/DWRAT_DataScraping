@@ -148,7 +148,7 @@ colnames(CIMIS_Hopland_85) = c("Date", "Station", "Precipitation")
 CIMIS_Hopland_85$Date = as.character(CIMIS_Hopland_85$Date) #convert dates to characters
 CIMIS_Hopland_85$Date = gsub("-", "", CIMIS_Hopland_85$Date) # remove dashes from dates
 
-#Consolidate the CIMIS datasets into a single dataframe; remove redundant fields, rename fields as needed
+##Consolidate the CIMIS datasets into a single dataframe----
 list_df = list(CIMIS_Hopland_85, CIMIS_Sanel_Valley_106, CIMIS_Santa_Rosa_83, CIMIS_Windsor_103)
 CIMIS_Processed = list_df %>% reduce(inner_join, by='Date')
 CIMIS_Names = c("Date", "Hopland", "Hopland_85_PRECIP6", "Sanel Valley", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa Rosa", 
@@ -159,6 +159,9 @@ CIMIS_Processed = select(CIMIS_Processed, -c("Hopland", "Sanel Valley", "Santa R
 col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
 CIMIS_Processed = CIMIS_Processed[,col_order]
 CIMIS_Processed
+
+#Replace all missing values with -999
+CIMIS_Processed[CIMIS_Processed == ""] = -999
 
 ##Export Dataframes to CSVs----
 write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
