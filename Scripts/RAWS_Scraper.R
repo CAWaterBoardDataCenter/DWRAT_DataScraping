@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 3/14/2023
+    #ON: 3/20/2023
 
 #install packages----
   #you should only have to do this once ever on your computer; then comment
@@ -49,8 +49,8 @@ remDr <- rs_driver_object$client
 Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
 #Define Timeframe for which you're downloading observed data
-StartDate = data.frame("January", "15", "2022", as.Date("2022-12-15"))
-EndDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
+StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
+EndDate = data.frame("March", "19", "2023", as.Date("2023-03-19"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -62,8 +62,8 @@ ndays
 DF_List <- list()
 
 #Navigate to RAWS website
-#for (i in 1:nrow(Stations)){
-i = 1
+for (i in 1:nrow(Stations)){
+#i = 1
 remDr$navigate(paste0("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?ca", Stations$Station[i]))
 
 #Switch to Left Frame named "List"
@@ -155,7 +155,6 @@ WeatherDataBody <-substring(WeatherDataText, 162,nchar(WeatherDataText))
 WeatherDataBody <- gsub("\\\n", " ", WeatherDataBody)
 WeatherDataBody <- strsplit( WeatherDataBody, " ") %>% unlist %>% data.frame()
 
-
 #Force WeatherDataBody into dataframe with 8 columns
 WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>% data.frame %>% t() %>% data.frame()
 
@@ -164,7 +163,7 @@ DF_List[[i]] <- WeatherDataBody
 #Name the individual RAWS dataframes in the list
 names(DF_List) <- lapply(seq_along(DF_List),
                          function(i) names(DF_List)[[i]] = paste0("RAWS_", Stations$Station[i]))
-
+}
 #Set column names
 RAWS_Names <- c("Date", "Year", "Day_Of_Year", "Day_Of_Run", "Tavg", "Tmax", "Tmin", "Precipitation")
 
