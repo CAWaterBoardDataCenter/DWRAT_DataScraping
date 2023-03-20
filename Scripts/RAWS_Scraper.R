@@ -157,13 +157,13 @@ WeatherDataBody <- strsplit( WeatherDataBody, " ") %>% unlist %>% data.frame()
 
 #Force WeatherDataBody into dataframe with 8 columns
 WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>% data.frame %>% t() %>% data.frame()
-
 DF_List[[i]] <- WeatherDataBody 
+}
 
 #Name the individual RAWS dataframes in the list
 names(DF_List) <- lapply(seq_along(DF_List),
                          function(i) names(DF_List)[[i]] = paste0("RAWS_", Stations$Station[i]))
-}
+
 #Set column names
 RAWS_Names <- c("Date", "Year", "Day_Of_Year", "Day_Of_Run", "Tavg", "Tmax", "Tmin", "Precipitation")
 
@@ -182,19 +182,40 @@ RAWS_CBOO <- select(RAWS_CBOO, -c(Tavg: Tmin))
 #Drop Precipitation column from  Santa Rosa RAWS station (CSRS)
 RAWS_CSRS$Precipitation <- NULL
 
-#Create RAWS Precipitation only dataframes for CHAW and CLYO
-RAWS_CHAW_Precip <- select(RAWS_CHAW, -c(Tavg:Tmin))
-RAWS_CLYO_Precip <- select(RAWS_CLYO, -c(Tavg:Tmin))
+#Add prefixes to the precipitation and temperature fields
+names(RAWS_CBOO)[5] = "RAWS_PRECIP7"
+names(RAWS_CLYO)[6] = "RAWS_TMAX7"
+names(RAWS_CLYO)[7] = "RAWS_TMIN7"
+names(RAWS_CLYO)[8] = "RAWS_PRECIP4"
+names(RAWS_CHAW)[6] = "RAWS_TMAX5"
+names(RAWS_CHAW)[7] = "RAWS_TMIN5"
+names(RAWS_CHAW)[8] = "RAWS_PRECIP9"
+names(RAWS_CSRS)[6]= "RAWS_TMAX8"
+names(RAWS_CSRS)[7] = "RAWS_TMIN8"
 
-#Create RAWS Temperature only dataframes fro CHAW and CLYO
-RAWS_CHAW_Temp <- select(RAWS_CHAW, -c(Precipitation))
-RAWS_CLYO_Temp <- select(RAWS_CLYO, -c(Precipitation))
+#Consolidate all RAWS dataframes into 1 dataframe----
+list_df = list(RAWS_CLYO, RAWS_CHAW, RAWS_CSRS, RAWS_CBOO)
+RAWS_Processed = list_df %>% reduce(inner_join, by = "Date")
+
+#Remove extra columns
+RAWS_Processed = select(RAWS_Processed,c("Date", "RAWS_TMAX7", "RAWS_TMIN7", 
+                                         "RAWS_PRECIP4", "RAWS_TMAX5", "RAWS_TMIN5", 
+                                         "RAWS_PRECIP9", "RAWS_TMAX8", "RAWS_TMIN8", 
+                                         "RAWS_PRECIP7")
+)
+
+#Rearrange columns
+col_order = c("Date", "RAWS_PRECIP4", "RAWS_PRECIP7", 
+              "RAWS_PRECIP9", "RAWS_TMAX5", "RAWS_TMAX7", 
+              "RAWS_TMAX8", "RAWS_TMIN5", "RAWS_TMIN7", "RAWS_TMIN8")
+RAWS_Processed = RAWS_Processed[, col_order]
 
 #Write all RAWS dataframes to CSVs----
-write.csv(RAWS_CHAW_Precip, here("ProcessedData/RAWS_PRECIP9.csv"), row.names = FALSE)
-write.csv(RAWS_CLYO_Precip, here("ProcessedData/RAWS_PRECIP4.csv"), row.names = FALSE)
-write.csv(RAWS_CHAW_Temp, here("ProcessedData/RAWS_TEMP5.csv"), row.names = FALSE)
-write.csv(RAWS_CLYO_Temp, here("ProcessedData/RAWS_TEMP7.csv"), row.names = FALSE)
-write.csv(RAWS_CBOO, here("ProcessedData/RAWS_PRECIP7.csv"), row.names = FALSE)
-write.csv(RAWS_CSRS, here("ProcessedData/RAWS_TEMP8.csv"), row.names = FALSE)
+write.csv(RAWS_Processed, here("ProcessedData/RAWS_Processed.csv"), row.names = FALSE)
+# write.csv(RAWS_CHAW_Precip, here("ProcessedData/RAWS_PRECIP9.csv"), row.names = FALSE)
+# write.csv(RAWS_CLYO_Precip, here("ProcessedData/RAWS_PRECIP4.csv"), row.names = FALSE)
+# write.csv(RAWS_CHAW_Temp, here("ProcessedData/RAWS_TEMP5.csv"), row.names = FALSE)
+# write.csv(RAWS_CLYO_Temp, here("ProcessedData/RAWS_TEMP7.csv"), row.names = FALSE)
+# write.csv(RAWS_CBOO, here("ProcessedData/RAWS_PRECIP7.csv"), row.names = FALSE)
+# write.csv(RAWS_CSRS, here("ProcessedData/RAWS_TEMP8.csv"), row.names = FALSE)
 
