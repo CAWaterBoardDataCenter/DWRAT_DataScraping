@@ -27,7 +27,7 @@ PP_OldNames <- unique(PP) #vector of unique Prism station names
 colnames(PP) = PP_NewNames
 
 #Export PP to CSV
-write.csv(here("WebData/PRISM_Precipitation.csv", row.names = FALSE))
+write.csv(PP, here("WebData/PRISM_Precipitation.csv"), row.names = FALSE)
 
 #PRISM Temperature Data Manipulation----
 #Import Prism_Temp.csv by skipping first 10 rows
