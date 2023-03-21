@@ -19,8 +19,8 @@ colnames(DAT_File) <- colnames(DAT_Fields)
   #We will replace a subset of the data corresponding to our timeframe of interest
 
 #Whittle the DAT_File to a subset corresponding to our timeframe of interest, "DAT_Shell"----
-#Add a Timestep column
-DAT_File$TimeStep <- make_date(year = DAT_File$Year, 
+#Add a Date column
+DAT_File$Date <- make_date(year = DAT_File$Year, 
                               month = DAT_File$month,
                               day = DAT_File$day)
 
@@ -30,11 +30,11 @@ DAT_File$TimeStep <- make_date(year = DAT_File$Year,
 Start_Date <- as.Date("2023-01-11")
 #The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
 End_Date <- Sys.Date() + 5
-DAT_Shell <- subset(DAT_File, TimeStep >= '2023-01-11' & TimeStep <= "2023-03-22") #Adjust as needed
+DAT_Shell <- subset(DAT_File, Date >= '2023-01-11' & Date <= "2023-03-28") #Adjust as needed
 DAT_Shell
 
-#Set TimeStep as the 7th column in DAT_Shell
-DAT_Shell <- DAT_Shell %>% relocate(TimeStep, .after = s)
+#Set Date as the 7th column in DAT_Shell
+DAT_Shell <- DAT_Shell %>% relocate(Date, .after = s)
 
 #Set all the DAT_Shell temperature and precipitation fields to blank
 for (i in 1:length(DAT_Shell)){
