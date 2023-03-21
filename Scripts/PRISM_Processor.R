@@ -31,7 +31,7 @@ for (i in unique(PP$Name)) {
 #PRISM Temperature Data Manipulation----
 #Import Prism_Temp.csv by skipping first 10 rows
 PT <- read.csv(here("WebData/PRISM_Temperature.csv"), skip = 10, header = T)
-names(PT)[5:6] = c("Tmin", "Tmax")
+names(PT)[6:7] = c("Tmin", "Tmax")
 
 #Remove unnecessary columns
 PT <- select(PT, c("Name", "Tmin", "Tmax"))

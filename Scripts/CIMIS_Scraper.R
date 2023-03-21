@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "16", "2023", as.Date("2023-03-16"))
+EndDate = data.frame("March", "20", "2023", as.Date("2023-03-20"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -151,17 +151,30 @@ CIMIS_Hopland_85$Date = gsub("-", "", CIMIS_Hopland_85$Date) # remove dashes fro
 ##Consolidate the CIMIS datasets into a single dataframe----
 list_df = list(CIMIS_Hopland_85, CIMIS_Sanel_Valley_106, CIMIS_Santa_Rosa_83, CIMIS_Windsor_103)
 CIMIS_Processed = list_df %>% reduce(inner_join, by='Date')
-CIMIS_Names = c("Date", "Hopland", "Hopland_85_PRECIP6", "Sanel Valley", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa Rosa", 
-                "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4", "Windsor", "Windsor_103_PRECIP12")
+# CIMIS_Names = c("Date", "Hopland", "Hopland_85_PRECIP6", "Sanel Valley",
+#                 "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa Rosa",
+#                 "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4", "Windsor", "Windsor_103_PRECIP12")
+CIMIS_Names = c("Date", "Hopland", "CIMIS_PRECIP6", "Sanel Valley", "CIMIS_TMAX3", "CIMIS_TMIN3", 
+                "Santa Rosa", "CIMIS_TMAX4", "CIMIS_TMIN4", "Windsor", "CIMIS_PRECIP12")
 colnames(CIMIS_Processed) = CIMIS_Names
 colnames(CIMIS_Processed)
 CIMIS_Processed = select(CIMIS_Processed, -c("Hopland", "Sanel Valley", "Santa Rosa", "Windsor"))
-col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
+# col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3",
+#               "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
+col_order = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
+              "CIMIS_TMIN3", "CIMIS_TMAX4", "CIMIS_TMIN4")
 CIMIS_Processed = CIMIS_Processed[,col_order]
 CIMIS_Processed
 
 #Replace all missing values with -999
 CIMIS_Processed[CIMIS_Processed == ""] = -999
+
+# #Rename columns to match DAT_Shell naming convention
+# colnames(CIMIS_Processed) <- sub("^([^_]+_[^_]+_[^_]+)_", "CIMIS_", colnames(CIMIS_Processed))
+# colnames(CIMIS_Processed) <- sub("^([^_]+_[^_]+)_", "CIMIS_", colnames(CIMIS_Processed))
+
+#End RSelenium process
+system("taskkill /im java.exe /f")
 
 ##Export Dataframes to CSVs----
 write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
@@ -170,5 +183,32 @@ write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names 
 # write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
 # write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
 
+#Work in progess ----
+#Replace missing values with PRISM data: edit code for current data source
+#Works only if columns are same in number and order; column names doesn't need to match
+PRISM <- read.csv(here("ProcessedData/PRISM_TEST.csv"))
+CIMIS_Replaced <- CIMIS_Processed
+CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM[CIMIS_Processed == -999]
 
-system("taskkill /im java.exe /f")
+# #Combining CNRFC data with CIMIS data
+# CNRFC_precip_data <- read.csv(here("ProcessedData/CNRFC_precip_data.csv"))
+# CNRFC_temp_data <- read.csv(here("ProcessedData/CNRFC_temp_data.csv"))
+# 
+# # rbind() put scraped data first, CNRFC data second
+# add_precip <- rbind(CIMIS_Replaced,CNRFC_precip_data)
+# temp_plus_precip <- rbind(add_precip,CNFRC_temp_data)
+
+# write.csv(temp_plus_precip, here("ProcessedData/CIMIS_Processed.csv"), row.names = F)
+
+#write dataframe with replacement PRISM values to csv
+write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Replaced.csv"), row.names = FALSE)
+
+# #Need to get for loop to work
+# for (i in 1:nrow(CIMIS)){
+#   if (PRECIP1[i] == -999) {
+#     PRECIP1[i] = PRISM1[i]
+#   } else {
+#     PRECIP1[i] = PRECIP1[i]
+#   }
+# }
+
