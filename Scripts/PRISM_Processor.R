@@ -26,9 +26,6 @@ PP_NewNames <- c("Date", "PP_PRECIP1", "PP_PRECIP2", "PP_PRECIP3", "PP_PRECIP4",
 PP_OldNames <- unique(PP) #vector of unique Prism station names
 colnames(PP) = PP_NewNames
 
-#Export PP to CSV
-write.csv(here("WebData/PRISM_Precipitation.csv", row.names = FALSE))
-
 #PRISM Temperature Data Manipulation----
 #Import Prism_Temp.csv by skipping first 10 rows
 PT <- read.csv(here("WebData/PRISM_Temperature.csv"), skip = 10, header = T)
