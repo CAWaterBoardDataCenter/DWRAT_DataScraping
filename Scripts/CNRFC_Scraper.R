@@ -8,7 +8,7 @@ library(readr)
 
 #Find and remove previously downloaded CNRFC Data----
 #Find all CSVS containing "temperaturePlot" in the filename
- <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\.csv")
+matching_files <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\.csv")
 
 #remove the matching files
 file.remove(matching_files)
