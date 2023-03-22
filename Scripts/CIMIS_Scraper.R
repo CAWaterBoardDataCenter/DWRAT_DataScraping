@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "20", "2023", as.Date("2023-03-20"))
+EndDate = data.frame("March", "21", "2023", as.Date("2023-03-21"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -176,23 +176,26 @@ CIMIS_Processed[CIMIS_Processed == ""] = -999
 #End RSelenium process
 system("taskkill /im java.exe /f")
 
+#BEFORE THIS STEP: Run PRISM_Processor.R
+#Replace missing values with PRISM data
+#Works only if columns are same in number and order; column names don't need to match
+CIMIS_Replaced <- CIMIS_Processed
+PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12","PT_TMAX3","PT_TMIN3","PT_TMAX4","PT_TMIN4")]
+CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
+
 ##Export Dataframes to CSVs----
-write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
+write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
+# write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
 # write.csv(CIMIS_Windsor_103, here("ProcessedData/CIMIS_PRECIP12.csv"), row.names = FALSE)
 # write.csv(CIMIS_Sanel_Valley_106, here("ProcessedData/CIMIS_TEMP3.csv"), row.names = FALSE)
 # write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
 # write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
 
 #Work in progess ----
-#Replace missing values with PRISM data: edit code for current data source
-#Works only if columns are same in number and order; column names doesn't need to match
-PRISM <- read.csv(here("ProcessedData/PRISM_TEST.csv"))
-CIMIS_Replaced <- CIMIS_Processed
-CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM[CIMIS_Processed == -999]
 
 # #Combining CNRFC data with CIMIS data
-# CNRFC_precip_data <- read.csv(here("ProcessedData/CNRFC_precip_data.csv"))
-# CNRFC_temp_data <- read.csv(here("ProcessedData/CNRFC_temp_data.csv"))
+# CNRFC_precip_CIMIS <- read.csv(here("ProcessedData/CNRFC_precip_CIMIS.csv"))
+# CNRFC_temp_CIMIS <- read.csv(here("ProcessedData/CNRFC_temp_CIMIS.csv"))
 # 
 # # rbind() put scraped data first, CNRFC data second
 # add_precip <- rbind(CIMIS_Replaced,CNRFC_precip_data)
@@ -200,8 +203,8 @@ CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM[CIMIS_Processed == -999]
 
 # write.csv(temp_plus_precip, here("ProcessedData/CIMIS_Processed.csv"), row.names = F)
 
-#write dataframe with replacement PRISM values to csv
-write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Replaced.csv"), row.names = FALSE)
+# #write dataframe with replacement PRISM values to csv
+# write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Replaced.csv"), row.names = FALSE)
 
 # #Need to get for loop to work
 # for (i in 1:nrow(CIMIS)){
