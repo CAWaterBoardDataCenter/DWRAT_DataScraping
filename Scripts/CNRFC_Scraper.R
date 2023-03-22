@@ -1,5 +1,4 @@
-# Set up RSelenium -------------------------------------------------------
-## load packages ----
+#load packages ----
 library(RSelenium)
 library(tidyverse)
 library(netstat)
@@ -7,9 +6,20 @@ library(here)
 library(dplyr)
 library(readr)
 
+#Find and remove previously downloaded CNRFC Data----
+#Find all CSVS containing "temperaturePlot" in the filename
+matching_files <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\.csv")
+
+#remove the matching files
+file.remove(matching_files)
+
+#Find and remove the cnrfc_qpf.csv
+file.remove(here("WebData/cnrfc_qpf.csv"))
+
 # Import CNRFC Temperature stations----
 CNRFC_Stations <- read.csv(here("InputData/CNRFC_Stations.csv"))
 
+#Set up RSelenium----
 ##Set Default download folder ----
 eCaps <- list(
   chromeOptions =
@@ -36,9 +46,8 @@ rs_driver_object <-rsDriver(
 )
 
 remDr <- rs_driver_object$client
-remDr$open()
 
-#Navigate to CNRFC website
+##Navigate to CNRFC Temperature website----
 for (i in 1:nrow(CNRFC_Stations)){
 CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
 remDr$navigate(CNRFC)
@@ -47,7 +56,15 @@ remDr$navigate(CNRFC)
 ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
 ChartMenu$clickElement()
 
-#Download as CSV
+##Download Temperature Data as CSVs----
 CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
 CSVDownload$clickElement()
 }
+
+##Navigate to CNRFC Precipitation website
+CNRFC <- paste0("https://www.cnrfc.noaa.gov/qpf.php")
+remDr$navigate(CNRFC)
+
+#Select 6-Day Basin QPF CSV
+CSVDownload <- remDr$findElement(using = "link text", value  = "6-Day Basin QPF")
+CSVDownload$clickElement()
