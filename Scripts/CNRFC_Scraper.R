@@ -8,13 +8,16 @@ library(readr)
 
 #Find and remove previously downloaded CNRFC Data----
 #Find all CSVS containing "temperaturePlot" in the filename
-matching_files <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\.csv")
+matching_files <- list.files(path = here("WebData"), pattern = "temperaturePlot|cnrfc", full.names = TRUE)
 
 #remove the matching files
-file.remove(here("WebData", matching_files))
-
-#Find and remove the cnrfc_qpf.csv
-file.remove(here("WebData/cnrfc_qpf.csv"))
+for (i in 1:length(matching_files)){
+  if(file.exists(matching_files[i])){
+    file.remove(matching_files[i])
+  } else {
+    print("File does not exist.")
+  }
+}
 
 # Import CNRFC Temperature stations----
 CNRFC_Stations <- read.csv(here("InputData/CNRFC_Stations.csv"))
@@ -47,21 +50,21 @@ rs_driver_object <-rsDriver(
 
 remDr <- rs_driver_object$client
 
-## Navigate to CNRFC Temperature website
-for (i in 1:8) {
-  CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
-  remDr$navigate(CNRFC)
-  
-  # Select Chart Menu
-  ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
-  ChartMenu$clickElement()
-  
-  # Download Temperature Data as CSVs
-  CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
-  CSVDownload$clickElement()
+##Navigate to CNRFC Temperature website----
+for (i in 1:8){
+CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
+remDr$navigate(CNRFC)
+
+#Select Chart Menu
+ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
+ChartMenu$clickElement()
+
+##Download Temperature Data as CSVs----
+CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
+CSVDownload$clickElement()
 }
 
-##Navigate to CNRFC Precipitation website
+##Navigate to CNRFC Precipitation website----
 CNRFC <- paste0("https://www.cnrfc.noaa.gov/qpf.php")
 remDr$navigate(CNRFC)
 

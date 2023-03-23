@@ -36,7 +36,7 @@ eCaps <- list(
     )
 )
 remDr <- rs_driver_object$client
-remDr$open()
+# remDr$open()
 
 #Create a list to hold CIMIS dataframes
 DF_List <- list()
@@ -56,12 +56,12 @@ StartDay$sendKeysToElement(list(StartDate$day))
 StartYear <- remDr$findElement(using = "name", value = "FROMYEAR")
 StartYear$sendKeysToElement(list(StartDate$year))
 
-EndMonth <- remDr$findElement(using = "name", value = "THRUMONTH")
-EndMonth$sendKeysToElement(list(EndDate$month))
-EndDay <-remDr$findElement(using = "name", value = "THRUDAY")
-EndDay$sendKeysToElement(list(EndDate$day))
-EndYear <-remDr$findElement(using = "name", value = "THRUYEAR")
-EndYear$sendKeysToElement(list(EndDate$year))
+# EndMonth <- remDr$findElement(using = "name", value = "THRUMONTH")
+# EndMonth$sendKeysToElement(list(EndDate$month))
+# EndDay <-remDr$findElement(using = "name", value = "THRUDAY")
+# EndDay$sendKeysToElement(list(EndDate$day))
+# EndYear <-remDr$findElement(using = "name", value = "THRUYEAR")
+# EndYear$sendKeysToElement(list(EndDate$year))
 
 #Use no backups
 Backups <- remDr$findElement(using = "name", value = "NONE")
