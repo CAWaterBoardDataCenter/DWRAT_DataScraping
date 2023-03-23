@@ -11,7 +11,7 @@ library(readr)
 matching_files <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\.csv")
 
 #remove the matching files
-file.remove(matching_files)
+file.remove(here("WebData", matching_files))
 
 #Find and remove the cnrfc_qpf.csv
 file.remove(here("WebData/cnrfc_qpf.csv"))
@@ -47,18 +47,18 @@ rs_driver_object <-rsDriver(
 
 remDr <- rs_driver_object$client
 
-##Navigate to CNRFC Temperature website----
-for (i in 1:nrow(CNRFC_Stations)){
-CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
-remDr$navigate(CNRFC)
-
-#Select Chart Menu
-ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
-ChartMenu$clickElement()
-
-##Download Temperature Data as CSVs----
-CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
-CSVDownload$clickElement()
+## Navigate to CNRFC Temperature website
+for (i in 1:8) {
+  CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
+  remDr$navigate(CNRFC)
+  
+  # Select Chart Menu
+  ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
+  ChartMenu$clickElement()
+  
+  # Download Temperature Data as CSVs
+  CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
+  CSVDownload$clickElement()
 }
 
 ##Navigate to CNRFC Precipitation website
@@ -68,3 +68,17 @@ remDr$navigate(CNRFC)
 #Select 6-Day Basin QPF CSV
 CSVDownload <- remDr$findElement(using = "link text", value  = "6-Day Basin QPF")
 CSVDownload$clickElement()
+
+# ##Navigate to CNRFC Temperature website----
+# for (i in 1:nrow(CNRFC_Stations)){
+#   CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
+#   remDr$navigate(CNRFC)
+#   
+#   #Select Chart Menu
+#   ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
+#   ChartMenu$clickElement()
+#   
+#   ##Download Temperature Data as CSVs----
+#   CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
+#   CSVDownload$clickElement()
+# }

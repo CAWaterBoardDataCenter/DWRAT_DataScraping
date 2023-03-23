@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "21", "2023", as.Date("2023-03-21"))
+EndDate = data.frame("March", "22", "2023", as.Date("2023-03-22"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -176,11 +176,12 @@ CIMIS_Processed[CIMIS_Processed == ""] = -999
 #End RSelenium process
 system("taskkill /im java.exe /f")
 
-#BEFORE THIS STEP: Run PRISM_Processor.R
+#BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
 #Replace missing values with PRISM data
 #Works only if columns are same in number and order; column names don't need to match
 CIMIS_Replaced <- CIMIS_Processed
-PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12","PT_TMAX3","PT_TMIN3","PT_TMAX4","PT_TMIN4")]
+PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12",
+                                 "PT_TMAX3","PT_TMIN3","PT_TMAX4","PT_TMIN4")]
 CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
 
 ##Export Dataframes to CSVs----
@@ -191,20 +192,19 @@ write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Processed.csv"), row.names =
 # write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
 # write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
 
-#Work in progess ----
+#Work in progress ----
 
-# #Combining CNRFC data with CIMIS data
-# CNRFC_precip_CIMIS <- read.csv(here("ProcessedData/CNRFC_precip_CIMIS.csv"))
-# CNRFC_temp_CIMIS <- read.csv(here("ProcessedData/CNRFC_temp_CIMIS.csv"))
-# 
+# #Combining CIMIS data with CNRFC data
+# CNRFC_cols <- CNRFC_Processed[,c("Date","HOPC1_PRECIP6","MWEC1_PRECIP12",
+#                                   "CDLC1_TMAX3","CDLC1_TMIN3","LSEC1_TMAX4","LSEC1_TMIN4")]
+# # Convert the 'Date' column to Date format
+# CNRFC_cols$Date <- as.Date(CNRFC_cols_temp$Date, format = "%m/%d/%Y")
+# # Filter the data frame to only include required forecast dates for model run
+# CNRFC_cols <- subset(CNRFC_cols, Date >= as.Date("2023-03-23") & Date <= as.Date("2023-03-28"))
 # # rbind() put scraped data first, CNRFC data second
-# add_precip <- rbind(CIMIS_Replaced,CNRFC_precip_data)
-# temp_plus_precip <- rbind(add_precip,CNFRC_temp_data)
-
-# write.csv(temp_plus_precip, here("ProcessedData/CIMIS_Processed.csv"), row.names = F)
-
-# #write dataframe with replacement PRISM values to csv
-# write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Replaced.csv"), row.names = FALSE)
+# CIMIS_Final <- rbind(CIMIS_Replaced,CNRFC_cols)
+# # Export final to CSV
+# write.csv(CIMIS_Final, here("ProcessedData/CIMIS_Final.csv"), row.names = False)
 
 # #Need to get for loop to work
 # for (i in 1:nrow(CIMIS)){

@@ -7,7 +7,7 @@ library(lubridate)
 
 #PRISM Precipitation Data Manipulation----
 #Import PRISM_Precipitation.csv by skipping first 10 rows
-ndays = 70
+ndays = 71
 PP <- read.csv(here("WebData/PRISM_Precipitation.csv"), skip = 10, header = T)
 names(PP)[1] = "Station"
 names(PP)[6] = "ppt"
