@@ -108,12 +108,15 @@ CNRFC_Precip_Final <- inner_join(x = CNRFC_Precip_Russian, y = CNRFC_Precip_Stat
 #Remove the Forecast_Group and Station_Name columns
 CNRFC_Precip_Final <- select(CNRFC_Precip_Final, -c("Station_Name", "Forecast_Group"))
 
+#Convert precipitation from inches to mm
+CNRFC_Precip_Final[, 2:26] <- apply(CNRFC_Precip_Final[,2:26], 2, as.numeric)
+CNRFC_Precip_Final[, 2:26] <- CNRFC_Precip_Final[, 2:26]*25.4
 
 #Convert column names to Date format
 #Aggregate data by calendar day and station
 #Rename column names
 
 ##Export CNRFC_Precip_Final to CSV----
-
+write.csv(CNRFC_Precip_Final, here("ProcessedData/CNRFC_Precip_Processed.csv"), row.names = FALSE)
 
 
