@@ -50,7 +50,7 @@ Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
 #Define Timeframe for which you're downloading observed data
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "19", "2023", as.Date("2023-03-19"))
+EndDate = data.frame("March", "21", "2023", as.Date("2023-03-21"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -210,6 +210,19 @@ col_order = c("Date", "RAWS_PRECIP4", "RAWS_PRECIP7",
               "RAWS_TMAX8", "RAWS_TMIN5", "RAWS_TMIN7", "RAWS_TMIN8")
 RAWS_Processed = RAWS_Processed[, col_order]
 
+#Add March 22, 2023 data manually
+#Replace missing values with PRISM data----
+#Import PRISM_Processed
+PP = read.csv(here("ProcessedData/Prism_Processed.csv"))
+#Subset PP to just the RAWS columns
+#Works only if columns are same in number and order; column names don't need to match
+RAWS_Replaced <- RAWS_Processed
+PRISM_cols <- Prism_Processed[,c("Date", "PT_TMAX7", "PT_TMIN7", 
+                                   "PP_PRECIP4", "PT_TMAX5", "PT_TMIN5", 
+                                   "PP_PRECIP9", "PT_TMAX8", "PT_TMIN8", 
+                                   "PP_PRECIP7")]
+RAWS_Replaced[RAWS_Processed == -999] <- PRISM_cols[RAWS_Processed == -999]
+                                                      
 #Write all RAWS dataframes to CSVs----
 write.csv(RAWS_Processed, here("ProcessedData/RAWS_Processed.csv"), row.names = FALSE)
 # write.csv(RAWS_CHAW_Precip, here("ProcessedData/RAWS_PRECIP9.csv"), row.names = FALSE)
