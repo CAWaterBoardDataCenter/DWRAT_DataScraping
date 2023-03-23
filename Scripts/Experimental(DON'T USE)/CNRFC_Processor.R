@@ -47,12 +47,14 @@ CNRFC_Temp <- CNRFC_Temp %>%
   summarise(Tmin = min(Temp), Tmax = max(Temp))
 
 CNRFC_Temp
+#Export CNRFC_Temp to CSV
+write.csv(CNRFC_Temp, here("ProcessedData/CNRFC_Temp_Processed.csv"), row.names = FALSE)
 
 #Pivot CNRFC_Temp so that each station appears as a separate column
-CNRFC_Temp <- pivot_wider(CNRFC_Temp3, names_from = Station, values_from = c("Tmin", "Tmax"))
+CNRFC_Temp <- pivot_wider(CNRFC_Temp, names_from = Station, values_from = c("Tmin", "Tmax"))
 CNRFC_Temp
 
-#Rearrange CNRFC_Temp4 columns to match the order in the DAT_File
+#Rearrange CNRFC_Temp columns to match the order in the DAT_File
 col_order_temp <- c("Date", "Tmax_HEAC1", "Tmax_UKAC1", "Tmax_CDLC1", 
                     "Tmax_LSEC1", "Tmax_BSCC1", "Tmax_LAMC1", "Tmax_SKPC1", 
                     "Tmax_SSAC1", "Tmin_HEAC1", "Tmin_UKAC1", "Tmin_CDLC1", 
@@ -64,7 +66,7 @@ FinalNames <- c("Date", "HEAC1_TMAX1", "UKAC1_TMAX2", "CDLC1_TMAX3", "LSEC1_TMAX
                 "HEAC1_TMIN1", "UKAC1_TMIN2", "CDLC1_TMIN3", "LSEC1_TMIN4", 
                 "BSCC1_TMIN5", "LAMC1_TMIN6", "SKPC1_TMIN7", "SSAC1_TMIN8")
 
-colnames(CNRFC_Temp4) = FinalNames
+colnames(CNRFC_Temp) = FinalNames
 CNRFC_Temp
 
 #CNRFC Precipitation Data Formatting
@@ -106,9 +108,12 @@ CNRFC_Precip_Final <- inner_join(x = CNRFC_Precip_Russian, y = CNRFC_Precip_Stat
 #Remove the Forecast_Group and Station_Name columns
 CNRFC_Precip_Final <- select(CNRFC_Precip_Final, -c("Station_Name", "Forecast_Group"))
 
+
 #Convert column names to Date format
 #Aggregate data by calendar day and station
 #Rename column names
+
+##Export CNRFC_Precip_Final to CSV----
 
 
 
