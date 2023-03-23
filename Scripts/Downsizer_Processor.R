@@ -68,8 +68,8 @@ colnames(Downsizer_Processed)
 col_order <- c('Year', 'Month', 'Day', 'DOWNSIZER_PRECIP1', 'DOWNSIZER_PRECIP2',
                'DOWNSIZER_PRECIP3', 'DOWNSIZER_PRECIP5', 'DOWNSIZER_PRECIP8', 'DOWNSIZER_PRECIP10',
                'DOWNSIZER_PRECIP11', 'DOWNSIZER_PRECIP13','DOWNSIZER_PRECIP14', 'DOWNSIZER_PRECIP15',
-               'DOWNSIZER_TMAX1', 'DOWNSIZER_TMIN1', 'DOWNSIZER_TMAX2', 'DOWNSIZER_TMIN2', 
-               'DOWNSIZER_TMAX6', 'DOWNSIZER_TMIN6')
+               'DOWNSIZER_TMAX1', 'DOWNSIZER_TMAX2', 'DOWNSIZER_TMAX6', 'DOWNSIZER_TMIN1', 'DOWNSIZER_TMIN2', 
+               'DOWNSIZER_TMIN6')
 Downsizer_Processed <- Downsizer_Processed[,col_order]
 
 #BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
@@ -86,8 +86,8 @@ Downsizer_Replaced <- Downsizer_Replaced %>%
 PRISM_cols <- Prism_Processed[,c('Date', 'PP_PRECIP1', 'PP_PRECIP2',
                                  'PP_PRECIP3', 'PP_PRECIP5', 'PP_PRECIP8', 'PP_PRECIP10',
                                  'PP_PRECIP11', 'PP_PRECIP13','PP_PRECIP14', 'PP_PRECIP15',
-                                 'PT_TMAX1', 'PT_TMIN1', 'PT_TMAX2', 'PT_TMIN2', 
-                                 'PT_TMAX6', 'PT_TMIN6')]
+                                 'PT_TMAX1', 'PT_TMAX2', 'PT_TMAX6', 'PT_TMIN1', 'PT_TMIN2', 
+                                 'PT_TMIN6')]
 #Change -999.0 values to -999
 for (i in 2:18) {
   Downsizer_Replaced[, i] <- gsub("-999.0", "-999", Downsizer_Replaced[, i])

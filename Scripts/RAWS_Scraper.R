@@ -213,7 +213,7 @@ RAWS_Processed = RAWS_Processed[, col_order]
 #Add March 22, 2023 data manually
 #Replace missing values with PRISM data----
 #Import PRISM_Processed
-PP = read.csv(here("ProcessedData/Prism_Processed.csv"))
+Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
 #Subset PP to just the RAWS columns
 #Works only if columns are same in number and order; column names don't need to match
 RAWS_Replaced <- RAWS_Processed
