@@ -71,17 +71,3 @@ remDr$navigate(CNRFC)
 #Select 6-Day Basin QPF CSV
 CSVDownload <- remDr$findElement(using = "link text", value  = "6-Day Basin QPF")
 CSVDownload$clickElement()
-
-# ##Navigate to CNRFC Temperature website----
-# for (i in 1:nrow(CNRFC_Stations)){
-#   CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
-#   remDr$navigate(CNRFC)
-#   
-#   #Select Chart Menu
-#   ChartMenu <- remDr$findElement(using = "xpath", "//button[@aria-label = 'View chart menu']")
-#   ChartMenu$clickElement()
-#   
-#   ##Download Temperature Data as CSVs----
-#   CSVDownload <- remDr$findElement(using = "xpath", "//ul//li[contains(., 'CSV')]")
-#   CSVDownload$clickElement()
-# }
