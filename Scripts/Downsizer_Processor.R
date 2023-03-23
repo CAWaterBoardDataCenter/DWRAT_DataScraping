@@ -80,7 +80,7 @@ Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
 Downsizer_Replaced <- Downsizer_Processed
 Downsizer_Replaced <- Downsizer_Replaced %>% 
   unite(col = "Date", Year, Month, Day, sep = "-") %>% 
-  mutate(date = as.Date(Date))
+  mutate(Date = as.Date(Date))
 
 #Create PRISM df to replace missing values
 PRISM_cols <- Prism_Processed[,c('Date', 'PP_PRECIP1', 'PP_PRECIP2',
