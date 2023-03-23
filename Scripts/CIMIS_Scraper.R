@@ -162,7 +162,7 @@ CIMIS_Processed = select(CIMIS_Processed, -c("Hopland", "Sanel Valley", "Santa R
 # col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3",
 #               "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
 col_order = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
-              "CIMIS_TMIN3", "CIMIS_TMAX4", "CIMIS_TMIN4")
+              "CIMIS_TMAX4","CIMIS_TMIN3", "CIMIS_TMIN4")
 CIMIS_Processed = CIMIS_Processed[,col_order]
 CIMIS_Processed
 
@@ -181,7 +181,7 @@ system("taskkill /im java.exe /f")
 #Works only if columns are same in number and order; column names don't need to match
 CIMIS_Replaced <- CIMIS_Processed
 PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12",
-                                 "PT_TMAX3","PT_TMIN3","PT_TMAX4","PT_TMIN4")]
+                                 "PT_TMAX3","PT_TMAX4","PT_TMIN3","PT_TMIN4")]
 CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
 
 ##Export Dataframes to CSVs----

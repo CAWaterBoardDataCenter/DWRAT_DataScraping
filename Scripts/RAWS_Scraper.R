@@ -50,7 +50,7 @@ Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
 #Define Timeframe for which you're downloading observed data
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "21", "2023", as.Date("2023-03-21"))
+EndDate = data.frame("March", "22", "2023", as.Date("2023-03-22"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
