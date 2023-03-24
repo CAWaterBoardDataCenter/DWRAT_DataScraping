@@ -22,4 +22,4 @@ Dat_Shell5 <-cbind(Dat_Shell4, cbind(Dat_Shell[,39:60]))
 Dat_Shell5$Date = NULL
 Dat_Final = Dat_Shell5
 #Write to CSV----
-write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"))
+write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"), row.names = FALSE)
