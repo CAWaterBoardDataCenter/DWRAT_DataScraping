@@ -110,6 +110,6 @@ colnames(CNRFC_cols) = CNRFC_Names
 Downsizer_Final <- rbind(Downsizer_Replaced,CNRFC_cols)
 
 #Write CSV to ProcessedData Folder----
-write.csv(Downsizer_Replaced, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
+write.csv(Downsizer_Final, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
 
 
