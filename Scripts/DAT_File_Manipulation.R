@@ -8,13 +8,6 @@ RAWS <- read.csv(here("ProcessedData/RAWS_Processed.csv"))
 Downsizer <- read.csv(here("ProcessedData/Downsizer_Processed.csv"))
 CIMIS <- read.csv(here("ProcessedData/CIMIS_Processed.csv"))
 
-#Change all dates to the same format "YYYY-MM-DD" character type
-RAWS$Date = as.Date(RAWS$Date, format = "%m/%d/%Y")
-CIMIS$Date = as.character(CIMIS$Date)
-CIMIS$Date = as.Date(CIMIS$Date, format = "%Y%m%d")
-Downsizer$Date = as.Date(Downsizer$Date, format = "%Y-%m-%d")
-Downsizer$date = NULL
-
 #Merge observed data sources into one dataframe
 Observed <- merge(Downsizer,merge(RAWS, CIMIS, by = "Date"))
 #ADD CNRFC Data to observed data sources----
