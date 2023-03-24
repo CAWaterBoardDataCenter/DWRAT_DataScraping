@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 3/20/2023
+    #ON: 3/23/2023
 
 #install packages----
   #you should only have to do this once ever on your computer; then comment
@@ -211,20 +211,23 @@ col_order = c("Date", "RAWS_PRECIP4", "RAWS_PRECIP7",
 RAWS_Processed = RAWS_Processed[, col_order]
 
 #Add March 22, 2023 data manually
+
 #Replace missing values with PRISM data----
 #Import PRISM_Processed
-Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
+RAWS_Processed = read.csv(here("ProcessedData/RAWS_Processed.csv"))
+PP = read.csv(here("ProcessedData/Prism_Processed.csv"))
 #Subset PP to just the RAWS columns
 #Works only if columns are same in number and order; column names don't need to match
 RAWS_Replaced <- RAWS_Processed
-PRISM_cols <- Prism_Processed[,c("Date", "PT_TMAX7", "PT_TMIN7", 
-                                 "PP_PRECIP4", "PT_TMAX5", "PT_TMIN5", 
-                                 "PP_PRECIP9", "PT_TMAX8", "PT_TMIN8", 
-                                 "PP_PRECIP7")]
+PRISM_cols <- Prism_Processed[c("Date", "PP_PRECIP4", "PP_PRECIP7", 
+                                   "PP_PRECIP9", "PT_TMAX5", "PT_TMAX7", 
+                                   "PT_TMAX8", "PT_TMIN5", "PT_TMIN7", "PT_TMIN8")]
 RAWS_Replaced[RAWS_Processed == -999] <- PRISM_cols[RAWS_Processed == -999]
-
+                                                      
 #Write all RAWS dataframes to CSVs----
 write.csv(RAWS_Replaced, here("ProcessedData/RAWS_Processed.csv"), row.names = FALSE)
+
+
 # write.csv(RAWS_CHAW_Precip, here("ProcessedData/RAWS_PRECIP9.csv"), row.names = FALSE)
 # write.csv(RAWS_CLYO_Precip, here("ProcessedData/RAWS_PRECIP4.csv"), row.names = FALSE)
 # write.csv(RAWS_CHAW_Temp, here("ProcessedData/RAWS_TEMP5.csv"), row.names = FALSE)
