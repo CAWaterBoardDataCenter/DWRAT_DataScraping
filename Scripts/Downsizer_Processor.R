@@ -96,6 +96,7 @@ for (i in 2:17) {
 Downsizer_Replaced[Downsizer_Replaced == -999] <- PRISM_cols[Downsizer_Replaced == -999]
 
 #Combining Downsizer data with CNRFC data
+CNRFC_Processed <- read.csv(here("ProcessedData/CNRFC_Processed.csv"))
 CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP1_UKAC1","PRECIP2_LAMC1","PRECIP3_UKAC1","PRECIP5_UKAC1",
                                  "PRECIP8_CDLC1","PRECIP10_HEAC1","PRECIP11_RMKC1","PRECIP13_GUEC1",
                                  "PRECIP14_LSEC1","PRECIP15_GUEC1","TMAX1_HEAC1","TMAX2_UKAC1",
