@@ -89,11 +89,25 @@ PRISM_cols <- Prism_Processed[,c('Date', 'PP_PRECIP1', 'PP_PRECIP2',
                                  'PT_TMAX1', 'PT_TMAX2', 'PT_TMAX6', 'PT_TMIN1', 'PT_TMIN2', 
                                  'PT_TMIN6')]
 #Change -999.0 values to -999
-for (i in 2:18) {
+for (i in 2:17) {
   Downsizer_Replaced[, i] <- gsub("-999.0", "-999", Downsizer_Replaced[, i])
 }
 #Replace -999 values with PRISM data
 Downsizer_Replaced[Downsizer_Replaced == -999] <- PRISM_cols[Downsizer_Replaced == -999]
+
+#Combining Downsizer data with CNRFC data
+CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP1_UKAC1","PRECIP2_LAMC1","PRECIP3_UKAC1","PRECIP5_UKAC1",
+                                 "PRECIP8_CDLC1","PRECIP10_HEAC1","PRECIP11_RMKC1","PRECIP13_GUEC1",
+                                 "PRECIP14_LSEC1","PRECIP15_GUEC1","TMAX1_HEAC1","TMAX2_UKAC1",
+                                 "TMAX6_LAMC1","TMIN1_HEAC1","TMIN2_UKAC1","TMIN6_LAMC1")]
+#Rename CNRFC Columns to match Downsizer names to bind the datasets 
+CNRFC_Names = c("Date", "DOWNSIZER_PRECIP1", "DOWNSIZER_PRECIP2","DOWNSIZER_PRECIP3",
+                "DOWNSIZER_PRECIP5","DOWNSIZER_PRECIP8","DOWNSIZER_PRECIP10","DOWNSIZER_PRECIP11","DOWNSIZER_PRECIP13",
+                "DOWNSIZER_PRECIP14","DOWNSIZER_PRECIP15","DOWNSIZER_TMAX1","DOWNSIZER_TMAX2",
+                "DOWNSIZER_TMAX6","DOWNSIZER_TMIN1","DOWNSIZER_TMIN2","DOWNSIZER_TMIN6")
+colnames(CNRFC_cols) = CNRFC_Names
+# rbind() put scraped data first, CNRFC data second
+Downsizer_Final <- rbind(Downsizer_Replaced,CNRFC_cols)
 
 #Write CSV to ProcessedData Folder----
 write.csv(Downsizer_Replaced, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
