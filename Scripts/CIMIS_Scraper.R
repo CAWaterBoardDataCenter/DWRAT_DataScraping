@@ -162,16 +162,12 @@ CIMIS_Processed = select(CIMIS_Processed, -c("Hopland", "Sanel Valley", "Santa R
 # col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3",
 #               "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
 col_order = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
-              "CIMIS_TMIN3", "CIMIS_TMAX4", "CIMIS_TMIN4")
+              "CIMIS_TMAX4","CIMIS_TMIN3", "CIMIS_TMIN4")
 CIMIS_Processed = CIMIS_Processed[,col_order]
 CIMIS_Processed
 
 #Replace all missing values with -999
 CIMIS_Processed[CIMIS_Processed == ""] = -999
-
-# #Rename columns to match DAT_Shell naming convention
-# colnames(CIMIS_Processed) <- sub("^([^_]+_[^_]+_[^_]+)_", "CIMIS_", colnames(CIMIS_Processed))
-# colnames(CIMIS_Processed) <- sub("^([^_]+_[^_]+)_", "CIMIS_", colnames(CIMIS_Processed))
 
 #End RSelenium process
 system("taskkill /im java.exe /f")
@@ -179,39 +175,26 @@ system("taskkill /im java.exe /f")
 #BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
 #Replace missing values with PRISM data
 #Works only if columns are same in number and order; column names don't need to match
-CIMIS_Replaced <- CIMIS_Processed
+Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
 PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12",
-                                 "PT_TMAX3","PT_TMIN3","PT_TMAX4","PT_TMIN4")]
-CIMIS_Replaced[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
+                                 "PT_TMAX3","PT_TMAX4","PT_TMIN3","PT_TMIN4")]
+CIMIS_Processed[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
+
+#Change Date format to match DAT_Shell Date format
+CIMIS_Processed$Date = as.character(CIMIS_Processed$Date)
+CIMIS_Processed$Date = as.Date(CIMIS_Processed$Date, format = "%Y%m%d")
+
+#Combining CIMIS data with CNRFC data
+CNRFC_Processed <- read.csv(here("ProcessedData/CNRFC_Processed.csv"))
+CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP6_HOPC1","PRECIP12_MWEC1",
+                                 "TMAX3_CDLC1","TMIN3_CDLC1","TMAX4_LSEC1","TMIN4_LSEC1")]
+#Rename CNRFC Columns to match CIMIS names to bind the datasets 
+CNRFC_Names = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
+                "CIMIS_TMAX4","CIMIS_TMIN3", "CIMIS_TMIN4")
+colnames(CNRFC_cols) = CNRFC_Names
+# rbind() put scraped data first, CNRFC data second
+CIMIS_Processed <- rbind(CIMIS_Processed,CNRFC_cols)
 
 ##Export Dataframes to CSVs----
-write.csv(CIMIS_Replaced, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
-# write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
-# write.csv(CIMIS_Windsor_103, here("ProcessedData/CIMIS_PRECIP12.csv"), row.names = FALSE)
-# write.csv(CIMIS_Sanel_Valley_106, here("ProcessedData/CIMIS_TEMP3.csv"), row.names = FALSE)
-# write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
-# write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
-
-#Work in progress ----
-
-# #Combining CIMIS data with CNRFC data
-# CNRFC_cols <- CNRFC_Processed[,c("Date","HOPC1_PRECIP6","MWEC1_PRECIP12",
-#                                   "CDLC1_TMAX3","CDLC1_TMIN3","LSEC1_TMAX4","LSEC1_TMIN4")]
-# # Convert the 'Date' column to Date format
-# CNRFC_cols$Date <- as.Date(CNRFC_cols_temp$Date, format = "%m/%d/%Y")
-# # Filter the data frame to only include required forecast dates for model run
-# CNRFC_cols <- subset(CNRFC_cols, Date >= as.Date("2023-03-23") & Date <= as.Date("2023-03-28"))
-# # rbind() put scraped data first, CNRFC data second
-# CIMIS_Final <- rbind(CIMIS_Replaced,CNRFC_cols)
-# # Export final to CSV
-# write.csv(CIMIS_Final, here("ProcessedData/CIMIS_Final.csv"), row.names = False)
-
-# #Need to get for loop to work
-# for (i in 1:nrow(CIMIS)){
-#   if (PRECIP1[i] == -999) {
-#     PRECIP1[i] = PRISM1[i]
-#   } else {
-#     PRECIP1[i] = PRECIP1[i]
-#   }
-# }
+write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
 
