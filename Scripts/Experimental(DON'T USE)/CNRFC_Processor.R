@@ -1,6 +1,7 @@
 library(here)
 library(dplyr)
 library(tidyr)
+library(stringr)
 #Bulk Import CNRFC Temp CSVS----
 filenames <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\csv$")
 
@@ -61,16 +62,16 @@ col_order_temp <- c("Date", "Tmax_HEAC1", "Tmax_UKAC1", "Tmax_CDLC1",
                     "Tmin_LSEC1", "Tmin_BSCC1", "Tmin_LAMC1", "Tmin_SKPC1", "Tmin_SSAC1")
 
 CNRFC_Temp <- CNRFC_Temp[, col_order_temp]
-FinalNames <- c("Date", "HEAC1_TMAX1", "UKAC1_TMAX2", "CDLC1_TMAX3", "LSEC1_TMAX4", 
-                "BSCC1_TMAX5", "LAMC1_TMAX6", "SKPC1_TMAX7", "SSAC1_TMAX8", 
-                "HEAC1_TMIN1", "UKAC1_TMIN2", "CDLC1_TMIN3", "LSEC1_TMIN4", 
-                "BSCC1_TMIN5", "LAMC1_TMIN6", "SKPC1_TMIN7", "SSAC1_TMIN8")
+FinalNames <- c("Date", "TMAX1_HEAC1", "TMAX2_UKAC1", "TMAX3_CDLC1", "TMAX4_LSEC1", 
+                "TMAX5_BSCC1", "TMAX6_LAMC1", "TMAX7_SKPC1", "TMAX8_SSAC1",
+                "TMIN1_HEAC1", "TMIN2_UKAC1", "TMIN3_CDLC1", "TMIN4_LSEC1", "TMIN5_BSCC1", 
+                "TMIN6_LAMC1", "TMIN7_SKPC1", "TMIN8_SSAC1")
+
 
 colnames(CNRFC_Temp) = FinalNames
 CNRFC_Temp
 
 #Restrict CNRFC_Temp to the 3/23/2023 - 3/28/2023 date range
-CNRFC_Temp$Date <- as.Date(CNRFC_Temp$Date, format = "%m.%d.%Y")
 CNRFC_Temp <- CNRFC_Temp[6:11,] #this line may have to be manually adjusted depending on the original dataset
 
 #CNRFC Precipitation Data Formatting
@@ -137,17 +138,49 @@ CNRFC_Precip[, -1] <- lapply(CNRFC_Precip[,-1], as.numeric)
 sum_CNRFC_Precip <- aggregate(CNRFC_Precip[, -1], by = list(Date = CNRFC_Precip$Date), FUN = sum)
 
 #Create empty dataframe with CNRFC columns in right order
-CNRFC_Empty <- matrix(data = "", nrow= nrow(sum_CNRFC_Precip), ncol = 32) %>% data.frame()
+CNRFC_Empty <- matrix(data = "", nrow= nrow(sum_CNRFC_Precip), ncol = 16) %>% data.frame()
 colnames(CNRFC_Empty) = c("Date","PRECIP1_UKAC1", "PRECIP2_LAMC1", "PRECIP3_UKAC1", "PRECIP4_HOPC1", 
                           "PRECIP5_UKAC1", "PRECIP6_HOPC1", "PRECIP7_HOPC1", "PRECIP8_CDLC1", 
                           "PRECIP9_KCVC1", "PRECIP10_HEAC1", "PRECIP11_RMKC1", "PRECIP12_MWEC1", 
-                          "PRECIP13_GUEC1", "PRECIP14_LSEC1", "PRECIP15_GUEC1", "TMAX1_HEAC1", 
-                          "TMAX2_UKAC1", "TMAX3_CDLC1", "TMAX4_LSEC1", "TMAX5_BSCC1", "TMAX6_LAMC1", 
-                          "TMAX7_SKPC1", "TMAX8_SSAC1", "TMIN1_HEAC1", "TMIN2_UKAC1", "TMIN3_CDLC1", 
-                          "TMIN4_LSEC1", "TMIN5_BSCC1", "TMIN6_LAMC1", "TMIN7_SKPC1", "TMIN8_SSAC1")
-CNRFC_Empty[,1] <- as.Date(CNRFC_Empty$Date, format = "%m.%d.%Y")
-CNRFC_Empty[,2:32] <- lapply(CNRFC_Empty[,2:32], as.numeric)
+                          "PRECIP13_GUEC1", "PRECIP14_LSEC1", "PRECIP15_GUEC1")
 
+#Rename CNRFC_Empty and sum_CNRFC_Precip to df_empty and df for simplicity
+df_empty <- CNRFC_Empty
+df <- sum_CNRFC_Precip
+df_empty$Date =df$Date
 
+##Fill in df_empty with corresponding columns from df----
+#Manual Approach
+ # df_empty$PRECIP1_UKAC1 = df$UKAC1
+ # df_empty$PRECIP2_LAMC1 = df$LAMC1
+ # df_empty$PRECIP3_UKAC1 = df$UKAC1
+ # df_empty$PRECIP4_HOPC1 = df$HOPC1
+ # df_empty$PRECIP5_UKAC1 = df$UKAC1
+ # df_empty$PRECIP6_HOPC1 = df$HOPC1
+ # df_empty$PRECIP7_HOPC1 = df$HOPC1
+ # df_empty$PRECIP8_CDLC1 = df$CDLC1
+ # df_empty$PRECIP9_KCVC1 = df$KCVC1
+ # df_empty$PRECIP10_HEAC1 = df$HEAC1
+ # df_empty$PRECIP11_RMKC1 = df$RMKC1
+ # df_empty$PRECIP12_MWEC1 = df$MWEC1
+ # df_empty$PRECIP13_GUEC1 = df$GUEC1
+ # df_empty$PRECIP14_LSEC1 = df$LSEC1
+ # df_empty$PRECIP15_GUEC1 = df$GUEC1
 
-
+#Loop Approach from ChatGPT
+ for (i in 2:ncol(df_empty)) {
+   col_name <- colnames(df_empty)[i]
+   match_str <- sub(".*_", "", col_name)
+   col_indices <- grep(match_str, colnames(df))
+   if (length(col_indices) > 0) {
+     df_empty[, i] <- df[, col_indices[1]]
+   }
+ }
+ 
+#Create Final CNRFC_Processed.csv
+CNRFC_Precip_Final = df_empty
+CNRFC_Temp_Final = CNRFC_Temp
+CNRFC_Temp_Final$Date <- as.Date(CNRFC_Temp_Final$Date, format="%m/%d/%Y")
+CNRFC_Processed = merge(CNRFC_Precip_Final, CNRFC_Temp_Final, by = "Date")
+str(CNRFC_Processed)
+write.csv(CNRFC_Processed, here("ProcessedData/CNRFC_Processed.csv"), row.names = FALSE)
