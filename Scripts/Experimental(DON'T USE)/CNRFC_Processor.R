@@ -7,19 +7,19 @@ filenames <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\cs
 setwd(here("WebData"))
 for (i in filenames){
   # Read in CSV file
-  df <- read.csv(i)
+  CNRFC_Precip <- read.csv(i)
   
   # Extract partial filename
   partial_filename <- gsub("_temperaturePlot.csv", "", i)
   
   #Read in CSV file
-  df <- read.csv(i)
+  CNRFC_Precip <- read.csv(i)
   
   #Add partial filename as a new column
-  df$filename <- partial_filename
+  CNRFC_Precip$filename <- partial_filename
   
   # Assign the modified dataframe to a variable with the same name as the file
-  assign(partial_filename, df)
+  assign(partial_filename, CNRFC_Precip)
 }
 
 #Reformat CNRC Temp data to match DAT File format----
@@ -48,7 +48,7 @@ CNRFC_Temp <- CNRFC_Temp %>%
 
 CNRFC_Temp
 #Export CNRFC_Temp to CSV
-write.csv(CNRFC_Temp, here("ProcessedData/CNRFC_Temp_Processed.csv"), row.names = FALSE)
+#write.csv(CNRFC_Temp, here("ProcessedData/CNRFC_Temp_Processed.csv"), row.names = FALSE)
 
 #Pivot CNRFC_Temp so that each station appears as a separate column
 CNRFC_Temp <- pivot_wider(CNRFC_Temp, names_from = Station, values_from = c("Tmin", "Tmax"))
@@ -68,6 +68,10 @@ FinalNames <- c("Date", "HEAC1_TMAX1", "UKAC1_TMAX2", "CDLC1_TMAX3", "LSEC1_TMAX
 
 colnames(CNRFC_Temp) = FinalNames
 CNRFC_Temp
+
+#Restrict CNRFC_Temp to the 3/23/2023 - 3/28/2023 date range
+CNRFC_Temp$Date <- as.Date(CNRFC_Temp$Date, format = "%m.%d.%Y")
+CNRFC_Temp <- CNRFC_Temp[6:11,] #this line may have to be manually adjusted depending on the original dataset
 
 #CNRFC Precipitation Data Formatting
 ##Import raw CNRFC precipitation data----
@@ -103,20 +107,47 @@ CNRFC_Precip_Stations <-CNRFC_Precip_Stations[,1] %>% data.frame()
 colnames(CNRFC_Precip_Stations) = c("Station")
 
 #Filter CNRFC_Precip_Russian to just the final CNRFC Precip Stations
-CNRFC_Precip_Final <- inner_join(x = CNRFC_Precip_Russian, y = CNRFC_Precip_Stations, by = "Station")
+CNRFC_Precip <- inner_join(x = CNRFC_Precip_Russian, y = CNRFC_Precip_Stations, by = "Station")
 
 #Remove the Forecast_Group and Station_Name columns
-CNRFC_Precip_Final <- select(CNRFC_Precip_Final, -c("Station_Name", "Forecast_Group"))
+CNRFC_Precip <- select(CNRFC_Precip, -c("Station_Name", "Forecast_Group"))
 
 #Convert precipitation from inches to mm
-CNRFC_Precip_Final[, 2:26] <- apply(CNRFC_Precip_Final[,2:26], 2, as.numeric)
-CNRFC_Precip_Final[, 2:26] <- CNRFC_Precip_Final[, 2:26]*25.4
+CNRFC_Precip[, 2:26] <- apply(CNRFC_Precip[,2:26], 2, as.numeric)
+CNRFC_Precip[, 2:26] <- CNRFC_Precip[, 2:26]*25.4
 
-#Convert column names to Date format
-#Aggregate data by calendar day and station
-#Rename column names
+#Remove the final 3 columns so that we just have the 03/23/2023 - 03/28/2023 timeframe
+CNRFC_Precip <- CNRFC_Precip[, 1:23]
+CNRFC_Precip <- t(CNRFC_Precip) %>% data.frame()
+colnames(CNRFC_Precip) <- CNRFC_Precip[1, ]
+CNRFC_Precip <- CNRFC_Precip[-1, ]
+CNRFC_Precip$Date <- rownames(CNRFC_Precip)
+row.names(CNRFC_Precip) <- NULL
+CNRFC_Precip <- cbind(CNRFC_Precip[, 11], CNRFC_Precip[, -11])
+colnames(CNRFC_Precip)[1] = "Date"
+CNRFC_Precip$Date = substr(CNRFC_Precip$Date, 2,11)
 
-##Export CNRFC_Precip_Final to CSV----
-write.csv(CNRFC_Precip_Final, here("ProcessedData/CNRFC_Precip_Processed.csv"), row.names = FALSE)
+#Convert Date column to Date format
+CNRFC_Precip$Date <- as.Date(CNRFC_Precip$Date, format = "%m.%d.%Y")
+
+#Convert station columns to numeric format
+CNRFC_Precip[, -1] <- lapply(CNRFC_Precip[,-1], as.numeric)
+
+#Sum precipitation data by Station and Date
+sum_CNRFC_Precip <- aggregate(CNRFC_Precip[, -1], by = list(Date = CNRFC_Precip$Date), FUN = sum)
+
+#Create empty dataframe with CNRFC columns in right order
+CNRFC_Empty <- matrix(data = "", nrow= nrow(sum_CNRFC_Precip), ncol = 32) %>% data.frame()
+colnames(CNRFC_Empty) = c("Date","PRECIP1_UKAC1", "PRECIP2_LAMC1", "PRECIP3_UKAC1", "PRECIP4_HOPC1", 
+                          "PRECIP5_UKAC1", "PRECIP6_HOPC1", "PRECIP7_HOPC1", "PRECIP8_CDLC1", 
+                          "PRECIP9_KCVC1", "PRECIP10_HEAC1", "PRECIP11_RMKC1", "PRECIP12_MWEC1", 
+                          "PRECIP13_GUEC1", "PRECIP14_LSEC1", "PRECIP15_GUEC1", "TMAX1_HEAC1", 
+                          "TMAX2_UKAC1", "TMAX3_CDLC1", "TMAX4_LSEC1", "TMAX5_BSCC1", "TMAX6_LAMC1", 
+                          "TMAX7_SKPC1", "TMAX8_SSAC1", "TMIN1_HEAC1", "TMIN2_UKAC1", "TMIN3_CDLC1", 
+                          "TMIN4_LSEC1", "TMIN5_BSCC1", "TMIN6_LAMC1", "TMIN7_SKPC1", "TMIN8_SSAC1")
+CNRFC_Empty[,1] <- as.Date(CNRFC_Empty$Date, format = "%m.%d.%Y")
+CNRFC_Empty[,2:32] <- lapply(CNRFC_Empty[,2:32], as.numeric)
+
+
 
 
