@@ -28,7 +28,9 @@ Dat_order = c("Year","month","day","h","m","s","DOWNSIZER_PRECIP1","DOWNSIZER_PR
               "DOWNSIZER_PRECIP14","DOWNSIZER_PRECIP15","DOWNSIZER_TMAX1","DOWNSIZER_TMAX2","CIMIS_TMAX3",
               "CIMIS_TMAX4","RAWS_TMAX5","DOWNSIZER_TMAX6","RAWS_TMAX7","RAWS_TMAX8","DOWNSIZER_TMIN1",
               "DOWNSIZER_TMIN2","CIMIS_TMIN3","CIMIS_TMIN4","RAWS_TMIN5","DOWNSIZER_TMIN6","RAWS_TMIN7",
-              "RAWS_TMIN8")
+              "RAWS_TMIN8","Runoff1","Runoff2","Runoff3","Runoff4","Runoff5","Runoff6","Runoff7","Runoff8",
+              "Runoff9","Runoff10","Runoff11","Runoff12","Runoff13","Runoff14","Runoff15","Runoff16",
+              "Runoff17","Runoff18","Runoff19","Runoff20","Runoff21","Runoff22")
 Dat_Final = Dat_Final[, Dat_order]
 
 #Write to CSV----
