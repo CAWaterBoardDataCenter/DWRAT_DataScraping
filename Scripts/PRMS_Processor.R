@@ -53,5 +53,5 @@ write.csv(URR_monthly, here("ProcessedData/URR_2023-04.csv"), row.names = FALSE)
 
 #Export CSV for use in LRR model
 #LRR DWRAT mode
-#LRR model will use Basins 14-28; Basisn 14-22 are derived from PRMS, 23-28 from SRP
+#LRR model will use Basins 14-28; Basins 14-22 are derived from PRMS, 23-28 from SRP
 
