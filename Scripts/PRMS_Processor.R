@@ -40,8 +40,15 @@ RR_Subset_Summed <- RR_Subset_Summed[, RR_Order]
 #Set first cell equal to ModelMonth
 RR_Subset_Summed[1,1] ="04/01/2023"
 
-##Export CSv for use in URR model----
+
+#SRP Processor----
+#This code modifies the outputs of the Santa Rosa Plains model into the format required by the flows spreadsheet
+#Export CSv for use in URR DWRAT model----
+#URR DWRAT model will use Basins 1-13, all derived from PRMS
 URR_monthly <- RR_Subset_Summed[,1:14]
 write.csv(URR_monthly, here("ProcessedData/URR_2023-04.csv"), row.names = FALSE) #rename CSV as needed to reflect current month
 
+#Export CSV for use in LRR model
+#LRR DWRAT mode
+#LRR model will use Basins 14-28; Basisn 14-22 are derived from PRMS, 23-28 from SRP
 
