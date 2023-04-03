@@ -20,6 +20,9 @@ colnames(RR) <- RR_Headers
 RR$Date <- as.Date(RR$Date)
 RR_Subset <- subset(RR, Date>= "2023-04-01" & Date <= "2023-04-30")
 
+#Write RR_Subset to ProcessedData Folder
+write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
+
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
 AFD <- 3600*24/43560 #3600 seconds/hr, 24 hrs/day, 1 acre-ft/ 43560 ft^3

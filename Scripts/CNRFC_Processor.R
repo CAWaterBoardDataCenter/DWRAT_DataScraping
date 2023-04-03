@@ -53,7 +53,7 @@ CNRFC_Temp
 
 #Pivot CNRFC_Temp so that each station appears as a separate column
 CNRFC_Temp <- pivot_wider(CNRFC_Temp, names_from = Station, values_from = c("Tmin", "Tmax"))
-CNRFC_Temp
+CNRFC_Temp[,2:17] <- (CNRFC_Temp[,2:17]-32)*5/9
 
 #Rearrange CNRFC_Temp columns to match the order in the DAT_File
 col_order_temp <- c("Date", "Tmax_HEAC1", "Tmax_UKAC1", "Tmax_CDLC1", 
@@ -73,6 +73,9 @@ CNRFC_Temp
 
 #Restrict CNRFC_Temp to the 3/23/2023 - 3/28/2023 date range
 CNRFC_Temp <- CNRFC_Temp[6:11,] #this line may have to be manually adjusted depending on the original dataset
+
+#Convert Temperature to Celsius
+
 
 #CNRFC Precipitation Data Formatting
 ##Import raw CNRFC precipitation data----
