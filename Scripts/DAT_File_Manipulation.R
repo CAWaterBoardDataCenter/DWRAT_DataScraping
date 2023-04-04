@@ -23,5 +23,8 @@ Dat_Shell5$Date = NULL
 col_order <- colnames(Dat_Shell[-7]) #grab the column names from Dat_Shell except for Date
 Dat_Final = Dat_Shell5[,col_order]
 
-#Write to CSV----
-write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"), row.names = FALSE)
+#Write to tab-delimited text file----
+write.table(Dat_Final, here("ProcessedData/Dat_Final_2023-03-27.txt"), sep="\t", row.names=F, quote = F)
+
+#Write to CSV
+# write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"), row.names = FALSE)

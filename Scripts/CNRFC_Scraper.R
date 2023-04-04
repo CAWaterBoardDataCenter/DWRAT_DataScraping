@@ -51,7 +51,7 @@ rs_driver_object <-rsDriver(
 remDr <- rs_driver_object$client
 
 ##Navigate to CNRFC Temperature website----
-for (i in 1:8){
+for (i in 1:9){
 CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
 remDr$navigate(CNRFC)
 

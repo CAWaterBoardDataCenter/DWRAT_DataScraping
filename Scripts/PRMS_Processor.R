@@ -20,6 +20,9 @@ colnames(RR) <- RR_Headers
 RR$Date <- as.Date(RR$Date)
 RR_Subset <- subset(RR, Date>= "2023-04-01" & Date <= "2023-04-30")
 
+#Write RR_Subset to ProcessedData Folder
+write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
+
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
 AFD <- 3600*24/43560 #3600 seconds/hr, 24 hrs/day, 1 acre-ft/ 43560 ft^3
@@ -40,7 +43,6 @@ RR_Subset_Summed <- RR_Subset_Summed[, RR_Order]
 #Set first cell equal to ModelMonth
 RR_Subset_Summed[1,1] ="04/01/2023"
 
-
 #SRP Processor----
 #This code modifies the outputs of the Santa Rosa Plains model into the format required by the flows spreadsheet
 #Export CSv for use in URR DWRAT model----
@@ -50,5 +52,5 @@ write.csv(URR_monthly, here("ProcessedData/URR_2023-04.csv"), row.names = FALSE)
 
 #Export CSV for use in LRR model
 #LRR DWRAT mode
-#LRR model will use Basins 14-28; Basisn 14-22 are derived from PRMS, 23-28 from SRP
+#LRR model will use Basins 14-28; Basins 14-22 are derived from PRMS, 23-28 from SRP
 
