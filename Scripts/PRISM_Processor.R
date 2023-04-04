@@ -7,8 +7,10 @@ library(lubridate)
 
 #PRISM Precipitation Data Manipulation----
 #Import PRISM_Precipitation.csv by skipping first 10 rows
-ndays = 68
-PP <- read.csv(here("WebData/PRISM_Precipitation.csv"), skip = 10, header = T)
+ndays = 71
+PP <- read.csv(here("WebData/PRISM_Precip_Raw.csv"), skip = 10, header = T)
+
+#Rename columns as needed
 names(PP)[1] = "Station"
 names(PP)[6] = "ppt"
 
@@ -17,7 +19,6 @@ PP = select(PP, c("Station", "Date", "ppt"))
 #Pivot PP so that each station becomes a separate column
 PP <- pivot_wider(PP, id_cols = Date, names_from = Station, values_from = ppt)
 
-##create separate dataframes for each Prism precipitation station----
 #Create a vector consisting of each station's new name
 PP_NewNames <- c("Date", "PP_PRECIP1", "PP_PRECIP2", "PP_PRECIP3", "PP_PRECIP4", "PP_PRECIP5", 
               "PP_PRECIP6", "PP_PRECIP7", "PP_PRECIP8", "PP_PRECIP9", "PP_PRECIP10", 
@@ -26,12 +27,9 @@ PP_NewNames <- c("Date", "PP_PRECIP1", "PP_PRECIP2", "PP_PRECIP3", "PP_PRECIP4",
 PP_OldNames <- unique(PP) #vector of unique Prism station names
 colnames(PP) = PP_NewNames
 
-#Export PP to CSV
-write.csv(here("WebData/PRISM_Precipitation.csv", row.names = FALSE))
-
 #PRISM Temperature Data Manipulation----
 #Import Prism_Temp.csv by skipping first 10 rows
-PT <- read.csv(here("WebData/PRISM_Temperature.csv"), skip = 10, header = T)
+PT <- read.csv(here("WebData/PRISM_Temp_Raw.csv"), skip = 10, header = T)
 names(PT)[c(1, 6, 7)] <- c("Station", "Tmin", "Tmax")
 
 #Remove unnecessary columns
@@ -45,7 +43,7 @@ PT_NewNames <- c("Date", "PT_TMIN1", "PT_TMIN2", "PT_TMIN3", "PT_TMIN4",
                  "PT_TMAX1", "PT_TMAX2", "PT_TMAX3", "PT_TMAX4", 
                  "PT_TMAX5", "PT_TMAX6", "PT_TMAX7", "PT_TMAX8")
 
-PT_OldNames <-unique(PT$Name)
+PT_OldNames <-unique(PT)
 
 #Replace Old Prism station names with new names
 colnames(PT) = PT_NewNames

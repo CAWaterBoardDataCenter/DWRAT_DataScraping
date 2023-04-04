@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "16", "2023", as.Date("2023-03-16"))
+EndDate = data.frame("March", "22", "2023", as.Date("2023-03-22"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -36,7 +36,7 @@ eCaps <- list(
     )
 )
 remDr <- rs_driver_object$client
-remDr$open()
+# remDr$open()
 
 #Create a list to hold CIMIS dataframes
 DF_List <- list()
@@ -56,12 +56,12 @@ StartDay$sendKeysToElement(list(StartDate$day))
 StartYear <- remDr$findElement(using = "name", value = "FROMYEAR")
 StartYear$sendKeysToElement(list(StartDate$year))
 
-EndMonth <- remDr$findElement(using = "name", value = "THRUMONTH")
-EndMonth$sendKeysToElement(list(EndDate$month))
-EndDay <-remDr$findElement(using = "name", value = "THRUDAY")
-EndDay$sendKeysToElement(list(EndDate$day))
-EndYear <-remDr$findElement(using = "name", value = "THRUYEAR")
-EndYear$sendKeysToElement(list(EndDate$year))
+# EndMonth <- remDr$findElement(using = "name", value = "THRUMONTH")
+# EndMonth$sendKeysToElement(list(EndDate$month))
+# EndDay <-remDr$findElement(using = "name", value = "THRUDAY")
+# EndDay$sendKeysToElement(list(EndDate$day))
+# EndYear <-remDr$findElement(using = "name", value = "THRUYEAR")
+# EndYear$sendKeysToElement(list(EndDate$year))
 
 #Use no backups
 Backups <- remDr$findElement(using = "name", value = "NONE")
@@ -151,21 +151,50 @@ CIMIS_Hopland_85$Date = gsub("-", "", CIMIS_Hopland_85$Date) # remove dashes fro
 ##Consolidate the CIMIS datasets into a single dataframe----
 list_df = list(CIMIS_Hopland_85, CIMIS_Sanel_Valley_106, CIMIS_Santa_Rosa_83, CIMIS_Windsor_103)
 CIMIS_Processed = list_df %>% reduce(inner_join, by='Date')
-CIMIS_Names = c("Date", "Hopland", "Hopland_85_PRECIP6", "Sanel Valley", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa Rosa", 
-                "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4", "Windsor", "Windsor_103_PRECIP12")
+# CIMIS_Names = c("Date", "Hopland", "Hopland_85_PRECIP6", "Sanel Valley",
+#                 "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa Rosa",
+#                 "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4", "Windsor", "Windsor_103_PRECIP12")
+CIMIS_Names = c("Date", "Hopland", "CIMIS_PRECIP6", "Sanel Valley", "CIMIS_TMAX3", "CIMIS_TMIN3", 
+                "Santa Rosa", "CIMIS_TMAX4", "CIMIS_TMIN4", "Windsor", "CIMIS_PRECIP12")
 colnames(CIMIS_Processed) = CIMIS_Names
 colnames(CIMIS_Processed)
 CIMIS_Processed = select(CIMIS_Processed, -c("Hopland", "Sanel Valley", "Santa Rosa", "Windsor"))
-col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3", "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
+# col_order = c("Date", "Hopland_85_PRECIP6", "Windsor_103_PRECIP12", "Sanel_Valley_106_TMAX3",
+#               "Sanel_Valley_106_TMIN3", "Santa_Rosa_83_TMAX4", "Santa_Rosa_83_TMIN4")
+col_order = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
+              "CIMIS_TMAX4","CIMIS_TMIN3", "CIMIS_TMIN4")
 CIMIS_Processed = CIMIS_Processed[,col_order]
 CIMIS_Processed
 
 #Replace all missing values with -999
 CIMIS_Processed[CIMIS_Processed == ""] = -999
 
+#End RSelenium process
+system("taskkill /im java.exe /f")
+
+#BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
+#Replace missing values with PRISM data
+#Works only if columns are same in number and order; column names don't need to match
+Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
+PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12",
+                                 "PT_TMAX3","PT_TMAX4","PT_TMIN3","PT_TMIN4")]
+CIMIS_Processed[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
+
+#Change Date format to match DAT_Shell Date format
+CIMIS_Processed$Date = as.character(CIMIS_Processed$Date)
+CIMIS_Processed$Date = as.Date(CIMIS_Processed$Date, format = "%Y%m%d")
+
+#Combining CIMIS data with CNRFC data
+CNRFC_Processed <- read.csv(here("ProcessedData/CNRFC_Processed.csv"))
+CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP6_HOPC1","PRECIP12_MWEC1",
+                                 "TMAX3_CDLC1","TMIN3_CDLC1","TMAX4_LSEC1","TMIN4_LSEC1")]
+#Rename CNRFC Columns to match CIMIS names to bind the datasets 
+CNRFC_Names = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
+                "CIMIS_TMAX4","CIMIS_TMIN3", "CIMIS_TMIN4")
+colnames(CNRFC_cols) = CNRFC_Names
+# rbind() put scraped data first, CNRFC data second
+CIMIS_Processed <- rbind(CIMIS_Processed,CNRFC_cols)
+
 ##Export Dataframes to CSVs----
 write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
-# write.csv(CIMIS_Windsor_103, here("ProcessedData/CIMIS_PRECIP12.csv"), row.names = FALSE)
-# write.csv(CIMIS_Sanel_Valley_106, here("ProcessedData/CIMIS_TEMP3.csv"), row.names = FALSE)
-# write.csv(CIMIS_Santa_Rosa_83, here("ProcessedData/CIMIS_TEMP4.csv"), row.names = FALSE)
-# write.csv(CIMIS_Hopland_85, here("ProcessedData/CIMIS_PRECIP6.csv"), row.names = FALSE)
+
