@@ -75,7 +75,7 @@ CNRFC_Temp
 CNRFC_Temp <- CNRFC_Temp[6:11,] #this line may have to be manually adjusted depending on the original dataset
 
 #Convert Temperature to Celsius
-
+CNRFC_Temp[,2:17] <- (CNRFC_Temp[,2:17] - 32) * 5/9
 
 #CNRFC Precipitation Data Formatting
 ##Import raw CNRFC precipitation data----
