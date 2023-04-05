@@ -1,3 +1,6 @@
+#Last Updated By: Payman Alemi
+#Last Updated On: 4/4/2023
+
 #Load libraries
 library(here)
 library(dplyr)
@@ -57,7 +60,7 @@ CNRFC_Precip_SRP <- CNRFC_Precip_SRP[, c(3,1,2)]
 CNRFC_Precip_SRP[, -1] <- lapply(CNRFC_Precip_SRP[,-1], as.numeric)
 
 #Sup precipitation datate by Station and Date
-sum_SRP <- aggregate(CNRFC_Precip_SRP[,-1], by = list(Date = CNRFC_Precip_SRP$Date),FUN = sum)
+CNRFC_Precip_SRP <- aggregate(CNRFC_Precip_SRP[,-1], by = list(Date = CNRFC_Precip_SRP$Date),FUN = sum)
 
 #Reformat the CNRFC Temperature Data----
 #Import the MWEC1 and LSEC1 CSVs
@@ -65,8 +68,8 @@ MWEC1 <- read.csv(here("WebData/MWEC1_temperaturePlot.csv"))
 LSEC1 <- read.csv(here("WebData/LSEC1_temperaturePlot.csv"))
 
 #Add Station column to each dataframe
-MWEC1$Station = "MWEC1"
-LSEC1$Station = "LSEC1"
+MWEC1$Station = "MWEC1" #CIMIS 103 Sebastopol
+LSEC1$Station = "LSEC1" #CIMIS 83 Santa Rosa
 
 #Combine the MWEC1 and LSEC1 dataframes
 SRP_Temp <- rbind(MWEC1, LSEC1)
@@ -92,26 +95,21 @@ SRP_Temp <- SRP_Temp %>%
   group_by(Date, Station) %>%
   summarise(Tmin = min(Temp), Tmax = max(Temp))
 
-SRP_Temp
-
 #Pivot SRP_Temp so that each station appears as a separate column
 SRP_Temp <- pivot_wider(SRP_Temp, names_from = Station, values_from = c("Tmin", "Tmax"))
 col_order_temp <- c("Date", "Tmax_LSEC1", "Tmax_MWEC1", "Tmin_LSEC1", "Tmin_MWEC1")
-SRP_Temp <- SRP_Temp2[, col_order_temp]
-FinalNames <- c("Date", "TMAX1_LSEC1", "TMAX_MWEC1", "TMIN_LSEC1", "TMIN_MWEC1")
-
-colnames(SRP_Temp) = FinalNames
+SRP_Temp <- SRP_Temp[, col_order_temp]
 
 #Create Final CNRFC_SRP_Processed.csv----
 #Match the date formats in SRP_Temp and sum_SRP
 SRP_Temp$Date <- as.Date(SRP_Temp$Date, format ="%m/%d/%Y")
-SRP_Processed <- merge(SRP_Temp, sum_SRP, by = "Date")
+SRP_Processed <- merge(SRP_Temp, CNRFC_Precip_SRP, by = "Date")
 
 #Rename precipitation columns in SRP_Processed
-colnames(SRP_Processed)[6:7] = c("PPT_LSEC1", "PPT_MWEC1")
 
 #Rearrange columns in SRP_Processed
-SRP_Processed <- SRP_Processed[,c(1,6,2,4,3,5,7)]
-
+SRP_Processed <- SRP_Processed[,c(1,6,2,4,7,3,5)]
+colnames(SRP_Processed) = c("Date", "CIMIS_083_Ppt", "CIMIS_083_Tmax", "CIMIS_083_Tmin", 
+                            "CIMIS_103_Ppt", "CIMIS_103_Tmax", "CIMIS_103_Tmin")
 #Write CSV
 write.csv(SRP_Processed, here("ProcessedData/CNRFC_SRP_Processed.csv"), row.names = FALSE)
