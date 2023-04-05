@@ -43,7 +43,7 @@ PT_NewNames <- c("Date", "PT_TMIN1", "PT_TMIN2", "PT_TMIN3", "PT_TMIN4",
                  "PT_TMAX1", "PT_TMAX2", "PT_TMAX3", "PT_TMAX4", 
                  "PT_TMAX5", "PT_TMAX6", "PT_TMAX7", "PT_TMAX8")
 
-PT_OldNames <-unique(PT$Name)
+PT_OldNames <-unique(PT)
 
 #Replace Old Prism station names with new names
 colnames(PT) = PT_NewNames
