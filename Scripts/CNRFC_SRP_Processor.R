@@ -106,10 +106,10 @@ SRP_Temp$Date <- as.Date(SRP_Temp$Date, format ="%m/%d/%Y")
 SRP_Processed <- merge(SRP_Temp, CNRFC_Precip_SRP, by = "Date")
 
 #Rename precipitation columns in SRP_Processed
-colnames(SRP_Processed)[6:7] = c("PPT_LSEC1", "PPT_MWEC1")
 
 #Rearrange columns in SRP_Processed
-SRP_Processed <- SRP_Processed[,c(1,6,2,4,3,5,7)]
-
+SRP_Processed <- SRP_Processed[,c(1,6,2,4,7,3,5)]
+colnames(SRP_Processed) = c("Date", "CIMIS_083_Ppt", "CIMIS_083_Tmax", "CIMIS_083_Tmin", 
+                            "CIMIS_103_Ppt", "CIMIS_103_Tmax", "CIMIS_103_Tmin")
 #Write CSV
 write.csv(SRP_Processed, here("ProcessedData/CNRFC_SRP_Processed.csv"), row.names = FALSE)
