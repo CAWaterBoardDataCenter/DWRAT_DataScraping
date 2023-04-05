@@ -44,7 +44,6 @@ rs_driver_object <-rsDriver(
 remDr <- rs_driver_object$client
 
 #Input Data----
-
 #Import RAWS stations
 Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
@@ -163,7 +162,6 @@ WeatherDataBody <- split(WeatherDataBody,rep(1:ndays,each=8)) %>%
 DF_List[[i]] <- WeatherDataBody 
 }
 
-
 #Name the individual RAWS dataframes in the list
 names(DF_List) <- lapply(seq_along(DF_List),
                          function(i) names(DF_List)[[i]] = paste0("RAWS_", Stations$Station[i]))
@@ -194,7 +192,7 @@ names(RAWS_CLYO)[8] = "RAWS_PRECIP4"
 names(RAWS_CHAW)[6] = "RAWS_TMAX5"
 names(RAWS_CHAW)[7] = "RAWS_TMIN5"
 names(RAWS_CHAW)[8] = "RAWS_PRECIP9"
-names(RAWS_CSRS)[6]= "RAWS_TMAX8"
+names(RAWS_CSRS)[6] = "RAWS_TMAX8"
 names(RAWS_CSRS)[7] = "RAWS_TMIN8"
 
 #Consolidate all RAWS dataframes into 1 dataframe----
@@ -205,33 +203,32 @@ RAWS_Processed = list_df %>% reduce(inner_join, by = "Date")
 RAWS_Processed = select(RAWS_Processed,c("Date", "RAWS_TMAX7", "RAWS_TMIN7", 
                                          "RAWS_PRECIP4", "RAWS_TMAX5", "RAWS_TMIN5", 
                                          "RAWS_PRECIP9", "RAWS_TMAX8", "RAWS_TMIN8", 
-                                         "RAWS_PRECIP7")
-)
-
+                                         "RAWS_PRECIP7"))
 #Rearrange columns
 col_order = c("Date", "RAWS_PRECIP4", "RAWS_PRECIP7", 
               "RAWS_PRECIP9", "RAWS_TMAX5", "RAWS_TMAX7", 
               "RAWS_TMAX8", "RAWS_TMIN5", "RAWS_TMIN7", "RAWS_TMIN8")
 RAWS_Processed = RAWS_Processed[, col_order]
 
-#Add March 22, 2023 data manually to cSV
+#End RSelenium process
+Sys.sleep(2)
+remDr$closeWindow()
+system("taskkill /im java.exe /f")
 
 #Replace missing values with PRISM data----
 #Only run lines 217- if you already have the RAWS_Processed.csv downloaded; 
 #if so, you don't need to run lines 1-215 again
 #Import PRISM_Processed
-
 Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
 #Subset PP to just the RAWS columns
 #Works only if columns are same in number and order; column names don't need to match
-
 PRISM_cols <- Prism_Processed[c("Date", "PP_PRECIP4", "PP_PRECIP7", 
                                    "PP_PRECIP9", "PT_TMAX5", "PT_TMAX7", 
                                    "PT_TMAX8", "PT_TMIN5", "PT_TMIN7", "PT_TMIN8")]
 RAWS_Processed[RAWS_Processed == -999] <- PRISM_cols[RAWS_Processed == -999]
-                                                    
+
 #Combining RAWS data with CNRFC data----
-RAWS_Processed <- RAWS_Processed[-72,] #remove 3/23/2023 data because it conflicts with cNRFC
+# RAWS_Processed <- RAWS_Processed[-72,] #remove 3/23/2023 data because it conflicts with cNRFC
 RAWS_Processed$Date = as.Date(RAWS_Processed$Date, format = "%m/%d/%Y")
 CNRFC_Processed <- read.csv(here("ProcessedData/CNRFC_Processed.csv"))
 
@@ -242,12 +239,10 @@ CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP4_HOPC1","PRECIP7_HOPC1", "PRECIP
 #Rename CNRFC Columns to match RAWS names to bind the datasets 
 CNRFC_Names = c("Date", "RAWS_PRECIP4", "RAWS_PRECIP7", "RAWS_PRECIP9",
                 "RAWS_TMAX5", "RAWS_TMAX7", "RAWS_TMAX8", "RAWS_TMIN5", "RAWS_TMIN7", "RAWS_TMIN8")
-
 colnames(CNRFC_cols) = CNRFC_Names
-# rbind() put scraped data first, CNRFC data second
+
+#rbind() put scraped data first, CNRFC data second
 RAWS_Processed <- rbind(RAWS_Processed,CNRFC_cols)
 
 #Write RAWS_Final to RAWS_Processed.csv----
 write.csv(RAWS_Processed, here("ProcessedData/RAWS_Processed.csv"), row.names = FALSE)
-
-
