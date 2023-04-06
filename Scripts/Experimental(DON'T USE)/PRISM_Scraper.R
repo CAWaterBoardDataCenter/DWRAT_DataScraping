@@ -1,18 +1,14 @@
 #SCRIPT LAST UPDATED:
     #BY: Marshall Knox
-    #ON: 4/05/2023
+    #ON: 4/06/2023
 
 #load packages ----
-library(RSelenium)
-library(rvest)
 library(tidyverse)
+library(RSelenium)
 library(netstat)
 library(here)
-library(dplyr)
-library(readr)
 
 #Define Date Range---- 
-#SEE LINE 71
 StartDate <- as.Date("2023-03-23")
 EndDate <- as.Date("2023-04-04")
 
@@ -68,29 +64,7 @@ Grid$clickElement()
 Daily <- remDr$findElement(using = "id", value = "tper_daily")
 Daily$clickElement()
 
-# # RUN THIS CHUNK if StartDay ≥ EndDay (e.g., 11 & 4 or 11 & 11)----
-# ################ COMMENT OUT THE OTHER CHUNK ################
-# StartDay <- remDr$findElement(using = "id", value = "tper_daily_start_day")
-# StartDay$sendKeysToElement(list(format(StartDate, "%d")))
-# 
-# StartMonth <- remDr$findElement(using = "id", value = "tper_daily_start_month")
-# StartMonth$sendKeysToElement(list(format(StartDate, "%B")))
-# 
-# StartYear <- remDr$findElement(using = "id", value = "tper_daily_start_year")
-# StartYear$sendKeysToElement(list(format(StartDate, "%Y")))
-# 
-# EndDay <-remDr$findElement(using = "id", value = "tper_daily_end_day")
-# EndDay$sendKeysToElement(list(format(EndDate, "%d")))
-# 
-# EndMonth <-remDr$findElement(using = "id", value = "tper_daily_end_month")
-# EndMonth$sendKeysToElement(list(format(EndDate, "%B")))
-# 
-# # EndYear <- remDr$findElement(using = "id", value = "tper_daily_end_year")
-# # EndYear$sendKeysToElement(list(format(EndDate, "%Y")))
-# #############################################################
-
-#OR RUN THIS CHUNK if Start Day < End Day (e.g., 4 & 23)----
-################ COMMENT OUT THE OTHER CHUNK ################
+#Set start and end date ranges
 StartMonth <- remDr$findElement(using = "id", value = "tper_daily_start_month")
 StartMonth$sendKeysToElement(list(format(StartDate, "%B")))
 
@@ -106,9 +80,9 @@ EndMonth$sendKeysToElement(list(format(EndDate, "%B")))
 StartDay <- remDr$findElement(using = "id", value = "tper_daily_start_day")
 StartDay$sendKeysToElement(list(format(StartDate, "%d")))
 
+#Do not need to input EndYear (if in current year) Just breaks date range
 # EndYear <- remDr$findElement(using = "id", value = "tper_daily_end_year")
 # EndYear$sendKeysToElement(list(format(EndDate, "%Y")))
-#############################################################
 
 Sys.sleep(2)
 
@@ -141,21 +115,22 @@ Download <- remDr$findElement(using = "id", value = "submitdown_button")
 Download$clickElement()
 
 Sys.sleep(4)
-
 #End RSelenium Process
 remDr$closeWindow()
 system("taskkill /im java.exe /f")
 
-#Rename raw PRISM scraped files----
-#Get the list of file names in the directory
-file_list <- list.files(path = here("WebData"))
+#Rename scraped PRISM raw files----
+#Get the list of file names in WebData
+web_data <- here("Webdata")
+file_list <- list.files(path = web_data)
+
 #Loop to find and rename "ppt" and "tm" files
 for (file_name in file_list) {
   if (grepl("ppt", file_name)) {
-    new_ppt_name <- "PRISM_Precip_Raw.csv"
-    file.rename(file.path(here("WebData"), file_name), file.path(here("WebData"), new_ppt_name))
+    new_ppt_name <- "PRISM_Precip_Raw_test.csv"
+    file.rename(file.path(web_data, file_name), file.path(web_data, new_ppt_name))
   } else if (grepl("tmin_tmax", file_name)) {
-    new_tm_name <- "PRISM_Temp_Raw.csv"
-    file.rename(file.path(here("WebData"), file_name), file.path(here("WebData"), new_tm_name))
+    new_tm_name <- "PRISM_Temp_Raw_test.csv"
+    file.rename(file.path(web_data, file_name), file.path(web_data, new_tm_name))
   }
 }
