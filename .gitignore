@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 WebData/
-
+Scripts/.RHistory
+Experimental/.RHistory
