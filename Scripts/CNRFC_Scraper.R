@@ -71,3 +71,8 @@ remDr$navigate(CNRFC)
 #Select 6-Day Basin QPF CSV
 CSVDownload <- remDr$findElement(using = "link text", value  = "6-Day Basin QPF")
 CSVDownload$clickElement()
+
+#End RSelenium process
+Sys.sleep(2)
+remDr$closeWindow()
+system("taskkill /im java.exe /f")
