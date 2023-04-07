@@ -75,9 +75,6 @@ CNRFC_Temp
 #Restrict CNRFC_Temp to the 3/23/2023 - 3/28/2023 date range
 CNRFC_Temp <- CNRFC_Temp[6:11,] #this line may have to be manually adjusted depending on the original dataset
 
-#Convert Temperature to Celsius
-CNRFC_Temp[,2:17] <- (CNRFC_Temp[,2:17] - 32) * 5/9
-
 #CNRFC Precipitation Data Formatting
 ##Import raw CNRFC precipitation data----
 CNRFC_Precip_Raw <- readr::read_csv(here::here("WebData/cnrfc_qpf.csv"), skip =1)
