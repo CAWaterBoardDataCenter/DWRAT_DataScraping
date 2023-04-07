@@ -9,8 +9,8 @@ library(netstat)
 library(here)
 
 #Define Date Range---- 
-StartDate <- as.Date("2023-03-23")
-EndDate <- as.Date("2023-04-04")
+StartDate <- as.Date("2023-01-11")
+EndDate <- as.Date("2023-04-05")
 
 #Set up RSelenium----
 ##Set Default download folder ----
@@ -127,10 +127,10 @@ file_list <- list.files(path = web_data)
 #Loop to find and rename "ppt" and "tm" files
 for (file_name in file_list) {
   if (grepl("ppt", file_name)) {
-    new_ppt_name <- "PRISM_Precip_Raw_test.csv"
+    new_ppt_name <- "PRISM_Precip_Raw.csv"
     file.rename(file.path(web_data, file_name), file.path(web_data, new_ppt_name))
   } else if (grepl("tmin_tmax", file_name)) {
-    new_tm_name <- "PRISM_Temp_Raw_test.csv"
+    new_tm_name <- "PRISM_Temp_Raw.csv"
     file.rename(file.path(web_data, file_name), file.path(web_data, new_tm_name))
   }
 }
