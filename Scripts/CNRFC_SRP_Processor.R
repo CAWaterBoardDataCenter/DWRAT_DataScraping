@@ -1,5 +1,5 @@
 #Last Updated By: Payman Alemi
-#Last Updated On: 4/4/2023
+#Last Updated On: 4/6/2023
 
 #Load libraries
 library(here)
@@ -108,8 +108,8 @@ SRP_Processed <- merge(SRP_Temp, CNRFC_Precip_SRP, by = "Date")
 #Rename precipitation columns in SRP_Processed
 
 #Rearrange columns in SRP_Processed
-SRP_Processed <- SRP_Processed[,c(1,6,2,4,7,3,5)]
-colnames(SRP_Processed) = c("Date", "CIMIS_083_Ppt", "CIMIS_083_Tmax", "CIMIS_083_Tmin", 
-                            "CIMIS_103_Ppt", "CIMIS_103_Tmax", "CIMIS_103_Tmin")
+SRP_Processed <- SRP_Processed[,c(1,6,4,2,7,5,3)]
+colnames(SRP_Processed) = c("Date", "CIMIS_083_ppt", "CIMIS_083_tmin", "CIMIS_083_tmax", 
+                            "CIMIS_103_ppt", "CIMIS_103_tmin", "CIMIS_103_tmax")
 #Write CSV
 write.csv(SRP_Processed, here("ProcessedData/CNRFC_SRP_Processed.csv"), row.names = FALSE)
