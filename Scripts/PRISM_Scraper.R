@@ -35,7 +35,7 @@ rs_driver_object <-rsDriver(
 
 remDr <- rs_driver_object$client
 
-#PRISM Precipitation Bulk Download----
+#PRMS PRISM Precip Bulk Download----
 URL = "https://prism.oregonstate.edu/explorer/bulk.php"
 remDr$navigate(URL)
 
@@ -92,7 +92,7 @@ Download$clickElement()
 
 Sys.sleep(2)
 
-#Input Temperature Stations
+# PRMS PRISM Temp Bulk Download----
 file_path_temp <- here("InputData/temp_fill_stations.csv")
 file_input$sendKeysToElement(list(file_path_temp))
 
@@ -114,12 +114,9 @@ Sys.sleep(2)
 Download <- remDr$findElement(using = "id", value = "submitdown_button")
 Download$clickElement()
 
-Sys.sleep(4)
-#End RSelenium Process
-remDr$closeWindow()
-system("taskkill /im java.exe /f")
+Sys.sleep(2)
 
-#Rename scraped PRISM raw files----
+#Rename PRMS PRISM raw files----
 #Get the list of file names in WebData
 web_data <- here("Webdata")
 file_list <- list.files(path = web_data)
@@ -129,8 +126,47 @@ for (file_name in file_list) {
   if (grepl("ppt", file_name)) {
     new_ppt_name <- "PRISM_Precip_Raw.csv"
     file.rename(file.path(web_data, file_name), file.path(web_data, new_ppt_name))
-  } else if (grepl("tmin_tmax", file_name)) {
+  } else if (grepl("PRISM_tmin", file_name)) {
     new_tm_name <- "PRISM_Temp_Raw.csv"
     file.rename(file.path(web_data, file_name), file.path(web_data, new_tm_name))
+  } 
+}
+
+#SRP PRISM Scraper----
+#Import Santa Rosa Plains Stations
+file_path_srp <- here("InputData/prism_srp_stations.csv")
+file_input <- remDr$findElement(using = "xpath", "//input[@type='file']")
+file_input$sendKeysToElement(list(file_path_srp))
+
+Sys.sleep(2)
+
+#Check Precipitation checkbox
+Precip_box <- remDr$findElement(using = "id", value = "cvar_ppt")
+Precip_box$clickElement()
+
+#English Units
+Units_English <-remDr$findElement(using = "id", value = "units_eng")
+Units_English$clickElement()
+
+Sys.sleep(2)
+
+#Prepare and Download Time Series
+Download <- remDr$findElement(using = "id", value = "submitdown_button")
+Download$clickElement()
+
+Sys.sleep(4)
+#End RSelenium Process
+remDr$closeWindow()
+system("taskkill /im java.exe /f")
+
+# Get the list of file names in WebData
+web_data <- here("Webdata")
+file_list <- list.files(path = web_data)
+
+#Rename SRP PRISM raw files----
+for (file_name in file_list) {
+  if (grepl("ppt_tmin_tmax", file_name)) {
+    new_ppt_name <- "PRISM_SRP_Raw.csv"
+    file.rename(file.path(web_data, file_name), file.path(web_data, new_ppt_name))
   }
 }
