@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Marshall Knox
-    #ON: 4/06/2023
+    #ON: 4/13/2023
 
 #load packages ----
 library(tidyverse)
@@ -126,7 +126,7 @@ for (file_name in file_list) {
   if (grepl("ppt", file_name)) {
     new_ppt_name <- "PRISM_Precip_Raw.csv"
     file.rename(file.path(web_data, file_name), file.path(web_data, new_ppt_name))
-  } else if (grepl("PRISM_tmin", file_name)) {
+  } else if (grepl("tmin_tmax", file_name)) {
     new_tm_name <- "PRISM_Temp_Raw.csv"
     file.rename(file.path(web_data, file_name), file.path(web_data, new_tm_name))
   } 
