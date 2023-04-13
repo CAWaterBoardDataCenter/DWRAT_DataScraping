@@ -1,5 +1,6 @@
 ## load packages
 library(tidyverse)
+library(lubridate)
 library(here)
 
 # import Gag Files----
@@ -28,12 +29,39 @@ gag <- Reduce(function(...) merge(..., by = "Date", all = TRUE), gag_list)
 
 # change timestep to date starting on 10/1/1974----
 start_date <- as.Date("1974-10-01")
-end_date <- as.Date("2023-09-30")
-date_seq <- seq(from = start_date, to = end_date, by = "day")
+# end_date <- as.Date("2023-09-30")
+date_seq <- seq(from = start_date, length.out = nrow(gag), by = "day")
 gag$Date <- date_seq[1:nrow(gag)]
 
+# create a subset for the timeframe of interest----
+gag <- subset(gag, Date>= "2023-1-01" & Date <= "2023-05-31")
+date_seq = gag$Date
+
+# gag manipulation----
+# read in percent reduction factors CSV
+reduct <- read.csv(here("InputData/srp_percent_reduction.csv"))
+
+# multiply gag columns by monthly reduction factor
+gag$Month <- month(gag$Date)
+gag <- merge(gag, reduct, by = "Month")
+
+# loop over the column names and multiply the corresponding columns
+for (i in 1:6) {
+  # match the column names with a regular expression
+  gag_col <- grep(paste0("^gag", i, "$"), names(gag), value = TRUE)
+  X_col <- grep(paste0("^X", i, "$"), names(gag), value = TRUE)
+  # multiply the corresponding columns and assign the result to a new column
+  gag[[paste0("flows", i)]] <- gag[[gag_col]] * gag[[X_col]]
+}
+
+# configure the dataframe so it is just date and flows columns
+gag_names <- colnames(gag[,2:8])
+gag <- gag[,-c(1,3:14)]
+colnames(gag) = gag_names
+
+# creating the final subbasin values----
 # create an empty dataframe with columns for date and subbasins 23-28
-basins <- data.frame(Date = date_seq)
+SRP <- data.frame(Date = date_seq)
 
 # create the data frames with mutate() and select()
 sub23 <- gag %>% select(Date, gag1) %>% 
@@ -57,13 +85,10 @@ sub28 <- gag %>% select(Date, gag3) %>%
 # bind the columns to the empty data frame
 for (i in 23:28) {
   sub_df <- get(paste0("sub", i))
-  basins <- merge(basins, sub_df, by = "Date")
+  SRP <- merge(SRP, sub_df, by = "Date")
 }
-# remove dataframes from environment
+# remove intermediaries from environment
 rm(sub23,sub24,sub25,sub26,sub27,sub28,sub_df)
 
-# create a subset for the timeframe of interest----
-SRP <- subset(basins, Date>= "2022-11-01" & Date <= "2023-09-30")
-
-# write subset data to CSV
+# write subset data to CSV----
 write.csv(SRP, here("ProcessedData/SRP_update_2023.04.05.csv"), row.names = FALSE)
