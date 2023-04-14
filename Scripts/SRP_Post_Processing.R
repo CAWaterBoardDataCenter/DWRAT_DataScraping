@@ -1,49 +1,112 @@
-#Last Updated By: Payman Alemi
-#Last Updated On: 4/11/2023
-
-#Load libraries
+## load packages
+library(tidyverse)
+library(lubridate)
 library(here)
-library(readr)
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(magrittr)
 
-#Import GAG Files----
-input_dir = here("ProcessedData")
-gag_files <- list.files(input_dir, pattern = "\\.gag$", full.names = TRUE)
+# import Gag Files----
+# set the column widths for the .gag file
+col_widths <- (c(20,16,16,16,16,16,16,16,16,16,16,16,16))
 
-# Convert each .gag file to a CSV in the same directory
-for (gag_file in gag_files) {
-  csv_file <- gsub("\\.gag$", ".csv", basename(gag_file))
-  csv_path <- file.path(dirname(gag_file), csv_file)
-  gag_data <- read.table(gag_file, header = TRUE, sep = "\t", na.strings = "NA", dec = ".", quote = "")
-  write.csv(gag_data, csv_path, row.names = FALSE)
+# import the .gag files - loop approach
+gag_list <- list()  # create an empty list to store the imported datasets
+for (i in 1:6) {
+  filename <- paste0("InputData/SRP_inflow_", i, ".gag")
+  gag <- read_fwf(here(filename), skip = 2, fwf_widths(col_widths))
+  gag_list[[i]] <- gag  # add the imported dataset to the list
+}
+# remove all columns but date and flows
+# define a function to modify the column names and subset the data
+modify_data <- function(df, index) {
+  colnames(df)[c(1, 3)] <- c("Date", paste0("gag", index))
+  df <- subset(df, select = c("Date", paste0("gag", index)))
+  return(df)
+}
+# use lapply to apply the function to each dataset in the list
+gag_list <- lapply(seq_along(gag_list), function(i) modify_data(gag_list[[i]], i))
+
+# combine the modified data frames into a single data frame
+gag <- Reduce(function(...) merge(..., by = "Date", all = TRUE), gag_list)
+
+# change timestep to date starting on 10/1/1974----
+start_date <- as.Date("1974-10-01")
+# end_date <- as.Date("2023-09-30")
+date_seq <- seq(from = start_date, length.out = nrow(gag), by = "day")
+gag$Date <- date_seq[1:nrow(gag)]
+
+# create a subset for the timeframe of interest----
+gag <- subset(gag, Date>= "2023-1-01" & Date <= "2023-05-31")
+date_seq = gag$Date
+
+# gag manipulation----
+# read in percent reduction factors CSV
+reduct <- read.csv(here("InputData/srp_percent_reduction.csv"))
+
+# multiply gag columns by monthly reduction factor
+gag$Month <- month(gag$Date)
+gag <- merge(gag, reduct, by = "Month")
+
+# loop over the column names and multiply the corresponding columns
+for (i in 1:6) {
+  # match the column names with a regular expression
+  gag_col <- grep(paste0("^gag", i, "$"), names(gag), value = TRUE)
+  X_col <- grep(paste0("^X", i, "$"), names(gag), value = TRUE)
+  # multiply the corresponding columns and assign the result to a new column
+  gag[[paste0("flows", i)]] <- gag[[gag_col]] * gag[[X_col]]
 }
 
-# Get a list of all .csv files in the input directory
-csv_files <- list.files(input_dir, pattern = "SRP_inflow.*\\.csv$", full.names = TRUE)
+# configure the dataframe so it is just date and flows columns
+gag_names <- colnames(gag[,2:8])
+gag <- gag[,-c(1,3:14)]
+colnames(gag) = gag_names
 
-# Define the  names and widths of each field in the fixed-width file format
-widths <- c(19,16,16,16,16,16,16,16,16,16,16,16,16)
-colnames = c("Time", "Stage", "Flow", "Depth", "Width", "Midpt-Flow", "Precip.", "ET", "SFR-Runoff",
-              "UZF-Runoff", "Conductance", "HeadDiff", "Hyd.Grad.")
+# creating the final subbasin values----
+# create an empty dataframe with columns for date and subbasins 23-28
+SRP <- data.frame(Date = date_seq)
 
-# Import each CSV file into a named list of data frames
+# create the data frames with mutate() and select()
+sub23 <- gag %>% select(Date, gag1) %>% 
+  mutate(sub23 = gag1) %>% select(Date = Date, sub23)
 
-# Loop through the CSV files
-for (i in 1:length(csv_files)) {
-  # Read CSV file
-  csv_data <- read.fwf(csv_files[i], widths = widths, col.names = colnames, header = TRUE, skip = 1)
-  
-  # Add date column incremented daily beginning on 10/1/1974
-  csv_data$Date <- seq(as.Date("1974-10-01"), by = "day", length.out = nrow(csv_data))
-  
-  # Select only "Date" and "flow" columns and remove all other columns
-  csv_data <- select(csv_data, Date, Flow)
-  
-  # Assign data frame to a variable with a name based on the file name
-  assign(paste0("SRP_inflow", i), csv_data)
+sub24 <- gag %>% select(Date, gag1, gag6, gag5) %>% 
+  mutate(sub24 = gag6 - gag1 - gag5) %>% select(Date = Date, sub24)
+
+sub25 <- gag %>% select(Date, gag5, gag4, gag3) %>% 
+  mutate(sub25 = gag5 - gag4 - gag3) %>% select(Date = Date, sub25)
+
+sub26 <- gag %>% select(Date, gag4, gag2) %>% 
+  mutate(sub26 = gag4 - gag2) %>% select(Date = Date, sub26)
+
+sub27 <- gag %>% select(Date, gag2) %>% 
+  mutate(sub27 = gag2) %>% select(Date = Date, sub27)
+
+sub28 <- gag %>% select(Date, gag3) %>% 
+  mutate(sub28 = gag3) %>% select(Date = Date, sub28)
+
+# bind the columns to the empty data frame
+for (i in 23:28) {
+  sub_df <- get(paste0("sub", i))
+  SRP <- merge(SRP, sub_df, by = "Date")
 }
+# remove intermediaries from environment
+rm(sub23,sub24,sub25,sub26,sub27,sub28,sub_df)
 
+# convert cubic feet/day (CFD) to acre-feet/day
+AFD <- 1/43560 # 1 acre-ft/ 43560 ft^3
+SRP[, 2:7] <- SRP[,2:7]*AFD
 
+# aggregate the sub-columns by monthly totals
+SRP$Month <- format(SRP$Date, "%m")
+SRP_monthly <- aggregate(SRP[, 2:7], by = list(Month = SRP$Month), sum)
+# remove month column from SRP to capture daily AcFt totals
+SRP = SRP[,-c(8)]
+
+# create a vector of month values
+months <- SRP_monthly$Month
+# convert the month values to date objects
+SRP_monthly$Month <- as.Date(paste0(months, "/01/2023"), format = "%m/%d/%Y")
+
+# write subset data to CSV----
+write.csv(SRP_monthly, here("ProcessedData/SRP_update_AcFt_2023.04.05.csv"), row.names = FALSE)
+
+# write daily values - if needed - to CSV
+# write.csv(SRP, here("ProcessedData/SRP_daily_AcFt_2023.04.05.csv"), row.names = FALSE)

@@ -9,7 +9,7 @@ library(tidyr)
 #RR_PRMS_Processor----
 #Process the output CSV of the Russian River PRMS model
 ##Import RR PRMS CSV----
-RR <- read.csv(here("InputData/PRMS_PaymanAlemi_2023-03-28.csv"))
+RR <- read.csv(here("InputData/PRMS_MK_2023-04-06_inq.csv"))
 
 #Add RR Headers
 RR_Headers <- c("Date", seq(1:22)) %>% as.character()
