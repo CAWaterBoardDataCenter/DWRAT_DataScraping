@@ -1,5 +1,5 @@
 #Last Updated By: Payman Alemi
-#Last Updated On: 4/6/2023
+#Last Updated On: 4/18/2023
 
 #Load libraries
 library(here)
@@ -63,9 +63,6 @@ CNRFC_Precip_SRP[, -1] <- lapply(CNRFC_Precip_SRP[,-1], as.numeric)
 CNRFC_Precip_SRP <- aggregate(CNRFC_Precip_SRP[,-1], by = list(Date = CNRFC_Precip_SRP$Date),FUN = sum)
 
 #Reformat the CNRFC Temperature Data----
-#Import the MWEC1 and LSEC1 CSVs
-MWEC1 <- read.csv(here("WebData/MWEC1_temperaturePlot.csv"))
-LSEC1 <- read.csv(here("WebData/LSEC1_temperaturePlot.csv"))
 
 #Add Station column to each dataframe
 MWEC1$Station = "MWEC1" #CIMIS 103 Sebastopol
