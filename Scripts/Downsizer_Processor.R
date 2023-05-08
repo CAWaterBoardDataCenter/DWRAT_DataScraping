@@ -16,12 +16,12 @@ library(lubridate)
 #Import Downsizer Data----
 #Copy and paste the Downsizer CSV into the InputData folder;
   #rename the Downsizer file like so: Downsizer_2023.03.16.csv (suffix is today's date in YYYY.mm.dd format)
-Downsizer_Original = read.csv(file = here("InputData/Downsizer_2023-03-23.csv"))
+Downsizer_Original = read.csv(file = here("WebData/Downsizer_2023-04-06.csv"))
 Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
 #Account for timeframe of interest----
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "23", "2023", as.Date("2023-03-23"))
+EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
 ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day') %>% length()
@@ -101,15 +101,11 @@ CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP1_UKAC1","PRECIP2_LAMC1","PRECIP3
                                  "PRECIP14_LSEC1","PRECIP15_GUEC1","TMAX1_HEAC1","TMAX2_UKAC1",
                                  "TMAX6_LAMC1","TMIN1_HEAC1","TMIN2_UKAC1","TMIN6_LAMC1")]
 #Rename CNRFC Columns to match Downsizer names to bind the datasets 
-CNRFC_Names = c("Date", "DOWNSIZER_PRECIP1", "DOWNSIZER_PRECIP2","DOWNSIZER_PRECIP3",
-                "DOWNSIZER_PRECIP5","DOWNSIZER_PRECIP8","DOWNSIZER_PRECIP10","DOWNSIZER_PRECIP11","DOWNSIZER_PRECIP13",
-                "DOWNSIZER_PRECIP14","DOWNSIZER_PRECIP15","DOWNSIZER_TMAX1","DOWNSIZER_TMAX2",
-                "DOWNSIZER_TMAX6","DOWNSIZER_TMIN1","DOWNSIZER_TMIN2","DOWNSIZER_TMIN6")
-colnames(CNRFC_cols) = CNRFC_Names
-# rbind() put scraped data first, CNRFC data second
+col_order <- colnames(Downsizer_Processed)
+colnames(CNRFC_cols) = col_order
+
+#rbind() put scraped data first, CNRFC data second
 Downsizer_Processed <- rbind(Downsizer_Processed,CNRFC_cols)
 
 #Write CSV to ProcessedData Folder----
 write.csv(Downsizer_Processed, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
-
-

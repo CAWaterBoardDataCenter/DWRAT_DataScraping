@@ -20,6 +20,11 @@ Dat_Shell3 <- inner_join(Observed, select(Dat_Shell2, Date), by = "Date")
 Dat_Shell4 <- cbind(Dat_Shell[,c(1:6)], Dat_Shell3)
 Dat_Shell5 <-cbind(Dat_Shell4, cbind(Dat_Shell[,39:60]))
 Dat_Shell5$Date = NULL
-Dat_Final = Dat_Shell5
-#Write to CSV----
-write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"))
+col_order <- colnames(Dat_Shell[-7]) #grab the column names from Dat_Shell except for Date
+Dat_Final = Dat_Shell5[,col_order]
+
+#Write to tab-delimited text file----
+write.table(Dat_Final, here("ProcessedData/Dat_Final_2023-04-06.txt"), sep="\t", row.names=F, quote = F)
+
+#Write to CSV
+# write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"), row.names = FALSE)

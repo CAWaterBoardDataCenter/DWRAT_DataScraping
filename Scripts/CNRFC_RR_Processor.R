@@ -1,3 +1,4 @@
+#Load libraries
 library(here)
 library(dplyr)
 library(tidyr)
@@ -23,8 +24,8 @@ for (i in filenames){
   assign(partial_filename, CNRFC_Precip)
 }
 
-#Reformat CNRC Temp data to match DAT File format----
-#Combine all the CNRFC Temp dataframes
+#Reformat CNRFC Temp data to match DAT File format----
+#Combine all the CNRFC Temp dataframes for RR_PRMS
 CNRFC_Temp <- rbind(BSCC1, CDLC1, HEAC1, LAMC1, LSEC1, SKPC1, SSAC1, UKAC1)
 rm(BSCC1, CDLC1, HEAC1, LAMC1, LSEC1, SKPC1, SSAC1, UKAC1)
 
@@ -53,7 +54,7 @@ CNRFC_Temp
 
 #Pivot CNRFC_Temp so that each station appears as a separate column
 CNRFC_Temp <- pivot_wider(CNRFC_Temp, names_from = Station, values_from = c("Tmin", "Tmax"))
-CNRFC_Temp
+CNRFC_Temp[,2:17] <- (CNRFC_Temp[,2:17]-32)*5/9
 
 #Rearrange CNRFC_Temp columns to match the order in the DAT_File
 col_order_temp <- c("Date", "Tmax_HEAC1", "Tmax_UKAC1", "Tmax_CDLC1", 

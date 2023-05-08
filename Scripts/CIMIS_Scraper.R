@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "22", "2023", as.Date("2023-03-22"))
+EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -36,7 +36,6 @@ eCaps <- list(
     )
 )
 remDr <- rs_driver_object$client
-# remDr$open()
 
 #Create a list to hold CIMIS dataframes
 DF_List <- list()
@@ -170,6 +169,8 @@ CIMIS_Processed
 CIMIS_Processed[CIMIS_Processed == ""] = -999
 
 #End RSelenium process
+Sys.sleep(2)
+remDr$closeWindow()
 system("taskkill /im java.exe /f")
 
 #BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
@@ -192,9 +193,9 @@ CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP6_HOPC1","PRECIP12_MWEC1",
 CNRFC_Names = c("Date", "CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3",
                 "CIMIS_TMAX4","CIMIS_TMIN3", "CIMIS_TMIN4")
 colnames(CNRFC_cols) = CNRFC_Names
-# rbind() put scraped data first, CNRFC data second
+
+#rbind() put scraped data first, CNRFC data second
 CIMIS_Processed <- rbind(CIMIS_Processed,CNRFC_cols)
 
 ##Export Dataframes to CSVs----
 write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
-
