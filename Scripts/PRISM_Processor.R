@@ -7,7 +7,7 @@ library(lubridate)
 
 #PRISM Precipitation Data Manipulation----
 #Import PRISM_Precipitation.csv by skipping first 10 rows
-ndays = 71
+ndays = 85
 PP <- read.csv(here("WebData/PRISM_Precip_Raw.csv"), skip = 10, header = T)
 
 #Rename columns as needed
@@ -50,6 +50,6 @@ colnames(PT) = PT_NewNames
 
 #Merge PT and PP dataframes and export to CSV----
 Prism_Processed = merge(x= PT, y = PP, by = "Date")
-write.csv(Prism_Processed, "ProcessedData/Prism_Processed.csv", row.names = FALSE)
+write.csv(Prism_Processed, here("ProcessedData/Prism_Processed.csv"), row.names = FALSE)
 
 

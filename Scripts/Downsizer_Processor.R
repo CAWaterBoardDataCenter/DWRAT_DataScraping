@@ -15,13 +15,13 @@ library(lubridate)
 
 #Import Downsizer Data----
 #Copy and paste the Downsizer CSV into the InputData folder;
-  #rename the Downsizer file like so: Downsizer_2023.03.23.csv (suffix is today's date in YYYY.mm.dd format)
-Downsizer_Original = read.csv(file = here("WebData/Downsizer_2023-03-23.csv"))
+  #rename the Downsizer file like so: Downsizer_2023.03.16.csv (suffix is today's date in YYYY.mm.dd format)
+Downsizer_Original = read.csv(file = here("WebData/Downsizer_2023-04-06.csv"))
 Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
 #Account for timeframe of interest----
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("March", "23", "2023", as.Date("2023-03-23"))
+EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
 ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day') %>% length()
