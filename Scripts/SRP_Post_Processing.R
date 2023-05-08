@@ -40,6 +40,8 @@ date_seq = gag$Date
 # gag manipulation----
 # read in percent reduction factors CSV
 reduct <- read.csv(here("InputData/srp_percent_reduction.csv"))
+#Accuracy of spreadsheet verified in PowerQuery by Payman Alemi on 4/18/2023; check out
+  #SRP GW Reduction Factors.xlsx
 
 # multiply gag columns by monthly reduction factor
 gag$Month <- month(gag$Date)

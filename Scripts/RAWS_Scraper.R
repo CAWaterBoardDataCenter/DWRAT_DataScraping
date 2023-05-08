@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 3/24/2023
+    #ON: 5/8/2023
 
 #install packages----
   #you should only have to do this once ever on your computer; then comment
@@ -37,7 +37,7 @@ default_folder = here("WebData")
 ## Open browser ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='111.0.5563.64',
+  chromever ='113.0.5672.63',
   port = free_port(),
 )
 
@@ -48,8 +48,8 @@ remDr <- rs_driver_object$client
 Stations = read.csv(here("InputData/Raws_Stations.csv"))
 
 #Define Timeframe for which you're downloading observed data
-StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
+StartDate = data.frame("April", "01", "2023", as.Date("2023-04-01"))
+EndDate = data.frame("May", "07", "2023", as.Date("2023-05-07"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -228,7 +228,7 @@ PRISM_cols <- Prism_Processed[c("Date", "PP_PRECIP4", "PP_PRECIP7",
 RAWS_Processed[RAWS_Processed == -999] <- PRISM_cols[RAWS_Processed == -999]
 
 #Combining RAWS data with CNRFC data----
-# RAWS_Processed <- RAWS_Processed[-72,] #remove 3/23/2023 data because it conflicts with cNRFC
+
 RAWS_Processed$Date = as.Date(RAWS_Processed$Date, format = "%m/%d/%Y")
 CNRFC_Processed <- read.csv(here("ProcessedData/CNRFC_Processed.csv"))
 
