@@ -9,7 +9,7 @@ library(tidyr)
 #RR_PRMS_Processor----
 #Process the output CSV of the Russian River PRMS model
 ##Import RR PRMS CSV----
-RR <- read.csv(here("InputData/PRMS_MK_2023-04-06_inq.csv"))
+RR <- read.csv(here("InputData/PRMS_MK_2023-05-07_inq.csv"))
 
 #Add RR Headers
 RR_Headers <- c("Date", seq(1:22)) %>% as.character()
@@ -18,10 +18,10 @@ colnames(RR) <- RR_Headers
 ##Whittle to Timeframe of Interest----
 #Convert Date column to date format
 RR$Date <- as.Date(RR$Date)
-RR_Subset <- subset(RR, Date>= "2023-04-01" & Date <= "2023-04-30")
+RR_Subset <- subset(RR, Date>= "2023-05-01" & Date <= "2023-05-31")
 
 #Write RR_Subset to ProcessedData Folder
-write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
+# write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
 
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
@@ -40,17 +40,28 @@ RR_Subset_Summed <- RR_Subset %>%
 RR_Order <- c("month", seq(1:22))
 RR_Subset_Summed <- RR_Subset_Summed[, RR_Order]
 
-#Set first cell equal to ModelMonth
-RR_Subset_Summed[1,1] ="04/01/2023"
+# #Set first cell equal to ModelMonth
+# RR_Subset_Summed[1,1] ="05/01/2023"
+
+# create a vector of month values
+months <- RR_Subset_Summed$month
+# convert the month values to date objects
+RR_Subset_Summed$month <- as.Date(paste0(months, "/01/2023"), format = "%m/%d/%Y")
 
 #SRP Processor----
 #This code modifies the outputs of the Santa Rosa Plains model into the format required by the flows spreadsheet
 #Export CSv for use in URR DWRAT model----
 #URR DWRAT model will use Basins 1-13, all derived from PRMS
 URR_monthly <- RR_Subset_Summed[,1:14]
-write.csv(URR_monthly, here("ProcessedData/URR_2023-04.csv"), row.names = FALSE) #rename CSV as needed to reflect current month
+write.csv(URR_monthly, here("ProcessedData/URR_2023-05.csv"), row.names = FALSE) #rename CSV as needed to reflect current month
 
 #Export CSV for use in LRR model
 #LRR DWRAT mode
 #LRR model will use Basins 14-28; Basins 14-22 are derived from PRMS, 23-28 from SRP
+SRP <- read.csv(here("ProcessedData/SRP_update_AcFt_2023.05.07.csv"))
+colnames(SRP) <- c("month","23","24","25","26","27","28")
 
+LRR <- RR_Subset_Summed[,c(1,15:23)]
+LRR <- merge(LRR, SRP_monthly, by = "month")
+
+write.csv(LRR, here("ProcessedData/LRR_2023-05.csv"), row.names = FALSE)

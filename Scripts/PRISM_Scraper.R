@@ -10,7 +10,7 @@ library(here)
 
 #Define Date Range---- 
 StartDate <- as.Date("2023-01-11")
-EndDate <- as.Date("2023-04-05")
+EndDate <- as.Date("2023-05-07")
 
 #Set up RSelenium----
 ##Set Default download folder ----
@@ -28,7 +28,7 @@ default_folder <- eCaps$chromeOptions$prefs$download.default_directory
 ## Open a chrome browser session with RSelenium ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='111.0.5563.64', #set to the version on your PC that most closely matches the chrome browser version
+  chromever ='113.0.5672.63', #set to the version on your PC that most closely matches the chrome browser version
   port = free_port(),
   extraCapabilities = eCaps
 )

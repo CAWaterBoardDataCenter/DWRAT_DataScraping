@@ -34,7 +34,7 @@ date_seq <- seq(from = start_date, length.out = nrow(gag), by = "day")
 gag$Date <- date_seq[1:nrow(gag)]
 
 # create a subset for the timeframe of interest----
-gag <- subset(gag, Date>= "2023-1-01" & Date <= "2023-05-31")
+gag <- subset(gag, Date>= "2023-05-01" & Date <= "2023-05-31")
 date_seq = gag$Date
 
 # gag manipulation----
@@ -87,26 +87,27 @@ for (i in 23:28) {
   sub_df <- get(paste0("sub", i))
   SRP <- merge(SRP, sub_df, by = "Date")
 }
+
 # remove intermediaries from environment
-rm(sub23,sub24,sub25,sub26,sub27,sub28,sub_df)
+rm(list = ls(pattern = "sub"), gag_list)
 
 # convert cubic feet/day (CFD) to acre-feet/day
-AFD <- 1/43560 # 1 acre-ft/ 43560 ft^3
-SRP[, 2:7] <- SRP[,2:7]*AFD
+AFD <- 1/43560 # 1 acre-ft / 43560 ft^3
+SRP[,2:7] <- SRP[,2:7]*AFD
 
 # aggregate the sub-columns by monthly totals
-SRP$Month <- format(SRP$Date, "%m")
-SRP_monthly <- aggregate(SRP[, 2:7], by = list(Month = SRP$Month), sum)
+SRP$month <- format(SRP$Date, "%m")
+SRP_monthly <- aggregate(SRP[,2:7], by = list(month = SRP$month), sum)
 # remove month column from SRP to capture daily AcFt totals
 SRP = SRP[,-c(8)]
 
 # create a vector of month values
-months <- SRP_monthly$Month
+months <- SRP_monthly$month
 # convert the month values to date objects
-SRP_monthly$Month <- as.Date(paste0(months, "/01/2023"), format = "%m/%d/%Y")
+SRP_monthly$month <- as.Date(paste0(months, "/01/2023"), format = "%m/%d/%Y")
 
 # write subset data to CSV----
-write.csv(SRP_monthly, here("ProcessedData/SRP_update_AcFt_2023.04.05.csv"), row.names = FALSE)
+write.csv(SRP_monthly, here("ProcessedData/SRP_2023-05_MK.csv"), row.names = FALSE)
 
 # write daily values - if needed - to CSV
 # write.csv(SRP, here("ProcessedData/SRP_daily_AcFt_2023.04.05.csv"), row.names = FALSE)

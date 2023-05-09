@@ -11,7 +11,7 @@ library(lubridate)
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
+EndDate = data.frame("May", "07", "2023", as.Date("2023-05-07"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -22,7 +22,7 @@ ndays
 # Open a chrome browser session with RSelenium 
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='111.0.5563.64',
+  chromever ='113.0.5672.63',
   port = free_port(),
 )
 
