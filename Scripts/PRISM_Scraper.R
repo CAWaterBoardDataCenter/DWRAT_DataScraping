@@ -1,22 +1,23 @@
 #SCRIPT LAST UPDATED:
-    #BY: Marshall Knox
-    #ON: 4/13/2023
+    #BY: Payman Alemi
+    #ON: 5/22/2023
 
-#load packages ----
+# Load packages
 library(tidyverse)
 library(RSelenium)
 library(netstat)
 library(here)
+library(binman)
 
-#Define Date Range---- 
-StartDate <- as.Date("2023-01-11")
-EndDate <- as.Date("2023-04-05")
+# Define Date Range
+StartDate <- as.Date("2023-04-01")
+EndDate <- as.Date("2023-05-21")
 
-#Set up RSelenium----
-##Set Default download folder ----
+# Set up RSelenium
+# Set Default download folder
 eCaps <- list(
-  chromeOptions =
-    list(prefs = list(
+  chromeOptions = list(
+    prefs = list(
       "profile.default_content_settings.popups" = 0L,
       "download.prompt_for_download" = FALSE,
       "download.default_directory" = gsub(pattern = '/', replacement = '\\\\', x = here("WebData")) # download.dir
@@ -25,14 +26,58 @@ eCaps <- list(
 )
 default_folder <- eCaps$chromeOptions$prefs$download.default_directory
 
-## Open a chrome browser session with RSelenium ----
+# Set version of Chrome
+# Get current version of chrome browser
+chrome_browser_version <- system2(
+  command = "wmic",
+  args = 'datafile where name="C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
+  stdout = TRUE,
+  stderr = TRUE
+) %>%
+  str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
+
+if (sum(!is.na(chrome_browser_version)) == 0) {
+  chrome_browser_version <- system2(
+    command = "wmic",
+    args = 'datafile where name="C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
+    stdout = TRUE,
+    stderr = TRUE
+  ) %>%
+    str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
+}
+
+# List the versions of chromedriver on this PC
+chrome_driver_versions <- list_versions("chromedriver")
+
+# Match drivers to version
+chrome_driver_current <- chrome_browser_version %>%
+  magrittr::extract(!is.na(.)) %>%
+  str_replace_all(pattern = "\\.", replacement = "\\\\.") %>%
+  paste0("^", .) %>%
+  str_subset(string = last(chrome_driver_versions)) %>%
+  as.numeric_version() %>%
+  max() %>%
+  as.character()
+
+# Remove the LICENSE.chromedriver file (if it exists)
+chrome_driver_dir <- paste0(app_dir("chromedriver", FALSE),
+                            '/win32/',
+                            chrome_driver_current)
+if ('LICENSE.chromedriver' %in% list.files(chrome_driver_dir)) {
+  file.remove(
+    paste0(chrome_driver_dir, '/', 'LICENSE.chromedriver')
+  )
+}
+
+##Open a chrome browser session with RSelenium ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
-  chromever ='111.0.5563.64', #set to the version on your PC that most closely matches the chrome browser version
+  chromever = chrome_driver_current, #set to the version on your PC that most closely matches the chrome browser version
   port = free_port(),
   extraCapabilities = eCaps
 )
 
+Sys.sleep(1)
 remDr <- rs_driver_object$client
 
 #PRMS PRISM Precip Bulk Download----
