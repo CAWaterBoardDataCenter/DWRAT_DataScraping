@@ -1,22 +1,25 @@
-#load packages ----
 library(RSelenium)
 library(tidyverse)
 library(netstat)
 library(here)
 library(dplyr)
 library(readr)
+library(binman)
 
-#Find and remove previously downloaded CNRFC Data----
-#Find all CSVS containing "temperaturePlot" in the filename
+# Find and remove previously downloaded CNRFC Data
 matching_files <- list.files(path = here("WebData"), pattern = "temperaturePlot|cnrfc", full.names = TRUE)
 
-#remove the matching files
-for (i in 1:length(matching_files)){
-  if(file.exists(matching_files[i])){
-    file.remove(matching_files[i])
-  } else {
-    print("File does not exist.")
+if (length(matching_files) > 0) {
+  # Remove the matching files
+  for (i in 1:length(matching_files)) {
+    if (file.exists(matching_files[i])) {
+      file.remove(matching_files[i])
+    } else {
+      print("File does not exist.")
+    }
   }
+} else {
+  print("No files found to remove.")
 }
 
 # Import CNRFC Temperature stations----
@@ -89,7 +92,9 @@ rs_driver_object <-rsDriver(
   port = free_port(),
   extraCapabilities = eCaps
 )
-  
+
+remDr <- rs_driver_object$client
+
 ##Navigate to CNRFC Temperature website----
 for (i in 1:9){
 CNRFC <- paste0("https://www.cnrfc.noaa.gov/temperaturePlots_hc.php?id=", CNRFC_Stations$TempStation[i])
