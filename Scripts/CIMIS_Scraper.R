@@ -12,8 +12,8 @@ library(lubridate)
 #InputData----
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
-StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
+StartDate = data.frame("April", "1", "2023", as.Date("2023-04-01"))
+EndDate = data.frame("May", "21", "2023", as.Date("2023-05-21"))
 
 colnames(StartDate) = c("month", "day", "year", "date")
 colnames(EndDate) = c("month", "day", "year", "date")
@@ -21,22 +21,70 @@ ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day')%>% length()
 ndays
 
 # Set up RSelenium ----
-# Open a chrome browser session with RSelenium 
-rs_driver_object <-rsDriver(
-  browser = 'chrome',
-  chromever ='111.0.5563.64',
-  port = free_port(),
-)
-
+## Set Default download folder----
 eCaps <- list(
-  chromeOptions =
-    list(prefs = list(
+  chromeOptions = list(
+    prefs = list(
       "profile.default_content_settings.popups" = 0L,
       "download.prompt_for_download" = FALSE,
       "download.default_directory" = gsub(pattern = '/', replacement = '\\\\', x = here("WebData")) # download.dir
     )
-    )
+  )
 )
+default_folder <- eCaps$chromeOptions$prefs$download.default_directory
+
+## Set version of Chrome----
+### Get current version of chrome browser----
+chrome_browser_version <- system2(
+  command = "wmic",
+  args = 'datafile where name="C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
+  stdout = TRUE,
+  stderr = TRUE
+) %>%
+  str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
+
+if (sum(!is.na(chrome_browser_version)) == 0) {
+  chrome_browser_version <- system2(
+    command = "wmic",
+    args = 'datafile where name="C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
+    stdout = TRUE,
+    stderr = TRUE
+  ) %>%
+    str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
+}
+
+### List the versions of chromedriver on this PC----
+chrome_driver_versions <- list_versions("chromedriver")
+
+### Match drivers to version----
+chrome_driver_current <- chrome_browser_version %>%
+  magrittr::extract(!is.na(.)) %>%
+  str_replace_all(pattern = "\\.", replacement = "\\\\.") %>%
+  paste0("^", .) %>%
+  str_subset(string = last(chrome_driver_versions)) %>%
+  as.numeric_version() %>%
+  max() %>%
+  as.character()
+
+### Remove the LICENSE.chromedriver file (if it exists)----
+chrome_driver_dir <- paste0(app_dir("chromedriver", FALSE),
+                            '/win32/',
+                            chrome_driver_current)
+if ('LICENSE.chromedriver' %in% list.files(chrome_driver_dir)) {
+  file.remove(
+    paste0(chrome_driver_dir, '/', 'LICENSE.chromedriver')
+  )
+}
+
+## Open a chrome browser session with RSelenium ----
+rs_driver_object <-rsDriver(
+  browser = 'chrome',
+  chromever = chrome_driver_current, #set to the version on your PC that most closely matches the chrome browser version
+  port = free_port(),
+  extraCapabilities = eCaps
+)
+
+Sys.sleep(1)
 remDr <- rs_driver_object$client
 
 #Create a list to hold CIMIS dataframes
