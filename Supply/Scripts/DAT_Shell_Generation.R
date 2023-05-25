@@ -27,10 +27,10 @@ DAT_File$Date <- make_date(year = DAT_File$Year,
 #Filter to the timeframe of interest
 #Set the start date by grabbing the first day of the current month
 #Start_Date <- lubridate::floor_date(Sys.Date(), unit = "month")
-Start_Date <- as.Date("2023-01-11")
+#Start_Date <- as.Date("2023-01-11")
 #The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
-End_Date <- Sys.Date() + 5
-DAT_Shell <- subset(DAT_File, Date >= Start_Date & Date <= End_Date) #Adjust as needed
+#End_Date <- Sys.Date() + 5
+DAT_Shell <- subset(DAT_File, Date >= StartDate & Date <= End_Date) #Adjust as needed
 DAT_Shell
 
 #Set Date as the 7th column in DAT_Shell

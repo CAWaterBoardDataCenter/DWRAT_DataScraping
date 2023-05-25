@@ -107,8 +107,8 @@ ndays
 DF_List <- list()
 
 #Navigate to RAWS website----
-#for (i in 1:nrow(Stations)){
-i = 1
+for (i in 1:nrow(Stations)){
+#i = 1
 remDr$navigate(paste0("https://wrcc.dri.edu/cgi-bin/rawMAIN.pl?ca", Stations$Station[i]))
 
 #Switch to Left Frame named "List"
@@ -126,23 +126,25 @@ remDr$switchToFrame(GraphFrame)
 
 # #Set the Starting Date
 StartMonth <- remDr$findElement(using = "name", value = "smon")
-StartMonth$sendKeysToElement(list(StartDate$month))
-# 
+StartMonth$sendKeysToElement(list(month.name[StartDate$month]))
+
 StartDay <- remDr$findElement(using = "name", value = "sday")
-StartDay$sendKeysToElement(list(StartDate$day))
-# 
+Formatted_StartDay <- sprintf("%02d", StartDate$day)
+StartDay$sendKeysToElement(list(Formatted_StartDay))
+
 StartYear <- remDr$findElement(using = "name", value = "syea")
-StartYear$sendKeysToElement(list(StartDate$year))
+StartYear$sendKeysToElement(list(as.character(StartDate$year)))
 
 #Set the Ending Date
 EndMonth <- remDr$findElement(using = "name", value = "emon")
-EndMonth$sendKeysToElement(list(EndDate$month))
-# 
+EndMonth$sendKeysToElement(list(month.name[EndDate$month]))
+
 EndDay <- remDr$findElement(using = "name", value = "eday")
-EndDay$sendKeysToElement(list(EndDate$day))
-# 
+Formatted_EndDay <- sprintf("%02d", EndDate$day)
+EndDay$sendKeysToElement(list(Formatted_EndDay))
+
 EndYear <- remDr$findElement(using = "name", value = "eyea")
-EndYear$sendKeysToElement(list(EndDate$year))
+EndYear$sendKeysToElement(list(as.character(EndDate$year)))
 
 #Uncheck "Elements marked with *" box
 Elements <-remDr$findElement(using = "name", value = "qBasic")

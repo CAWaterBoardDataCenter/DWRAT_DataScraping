@@ -1,5 +1,3 @@
-
-#Example Conflict Payman branch 5/12/2023
 ## load packages
 library(RSelenium)
 library(tidyverse)
@@ -15,9 +13,9 @@ Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
 # StartDate = data.frame("April", "1", "2023", as.Date("2023-04-01"))
 # EndDate = data.frame("May", "22", "2023", as.Date("2023-05-22"))
 
-colnames(StartDate) = c("month", "day", "year", "date")
-colnames(EndDate) = c("month", "day", "year", "date")
-ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day')%>% length()
+# colnames(StartDate) = c("month", "day", "year", "date")
+# colnames(EndDate) = c("month", "day", "year", "date")
+ndays <- as.numeric(EndDate$date)- as.numeric(StartDate$date) + 1
 ndays
 
 # Set up RSelenium ----
@@ -99,11 +97,14 @@ remDr$navigate(URL)
 
 #Input Dates
 StartMonth <- remDr$findElement(using = "name", value = "FROMMONTH")
-StartMonth$sendKeysToElement(list(StartDate$month))
+StartMonth$sendKeysToElement(list(as.character(month.name[StartDate$month])))
+
 StartDay <- remDr$findElement(using = "name", value = "FROMDAY")
-StartDay$sendKeysToElement(list(StartDate$day))
+Formatted_StartDay <- sprintf("%02d", StartDate$day)
+StartDay$sendKeysToElement(list(as.character(Formatted_StartDay))) #ensure that the date is
+
 StartYear <- remDr$findElement(using = "name", value = "FROMYEAR")
-StartYear$sendKeysToElement(list(StartDate$year))
+StartYear$sendKeysToElement(StartDate$year %>% as.character() %>% list()) #years are stored as characters by the webpage
 
 # EndMonth <- remDr$findElement(using = "name", value = "THRUMONTH")
 # EndMonth$sendKeysToElement(list(EndDate$month))
@@ -165,6 +166,9 @@ WeatherDataBody <- select(WeatherDataBody, -c("Time", "type"))
 DF_List[[i]] <- WeatherDataBody
 }
 
+remDr$closeWindow()
+system("taskkill /im java.exe /f")
+
 #Finalize CIMIS Data For Exportation To CSV----
 #Name the individual RAWS dataframes in DF_List
 names(DF_List) <- lapply(seq_along(DF_List),
@@ -220,16 +224,23 @@ CIMIS_Processed[CIMIS_Processed == ""] = -999
 
 #End RSelenium process
 Sys.sleep(2)
-remDr$closeWindow()
-system("taskkill /im java.exe /f")
+
 
 #BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
 #Replace missing values with PRISM data
 #Works only if columns are same in number and order; column names don't need to match
-Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
-PRISM_cols <- Prism_Processed[,c("Date","PP_PRECIP6","PP_PRECIP12",
-                                 "PT_TMAX3","PT_TMAX4","PT_TMIN3","PT_TMIN4")]
+Prism_Processed <- read.csv(here("ProcessedData/Prism_Processed.csv"))
+PRISM_cols <- Prism_Processed[, c("Date", "PP_PRECIP6", "PP_PRECIP12", "PT_TMAX3", "PT_TMAX4", "PT_TMIN3", "PT_TMIN4")]
+
+# Convert relevant columns in CIMIS_Processed to numeric
+numeric_cols <- c("CIMIS_PRECIP6", "CIMIS_PRECIP12", "CIMIS_TMAX3", "CIMIS_TMAX4", "CIMIS_TMIN3", "CIMIS_TMIN4")
+CIMIS_Processed[numeric_cols] <- lapply(CIMIS_Processed[numeric_cols], as.numeric)
+
+# Assign values from PRISM_cols to CIMIS_Processed
 CIMIS_Processed[CIMIS_Processed == -999] <- PRISM_cols[CIMIS_Processed == -999]
+
+# Verify the changes
+str(CIMIS_Processed)
 
 #Change Date format to match DAT_Shell Date format
 CIMIS_Processed$Date = as.character(CIMIS_Processed$Date)

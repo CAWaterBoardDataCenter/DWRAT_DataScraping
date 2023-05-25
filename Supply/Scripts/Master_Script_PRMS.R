@@ -11,6 +11,7 @@ library(here)
 # set start and end dates -------------------------------------------------
 ## Set start date----
 StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date
+#Serves as the start date for the observed data forecast and the DAT_Shell
 
 # Extract Day, Month, and Year from StartDate; functions require lubridate package
 StartDay <- day(StartDate) 
@@ -21,7 +22,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2023-05-23") # set to yesterday's date
+EndDate <- Sys.Date()-1 # set to yesterday's date; serves as the end date for the forecast
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -43,7 +44,7 @@ source(here("Scripts/CNRFC_RR_Processor.R"))
 source(here("Scripts/Downsizer_Processor.R")) #Ignore the warning message: Expected 252 pieces...
 source(here("Scripts/RAWS_Scraper.R"))
 source(here("Scripts/CIMIS_Scraper.R"))
-source(here("Scripts/DAT_Shell_Generation.R"))
+source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
 # change output file name for DAT File
 source(here("Scripts/DAT_File_Manipulation.R"))
 
