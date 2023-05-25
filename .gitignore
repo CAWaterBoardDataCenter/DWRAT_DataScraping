@@ -1,12 +1,12 @@
 # R files and folders
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-Scripts/.RHistory
-Experimental/.RHistory
+Supply/.Rproj.user
+Supply/.Rhistory
+Supply/.RData
+Supply/.Ruserdata
+Supply/Scripts/.RHistory
+Supply/Experimental/.RHistory
 
 # ignoring data files
-WebData/
-ProcessedData/
-InputData/*.gag
+Supply/WebData/
+Supply/ProcessedData/
+Supply/InputData/*.gag
