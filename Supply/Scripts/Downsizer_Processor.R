@@ -15,18 +15,17 @@ library(lubridate)
 
 #Import Downsizer Data----
 #Copy and paste the Downsizer CSV into the InputData folder;
-  #rename the Downsizer file like so: Downsizer_2023.03.16.csv (suffix is today's date in YYYY.mm.dd format)
-Downsizer_Original = read.csv(file = here("WebData/Downsizer_2023-05-22.csv"))
+Downsizer_Original = read.csv(file = here("WebData/2023-05-23_Downsizer.csv"))
 Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
 #Account for timeframe of interest----
-StartDate = data.frame("January", "11", "2023", as.Date("2023-01-11"))
-EndDate = data.frame("April", "05", "2023", as.Date("2023-04-05"))
-colnames(StartDate) = c("month", "day", "year", "date")
-colnames(EndDate) = c("month", "day", "year", "date")
-ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day') %>% length()
-ndays
-TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day')
+# StartDate = data.frame("April", "1", "2023", as.Date("2023-04-01"))
+# EndDate = data.frame("May", "23", "2023", as.Date("2023-05-23"))
+# colnames(StartDate) = c("month", "day", "year", "date")
+# colnames(EndDate) = c("month", "day", "year", "date")
+# ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day') %>% length()
+# ndays
+# TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day')
 
 #Extract the weather data from Downsizer_Original----
 #Drop the first 42 rows of Downsizer
@@ -36,12 +35,12 @@ colnames(Downsizer) = "Downsizer"
 #Format the Downsizer dataframe to match the PRMS_Update DAT file----
 ##Calculate the number of columns after splitting the 1st column by the space delimiter----
 ncols <- max(stringr::str_count(Downsizer$Downsizer))
-ncols #creates 260 columns, but only the first 36 have content
+ncols #creates 252 columns, but only the first 36 have content
 
-colmn <- paste0("Col", 1:ncols)
+colmn <- paste0("Col", 1:ncols) #creates a set of 252 columns named Col1, Col2, ....
 colmn
 
-##Split Downsizer into 260 columns by using spaces as delimiters----
+##Split Downsizer into 253 columns by using spaces as delimiters----
 Downsizer_Processed <-
   tidyr::separate(
     data = Downsizer,
@@ -52,7 +51,7 @@ Downsizer_Processed <-
   )
 
 ##Delete extra columns and apply column names----
-Downsizer_Processed[38:261] = NULL
+Downsizer_Processed[38:253] = NULL 
 Downsizer_Processed[5:7] = NULL
 Downsizer_Processed[1] = NULL
 

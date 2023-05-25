@@ -26,8 +26,8 @@ if (length(matching_files) > 0) {
 CNRFC_Stations <- read.csv(here("InputData/CNRFC_Stations.csv"))
 
 #Set up RSelenium----
-StartDate <- as.Date("2023-04-01")
-EndDate <- as.Date("2023-05-21")
+# StartDate <- as.Date("2023-04-01")
+# EndDate <- as.Date("2023-05-21")
 
 # Set up RSelenium
 # Set Default download folder

@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 5/22/2023
+    #ON: 5/24/2023
 
 # Load packages
 library(tidyverse)
@@ -10,11 +10,11 @@ library(here)
 library(binman)
 
 # Define Date Range
-StartDate <- as.Date("2023-04-01")
-EndDate <- as.Date("2023-05-21")
+# StartDate <- as.Date("2023-04-01")
+# EndDate <- as.Date("2023-05-21")
 
-# Set up RSelenium
-# Set Default download folder
+# Set up RSelenium----
+##Set Default download folder----
 eCaps <- list(
   chromeOptions = list(
     prefs = list(
@@ -26,8 +26,8 @@ eCaps <- list(
 )
 default_folder <- eCaps$chromeOptions$prefs$download.default_directory
 
-# Set version of Chrome
-# Get current version of chrome browser
+## Set version of Chrome----
+### Get current version of chrome browser----
 chrome_browser_version <- system2(
   command = "wmic",
   args = 'datafile where name="C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
@@ -46,10 +46,10 @@ if (sum(!is.na(chrome_browser_version)) == 0) {
     str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
 }
 
-# List the versions of chromedriver on this PC
+### List the versions of chromedriver on this PC
 chrome_driver_versions <- list_versions("chromedriver")
 
-# Match drivers to version
+### Match drivers to version----
 chrome_driver_current <- chrome_browser_version %>%
   magrittr::extract(!is.na(.)) %>%
   str_replace_all(pattern = "\\.", replacement = "\\\\.") %>%
@@ -59,7 +59,7 @@ chrome_driver_current <- chrome_browser_version %>%
   max() %>%
   as.character()
 
-# Remove the LICENSE.chromedriver file (if it exists)
+### Remove the LICENSE.chromedriver file (if it exists)----
 chrome_driver_dir <- paste0(app_dir("chromedriver", FALSE),
                             '/win32/',
                             chrome_driver_current)
@@ -69,7 +69,7 @@ if ('LICENSE.chromedriver' %in% list.files(chrome_driver_dir)) {
   )
 }
 
-##Open a chrome browser session with RSelenium ----
+### Open a chrome browser session with RSelenium ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
   chromever = chrome_driver_current, #set to the version on your PC that most closely matches the chrome browser version
@@ -79,6 +79,7 @@ rs_driver_object <-rsDriver(
 
 Sys.sleep(1)
 remDr <- rs_driver_object$client
+
 
 #PRMS PRISM Precip Bulk Download----
 URL = "https://prism.oregonstate.edu/explorer/bulk.php"
@@ -111,19 +112,19 @@ Daily$clickElement()
 
 #Set start and end date ranges
 StartMonth <- remDr$findElement(using = "id", value = "tper_daily_start_month")
-StartMonth$sendKeysToElement(list(format(StartDate, "%B")))
+StartMonth$sendKeysToElement(list(format(StartDate$date, "%B")))
 
 StartYear <- remDr$findElement(using = "id", value = "tper_daily_start_year")
-StartYear$sendKeysToElement(list(format(StartDate, "%Y")))
+StartYear$sendKeysToElement(list(format(StartDate$date, "%Y")))
 
 EndDay <-remDr$findElement(using = "id", value = "tper_daily_end_day")
-EndDay$sendKeysToElement(list(format(EndDate, "%d")))
+EndDay$sendKeysToElement(list(format(EndDate$date, "%d")))
 
 EndMonth <-remDr$findElement(using = "id", value = "tper_daily_end_month")
-EndMonth$sendKeysToElement(list(format(EndDate, "%B")))
+EndMonth$sendKeysToElement(list(format(EndDate$date, "%B")))
 
 StartDay <- remDr$findElement(using = "id", value = "tper_daily_start_day")
-StartDay$sendKeysToElement(list(format(StartDate, "%d")))
+StartDay$sendKeysToElement(list(format(StartDate$date, "%d")))
 
 #Do not need to input EndYear (if in current year) Just breaks date range
 # EndYear <- remDr$findElement(using = "id", value = "tper_daily_end_year")
