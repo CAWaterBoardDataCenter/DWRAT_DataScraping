@@ -25,9 +25,11 @@ PSRP <- PSRP[,c("Date", "CIMIS_083_ppt", "CIMIS_083_tmin", "CIMIS_083_tmax",
                 "CIMIS_103_ppt", "CIMIS_103_tmin", "CIMIS_103_tmax")]
 
 #BEFORE THIS STEP run CNRFC_SRP_Processor
+CNRFC_SRP <- read.csv(here("ProcessedData/CNRFC_SRP_Processed.csv"))
+
 #Combine PRISM and CNRFC data for SRP model
 PSRP$Date <- as.Date(PSRP$Date)
-PSRP <- rbind(PSRP,SRP_Processed)
+PSRP <- rbind(PSRP, CNRFC_SRP)
 
 #Export to CSV----
 write.csv(PSRP, here("ProcessedData/SRP_Processed.csv"), row.names = FALSE)

@@ -108,7 +108,7 @@ months <- SRP_monthly$Month
 SRP_monthly$Month <- as.Date(paste0(months, "/01/2023"), format = "%m/%d/%Y")
 
 # write subset data to CSV----
-write.csv(SRP_monthly, here("ProcessedData/SRP_update_AcFt_2023.04.05.csv"), row.names = FALSE)
+write.csv(SRP_monthly, here("ProcessedData/SRP_update_AF_2023.04.05.csv"), row.names = FALSE)
 
 # write daily values - if needed - to CSV
 # write.csv(SRP, here("ProcessedData/SRP_daily_AcFt_2023.04.05.csv"), row.names = FALSE)
