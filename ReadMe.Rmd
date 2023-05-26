@@ -1,23 +1,80 @@
 ---
 title: "DWRAT DataScraping GitHub Repository README"
 author: "Payman Alemi"
-date: "2022-12-15"
-output: html_document
+date: "2023-05-26"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
-I have set up 5 folders for this project:
 
-* **Documentation:**
-This folder contains all relevant emails, PDFs, Word Documents and other files containing instructions or information about the project.
+I have set up 3 folders for this project:
 
-* **InputData:**
-This folder contains the datasets used for loops and functions, e.g. station lists. Maintaining these datasets as CSVs is easier than creating then as dataframes.
+**Supply**\
+This folder contains the files necessary for automating the Santa Rosa
+Plains (SRP) GS Flow and PRMS (Precipitation-Runoff Modeling System)
+hydrology models. As of `r Sys.Date()` has 5 subfolders. The
+pre-processing and post-processing of the *PRMS* model has been nearly
+entirely automated. By contrast, much of the *SRP GS Flow* model still
+needs to be automated.
 
-* **ProcessedData:** 
-This folder contains datasets that have been manipulated in some way by R Scripts, spreadsheets, etc.
+-   *Documentation:* This folder contains relevant emails, PDFs, Word
+    Documents and other files containing instructions or information
+    about the project.
 
-* **Scripts:** 
-This folder contains all scripts associated with this project
+-   *InputData:* This folder contains the datasets used for loops and
+    functions, e.g. station lists. Maintaining these datasets as CSVs is
+    easier than creating then as dataframes.
 
-* **WebData:** 
-This folder contains unaltered datasets scraped or downloaded from the Internet, e.g. weather station data
+-   *ProcessedData:* This folder contains datasets that have been
+    manipulated in some way by R Scripts, spreadsheets, etc.
 
+-   *Scripts:* This folder contains all scripts associated with this
+    project
+
+-   *WebData:* This folder contains unaltered datasets scraped or
+    downloaded from the Internet, e.g. weather station data
+
+**Demand**\
+This folder contains the files necessary for converting the raw diverter
+demand data from eWRIMS into a processed, QAQC'd demand dataset ready
+for importation into DWRAT. As of `r Sys.Date()`, this folder has 4
+subfolders, which just contain placeholder scripts--the actual scripts
+have yet to be written.
+
+-   *Documentation*: This folder will contain relevant emails, PDFs,
+    Word Documents and other files containing instructions or
+    information about the project.
+
+-   *InputData* This folder will contain the raw diverter demand
+    datasets from eWRIMS.
+
+-   *ProcessedData:* This folder will contain datasets that have been
+    manipulated in some way by R Scripts, spreadsheets, etc.
+
+-   *OutputData*: This folder will contain the final demand dataset CSVs
+    that are ready for importation to the Upper Russian River (URR) and
+    Lower Russian River (LRR) Drought Water Rights Allocation (DWRAT)
+    models.
+
+-   *Scripts*: This folder will contain the scripts that convert the raw
+    diverter demand datasets into the final datasets to be used by the
+    DWRAT models.
+
+**Allocation**\
+This folder will contain the files necessary for running the URR and LRR
+DWRATs, each of which will have a separate folder.
+
+-   ***URR DWRAT***
+    -   *Input**:*** This folder contains the input files for the URR
+        DWRAT run.
+    -   *Output:* This folder contains the output files for the URR
+        DWRAT run.
+-   ***LRR DWRAT***
+    -   *Input:* This folder contains the input files for the LRR DWRAT
+        run.
+    -   *Output:* This folder contains the output files for the URR
+        DWRAT run.
