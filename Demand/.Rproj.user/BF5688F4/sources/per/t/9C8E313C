@@ -1,0 +1,25 @@
+{
+    "id": "9C8E313C",
+    "path": "~/Github/DWRAT_DataScraping/Demand/Scripts/Master_Demand_Module_Script.R",
+    "project_path": "Scripts/Master_Demand_Module_Script.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1685032868477.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1685032889,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1685032889396,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,9 +1,11 @@
+#install.packages ("tinytex")
 # load packages -----------------------------------------------------------
 library(tidyverse)
 library(RSelenium)
 library(netstat)
 library(lubridate)
 library(here)
+library(tinytex)
 
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
