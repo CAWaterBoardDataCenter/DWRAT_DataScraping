@@ -4,7 +4,6 @@ library(RSelenium)
 library(netstat)
 library(lubridate)
 library(here)
-library(KeyboardSimulator)
 
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
