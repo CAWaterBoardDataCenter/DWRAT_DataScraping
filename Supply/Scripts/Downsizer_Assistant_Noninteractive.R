@@ -36,7 +36,7 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   # The file paths should be specified in "Downsizer_File_Locations.txt"
   
   
-  path_to_jar <- readLines("../InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
+  path_to_jar <- readLines("InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
     str_subset("downsizer client.+\\.jar") %>% str_extract("\\s{3,}.+$") %>% trimws()
   
   
@@ -49,7 +49,7 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   
   
   # Find "downsizer_sta.csv" next
-  path_to_csv <- readLines("../InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
+  path_to_csv <- readLines("InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
     str_subset("downsizer station.+\\.csv") %>% str_extract("\\s{3,}.+$") %>% trimws()
   
   
@@ -61,7 +61,7 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   
   # Also, get the location of the user's GitHub repository (specifically the "WebData" folder)
   # This is where the final output will be stored
-  path_Github_Dir <- readLines("../InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
+  path_Github_Dir <- readLines("InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
     str_subset("WebData.+GitHub") %>% str_extract("\\s{3,}.+$") %>% trimws()
   
   
@@ -469,4 +469,4 @@ approxDownsizerSize <- function (widthRatio = 0.448, heightRatio = 0.857) {
 
 #### Executing the Script ####
 
-# mainProcedure()
+mainProcedure(StartDate, EndDate)
