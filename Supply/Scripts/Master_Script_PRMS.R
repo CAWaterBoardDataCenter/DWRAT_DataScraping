@@ -4,6 +4,7 @@ library(RSelenium)
 library(netstat)
 library(lubridate)
 library(here)
+library(KeyboardSimulator)
 
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
@@ -34,6 +35,7 @@ TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') #Timeframe
 End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
 
 # generate PRMS model input -----------------------------------------------
+source(here("Scripts/Downsizer_Assistant_Noninteractive.R"))
 source(here("Scripts/PRISM_Scraper.R"))
 source(here("Scripts/PRISM_Processor.R"))
 source(here("Scripts/CNRFC_Scraper.R"))
