@@ -1,5 +1,5 @@
 # The Downsizer application is one of the first steps in running the PRMS Model
-# However, it cannot be fully automated
+# However, it cannot be perfectly automated
 
 # This script aids the user in running that application
 # It also prepares the file output for the next step
@@ -33,10 +33,10 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   # If following the tutorial, the user should have those files in 
   # "RR_PRMS/PRMS/input/data_file_prep/downsizer_raw_data/"
   
-  # The file paths should be specified in "Downsizer_File_Locations.txt"
+  # The file paths should be specified in the Downsizer section of "File_Paths_and_Dirs.txt"
   
   
-  path_to_jar <- readLines("InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
+  path_to_jar <- readLines("InputData/File_Paths_and_Dirs.txt", warn = FALSE) %>%
     str_subset("downsizer client.+\\.jar") %>% str_extract("\\s{3,}.+$") %>% trimws()
   
   
@@ -49,7 +49,7 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   
   
   # Find "downsizer_sta.csv" next
-  path_to_csv <- readLines("InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
+  path_to_csv <- readLines("InputData/File_Paths_and_Dirs.txt", warn = FALSE) %>%
     str_subset("downsizer station.+\\.csv") %>% str_extract("\\s{3,}.+$") %>% trimws()
   
   
@@ -61,7 +61,7 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   
   # Also, get the location of the user's GitHub repository (specifically the "WebData" folder)
   # This is where the final output will be stored
-  path_Github_Dir <- readLines("InputData/Downsizer_File_Locations.txt", warn = FALSE) %>%
+  path_Github_Dir <- readLines("InputData/File_Paths_and_Dirs.txt", warn = FALSE) %>%
     str_subset("WebData.+GitHub") %>% str_extract("\\s{3,}.+$") %>% trimws()
   
   
@@ -96,7 +96,7 @@ mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 
   
   # The final step is to copy the PRMS file as a CSV file to the Github directory
   # (Specifically, the "WebData" folder)
-  # This path should also be specified in "Downsizer_File_Locations.txt"
+  # This path should also be specified in "File_Paths_and_Dirs.txt"
   file.copy(path_to_prms,
             paste0(path_Github_Dir, 
                    path_to_prms %>% str_extract("\\\\Downsizer_[0-9\\-]+\\.prms$") %>% str_replace("\\.prms$", "\\.csv")),
