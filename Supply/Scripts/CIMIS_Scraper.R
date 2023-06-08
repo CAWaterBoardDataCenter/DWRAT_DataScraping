@@ -166,6 +166,8 @@ WeatherDataBody <- select(WeatherDataBody, -c("Time", "type"))
 DF_List[[i]] <- WeatherDataBody
 }
 
+#End RSelenium process
+Sys.sleep(2)
 remDr$closeWindow()
 system("taskkill /im java.exe /f")
 
@@ -221,9 +223,6 @@ CIMIS_Processed
 
 #Replace all missing values with -999
 CIMIS_Processed[CIMIS_Processed == ""] = -999
-
-#End RSelenium process
-Sys.sleep(2)
 
 
 #BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
