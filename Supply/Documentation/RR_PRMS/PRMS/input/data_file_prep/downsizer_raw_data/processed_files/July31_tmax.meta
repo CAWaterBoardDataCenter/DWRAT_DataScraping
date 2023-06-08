@@ -1,0 +1,9 @@
+Number of stations: 10
+Variable: tmax
+Unit: deg C
+ID:                      049684         047109                     049122      049126        041838       043875       041312      043191      043578      046370
+Network:                 Unknown        Unknown                    Unknown     Unknown       Unknown      Unknown      Unknown     Unknown     Unknown     Unknown
+Name:                    "WILLITS 1 NE" "POTTER VALLEY POWERHOUSE" "UKIAH"     "UKIAH 4 WSW" "CLOVERDALE" "HEALDSBURG" "CALISTOGA" "FORT ROSS" "GRATON"    "OCCIDENTAL"
+Latitude(degrees_north): 39.4194        39.3619                    39.1466     39.1266       38.793       38.6294      38.5768     38.515      38.4305     38.3858
+Longitude(degrees_east): -123.3425      -123.1286                  -123.2102   -123.2719     -123.0263    -122.8665    -122.5781   -123.2447   -122.8647   -122.9661
+Elevation(feet):         1353.0         1018.0                     636.0       1328.0        400.0        177.0        350.0       112.0       200.0       865.0
