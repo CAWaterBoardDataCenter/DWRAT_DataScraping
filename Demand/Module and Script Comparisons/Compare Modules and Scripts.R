@@ -17,6 +17,7 @@
 require(tidyverse)
 require(readxl)
 require(openxlsx)
+require(doParallel)
 
 
 #### Script Procedure ####
@@ -50,7 +51,7 @@ mainProcedure <- function () {
                                                  comparisonList[i], "/", 
                                 comparisonList[i], ".xlsx"), 
                          col_types = "text", col_names = FALSE, 
-                         sheet = comparisonList[i] %>% str_remove("_")))
+                         sheet = comparisonList[i] %>% str_remove("_") %>% str_remove(" \\(1\\)$") %>% str_replace("DuplicateMonthsYears", "Duplicate_Months_Years")))
     
     scriptXLSX <- suppressMessages(paste0("Module and Script Comparisons/", comparisonList[i]) %>%
       list.files(full.names = TRUE) %>% str_subset("Scripted") %>%
@@ -148,9 +149,7 @@ dirCheck <- function (folderName) {
   
   
   # Finally, check for the presence of the XLSX module file
-  if (fileList %>% 
-      str_subset(paste0("^", folderName, "\\.xlsx$")) %>% 
-      length() == 0) {
+  if (!(paste0(folderName, ".xlsx") %in% fileList)) {
     stop("This module's directory is missing the module XLSX file of the same name")
   }
   
@@ -206,6 +205,12 @@ compareCells <- function (moduleDF, scriptDF) {
   # (It can only assign column labels between A and Z)
   stopifnot(ncol(moduleDF) <= 26)
   
+  
+  # If 'moduleDF' is too large, use a parallel processing version of this function
+  # (More than 100,000 rows)
+  if (nrow(moduleDF) > 10^5) {
+    return(parallelComparison(moduleDF, scriptDF))
+  }
   
   
   # Prepare a vector to hold mismatches
@@ -301,10 +306,149 @@ compareCells <- function (moduleDF, scriptDF) {
 }
 
 
+parallelComparison <- function (moduleDF, scriptDF) {
+  
+  # Perform the procedure of compareCells() with parallel R sessions
+  
+  
+  
+  # First, setup parallel processing capabilities
+  
+  
+  # Create a cluster of parallel R sessions
+  #(Use all except 1 of the system's cores)
+  cl <- makeCluster(detectCores() - 1)
+  registerDoParallel(cl)
+  
+  
+  
+  # Prepare a variable to hold information about the mismatched cells
+  # (The exact required length will be unknown at this point, 
+  #  but allocate a lot of space in advance, just in case)
+  mismatchList <- vector(mode = "list", length = nrow(moduleDF))
+  
+  
+  # In a separate function, search for mismatched cells
+  # The rows of 'moduleDF' and 'scriptDF' will be compared in parallel
+  # Within each worker, all of the columns will be checked for mismatches
+  mismatchList <- foreach(i = 1:nrow(moduleDF)) %dopar% parallelCellCheck(moduleDF[c(1, i), ], 
+                                                                          scriptDF[c(1, i), ], 
+                                                                          i)
+  # NOTE
+  # "c(1, i)" is used to include the header row in the input to parallelCellCheck()
+  # (It's okay that the header row is duplicated during the iteration i = 1)
+  # (The result will be unaffected)
+  
+  
+  # NOTE 2
+  # With 517,983 rows and 7 workers, this parallel loop took about 6 minutes for me
+  
+  
+  
+  # At the end of these operations, remove the extra R session workers
+  stopCluster(cl)
+  
+  
+  
+  # Format 'mismatchList' into a DF and return it
+  return(mismatchList %>%
+           unlist() %>%
+           matrix(ncol = 5, byrow = TRUE) %>%
+           data.frame() %>%
+           set_names(c("MISMATCHED_CELL", 
+                       "MODULE_COL_NAME", "MODULE_VALUE",
+                       "SCRIPT_COL_NAME", "SCRIPT_VALUE")))
+  
+}
+
+
+parallelCellCheck <- function (moduleRow, scriptRow, i) {
+  
+  # For given rows from 'moduleDF' and 'scriptDF',
+  # check if the values in each corresponding column are the same value
+  # If not, note that in a vector that will be returned
+  
+  
+  # Initialize a vector to hold information about mismatches
+  mismatchVec <- c()
+  
+  
+  # Iterate through the columns of the DF row
+  for (j in 1:ncol(moduleRow)) {
+    
+    # If they are both NA, skip to the next iteration
+    if (moduleRow[[2, j]] %in% c(NA, "NA") && 
+        scriptRow[[2, j]] %in% c(NA, "NA")) {
+      next
+    }
+    
+    
+    # If both are not NA, and they are equal, skip to the next iteration
+    if (!(moduleRow[[2, j]] %in% c(NA, "NA")) && 
+        !(scriptRow[[2, j]] %in% c(NA, "NA")) &&
+        moduleRow[[2, j]] == scriptRow[[2, j]]) {
+      next
+    }
+    
+    
+    # Include one additional check specifically for date comparisons
+    # If the compared cell is meant to contain a date, there may be issues
+    # Because of the script procedures, 'scriptRow' may contain a properly formatted 
+    # date (as a string), while 'moduleRow' contains a number string instead 
+    # (because of how dates work in Excel)
+    
+    
+    # Check if a date-like string appears in 'scriptRow' 
+    # and a numeric string appears in 'moduleRow'
+    if (grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", scriptRow[[2, j]]) &&
+        grepl("^[0-9]+$", moduleRow[[2, j]])) {
+      
+      # Convert the strings to dates and compare them
+      # If they are equal, skip to the next iteration
+      if (moduleRow[[2, j]] %>% as.numeric() %>% as.Date(origin = "1899-12-30") ==
+          scriptRow[[2, j]] %>% as_date(format = "%m/%d/%Y")) {
+        next
+      }
+      
+    }
+    
+    
+    
+    # If none of the "if" statements were TRUE,
+    # then there is a mismatch here
+    # The two tibbles do not have the same value for this index
+    
+    
+    # In that case, make a note in 'mismatchVec'
+    # The cell column and row
+    # The column name in the module sheet
+    # The value in the module sheet
+    # The column name in the script sheet
+    # The value in the script sheet
+    mismatchVec <- c(mismatchVec,
+                     paste0(LETTERS[j], i),
+                     moduleRow[[1, j]], moduleRow[[2, j]],
+                     scriptRow[[1, j]], scriptRow[[2, j]])
+    
+    
+  }
+  
+  
+  
+  # After the loop is complete,
+  # If 'mismatchVec' is empty, return NULL
+  if (length(mismatchVec) == 0) {
+    return(NULL)
+  }
+  
+  
+  
+  # Otherwise, return the vector
+  return(mismatchVec)
+  
+}
+
 
 #### Script Execution ####
 
-# mainProcedure()
-
-
-# Ask the user 
+#mainProcedure()
