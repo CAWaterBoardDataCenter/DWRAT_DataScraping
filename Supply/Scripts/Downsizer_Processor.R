@@ -14,8 +14,14 @@ library(here)
 library(lubridate)
 
 #Import Downsizer Data----
-#Copy and paste the Downsizer CSV into the InputData folder;
-Downsizer_Original = read.csv(file = here("WebData/2023-05-23_Downsizer.csv"))
+# Get the file name (it will be the latest CSV file that starts with "Downsizer")
+downsizerCSVname <- list.files() %>% str_subset("^Downsizer.+\\.csv$") %>% tail(1)
+
+
+# Error Check
+stopifnot(length(downsizerCSVname) == 1)
+
+Downsizer_Original = read.csv(file = downsizerCSVname)
 Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
 #Account for timeframe of interest----
