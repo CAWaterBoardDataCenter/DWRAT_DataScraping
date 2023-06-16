@@ -97,6 +97,10 @@ Flat_File_PODs <- read.csv(url("http://intapps.waterboards.ca.gov/downloadFile/f
   Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, Flat_File_eWRIMS$TOWNSHIP_NUMBER, 
                                    Flat_File_eWRIMS$TOWNSHIP_DIRECTION, Flat_File_eWRIMS$RANGE_NUMBER, Flat_File_eWRIMS$RANGE_DIRECTION,
                                    Flat_File_eWRIMS$SECTION_NUMBER)
+  
+  #Convert Coordinate Fields From Character Format to Numeric Format----
+  Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
+    mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
 write.csv(Flat_File_eWRIMS,"OutputData\\Flat_File_eWRIMS_2023-06-16.csv", row.names = FALSE)
