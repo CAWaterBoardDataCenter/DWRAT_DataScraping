@@ -14,8 +14,14 @@ library(here)
 library(lubridate)
 
 #Import Downsizer Data----
-#Copy and paste the Downsizer CSV into the InputData folder;
-Downsizer_Original = read.csv(file = here("WebData/2023-06-07_Downsizer.csv"))
+# Get the file name (it will be the latest CSV file that starts with "Downsizer")
+downsizerCSVname <- list.files() %>% str_subset("^Downsizer.+\\.csv$") %>% tail(1)
+
+
+# Error Check
+stopifnot(length(downsizerCSVname) == 1)
+
+Downsizer_Original = read.csv(file = downsizerCSVname)
 Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
 #Account for timeframe of interest----
@@ -60,8 +66,8 @@ colnames(Downsizer_Processed) = colnames(Headers)
 colnames(Downsizer_Processed)
 
 #Remove all NA columns from Downsizer_Processed 
-# Downsizer_Processed <- select(Downsizer_Processed, -c(starts_with("NA")))
-# colnames(Downsizer_Processed)
+Downsizer_Processed <- select(Downsizer_Processed, -c(starts_with("NA")))
+colnames(Downsizer_Processed)
 
 ##Rearrange Downsizer_Processed columns in proper order----
 col_order <- c('Year', 'Month', 'Day', 'DOWNSIZER_PRECIP1', 'DOWNSIZER_PRECIP2',
