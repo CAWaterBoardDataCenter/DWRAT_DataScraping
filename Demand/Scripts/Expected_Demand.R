@@ -181,17 +181,18 @@ mainProcedure <- function () {
   
   
   
-  # The next group of columns convert "CALENDAR_YEAR_TOTAL" to different units
-  # That initial value is assumed to be in AF/year
-  # Do conversions to "gallons", "gallons per minute", "gallons per day", 
+  # The next group of columns check "CALENDAR_YEAR_TOTAL" for different units
+  # That column's values are assumed to be different from AF/year
+  # The options are "gallons", "gallons per minute", "gallons per day", 
   # and "cubic feet per second"
+  # Attempt to convert the values into "AF/year" assuming one of the previous unit options
   # In 1 AF, there are 325,851 gal or 43,559.9 ft^3
   # In 1 yr, there are 365 days, 525,600 min, or 31,536,000 s
   monthlyDF <- monthlyDF %>%
-    mutate(Annual_Diversion_if_reported_in_Gallons = CALENDAR_YEAR_TOTAL * 325851,
-           Annual_Diversion_if_reported_in_GPM = CALENDAR_YEAR_TOTAL * 325851 / 525600,
-           Annual_Diversion_if_reported_in_GPD = CALENDAR_YEAR_TOTAL * 325851 / 365,
-           Annual_Diversion_if_reported_in_CFS = CALENDAR_YEAR_TOTAL * 43559.9 / 31536000)
+    mutate(Annual_Diversion_if_reported_in_Gallons = CALENDAR_YEAR_TOTAL / 325851,
+           Annual_Diversion_if_reported_in_GPM = CALENDAR_YEAR_TOTAL / 325851 * 525600,
+           Annual_Diversion_if_reported_in_GPD = CALENDAR_YEAR_TOTAL / 325851 * 365,
+           Annual_Diversion_if_reported_in_CFS = CALENDAR_YEAR_TOTAL / 43559.9 * 31536000)
   
   
   
