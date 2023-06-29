@@ -6,12 +6,13 @@ library(here)
 library(dplyr)
 library(readr)
 library(lubridate)
+library(binman)
 
 #InputData----
 #Dates--adjust as needed; EndDate is always yesterday
 Stations <- read.csv(here("InputData/CIMIS_Stations.csv"))
-# StartDate = data.frame("April", "1", "2023", as.Date("2023-04-01"))
-# EndDate = data.frame("May", "22", "2023", as.Date("2023-05-22"))
+#StartDate = data.frame("April", "1", "2023", as.Date("2023-04-01"))
+#EndDate = data.frame("May", "22", "2023", as.Date("2023-05-22"))
 
 # colnames(StartDate) = c("month", "day", "year", "date")
 # colnames(EndDate) = c("month", "day", "year", "date")
