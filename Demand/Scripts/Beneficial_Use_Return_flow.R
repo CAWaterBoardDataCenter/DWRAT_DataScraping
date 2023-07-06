@@ -1,7 +1,7 @@
 # Calculate and summarize data on each right holder's beneficial use and return flow
 
 
-# This script is a recreation of the Excel module Beneficial_Use_Return_Flow.xlsx"
+# This script is a recreation of the Excel module "Beneficial_Use_Return_Flow.xlsx"
 
 
 #### Dependencies ####
@@ -526,4 +526,4 @@ writeSpreadsheet <- function (inputDF, resDF) {
 
 #### Script Execution ####
 
-#mainProcedure()
+mainProcedure()
