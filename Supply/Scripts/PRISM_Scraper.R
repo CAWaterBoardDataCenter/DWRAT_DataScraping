@@ -1,6 +1,6 @@
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
-    #ON: 5/24/2023
+    #ON: 7/12/2023
 
 # Load packages
 library(tidyverse)
@@ -25,6 +25,10 @@ eCaps <- list(
   )
 )
 default_folder <- eCaps$chromeOptions$prefs$download.default_directory
+
+## Download latest Chrome drivers---
+temp <- wdman::chrome()
+temp$stop()
 
 ## Set version of Chrome----
 ### Get current version of chrome browser----
@@ -72,6 +76,7 @@ if ('LICENSE.chromedriver' %in% list.files(chrome_driver_dir)) {
 ### Open a chrome browser session with RSelenium ----
 rs_driver_object <-rsDriver(
   browser = 'chrome',
+  check = TRUE,
   chromever = chrome_driver_current, #set to the version on your PC that most closely matches the chrome browser version
   port = free_port(),
   extraCapabilities = eCaps
