@@ -13,7 +13,7 @@ library(KeyboardSimulator)
 
 # set start and end dates -------------------------------------------------
 ## Set start date----
-StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date
+StartDate <- as.Date("2023-05-08") # 1-2 months before previous end date
 #Serves as the start date for the observed data forecast and the DAT_Shell
 
 # Extract Day, Month, and Year from StartDate; functions require lubridate package
@@ -25,7 +25,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- Sys.Date()-1 # set to yesterday's date; serves as the end date for the forecast
+EndDate <- Sys.Date() - 1 # set to yesterday's date; serves as the end date for the observed data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)

@@ -36,7 +36,7 @@ col_order <- colnames(Dat_Shell[-7]) #grab the column names from Dat_Shell excep
 Dat_Final = Dat_Shell6[,col_order]
 
 #Write to tab-delimited text file----
-write.table(Dat_Final, here("ProcessedData/Dat_Final_2023-05-23.txt"), sep="\t", row.names=F, quote = F)
+write.table(Dat_Final, here("ProcessedData/Dat_Final_2023-07-17.txt"), sep="\t", row.names=F, quote = F)
 
 #Write to CSV
 # write.csv(Dat_Final, here("ProcessedData/Dat_Final_2023-03-24.csv"), row.names = FALSE)
