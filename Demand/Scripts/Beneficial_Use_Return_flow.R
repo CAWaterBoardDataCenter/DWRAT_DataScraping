@@ -390,7 +390,7 @@ standardReturnFlow <- function () {
       "Water Quality", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) %>%
       matrix(ncol = 13, byrow = TRUE) %>% data.frame() %>%
       set_names(c("USE_CODE", month.abb)) %>%
-      mutate(across(month.abb, as.numeric))
+      mutate(across(all_of(month.abb), as.numeric))
   )
   
 }

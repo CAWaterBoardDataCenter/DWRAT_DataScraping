@@ -1,770 +1,171 @@
 "APPLICATION_NUMBER","USE_STATUS","DIRECT_SEASON_START_MONTH_1","DIRECT_DIV_SEASON_END_MONTH_1","DIRECT_SEASON_START_MONTH_2","DIRECT_DIV_SEASON_END_MONTH_2","STORAGE_SEASON_START_MONTH_1","STORAGE_SEASON_END_MONTH_1","STORAGE_SEASON_START_MONTH_2","STORAGE_SEASON_END_MONTH_2"
-"A001029","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A001205","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A001983","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
-"A001983","Migrated from old WRIMS data",5,7,7,4,NA,NA,NA,NA
-"A002723","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A002723","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A002928","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A003421","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A003565","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A003601","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A003601","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A003633","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
 "A004307","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A004308","Requested when filed",6,9,NA,NA,NA,NA,NA,NA
-"A004612","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A004832","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A005050","Migrated from old WRIMS data",1,12,NA,NA,11,4,NA,NA
-"A005050","Migrated from old WRIMS data",1,12,NA,NA,11,4,NA,NA
-"A006464","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A006594","Migrated from old WRIMS data",5,10,NA,NA,11,6,NA,NA
-"A006642","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
 "A006805A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A006854","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
 "A006855","Migrated from old WRIMS data",5,8,NA,NA,NA,NA,NA,NA
 "A006926","Migrated from old WRIMS data",10,5,NA,NA,NA,NA,NA,NA
-"A006927","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A006927","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A007006","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
 "A008974","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A009746","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A009774","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A009832A","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A009832A","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A009832B","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A009832B","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A009868","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A009992","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A010795","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A010795","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A010795","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A010795","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A010915","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A010915","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A010976","Migrated from old WRIMS data",6,7,NA,NA,NA,NA,NA,NA
-"A011315","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A011327","Migrated from old WRIMS data",5,10,11,4,NA,NA,NA,NA
-"A011327","Migrated from old WRIMS data",5,10,11,4,NA,NA,NA,NA
-"A011383","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A011566","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A011846","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
 "A011859","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A011859","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A012034","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A012034","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A012100","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A012100","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A012100","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A012232","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A012330","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A012330","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A012452","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
 "A012483","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A012509","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A012510","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A012510","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A012525","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A012773","Migrated from old WRIMS data",1,12,NA,NA,11,5,NA,NA
 "A012850","Migrated from old WRIMS data",3,12,NA,NA,NA,NA,NA,NA
-"A012877","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
 "A012919A","Migrated from old WRIMS data",1,12,NA,NA,1,12,NA,NA
 "A012919A","Migrated from old WRIMS data",1,12,NA,NA,1,12,NA,NA
 "A012919A","Migrated from old WRIMS data",1,12,NA,NA,1,12,NA,NA
 "A012919A","Migrated from old WRIMS data",1,12,NA,NA,1,12,NA,NA
 "A012919A","Migrated from old WRIMS data",1,12,NA,NA,1,12,NA,NA
-"A012919B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A012919B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A012919B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A012919B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A012919B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A012931","Migrated from old WRIMS data",8,9,NA,NA,NA,NA,NA,NA
-"A012951","Migrated from old WRIMS data",NA,NA,NA,NA,3,7,NA,NA
-"A012951","Migrated from old WRIMS data",NA,NA,NA,NA,3,7,NA,NA
-"A012958","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013030A","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013030B","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A013062","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A013076","Migrated from old WRIMS data",5,8,NA,NA,NA,NA,NA,NA
-"A013097","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013098","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A013105","Requested when filed",6,8,NA,NA,NA,NA,NA,NA
-"A013126A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013126A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013126A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013126B","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013135","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013151","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013161","Migrated from old WRIMS data",6,8,NA,NA,6,7,NA,NA
-"A013161","Migrated from old WRIMS data",6,8,NA,NA,6,7,NA,NA
-"A013163","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A013163","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A013182A01","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A013182A01","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013182A02","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013182A02","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013182B","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013182B","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013217","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
 "A013221","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A013221","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A013256","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013261","Migrated from old WRIMS data",5,12,NA,NA,NA,NA,NA,NA
-"A013267","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013268","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013268","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013269","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013270","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A013277","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013281A01","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013281A01","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013281A02","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013281A02","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013281A03","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013281A03","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A013281B","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A013281B","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013287","Migrated from old WRIMS data",3,10,NA,NA,NA,NA,NA,NA
-"A013287","Migrated from old WRIMS data",3,10,NA,NA,NA,NA,NA,NA
-"A013288","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A013289","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013301","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013317","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013330","Migrated from old WRIMS data",4,6,NA,NA,NA,NA,NA,NA
-"A013331","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
-"A013359","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A013359","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A013376","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013384","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A013384","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A013384","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A013384","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A013391","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013393","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A013406","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A013453","Migrated from old WRIMS data",5,12,NA,NA,NA,NA,NA,NA
-"A013468","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A013474","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A013507","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A013527","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013527","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A013528","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013529","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013533","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
 "A013539","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A013539","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A013539","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A013557","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013557","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A013578","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A013578","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A013579","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A013586","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013586","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A013633","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A013639","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A013661","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
-"A013684A","Requested when filed",5,12,NA,NA,NA,NA,NA,NA
-"A013684A","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A013684A","Requested when filed",5,12,NA,NA,NA,NA,NA,NA
-"A013684A","Requested when filed",5,12,NA,NA,NA,NA,NA,NA
-"A013684B","Migrated from old WRIMS data",5,12,NA,NA,NA,NA,NA,NA
-"A013695","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A013695","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A013706","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A013716","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A013716","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A013716","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A013716","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A013716","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A013729","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013749","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
-"A013753","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A013755","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A013758","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013789","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013810","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A013811","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013831","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013831","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013831","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013832","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013862","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A013863","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A013864","Migrated from old WRIMS data",1,12,NA,NA,11,3,NA,NA
-"A013874","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A013874","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A013890","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013914","Migrated from old WRIMS data",5,8,10,12,NA,NA,NA,NA
-"A013932","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013933","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A013958","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A013958","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A013958","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A013967","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A013967","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A013967","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A013973","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013974","Migrated from old WRIMS data",9,11,NA,NA,NA,NA,NA,NA
-"A013975","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A013975","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A013984","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013985","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013987","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A013988","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A013989","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014010","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014010","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014010","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014010","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014030","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A014033","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A014034","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A014043","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014044A","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014044B","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A014045","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A014047","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014048","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014049","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A014050A","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A014050A","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A014050B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A014050B","Added by change order",NA,NA,NA,NA,NA,NA,NA,NA
-"A014051","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A014051","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A014054","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014055","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014056","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A014061","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A014064","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A014065","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A014066","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A014066","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A014067","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014068","Requested when filed",4,11,NA,NA,NA,NA,NA,NA
-"A014092","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A014107","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A014107","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A014119","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A014119","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A014119","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A014136","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014144","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A014160","Migrated from old WRIMS data",6,11,NA,NA,NA,NA,NA,NA
-"A014172","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014178","Requested when filed",6,11,NA,NA,NA,NA,NA,NA
-"A014178","Requested when filed",6,11,NA,NA,NA,NA,NA,NA
-"A014178","Requested when filed",6,11,NA,NA,NA,NA,NA,NA
-"A014206","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A014208","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
 "A014215","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014245","Migrated from old WRIMS data",5,12,NA,NA,NA,NA,NA,NA
-"A014246","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014259A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A014304","Added by correction order",5,9,NA,NA,NA,NA,NA,NA
-"A014333","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A014339","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014364","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A014379","Migrated from old WRIMS data",2,12,NA,NA,NA,NA,NA,NA
-"A014393","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014459","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A014466","Migrated from old WRIMS data",NA,NA,NA,NA,10,2,NA,NA
-"A014466","Migrated from old WRIMS data",NA,NA,NA,NA,10,2,NA,NA
 "A014467","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A014467","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A014492","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014513","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A014513","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A014539","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A014543","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A014604","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A014624","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A014715","Migrated from old WRIMS data",3,12,NA,NA,10,5,NA,NA
-"A014720","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014735","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A014735","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A014747","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014749","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A014749","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A014750","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A014762","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A014767","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A014777","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A014797","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A014826","Migrated from old WRIMS data",5,10,NA,NA,5,6,NA,NA
-"A014841","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A014841","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A014842","Added by change order",NA,NA,NA,NA,11,4,NA,NA
-"A014842","Added by change order",NA,NA,NA,NA,11,4,NA,NA
-"A014842","Added by change order",NA,NA,NA,NA,11,4,NA,NA
-"A014842","Added by change order",NA,NA,NA,NA,11,4,NA,NA
-"A014855","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A014856","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014870","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A014872","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014872","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014872","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A014875","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A014875","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A014880","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A014880","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A014904","Migrated from old WRIMS data",3,9,NA,NA,NA,NA,NA,NA
-"A014916A","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014916B","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014925","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014925","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A014942","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A014966","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A014997A","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
-"A014997B","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
 "A015075","Migrated from old WRIMS data",4,7,NA,NA,NA,NA,NA,NA
 "A015075","Migrated from old WRIMS data",4,7,NA,NA,NA,NA,NA,NA
 "A015120","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A015120","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015157","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A015158A","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A015158B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A015168","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A015187","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015194","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015194","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015194","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015233","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A015237","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A015277","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A015299","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A015299","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A015314","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015314","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015314","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015314","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015329A","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
-"A015329B","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
-"A015348","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A015370","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A015397","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
 "A015399","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015515","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015521","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A015521","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A015603","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A015610","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A015624","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A015624","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A015663","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015663","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015664A","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A015664B","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A015664C","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A015677","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A015678","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A015685","Migrated from old WRIMS data",4,6,NA,NA,NA,NA,NA,NA
-"A015704","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015720","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A015720","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A015721","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A015724","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A015724","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A015726","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015727","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A015728A","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A015728A","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A015728A","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A015728B","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A015728B","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A015728B","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A015729","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015736","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015736","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015736","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A015737","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A015737","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A015737","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
 "A015743","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A015743","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015759","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A015760","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A015779","Migrated from old WRIMS data",NA,NA,NA,NA,5,9,NA,NA
-"A015780","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015781","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015782","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A015796","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A015854","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015894","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A015947","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A015983","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A015984","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A015984","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A016077","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A016077","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A016077","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A016077","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A016086","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A016106","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
 "A016106","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
 "A016106","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A016141","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A016141","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A016141","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A016155","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A016190","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016190","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016218","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A016218","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A016249","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A016249","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A016308","Migrated from old WRIMS data",6,11,NA,NA,NA,NA,NA,NA
-"A016319","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A016334","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A016334","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A016347","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
-"A016357","Requested when filed",4,11,NA,NA,NA,NA,NA,NA
-"A016381","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A016381","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A016398","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A016405","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A016416","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A016440","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A016443","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A016443","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A016443","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A016457","Requested when filed",4,12,NA,NA,NA,NA,NA,NA
-"A016467","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
 "A016472","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A016478","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016478","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016478","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016524","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A016525","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A016527","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A016545","Migrated from old WRIMS data",NA,NA,NA,NA,4,6,NA,NA
-"A016557","Requested when filed",4,9,NA,NA,NA,NA,NA,NA
-"A016561","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A016655","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016655","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016655","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016670","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A016670","Added by change order",5,10,NA,NA,NA,NA,NA,NA
-"A016671","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A016673","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A016758","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A016777","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A016821","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A016825","Requested when filed",1,6,NA,NA,NA,NA,NA,NA
-"A016825","Requested when filed",6,9,NA,NA,NA,NA,NA,NA
-"A016904","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016904","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016904","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A016961","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A016961","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A016961","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A016973","Migrated from old WRIMS data",4,11,NA,NA,11,5,NA,NA
 "A016973","Migrated from old WRIMS data",4,11,NA,NA,11,5,NA,NA
-"A017056","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A017081","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A017081","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A017091A","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A017091B","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A017091B","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
 "A017091C","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
 "A017091C","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A017098","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A017100","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A017121","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A017145","Added by change order",5,10,NA,NA,NA,NA,NA,NA
-"A017145","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A017232","Migrated from old WRIMS data",11,7,NA,NA,NA,NA,NA,NA
 "A017237","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A017237","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A017240","Migrated from old WRIMS data",5,10,NA,NA,1,12,NA,NA
-"A017240","Migrated from old WRIMS data",5,10,NA,NA,1,12,NA,NA
-"A017240","Migrated from old WRIMS data",5,10,NA,NA,1,12,NA,NA
-"A017240","Migrated from old WRIMS data",5,10,NA,NA,1,12,NA,NA
 "A017263","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A017271","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A017271","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A017366","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A017477","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A017479","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A017508","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A017508","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A017551","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
 "A017587","Migrated from old WRIMS data",11,7,NA,NA,NA,NA,NA,NA
 "A017587","Migrated from old WRIMS data",11,7,NA,NA,NA,NA,NA,NA
-"A017622","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A017624","Migrated from old WRIMS data",5,6,NA,NA,NA,NA,NA,NA
-"A017642","Migrated from old WRIMS data",NA,NA,NA,NA,4,5,NA,NA
-"A017642","Migrated from old WRIMS data",NA,NA,NA,NA,4,5,NA,NA
-"A017689","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A017689","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A017717","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A017717","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A017717","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A017745","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A017795","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A017795","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A017833","Migrated from old WRIMS data",4,10,10,4,NA,NA,NA,NA
-"A017833","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A017868","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A017871","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A017871","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A017871","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A017881","Migrated from old WRIMS data",6,11,NA,NA,NA,NA,NA,NA
 "A017885","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A017911A","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A017911B","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A017919","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A017933","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A017978","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A017978","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A017978","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A017998","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A017998","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A017999","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A017999","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A018060","Migrated from old WRIMS data",3,12,NA,NA,NA,NA,NA,NA
-"A018060","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A018093A","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A018093B","Added by change order",5,10,NA,NA,NA,NA,NA,NA
-"A018093B","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A018127","Migrated from old WRIMS data",3,12,NA,NA,NA,NA,NA,NA
-"A018138","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018138","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018138","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018138","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018192","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018200","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A018235","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A018241","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A018274A","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A018274A","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A018274A","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A018274A","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A018274A","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A018274B","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A018274B","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A018274B","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A018277","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A018277","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A018277","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A018328","Migrated from old WRIMS data",NA,NA,NA,NA,11,7,NA,NA
-"A018392","Migrated from old WRIMS data",6,11,NA,NA,NA,NA,NA,NA
-"A018392","Migrated from old WRIMS data",6,11,NA,NA,NA,NA,NA,NA
-"A018522","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A018522","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A018648","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A018648","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A018648","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A018648","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A018648","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A018649","Migrated from old WRIMS data",1,6,11,12,NA,NA,NA,NA
-"A018649","Migrated from old WRIMS data",1,6,11,12,NA,NA,NA,NA
-"A018736","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018736","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018736","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018835","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A018835","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A018843","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018843","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018849","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A018849","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A018948","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A018948","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A018948","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A018958","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018958","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018963","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018963","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A018963","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019013","Migrated from old WRIMS data",NA,NA,NA,NA,1,4,NA,NA
-"A019013","Migrated from old WRIMS data",NA,NA,NA,NA,1,4,NA,NA
-"A019013","Migrated from old WRIMS data",NA,NA,NA,NA,1,4,NA,NA
-"A019071","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A019089","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A019089","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A019089","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A019089","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A019089","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A019135","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A019140","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A019200","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A019200","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A019241","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A019336","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A019339","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A019351","Migrated from old WRIMS data",1,12,NA,NA,10,5,NA,NA
-"A019351","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019351","Migrated from old WRIMS data",1,12,NA,NA,10,5,NA,NA
-"A019351","Migrated from old WRIMS data",1,12,NA,NA,10,5,NA,NA
-"A019422","Migrated from old WRIMS data",NA,NA,NA,NA,9,5,NA,NA
-"A019422","Migrated from old WRIMS data",NA,NA,NA,NA,9,5,NA,NA
-"A019422","Migrated from old WRIMS data",NA,NA,NA,NA,9,5,NA,NA
 "A019427","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
 "A019427","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A019444","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019444","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019470","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A019515","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019515","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019515","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A019554","Migrated from old WRIMS data",NA,NA,NA,NA,9,6,NA,NA
 "A019554","Migrated from old WRIMS data",4,11,11,4,9,6,NA,NA
 "A019554","Migrated from old WRIMS data",4,11,11,4,9,6,NA,NA
 "A019554","Migrated from old WRIMS data",4,11,NA,NA,9,6,NA,NA
-"A019557","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019557","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019557","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019642","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A019642","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A019649","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A019652","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A019652","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A019652","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A019720","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019720","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019722","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A019722","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A019722","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A019798","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A019806","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A019806","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A019891","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A019891","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A019891","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A019921","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A019921","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A019921","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A019921","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020005","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A020005","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A020015","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020015","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A020071","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A020071","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A020071","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020078","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020089","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A020089","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
-"A020100","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A020100","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A020114","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020114","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020127","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020127","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020129","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020129","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020129","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A020134","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A020134","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A020134","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A020147","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020147","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020261","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020261","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020264","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020264","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020264","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020333","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A020333","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A020333","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A020384","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020401","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A020401","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A020435","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020435","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020436","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020436","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020436","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020436","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020491","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A020491","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
 "A020493","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020493","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020509","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020509","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020540","Requested when filed",5,11,NA,NA,5,11,NA,NA
-"A020540","Requested when filed",5,11,NA,NA,5,11,NA,NA
-"A020557","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A020557","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A020573","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020573","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020573","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020582","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020582","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020583","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
 "A020584","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020584","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020624","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020634","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020634","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020657","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A020662","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A020720","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020720","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020728","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020728","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020728","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020733","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020733","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020769","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020769","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020788","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020788","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020791","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A020791","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A020798","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020798","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020813","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020813","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020846","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A020846","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020846","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020870","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020870","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020872","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020872","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020896","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020896","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020901","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A020907","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020907","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A020920","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A020951","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020951","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020951","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020953","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A020953","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A020963","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020963","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A020963","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A020979","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021015","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021015","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021052","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021052","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021081","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021106","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
 "A021121","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A021126","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A021127","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A021148","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A021148","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A021156","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A021187","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021187","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021187","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021191","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021191","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021191","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021202","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A021202","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A021210","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021210","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021210","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021235","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021235","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021245","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A021271","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A021345","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A021345","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
@@ -774,329 +175,71 @@
 "A021355","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A021355","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021360","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A021419","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021419","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021419","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021429A","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021429A","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021429A","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021429A","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021429A","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A021429B","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A021429B","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A021429B","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A021429B","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A021429B","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A021429C","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021429C","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021429C","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021429C","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021429C","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021466","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021466","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021466","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021466","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021506","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A021506","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A021506","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A021515","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021516","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
-"A021522","Migrated from old WRIMS data",1,12,NA,NA,3,4,NA,NA
-"A021522","Migrated from old WRIMS data",1,12,NA,NA,3,4,NA,NA
-"A021522","Migrated from old WRIMS data",1,12,NA,NA,3,4,NA,NA
 "A021540","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A021540","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A021569","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021569","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021569","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021570","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021570","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021570","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021596","Migrated from old WRIMS data",4,6,NA,NA,NA,NA,NA,NA
-"A021658","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021658","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021658","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021660","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A021666","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A021666","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A021666","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A021666","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
 "A021674","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A021691","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021691","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021705","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021705","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021705","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021710","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021710","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021710","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A021711","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A021711","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A021756","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021756","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021783A","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A021783A","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A021783A","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A021783B","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A021809","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A021809","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A021817","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021817","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021817","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021838","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A021856","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021870","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021886","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021889","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A021919","Migrated from old WRIMS data",NA,NA,NA,NA,9,5,NA,NA
-"A021925","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021925","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021925","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A021927","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A021928","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A021929","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A021930","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A021931","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
-"A021932","Requested when filed",4,10,NA,NA,NA,NA,NA,NA
-"A021932","Requested when filed",4,10,NA,NA,NA,NA,NA,NA
-"A021932","Requested when filed",4,10,NA,NA,NA,NA,NA,NA
-"A021939","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021941","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A021942","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A021950","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A021966","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021966","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021966","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021966","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021977","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A021977","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022005B","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A022038","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022070","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022070","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022070","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022079","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022079","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022079","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022090","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022090","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022141","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022141","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022145","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
 "A022145","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
-"A022151","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022151","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022151","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022151","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022188","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022188","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022208","Migrated from old WRIMS data",4,6,7,10,NA,NA,NA,NA
-"A022237","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022237","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022273","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022277","Migrated from old WRIMS data",3,6,NA,NA,NA,NA,NA,NA
-"A022277","Migrated from old WRIMS data",3,6,NA,NA,NA,NA,NA,NA
-"A022306","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022319","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A022319","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A022319","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A022342","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022348","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
 "A022359","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A022378","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A022426","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A022431","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A022432","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A022432","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A022432","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A022432","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A022432","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A022433","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022433","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022445","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A022496","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022496","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022498","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022523","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A022523","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A022523","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A022565","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A022565","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A022565","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A022565","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A022583","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022608","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A022608","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A022614","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A022614","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A022615","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
 "A022615","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A022623","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022652","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A022652","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A022652","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A022661","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022667","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022667","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022692","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A022692","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A022702","Requested when filed",4,6,NA,NA,NA,NA,NA,NA
 "A022732","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022732","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A022745","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A022745","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A022745","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A022767","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A022767","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A022802","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A022807","Migrated from old WRIMS data",3,10,NA,NA,NA,NA,NA,NA
-"A022815","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
 "A022824","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022881","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A022919","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A022929","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A022962","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A022962","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A022962","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A022993","Migrated from old WRIMS data",6,11,NA,NA,NA,NA,NA,NA
-"A023027","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A023027","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A023035","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023039","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023039","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A023040","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A023040","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023058","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A023067","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A023077","Migrated from old WRIMS data",5,9,NA,NA,4,6,NA,NA
 "A023077","Migrated from old WRIMS data",5,9,10,4,4,6,NA,NA
 "A023077","Migrated from old WRIMS data",5,9,10,4,4,6,NA,NA
 "A023077","Migrated from old WRIMS data",5,9,NA,NA,4,6,NA,NA
 "A023086","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023092","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A023092","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A023094","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023094","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023094","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023094","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A023098","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A023098","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A023144","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
 "A023144","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
 "A023163","Migrated from old WRIMS data",4,11,NA,NA,NA,NA,NA,NA
-"A023165","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023165","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023165","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023173","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023173","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023212A","Migrated from old WRIMS data",4,6,NA,NA,NA,NA,NA,NA
-"A023212B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A023212B","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A023213","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A023213","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A023250","Migrated from old WRIMS data",5,6,NA,NA,NA,NA,NA,NA
 "A023250","Migrated from old WRIMS data",3,4,NA,NA,NA,NA,NA,NA
-"A023255","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023255","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023255","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023282","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023282","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023290","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023290","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023290","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023297","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023297","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023297","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023297","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023297","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023326","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023326","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023328","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A023337","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023337","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023337","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023338","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A023339","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A023339","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A023387","Requested when filed",5,10,NA,NA,NA,NA,NA,NA
 "A023399","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A023399","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023408","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A023408","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A023408","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A023446B","Migrated from old WRIMS data",3,6,NA,NA,NA,NA,NA,NA
-"A023451","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023451","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023481","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023488","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023488","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023489","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023489","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023489","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023489","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023489","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023534A","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A023534A","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A023534B","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A023534B","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A023536","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023536","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023536","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A023539","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A023539","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A023540","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A023540","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A023545","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A023545","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023558","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023558","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023563","Requested when filed",3,11,NA,NA,NA,NA,NA,NA
-"A023605","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023605","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023615","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023615","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023615","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023615","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023629","Migrated from old WRIMS data",5,8,NA,NA,NA,NA,NA,NA
-"A023629","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A023639","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A023639","Migrated from old WRIMS data",11,4,NA,NA,NA,NA,NA,NA
-"A023654A","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023654A","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
-"A023654A","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
-"A023654A","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
 "A023654B","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
 "A023654B","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
 "A023654B","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
 "A023654B","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
-"A023655","Migrated from old WRIMS data",2,4,NA,NA,NA,NA,NA,NA
 "A023660","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
 "A023660","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
 "A023660","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A023663","Migrated from old WRIMS data",NA,NA,NA,NA,3,5,NA,NA
-"A023663","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A023663","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A023664","Requested when filed",11,6,NA,NA,NA,NA,NA,NA
-"A023670","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A023670","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A023671","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A023678","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023678","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023679","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023679","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023681","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023682","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023682","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023700","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A023707","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A023737","Migrated from old WRIMS data",3,7,NA,NA,2,7,NA,NA
-"A023737","Migrated from old WRIMS data",3,7,NA,NA,2,7,NA,NA
-"A023737","Migrated from old WRIMS data",3,7,NA,NA,2,7,NA,NA
-"A023748","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023748","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023748","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A023766","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A023766","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A023792","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
 "A023792","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
 "A023793","Requested when filed",3,9,NA,NA,11,5,NA,NA
@@ -1105,24 +248,6 @@
 "A023793","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
 "A023794","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A023794","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A023802","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A023802","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A023802","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A023817","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A023835","Migrated from old WRIMS data",5,11,11,5,NA,NA,NA,NA
-"A023835","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A023835","Migrated from old WRIMS data",5,11,11,5,NA,NA,NA,NA
-"A023835","Migrated from old WRIMS data",5,11,11,5,NA,NA,NA,NA
-"A023836","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023836","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023839","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023839","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023839","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023839","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023840","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023840","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023840","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A023840","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A023868","Migrated from old WRIMS data",6,6,NA,NA,NA,NA,NA,NA
 "A023868","Migrated from old WRIMS data",6,6,NA,NA,NA,NA,NA,NA
 "A023868","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
@@ -1130,623 +255,119 @@
 "A023869","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
 "A023869","Migrated from old WRIMS data",3,6,NA,NA,12,6,NA,NA
 "A023869","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A023880","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A023880","Migrated from old WRIMS data",3,5,NA,NA,10,6,NA,NA
-"A023880","Migrated from old WRIMS data",3,5,NA,NA,10,6,NA,NA
-"A023895","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A023895","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A023902","Requested when filed",6,10,NA,NA,NA,NA,NA,NA
-"A023915","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A023916","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A023926A","Requested when filed",3,5,3,5,NA,NA,NA,NA
-"A023926A","Requested when filed",3,5,10,11,NA,NA,NA,NA
-"A023926B","Migrated from old WRIMS data",3,5,10,11,3,5,NA,NA
-"A023926B","Migrated from old WRIMS data",3,5,10,11,3,5,NA,NA
-"A023926B","Added by change order",3,5,10,11,3,5,NA,NA
-"A023949","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A023998","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A023998","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024004","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024004","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024004","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024010","Migrated from old WRIMS data",1,12,NA,NA,11,6,NA,NA
-"A024010","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
-"A024010","Migrated from old WRIMS data",5,10,NA,NA,11,6,NA,NA
-"A024010","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024013","Requested when filed",NA,NA,NA,NA,3,5,NA,NA
-"A024014","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
 "A024017","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024017","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024017","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024017","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024025","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024025","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024025","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024028","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A024028","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A024028","Added by change order",NA,NA,NA,NA,10,5,NA,NA
-"A024028","Added under section 798 of Regs",NA,NA,NA,NA,10,5,NA,NA
 "A024044","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024044","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024044","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024050","Requested when filed",3,5,NA,NA,NA,NA,NA,NA
 "A024051","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A024051","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A024051","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A024051","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024053","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A024053","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A024053","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A024053","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A024056","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024056","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024056","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024101","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024101","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024101","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024104","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A024104","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A024126","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A024126","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
 "A024130","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A024130","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A024130","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A024130","Added by change order",NA,NA,NA,NA,10,5,NA,NA
-"A024139","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024139","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024140","Migrated from old WRIMS data",3,5,9,11,11,7,NA,NA
-"A024140","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024141","Requested when filed",10,11,NA,NA,NA,NA,NA,NA
 "A024163","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A024173","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024173","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
 "A024205","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024205","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024205","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024205","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024209A","Requested when filed",6,8,NA,NA,NA,NA,NA,NA
-"A024209A","Requested when filed",6,8,NA,NA,NA,NA,NA,NA
-"A024209B","Requested when filed",3,5,9,11,NA,NA,NA,NA
-"A024223","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024223","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024223","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024223","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024238","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024238","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024238","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024238","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024247","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024266A","Migrated from old WRIMS data",7,8,NA,NA,NA,NA,NA,NA
-"A024266B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024268A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A024268B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024268B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024269A","Requested when filed",6,8,NA,NA,NA,NA,NA,NA
-"A024269B","Requested when filed",3,5,NA,NA,NA,NA,NA,NA
-"A024270A","Requested when filed",6,9,NA,NA,NA,NA,NA,NA
 "A024270B","Requested when filed",3,5,9,11,NA,NA,NA,NA
-"A024271A","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024271A","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024271B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024300A","Requested when filed",4,10,NA,NA,11,4,NA,NA
-"A024300A","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A024300A","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A024300A","Requested when filed",4,10,NA,NA,11,4,NA,NA
-"A024301","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024301","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024301","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024310A","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
 "A024310A","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
 "A024310B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024311A","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
-"A024311A","Migrated from old WRIMS data",5,7,NA,NA,NA,NA,NA,NA
-"A024311B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
 "A024318","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
 "A024318","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024344","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024344","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024344","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A024377","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024377","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A024378","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024378","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024378","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024378","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024391","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
 "A024391","Added by change order",NA,NA,NA,NA,11,4,NA,NA
-"A024404","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024404","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024404","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024404","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024404","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024405","Migrated from old WRIMS data",4,6,NA,NA,12,6,NA,NA
-"A024405","Migrated from old WRIMS data",4,6,NA,NA,12,6,NA,NA
-"A024405","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A024408","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A024408","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A024409","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
-"A024409","Migrated from old WRIMS data",3,6,NA,NA,11,6,NA,NA
-"A024412","Migrated from old WRIMS data",3,5,NA,NA,11,5,NA,NA
-"A024412","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024412","Migrated from old WRIMS data",3,5,NA,NA,11,5,NA,NA
-"A024412","Migrated from old WRIMS data",3,5,NA,NA,11,5,NA,NA
-"A024425","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024425","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024457","Migrated from old WRIMS data",3,5,NA,NA,12,5,NA,NA
-"A024457","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A024457","Migrated from old WRIMS data",3,5,NA,NA,12,5,NA,NA
 "A024488","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024488","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024488","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024502","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A024502","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A024502","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A024522A","Requested when filed",5,11,NA,NA,11,5,NA,NA
 "A024522B","Requested when filed",3,11,NA,NA,11,5,NA,NA
 "A024522B","Requested when filed",3,11,NA,NA,11,5,NA,NA
-"A024544","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A024569","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A024569","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024571A","Requested when filed",5,11,NA,NA,NA,NA,NA,NA
-"A024571A","Requested when filed",5,9,NA,NA,NA,NA,NA,NA
 "A024571B","Requested when filed",3,5,NA,NA,NA,NA,NA,NA
-"A024593A","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024593A","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024593A","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024593A","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024593A","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A024593B","Requested when filed",3,5,NA,NA,NA,NA,NA,NA
-"A024604","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A024604","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A024617","Migrated from old WRIMS data",5,8,NA,NA,NA,NA,NA,NA
-"A024617","Migrated from old WRIMS data",3,5,9,10,NA,NA,NA,NA
-"A024644","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A024644","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A024645","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024645","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024645","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024645","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024645","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024678B","Migrated from old WRIMS data",3,6,9,10,NA,NA,NA,NA
-"A024678B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024682","Migrated from old WRIMS data",NA,NA,NA,NA,10,12,NA,NA
-"A024682","Migrated from old WRIMS data",NA,NA,NA,NA,10,12,NA,NA
-"A024682","Migrated from old WRIMS data",NA,NA,NA,NA,10,12,NA,NA
-"A024688A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A024688B","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A024691A","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024691A","Migrated from old WRIMS data",6,7,NA,NA,11,6,NA,NA
-"A024691A","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024691B","Migrated from old WRIMS data",3,6,NA,NA,NA,NA,NA,NA
 "A024706","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A024706","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A024706","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A024706","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A024706","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A024725","Migrated from old WRIMS data",12,4,NA,NA,NA,NA,NA,NA
-"A024725","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024725","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024725","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024725","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024725","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024741","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024741","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024741","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024741","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A024761","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A024761","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A024761","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A024762A","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024762B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024763B","Requested when filed",3,5,NA,NA,NA,NA,NA,NA
-"A024764","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024764","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024764","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A024764","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024764","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024774","Migrated from old WRIMS data",6,9,NA,NA,11,4,NA,NA
 "A024780","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024782","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024782","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024782","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024782","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024783","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A024783","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A024784","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024789A","Migrated from old WRIMS data",5,6,9,9,NA,NA,NA,NA
-"A024789B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024790A","Requested when filed",NA,NA,NA,NA,1,5,NA,NA
-"A024790A","Requested when filed",NA,NA,NA,NA,1,5,NA,NA
-"A024791","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024805","Migrated from old WRIMS data",11,4,NA,NA,NA,NA,NA,NA
-"A024805","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024805","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024805","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024807","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024807","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024807","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024817","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024817","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024820","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A024827","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024827","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024827","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024827","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A024854","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024854","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A024864A","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024864A","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024864B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024865A01","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A024865A02","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
 "A024865A02","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A024865B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024865B","Migrated from old WRIMS data",4,6,NA,NA,NA,NA,NA,NA
 "A024874","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A024877","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024877","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A024884","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A024884","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024889","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A024890","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A024890","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
 "A024891","Migrated from old WRIMS data",4,12,NA,NA,NA,NA,NA,NA
 "A024892A","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
 "A024892A","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A024892B","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
 "A024893A","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
 "A024893B","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A024894","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A024898","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024898","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024898","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024898","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A024899","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A024899","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A024899","Migrated from old WRIMS data",7,8,NA,NA,NA,NA,NA,NA
-"A024905","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A024905","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A024905","Migrated from old WRIMS data",4,9,NA,NA,NA,NA,NA,NA
-"A024909","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024912","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024912","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024919","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024921","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
 "A024929","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A024931","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024931","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"A024931","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024932","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A024935","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024946","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A024951","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024951","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A024951","Migrated from old WRIMS data",3,6,NA,NA,NA,NA,NA,NA
-"A024951","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024951","Migrated from old WRIMS data",3,9,NA,NA,NA,NA,NA,NA
-"A024955","Migrated from old WRIMS data",3,4,NA,NA,11,4,NA,NA
-"A024955","Migrated from old WRIMS data",11,4,NA,NA,11,4,NA,NA
-"A024955","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A024958A","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
 "A024958B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024959","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A024959","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A024959","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
 "A024962","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A024963","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A024967","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A024967","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A024967","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A024968A","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
 "A024968A","Migrated from old WRIMS data",6,7,NA,NA,NA,NA,NA,NA
-"A024968B","Migrated from old WRIMS data",3,6,9,11,NA,NA,NA,NA
-"A024968B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024969B","Migrated from old WRIMS data",3,6,9,11,NA,NA,NA,NA
-"A024969B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A024972","Migrated from old WRIMS data",6,8,NA,NA,NA,NA,NA,NA
-"A024972","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A024972","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A024993","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A024993","Migrated from old WRIMS data",5,9,NA,NA,NA,NA,NA,NA
-"A024993","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
-"A024993","Migrated from old WRIMS data",3,5,10,11,NA,NA,NA,NA
-"A024993","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A024995","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A024996","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A024996","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A025005","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025010","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025012","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025015","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025019","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025019","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025019","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025019","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025021","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
-"A025025","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A025025","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025025","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025025","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025025","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A025028","Migrated from old WRIMS data",5,10,NA,NA,NA,NA,NA,NA
 "A025032","Migrated from old WRIMS data",3,5,NA,NA,12,5,NA,NA
-"A025036","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A025052","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A025052","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025065","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025065","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025070","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A025070","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A025070","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A025084","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025110","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025123","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A025123","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A025125","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025125","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
-"A025125","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025125","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025137","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025137","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025137","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025154","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A025154","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A025154","Migrated from old WRIMS data",6,9,NA,NA,NA,NA,NA,NA
-"A025157","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025201","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025201","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025201","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025207","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A025222","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A025222","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025268","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A025282","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025301","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025301","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025325","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025325","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025334","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025344","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025344","Migrated from old WRIMS data",3,10,NA,NA,NA,NA,NA,NA
-"A025344","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025344","Migrated from old WRIMS data",3,3,NA,NA,NA,NA,NA,NA
-"A025363","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
 "A025367","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A025367","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A025393A","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025393B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025393B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A025394","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025405","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025405","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025405","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025524","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025524","Migrated from old WRIMS data",3,11,NA,NA,11,4,NA,NA
-"A025524","Migrated from old WRIMS data",1,12,NA,NA,11,4,NA,NA
-"A025524","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025583","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025583","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025596","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A025596","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A025600","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A025600","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A025600","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A025623","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025623","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025623","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025674","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025682","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025691","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025694","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025694","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025694","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025740","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A025740","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A025740","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A025749A","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A025749A","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A025749B","Migrated from old WRIMS data",4,5,NA,NA,NA,NA,NA,NA
-"A025762","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025762","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025762","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025773","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A025773","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A025822A","Requested when filed",5,7,NA,NA,NA,NA,NA,NA
-"A025822A","Requested when filed",NA,NA,NA,NA,1,5,NA,NA
-"A025822B","Requested when filed",3,5,NA,NA,NA,NA,NA,NA
-"A025823A01","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A025823A01","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A025823A02","",NA,NA,NA,NA,10,5,NA,NA
-"A025823A02","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A025823A03","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A025823A03","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A025823B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
 "A025830","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A025831","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025831","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025831","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025850","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025850","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025869","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A025887A","Migrated from old WRIMS data",2,6,NA,NA,11,5,NA,NA
 "A025887A","Migrated from old WRIMS data",2,6,NA,NA,11,5,NA,NA
 "A025887A","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A025887B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
 "A025888A","Migrated from old WRIMS data",2,8,NA,NA,11,7,NA,NA
 "A025888A","Migrated from old WRIMS data",2,8,NA,NA,11,7,NA,NA
 "A025888A","Migrated from old WRIMS data",NA,NA,NA,NA,11,7,NA,NA
-"A025888B","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A025939","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025939","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A025939","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A025940","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025940","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A025964","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A025964","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A025998","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A025998","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026016","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A026022A","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
 "A026022A","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
 "A026022A","Migrated from old WRIMS data",NA,NA,NA,NA,1,5,NA,NA
-"A026022B","Migrated from old WRIMS data",1,5,NA,NA,NA,NA,NA,NA
-"A026055A","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026055A","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026055A","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A026055B","Migrated from old WRIMS data",2,5,NA,NA,NA,NA,NA,NA
-"A026079","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026079","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026079","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026110","Migrated from old WRIMS data",5,6,NA,NA,1,5,NA,NA
-"A026111","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026111","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026111","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026111","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026113","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A026113","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A026143","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A026143","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A026143","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A026143","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
 "A026143","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"A026181","Migrated from old WRIMS data",1,12,NA,NA,11,3,NA,NA
-"A026181","Migrated from old WRIMS data",1,12,NA,NA,11,3,NA,NA
 "A026182","Migrated from old WRIMS data",3,11,NA,NA,11,3,NA,NA
 "A026182","Migrated from old WRIMS data",5,11,NA,NA,11,3,NA,NA
-"A026183","Migrated from old WRIMS data",1,12,NA,NA,11,3,NA,NA
-"A026183","Migrated from old WRIMS data",1,12,NA,NA,11,3,NA,NA
 "A026184","Migrated from old WRIMS data",3,11,NA,NA,11,3,NA,NA
 "A026184","Migrated from old WRIMS data",3,11,NA,NA,11,3,NA,NA
-"A026201","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026201","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026224","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026224","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026228","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026228","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026228","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026233","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A026233","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A026233","Migrated from old WRIMS data",6,10,NA,NA,NA,NA,NA,NA
-"A026240","Migrated from old WRIMS data",3,6,NA,NA,NA,NA,NA,NA
-"A026241","Migrated from old WRIMS data",5,7,NA,NA,11,3,NA,NA
-"A026241","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A026241","Migrated from old WRIMS data",5,7,NA,NA,11,3,NA,NA
-"A026250","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A026250","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A026250","Migrated from old WRIMS data",NA,NA,NA,NA,1,6,NA,NA
-"A026298A","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026298A","Migrated from old WRIMS data",1,12,NA,NA,10,4,NA,NA
-"A026298A","Migrated from old WRIMS data",1,12,NA,NA,10,4,NA,NA
-"A026298A","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026298A","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026298B","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A026298B","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A026298B","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026298B","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A026396","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A026396","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
-"A026402","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026402","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026412","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A026412","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A026413","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A026413","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026440","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026440","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A026440","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A026442","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A026442","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A026442","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
-"A026470","Added by change order",5,9,9,5,NA,NA,NA,NA
 "A026503","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026503","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026503","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026561","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026561","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026600","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A026600","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A026600","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
 "A026624","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A026672","Migrated from old WRIMS data",5,10,NA,NA,11,5,NA,NA
-"A026672","Migrated from old WRIMS data",5,10,NA,NA,11,5,NA,NA
-"A026672","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026672","Migrated from old WRIMS data",5,10,NA,NA,11,5,NA,NA
-"A026740","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026740","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026740","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026769","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026769","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026769","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026808","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A026808","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A026808","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A026927","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026927","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026927","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A026927","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026938","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026938","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026938","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A026938","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A026975","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026975","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026975","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A026975","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A026993","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A026993","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027022","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027022","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027022","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027031","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027031","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027031","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027036","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027036","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027036","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027045","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A027045","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A027046","Migrated from old WRIMS data",5,9,NA,NA,11,4,NA,NA
-"A027046","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027046","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027046","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A027075","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A027075","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027081","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027081","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027081","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027143","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A027149","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A027149","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A027158","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027158","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027158","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027158","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027177","Migrated from old WRIMS data",10,5,NA,NA,NA,NA,NA,NA
 "A027249","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A027301","Added by change order",NA,NA,NA,NA,10,5,NA,NA
-"A027327","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027327","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A027362","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A027362","Migrated from old WRIMS data",4,10,NA,NA,NA,NA,NA,NA
-"A027424","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A027424","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A027424","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A027440","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027440","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027440","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027460","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027460","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027460","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027460","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027460","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027478","Migrated from old WRIMS data",2,5,NA,NA,NA,NA,NA,NA
-"A027478","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A027479","Migrated from old WRIMS data",5,11,NA,NA,NA,NA,NA,NA
 "A027523","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
 "A027523","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
@@ -1760,170 +381,27 @@
 "A027541","Migrated from old WRIMS data",10,6,NA,NA,10,6,NA,NA
 "A027541","Migrated from old WRIMS data",NA,NA,NA,NA,10,6,NA,NA
 "A027541","Migrated from old WRIMS data",10,6,NA,NA,10,6,NA,NA
-"A027557","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027557","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027557","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027557","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027557","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027557","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027581","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A027582","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A027582","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A027583","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A027583","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A027584","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A027596","Requested when filed",4,6,NA,NA,1,6,NA,NA
-"A027596","Requested when filed",NA,NA,NA,NA,1,6,NA,NA
-"A027702","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027702","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027702","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027707","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A027707","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A027707","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A027707","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A027757","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027791","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027791","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027791","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027791","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A027841","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A027841","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A027892","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A027892","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A027892","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A027892","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A027941","Migrated from old WRIMS data",6,10,NA,NA,10,5,NA,NA
-"A027941","Migrated from old WRIMS data",6,10,NA,NA,10,5,NA,NA
-"A027941","Migrated from old WRIMS data",6,10,NA,NA,10,5,NA,NA
-"A027941","Migrated from old WRIMS data",6,10,NA,NA,10,5,NA,NA
-"A027941","Migrated from old WRIMS data",6,10,NA,NA,10,5,NA,NA
-"A027942","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A027942","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A027943","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027943","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027943","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027943","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027943","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027943","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027953","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027953","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027953","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A027955","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A027992","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A027992","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"A027992","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
 "A028116","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
 "A028116","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
 "A028116","Migrated from old WRIMS data",NA,NA,NA,NA,12,6,NA,NA
-"A028127","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028127","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028127","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028127","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028127","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028176","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A028176","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A028319","Migrated from old WRIMS data",10,6,NA,NA,NA,NA,NA,NA
-"A028319","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A028320","Migrated from old WRIMS data",10,6,NA,NA,NA,NA,NA,NA
-"A028320","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A028365","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028370","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028370","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028370","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028370","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028386","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028386","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028386","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028402","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028402","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028632","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028632","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028632","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028632","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A028633","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A028633","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A028633","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A028633","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028635","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028635","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028635","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028636","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028636","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028636","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028636","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028636","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028640","Migrated from old WRIMS data",5,11,NA,NA,11,3,NA,NA
-"A028640","Migrated from old WRIMS data",5,11,NA,NA,11,3,NA,NA
-"A028640","Migrated from old WRIMS data",5,11,NA,NA,11,3,NA,NA
-"A028640","Migrated from old WRIMS data",5,11,NA,NA,11,3,NA,NA
-"A028641","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028641","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028641","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028641","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028642","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028642","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028642","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028643","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028643","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028643","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028643","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028643","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028643","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028647","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028647","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028647","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028647","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A028647","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A028648","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028648","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028648","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028648","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028648","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028648","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028649","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028649","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028649","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028650","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028650","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028651","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028651","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028651","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028653","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028653","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028653","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028653","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028668","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A028676","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028676","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028676","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028676","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028676","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A028715","Migrated from old WRIMS data",1,12,NA,NA,11,4,NA,NA
-"A028715","Migrated from old WRIMS data",1,12,NA,NA,11,4,NA,NA
-"A028715","Migrated from old WRIMS data",1,12,NA,NA,11,4,NA,NA
 "A028738","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A028738","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A028786","Migrated from old WRIMS data",1,12,NA,NA,4,11,NA,NA
-"A028786","Migrated from old WRIMS data",1,12,NA,NA,4,11,NA,NA
-"A028786","Migrated from old WRIMS data",1,12,NA,NA,4,11,NA,NA
-"A028787","Migrated from old WRIMS data",NA,NA,NA,NA,4,11,NA,NA
-"A028787","Migrated from old WRIMS data",NA,NA,NA,NA,4,11,NA,NA
-"A028787","Migrated from old WRIMS data",NA,NA,NA,NA,4,11,NA,NA
-"A028790","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028790","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028824","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A028824","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A028824","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A028824","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A028828","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A028828","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028854","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A028855","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028855","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028855","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
-"A028860","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A028878","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A028886","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A028925","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A028925","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A028925","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
@@ -1931,213 +409,41 @@
 "A028926","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028926","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A028926","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028927","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028927","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A028927","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029044","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029044","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029070","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029070","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029070","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029086","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029086","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029086","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029087","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029108","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A029108","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A029108","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
-"A029108","Migrated from old WRIMS data",NA,NA,NA,NA,12,4,NA,NA
 "A029122","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
 "A029122","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A029122","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
 "A029122","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A029122","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029199","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029199","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029199","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029202","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029202","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029202","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029203","Migrated from old WRIMS data",3,3,NA,NA,NA,NA,NA,NA
-"A029267","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A029267","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A029272","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A029277","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "A029277","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A029327","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029327","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029332","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
-"A029333","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029333","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029338","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029338","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029338","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029338","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029338","",NA,NA,NA,NA,NA,NA,NA,NA
-"A029372","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029372","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029372","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029397","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A029397","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A029397","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A029401","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A029401","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A029401","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A029401","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029405","Migrated from old WRIMS data",5,8,NA,NA,11,5,NA,NA
-"A029405","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"A029406","Migrated from old WRIMS data",6,6,NA,NA,NA,NA,NA,NA
-"A029406","Migrated from old WRIMS data",6,6,NA,NA,NA,NA,NA,NA
-"A029411","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
-"A029412","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
-"A029418","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A029418","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A029418","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A029418","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A029419","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A029419","Migrated from old WRIMS data",3,7,NA,NA,11,6,NA,NA
-"A029437","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A029437","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029462","Migrated from old WRIMS data",1,12,NA,NA,12,3,NA,NA
-"A029462","",5,11,5,11,12,3,NA,NA
-"A029462","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A029467","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029467","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029467","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029479","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029479","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029479","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029479","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029479","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A029480","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
 "A029480","",NA,NA,NA,NA,NA,NA,NA,NA
 "A029480","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A029480","",NA,NA,NA,NA,NA,NA,NA,NA
 "A029480","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029495","Requested when filed",NA,NA,NA,NA,10,4,NA,NA
-"A029495","Migrated from old WRIMS data",NA,NA,NA,NA,10,5,NA,NA
 "A029502","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A029502","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A029502","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
 "A029502","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A029512","Requested when filed",NA,NA,NA,NA,11,3,NA,NA
-"A029512","Requested when filed",NA,NA,NA,NA,11,3,NA,NA
-"A029515","Requested when filed",NA,NA,NA,NA,11,3,NA,NA
-"A029517","Migrated from old WRIMS data",9,11,NA,NA,NA,NA,NA,NA
-"A029538","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029538","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029538","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029538","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,1,1,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,1,1,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,3,10,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,1,1,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,3,10,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,3,10,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,1,1,NA,NA
-"A029547","Migrated from old WRIMS data",NA,NA,NA,NA,3,10,NA,NA
 "A029562","Requested when filed",11,2,NA,NA,10,5,NA,NA
 "A029562","Requested when filed",11,2,NA,NA,10,5,NA,NA
-"A029591","Migrated from old WRIMS data",2,5,NA,NA,NA,NA,NA,NA
-"A029592","Migrated from old WRIMS data",1,6,11,12,NA,NA,NA,NA
-"A029592","Migrated from old WRIMS data",4,6,NA,NA,NA,NA,NA,NA
-"A029595","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029599","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029599","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029599","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029599","Migrated from old WRIMS data",NA,NA,NA,NA,11,3,NA,NA
-"A029610","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029610","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029610","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029610","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029616","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A029628","Migrated from old WRIMS data",NA,NA,NA,NA,3,6,NA,NA
 "A029632","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A029632","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "A029632","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"A029662","Requested when filed",4,10,NA,NA,NA,NA,NA,NA
-"A029671","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029671","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029671","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029682","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A029719","Migrated from old WRIMS data",4,6,NA,NA,11,4,NA,NA
-"A029723","Migrated from old WRIMS data",3,5,NA,NA,NA,NA,NA,NA
-"A029755","Migrated from old WRIMS data",NA,NA,NA,NA,10,3,NA,NA
-"A029755","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029755","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029755","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029772","",NA,NA,NA,NA,NA,NA,NA,NA
-"A029789","Migrated from old WRIMS data",7,10,NA,NA,NA,NA,NA,NA
-"A029789","Migrated from old WRIMS data",7,10,NA,NA,NA,NA,NA,NA
-"A029802","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029802","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029802","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029802","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029802","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029847","Added under section 798 of Regs",NA,NA,NA,NA,10,4,NA,NA
-"A029847","Added under section 798 of Regs",NA,NA,NA,NA,10,4,NA,NA
-"A029847","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A029847","Migrated from old WRIMS data",NA,NA,NA,NA,10,4,NA,NA
-"A029848","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029848","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A029848","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029849","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029849","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029849","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029849","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029849","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029850","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029850","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029850","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029858","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029858","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029858","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029858","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029901","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A029912","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029912","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A029912","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029912","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029986","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A029986","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A029986","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "A029995","Added under section 798 of Regs",NA,NA,NA,NA,11,5,NA,NA
 "A029995","Added under section 798 of Regs",NA,NA,NA,NA,11,5,NA,NA
 "A029995","Added under section 798 of Regs",NA,NA,NA,NA,11,5,NA,NA
 "A029995","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030036","Migrated from old WRIMS data",2,5,NA,NA,NA,NA,NA,NA
-"A030124","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030124","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030125","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"A030125","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030125","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
 "A030132","Requested when filed",NA,NA,NA,NA,12,4,NA,NA
-"A030173","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030173","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A030186","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A030245","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A030282","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A030282","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030282","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030282","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A030282","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A030298","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A030298","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030298","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
-"A030298","Added under section 798 of Regs",NA,NA,NA,NA,NA,NA,NA,NA
 "A030349","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A030349","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A030349","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A030349","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030363","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030363","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030364","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030365","Requested when filed",3,3,NA,NA,NA,NA,NA,NA
-"A030391","Migrated from old WRIMS data",10,4,NA,NA,NA,NA,NA,NA
-"A030391","Migrated from old WRIMS data",10,4,NA,NA,NA,NA,NA,NA
-"A030391","Migrated from old WRIMS data",10,4,NA,NA,NA,NA,NA,NA
-"A030391","Migrated from old WRIMS data",10,4,NA,NA,NA,NA,NA,NA
-"A030397","Migrated from old WRIMS data",3,11,NA,NA,NA,NA,NA,NA
 "A030412","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A030412","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A030412","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
@@ -2146,50 +452,9 @@
 "A030560","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A030560","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
 "A030560","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030564","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A030745","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030745","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030797","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030797","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030797","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030797","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030815","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030815","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030815","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030882","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A030882","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A030882","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A030882","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030931","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030931","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A030933","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030933","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"A030933","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
 "A031050","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031050","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031055","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A031055","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
-"A031059","Requested when filed",3,3,NA,NA,NA,NA,NA,NA
-"A031060","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031060","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031060","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031094","Requested when filed",6,10,NA,NA,NA,NA,NA,NA
-"A031095","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031095","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031095","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031095","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031171","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"A031183","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031183","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031183","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031183","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031183","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031255","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031255","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031255","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031255","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031255","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031257","Migrated from old WRIMS data",1,12,NA,NA,NA,NA,NA,NA
 "A031259","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031259","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031259","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
@@ -2198,235 +463,45 @@
 "A031304","Requested when filed",NA,NA,NA,NA,11,5,11,3
 "A031362","Requested when filed",NA,NA,NA,NA,11,5,11,3
 "A031362","Requested when filed",NA,NA,NA,NA,11,3,NA,NA
-"A031363","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"A031363","Requested when filed",NA,NA,NA,NA,11,5,11,3
-"A031383","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031383","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031435","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031435","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031435","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031447","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031447","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031447","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031461","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A031461","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"A031461","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "A031501","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031501","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
 "A031501","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031501","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "A031567","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"A031620","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031719","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031719","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031719","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031719","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031719","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031737","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031743","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
-"A031743","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
-"A031743","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A031743","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
-"A031836","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031836","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031836","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031870","Requested when filed",NA,NA,NA,NA,12,5,NA,NA
-"A031870","Requested when filed",NA,NA,NA,NA,12,5,NA,NA
-"A031870","Requested when filed",NA,NA,NA,NA,12,5,NA,NA
-"A031877","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031877","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031877","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031877","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A031877","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"A032115","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A032115","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A032115","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"A032372","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"A032372","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"A032372","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"C000028","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C000222","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C000223","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C000511","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "C000512","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001166","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001167","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001168","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001169","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001171","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001172","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001173","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001174","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001175","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001176","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001177","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001178","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001179","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "C001180","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C001216","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "C002935","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C002936","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "C003979","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C003981","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"C005095","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
 "C005161","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005162","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005163","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005164","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
 "C005165","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005166","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005343","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005521","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005522","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005624","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"C005834","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
 "C006052","Migrated from old WRIMS data",NA,NA,NA,NA,1,12,NA,NA
-"D032013","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032019","Requested when filed",NA,NA,NA,NA,10,1,NA,NA
-"D032019","",NA,NA,NA,NA,10,1,NA,NA
-"D032022","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D032022","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D032041","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032041","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032057","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032057","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
 "D032058","Requested when filed",1,12,NA,NA,1,12,NA,NA
 "D032058","Requested when filed",1,12,NA,NA,1,12,NA,NA
 "D032062","Requested when filed",NA,NA,NA,NA,12,11,NA,NA
-"D032081","Requested when filed",NA,NA,NA,NA,10,9,NA,NA
-"D032081","Requested when filed",NA,NA,NA,NA,10,9,NA,NA
-"D032138","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032138","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032138","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032140","Requested when filed",1,12,NA,NA,1,12,NA,NA
-"D032140","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"D032140","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"D032140","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
 "D032141","Requested when filed",NA,NA,NA,NA,10,12,NA,NA
 "D032141","Requested when filed",NA,NA,NA,NA,10,12,NA,NA
-"D032143","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032149","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032149","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032166","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
 "D032187","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
 "D032187","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032188","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"D032188","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"D032188","Requested when filed",NA,NA,NA,NA,11,4,NA,NA
-"D032206","",NA,NA,NA,NA,11,5,NA,NA
-"D032206","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032206","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032206","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032229","Requested when filed",NA,NA,NA,NA,10,1,NA,NA
-"D032229","Requested when filed",NA,NA,NA,NA,10,1,NA,NA
-"D032229","Requested when filed",NA,NA,NA,NA,10,1,NA,NA
-"D032238","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032238","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
 "D032249","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
 "D032249","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
 "D032249","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
 "D032249","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"D032262","Requested when filed",NA,NA,NA,NA,1,3,NA,NA
-"D032262","Requested when filed",NA,NA,NA,NA,1,3,NA,NA
-"D032262","Requested when filed",NA,NA,NA,NA,1,3,NA,NA
-"D032262","Requested when filed",NA,NA,NA,NA,1,3,NA,NA
 "D032275","Requested when filed",NA,NA,NA,NA,10,9,NA,NA
 "D032275","Requested when filed",NA,NA,NA,NA,10,9,NA,NA
-"D032313","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032313","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032314","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032314","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
 "D032320","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"D032346","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032346","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032534","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
 "D032708","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
 "D032708","Requested when filed",5,11,NA,NA,12,3,NA,NA
-"D032713","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D032725","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"D032762","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032762","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032762","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032762","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"D032768","Requested when filed",NA,NA,NA,NA,2,3,NA,NA
-"D032787","Requested when filed",NA,NA,NA,NA,11,3,NA,NA
-"D032787","Requested when filed",1,12,NA,NA,NA,NA,NA,NA
-"D032850","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"D032859","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D032859","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D032971","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"D032971","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"D033001","Requested when filed",1,12,NA,NA,1,12,NA,NA
-"D033001","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"D033025","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D033025","Requested when filed",11,6,NA,NA,NA,NA,NA,NA
-"D033025","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"D033025","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"H031997","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"H031997","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"H031997","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
 "H032009","Requested when filed",NA,NA,NA,NA,12,5,NA,NA
 "H032009","Requested when filed",NA,NA,NA,NA,12,5,NA,NA
 "H032009","Requested when filed",NA,NA,NA,NA,12,5,NA,NA
-"H032131","Requested when filed",NA,NA,NA,NA,6,10,NA,NA
-"H032131","Requested when filed",NA,NA,NA,NA,3,4,NA,NA
 "H032331","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
 "H032331","Requested when filed",NA,NA,NA,NA,11,5,NA,NA
-"H032335","",NA,NA,NA,NA,NA,NA,NA,NA
-"H032345","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
 "H033072","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"H500244","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500244","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500399","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500522","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500522","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"H500616","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500616","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500616","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500658","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500733","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500733","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500733","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500800","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500832","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500832","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H500889","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H501328","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501353","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501353","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501353","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501353","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501353","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H501475","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501505","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501505","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501536","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501536","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501560","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501560","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501560","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501560","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H501586","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501640","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501640","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H501640","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H502560","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H502568","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H502568","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503838","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503838","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503876","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503876","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503876","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503876","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H503876","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H504162","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H504162","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H505765","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H505765","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H505765","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H505765","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H505765","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H505809","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H505809","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H505809","Requested when filed",11,3,NA,NA,11,3,NA,NA
@@ -2438,74 +513,14 @@
 "H505997","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H505997","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H505997","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H506245","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H506517","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507504","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507504","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507504","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507504","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507549","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507549","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507549","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507549","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507549","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507821","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507877","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507877","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507877","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H507877","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508419","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508419","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508419","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508419","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508419","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508968","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508968","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508968","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508968","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H508968","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H509254","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H509254","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H509254","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H509254","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"H509254","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H509523","Requested when filed",11,3,NA,NA,11,3,NA,NA
 "H509523","Requested when filed",11,3,NA,NA,11,3,NA,NA
-"L031319","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
-"L031353","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "L031378","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"L031391","Migrated from old WRIMS data",NA,NA,NA,NA,NA,NA,NA,NA
-"L031392","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"L031393","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"L031414","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"L031415A","Requested when filed",NA,NA,NA,NA,12,3,NA,NA
-"L031415A","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
 "L031420","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
 "L031422","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"L031423","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"L031424","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"L031457","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"L031457","Migrated from old WRIMS data",NA,NA,NA,NA,12,5,NA,NA
-"L031528","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
 "L031573","Migrated from old WRIMS data",NA,NA,NA,NA,12,3,NA,NA
-"L031582","Migrated from old WRIMS data",NA,NA,NA,NA,11,4,NA,NA
-"L031605","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
-"L031607","Migrated from old WRIMS data",NA,NA,NA,NA,11,5,NA,NA
 "L031669","Migrated from old WRIMS data",NA,NA,NA,NA,11,6,NA,NA
 "L031764","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"L031802","Requested when filed",NA,NA,NA,NA,11,6,NA,NA
-"L031856","Requested when filed",NA,NA,NA,NA,12,4,NA,NA
-"L031885","Requested when filed",NA,NA,NA,NA,11,7,NA,NA
-"L031908","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"L032006","Requested when filed",NA,NA,NA,NA,10,3,NA,NA
-"L032027","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"L032032","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"L032128","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
-"L032146","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"L032147","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"L032148","Requested when filed",NA,NA,NA,NA,NA,NA,NA,NA
-"L032271","Requested when filed",4,12,NA,NA,NA,NA,NA,NA
-"L032279","Requested when filed",NA,NA,NA,NA,12,4,NA,NA
 "L032288","Requested when filed",NA,NA,NA,NA,10,5,NA,NA
-"L032466","Requested when filed",NA,NA,NA,NA,1,12,NA,NA
 "L032735","Requested when filed",NA,NA,NA,NA,10,4,NA,NA

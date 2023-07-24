@@ -50,10 +50,12 @@ mainProcedure <- function () {
   # Join those results back to 'statFinal' using left_join()
   # (The relationship is "many-to-one" because multiple rows in 'tempDF' will
   #  use the same value from 'tempDF')
+  # Also, replace any NA values in "TotalMonthlyDiverted" with 0
   statFinal <- statFinal %>% 
     left_join(tempDF, 
               by = c("APPLICATION_NUMBER", "YEAR", "MONTH"), 
-              relationship = "many-to-one")
+              relationship = "many-to-one") %>%
+    mutate(TotalMonthlyDiverted = replace_na(TotalMonthlyDiverted, 0))
   
   
   
@@ -72,7 +74,8 @@ mainProcedure <- function () {
   statFinal <- statFinal %>% 
     left_join(tempDF, 
               by = c("APPLICATION_NUMBER", "YEAR"), 
-              relationship = "many-to-one")
+              relationship = "many-to-one") %>%
+    mutate(AnnualReportedTotalDirect = replace_na(AnnualReportedTotalDirect, 0))
   
   
   
@@ -91,7 +94,8 @@ mainProcedure <- function () {
   statFinal <- statFinal %>% 
     left_join(tempDF, 
               by = c("APPLICATION_NUMBER", "YEAR"), 
-              relationship = "many-to-one")
+              relationship = "many-to-one") %>%
+    mutate(AnnualTotalStorage = replace_na(AnnualTotalStorage, 0))
   
   
   
