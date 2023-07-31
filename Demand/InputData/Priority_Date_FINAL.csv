@@ -1,2312 +1,484 @@
 "APPLICATION_NUMBER","WATER_RIGHT_TYPE","PRIORITY_DATE","APPLICATION_RECD_DATE","APPLICATION_ACCEPTANCE_DATE","SUB_TYPE","YEAR_DIVERSION_COMMENCED"
-"A001029","Appropriative","","07/26/1918","07/26/1918","",NA
-"A001205","Appropriative","","03/07/1919","03/07/1919","",NA
-"A001983","Appropriative","","","08/26/1920","",NA
-"A002723","Appropriative","","01/16/1922","01/16/1922","",NA
-"A002928","Appropriative","","","07/14/1922","",NA
-"A003421","Appropriative","","","05/16/1923","",NA
-"A003565","Appropriative","","","08/03/1923","",NA
-"A003601","Appropriative","","","08/20/1923","",NA
-"A003633","Appropriative","","09/08/1923","09/08/1923","",NA
 "A004307","Appropriative","","11/07/1924","11/07/1924","",NA
-"A004308","Appropriative","","11/07/1924","11/07/1924","",NA
-"A004612","Appropriative","","06/01/1925","06/01/1925","",NA
-"A004832","Appropriative","","","11/12/1925","",NA
-"A005050","Appropriative","","","06/10/1926","",NA
-"A006464","Appropriative","","","10/21/1929","",NA
-"A006594","Appropriative","","","03/11/1930","",NA
-"A006642","Appropriative","","","04/16/1930","",NA
 "A006805A","Appropriative","","","09/26/1930","",NA
-"A006854","Appropriative","","","12/26/1930","",NA
 "A006855","Appropriative","","","12/26/1930","",NA
 "A006926","Appropriative","","","03/28/1931","",NA
-"A006927","Appropriative","","","03/31/1931","",NA
-"A007006","Appropriative","","","07/14/1931","",NA
 "A008974","Appropriative","","","05/17/1937","",NA
 "A009746","Appropriative","","","10/03/1939","",NA
 "A009774","Appropriative","","","11/27/1939","",NA
-"A009832A","Appropriative","","02/20/1940","02/20/1940","",NA
-"A009832B","Appropriative","","","02/20/1940","",NA
-"A009868","Appropriative","","","04/05/1940","",NA
 "A009992","Appropriative","","","08/28/1940","",NA
-"A010795","Appropriative","04/07/1944","04/07/1944","04/07/1944","",NA
-"A010915","Appropriative","","","11/15/1944","",NA
 "A010976","Appropriative","","","02/08/1945","",NA
-"A011315","Appropriative","","","03/13/1946","",NA
-"A011327","Appropriative","","03/25/1946","03/25/1946","",NA
-"A011383","Appropriative","","","04/23/1946","",NA
-"A011566","Appropriative","","","09/25/1946","",NA
-"A011846","Appropriative","","","04/28/1947","",NA
 "A011859","Appropriative","","","05/07/1947","",NA
-"A012034","Appropriative","","","08/11/1947","",NA
 "A012100","Appropriative","","","09/22/1947","",NA
 "A012232","Appropriative","","01/08/1948","01/08/1948","",NA
-"A012330","Appropriative","","","02/16/1948","",NA
-"A012452","Appropriative","","","03/29/1948","",NA
 "A012483","Appropriative","","","04/23/1948","",NA
 "A012509","Appropriative","","","05/13/1948","",NA
-"A012510","Appropriative","","","05/14/1948","",NA
-"A012525","Appropriative","","","05/27/1948","",NA
-"A012773","Appropriative","","","11/03/1948","",NA
 "A012850","Appropriative","","","12/06/1958","",NA
-"A012877","Appropriative","","","12/23/1948","",NA
 "A012919A","Appropriative","","","01/28/1949","",NA
-"A012919B","Appropriative","","01/28/1949","01/28/1949","",NA
-"A012931","Appropriative","","","02/11/1949","",NA
-"A012951","Appropriative","","","02/24/1949","",NA
-"A012958","Appropriative","","","03/03/1949","",NA
-"A013030A","Appropriative","","","04/18/1949","",NA
-"A013030B","Appropriative","","","04/18/1949","",NA
-"A013062","Appropriative","","04/29/1949","04/29/1949","",NA
 "A013076","Appropriative","","","05/09/1949","",NA
-"A013097","Appropriative","","","05/17/1949","",NA
-"A013098","Appropriative","","","05/17/1949","",NA
 "A013105","Appropriative","","05/19/1949","05/19/1949","",NA
-"A013126A","Appropriative","","","06/01/1949","",NA
-"A013126B","Appropriative","","","06/01/1949","",NA
-"A013135","Appropriative","","","06/06/1949","",NA
-"A013151","Appropriative","","","06/13/1949","",NA
-"A013161","Appropriative","","","06/20/1949","",NA
-"A013163","Appropriative","","","06/20/1949","",NA
 "A013182A01","Appropriative","","","06/29/1949","",NA
-"A013182A02","Appropriative","","","06/29/1949","",NA
-"A013182B","Appropriative","","","06/29/1949","",NA
-"A013217","Appropriative","07/08/1949","07/08/1949","07/08/1949","",NA
 "A013221","Appropriative","","","07/08/1949","",NA
 "A013256","Appropriative","","","07/25/1949","",NA
-"A013261","Appropriative","","","07/26/1949","",NA
-"A013267","Appropriative","","","07/28/1949","",NA
-"A013268","Appropriative","","","07/28/1949","",NA
-"A013269","Appropriative","","","07/28/1949","",NA
-"A013270","Appropriative","","","07/29/1949","",NA
-"A013277","Appropriative","","","08/04/1949","",NA
-"A013281A01","Appropriative","","","06/14/1973","",NA
-"A013281A02","Appropriative","06/14/1973","","","",NA
-"A013281A03","Appropriative","","","06/14/1973","",NA
 "A013281B","Appropriative","","","08/08/1949","",NA
-"A013287","Appropriative","","","08/09/1949","",NA
-"A013288","Appropriative","","","08/09/1949","",NA
-"A013289","Appropriative","","","08/09/1949","",NA
-"A013301","Appropriative","","","08/17/1949","",NA
-"A013317","Appropriative","","","08/29/1949","",NA
-"A013330","Appropriative","","","09/06/1949","",NA
-"A013331","Appropriative","","09/06/1949","09/06/1949","",NA
-"A013359","Appropriative","","","09/20/1949","",NA
-"A013376","Appropriative","","","10/03/1949","",NA
-"A013384","Appropriative","10/05/1949","10/05/1949","10/05/1949","",NA
-"A013391","Appropriative","","","10/07/1949","",NA
-"A013393","Appropriative","","","10/11/1949","",NA
-"A013406","Appropriative","","","10/20/1949","",NA
 "A013453","Appropriative","","","11/09/1949","",NA
-"A013468","Appropriative","","","11/17/1949","",NA
-"A013474","Appropriative","","","11/21/1949","",NA
-"A013507","Appropriative","","","12/12/1949","",NA
-"A013527","Appropriative","","","01/03/1950","",NA
-"A013528","Appropriative","","","01/03/1950","",NA
-"A013529","Appropriative","","","01/03/1950","",NA
-"A013533","Appropriative","","01/09/1950","01/09/1950","",NA
 "A013539","Appropriative","","","01/12/1950","",NA
-"A013557","Appropriative","","","01/31/1950","",NA
 "A013578","Appropriative","","","02/10/1950","",NA
-"A013579","Appropriative","","","02/14/1950","",NA
-"A013586","Appropriative","","","02/17/1950","",NA
 "A013633","Appropriative","","03/15/1950","03/15/1950","",NA
-"A013639","Appropriative","","","03/20/1950","",NA
-"A013661","Appropriative","","03/30/1950","03/30/1950","",NA
-"A013684A","Appropriative","04/11/1950","","04/11/1950","",NA
-"A013684B","Appropriative","","","04/11/1950","",NA
-"A013695","Appropriative","","","04/19/1950","",NA
-"A013706","Appropriative","","","04/26/1950","",NA
 "A013716","Appropriative","","","05/02/1950","",NA
-"A013729","Appropriative","","","05/10/1950","",NA
-"A013749","Appropriative","","","05/22/1950","",NA
-"A013753","Appropriative","","","05/24/1950","",NA
 "A013755","Appropriative","","","05/24/1950","",NA
-"A013758","Appropriative","","","05/25/1950","",NA
-"A013789","Appropriative","","","06/14/1950","",NA
-"A013810","Appropriative","","","06/22/1950","",NA
-"A013811","Appropriative","","","06/22/1950","",NA
-"A013831","Appropriative","","","07/05/1950","",NA
-"A013832","Appropriative","","","07/05/1950","",NA
-"A013862","Appropriative","","","07/25/1950","",NA
 "A013863","Appropriative","","","07/25/1950","",NA
 "A013864","Appropriative","","","07/25/1950","",NA
-"A013874","Appropriative","","","07/31/1950","",NA
-"A013890","Appropriative","","","08/09/1950","",NA
-"A013914","Appropriative","","","08/23/1950","",NA
-"A013932","Appropriative","","","09/05/1950","",NA
-"A013933","Appropriative","","","09/05/1950","",NA
-"A013958","Appropriative","09/21/1950","09/21/1950","09/21/1950","",NA
-"A013967","Appropriative","","","09/27/1950","",NA
-"A013973","Appropriative","","","10/02/1950","",NA
-"A013974","Appropriative","","","10/02/1950","",NA
-"A013975","Appropriative","","","10/02/1950","",NA
-"A013984","Appropriative","","","10/09/1950","",NA
-"A013985","Appropriative","","","10/09/1950","",NA
-"A013987","Appropriative","","","10/09/1950","",NA
-"A013988","Appropriative","","","10/09/1950","",NA
-"A013989","Appropriative","","","10/09/1950","",NA
-"A014010","Appropriative","","","10/19/1950","",NA
-"A014030","Appropriative","","","11/03/1950","",NA
-"A014033","Appropriative","","","11/08/1950","",NA
-"A014034","Appropriative","","","11/08/1950","",NA
 "A014043","Appropriative","","","11/13/1950","",NA
-"A014044A","Appropriative","","","11/13/1950","",NA
-"A014044B","Appropriative","","","11/13/1950","",NA
 "A014045","Appropriative","","","11/13/1950","",NA
-"A014047","Appropriative","","","11/14/1950","",NA
-"A014048","Appropriative","","","11/14/1950","",NA
-"A014049","Appropriative","","","11/14/1950","",NA
-"A014050A","Appropriative","","11/15/1950","11/15/1950","",NA
-"A014050B","Appropriative","11/14/1950","11/14/1950","11/15/1950","",NA
-"A014051","Appropriative","","","11/14/1950","",NA
 "A014054","Appropriative","","","11/14/1950","",NA
-"A014055","Appropriative","","","11/14/1950","",NA
-"A014056","Appropriative","","","11/14/1950","",NA
-"A014061","Appropriative","","","11/20/1950","",NA
 "A014064","Appropriative","","","11/22/1950","",NA
 "A014065","Appropriative","","","11/22/1950","",NA
 "A014066","Appropriative","","","11/22/1950","",NA
-"A014067","Appropriative","","","11/22/1950","",NA
-"A014068","Appropriative","11/22/1950","11/22/1950","11/22/1950","",NA
-"A014092","Appropriative","","","12/04/1950","",NA
-"A014107","Appropriative","","","12/18/1950","",NA
-"A014119","Appropriative","","","01/05/1951","",NA
-"A014136","Appropriative","","","01/22/1951","",NA
-"A014144","Appropriative","","","02/02/1951","",NA
 "A014160","Appropriative","","","02/13/1951","",NA
-"A014172","Appropriative","","","02/26/1951","",NA
-"A014178","Appropriative","","03/05/1951","03/05/1951","",NA
-"A014206","Appropriative","","","03/20/1951","",NA
-"A014208","Appropriative","","","03/21/1951","",NA
 "A014215","Appropriative","","","03/26/1951","",NA
-"A014245","Appropriative","","","04/11/1951","",NA
-"A014246","Appropriative","","","04/11/1951","",NA
-"A014259A","Appropriative","","","04/18/1951","",NA
-"A014304","Appropriative","","","05/14/1951","",NA
-"A014333","Appropriative","","","06/05/1951","",NA
-"A014339","Appropriative","","","06/07/1951","",NA
-"A014364","Appropriative","","","06/25/1951","",NA
 "A014379","Appropriative","","","06/29/1951","",NA
-"A014393","Appropriative","","","07/16/1951","",NA
-"A014459","Appropriative","","","08/31/1951","",NA
-"A014466","Appropriative","","","09/06/1951","",NA
 "A014467","Appropriative","","","09/06/1951","",NA
-"A014492","Appropriative","","","09/19/1951","",NA
-"A014513","Appropriative","","","10/05/1951","",NA
-"A014539","Appropriative","","","10/29/1951","",NA
-"A014543","Appropriative","","","10/31/1951","",NA
-"A014604","Appropriative","","","12/17/1951","",NA
-"A014624","Appropriative","","","01/21/1952","",NA
-"A014715","Appropriative","","","03/17/1952","",NA
-"A014720","Appropriative","","","03/20/1952","",NA
-"A014735","Appropriative","03/31/1952","03/31/1952","03/31/1952","",NA
-"A014747","Appropriative","","","04/14/1952","",NA
-"A014749","Appropriative","","","04/15/1952","",NA
-"A014750","Appropriative","","","04/15/1952","",NA
-"A014762","Appropriative","","","04/18/1952","",NA
-"A014767","Appropriative","","","04/21/1952","",NA
-"A014777","Appropriative","","","04/25/1952","",NA
-"A014797","Appropriative","","","05/07/1952","",NA
-"A014826","Appropriative","","","05/27/1952","",NA
-"A014841","Appropriative","","","06/05/1952","",NA
-"A014842","Appropriative","","","06/05/1952","",NA
-"A014855","Appropriative","","","06/12/1952","",NA
 "A014856","Appropriative","","","06/12/1952","",NA
-"A014870","Appropriative","","","06/23/1952","",NA
-"A014872","Appropriative","","","06/24/1952","",NA
-"A014875","Appropriative","","","06/25/1952","",NA
-"A014880","Appropriative","","","06/26/1952","",NA
 "A014904","Appropriative","","","07/10/1952","",NA
-"A014916A","Appropriative","","07/21/1952","07/21/1952","",NA
-"A014916B","Appropriative","","07/21/1952","07/21/1952","",NA
-"A014925","Appropriative","","","07/24/1952","",NA
-"A014942","Appropriative","","","07/30/1952","",NA
-"A014966","Appropriative","","","08/13/1952","",NA
-"A014997A","Appropriative","","","08/27/1952","",NA
-"A014997B","Appropriative","","08/27/1952","08/27/1952","",NA
 "A015075","Appropriative","","","11/06/1952","",NA
 "A015120","Appropriative","","","12/15/1952","",NA
-"A015157","Appropriative","","","01/20/1953","",NA
 "A015158A","Appropriative","01/20/1953","","","",NA
-"A015158B","Appropriative","01/20/1953","","","",NA
 "A015168","Appropriative","","01/21/1953","01/22/1953","",NA
-"A015187","Appropriative","","","02/04/1953","",NA
-"A015194","Appropriative","","","02/11/1953","",NA
-"A015233","Appropriative","","","03/12/1953","",NA
-"A015237","Appropriative","","","03/16/1953","",NA
-"A015277","Appropriative","","","04/06/1953","",NA
-"A015299","Appropriative","","","04/17/1953","",NA
-"A015314","Appropriative","","","04/24/1953","",NA
-"A015329A","Appropriative","","","05/01/1953","",NA
-"A015329B","Appropriative","","","05/01/1953","",NA
-"A015348","Appropriative","","","05/18/1953","",NA
-"A015370","Appropriative","","","06/05/1953","",NA
-"A015397","Appropriative","","","07/01/1953","",NA
 "A015399","Appropriative","","","07/06/1953","",NA
-"A015515","Appropriative","","","08/31/1953","",NA
-"A015521","Appropriative","","","09/02/1953","",NA
-"A015603","Appropriative","11/09/1953","11/09/1953","12/01/1953","",NA
-"A015610","Appropriative","","","11/12/1953","",NA
-"A015624","Appropriative","","","11/30/1953","",NA
-"A015663","Appropriative","","12/28/1953","12/28/1953","",NA
-"A015664A","Appropriative","","","12/29/1953","",NA
-"A015664B","Appropriative","","","12/29/1953","",NA
 "A015664C","Appropriative","","","12/29/1953","",NA
-"A015677","Appropriative","","","01/11/1954","",NA
-"A015678","Appropriative","","","01/11/1954","",NA
-"A015685","Appropriative","","01/15/1954","01/15/1954","",NA
-"A015704","Appropriative","","","01/25/1954","",NA
-"A015720","Appropriative","","","02/09/1954","",NA
-"A015721","Appropriative","","02/10/1954","02/11/1954","",NA
-"A015724","Appropriative","","","02/15/1954","",NA
-"A015726","Appropriative","","","02/16/1954","",NA
-"A015727","Appropriative","","","02/16/1954","",NA
 "A015728A","Appropriative","","","02/16/1954","",NA
-"A015728B","Appropriative","","","02/16/1954","",NA
-"A015729","Appropriative","","","02/16/1954","",NA
-"A015736","Appropriative","","","02/18/1954","",NA
-"A015737","Appropriative","","","02/18/1954","",NA
 "A015743","Appropriative","","","02/23/1954","",NA
-"A015759","Appropriative","","","03/05/1954","",NA
 "A015760","Appropriative","","","03/05/1954","",NA
-"A015779","Appropriative","","","03/17/1954","",NA
-"A015780","Appropriative","","","03/17/1954","",NA
-"A015781","Appropriative","","","03/17/1954","",NA
-"A015782","Appropriative","","","03/17/1954","",NA
-"A015796","Appropriative","","","03/25/1954","",NA
-"A015854","Appropriative","","","04/30/1954","",NA
-"A015894","Appropriative","","","06/07/1954","",NA
-"A015947","Appropriative","","","07/16/1954","",NA
-"A015983","Appropriative","","","08/06/1954","",NA
 "A015984","Appropriative","","","08/06/1954","",NA
-"A016077","Appropriative","","","10/04/1954","",NA
-"A016086","Appropriative","","","10/08/1954","",NA
 "A016106","Appropriative","10/22/1954","10/22/1954","10/22/1954","",NA
-"A016141","Appropriative","","","11/17/1954","",NA
-"A016155","Appropriative","","","11/29/1954","",NA
-"A016190","Appropriative","","","12/28/1954","",NA
-"A016218","Appropriative","","","01/26/1955","",NA
-"A016249","Appropriative","","","02/28/1955","",NA
 "A016308","Appropriative","","","04/11/1955","",NA
-"A016319","Appropriative","","","04/19/1955","",NA
-"A016334","Appropriative","","04/22/1955","04/25/1955","",NA
-"A016347","Appropriative","","","04/27/1955","",NA
-"A016357","Appropriative","","05/03/1955","05/04/1955","",NA
-"A016381","Appropriative","","","05/17/1955","",NA
-"A016398","Appropriative","","","05/27/1955","",NA
-"A016405","Appropriative","","","06/03/1955","",NA
 "A016416","Appropriative","","","06/13/1955","",NA
 "A016440","Appropriative","","","06/24/1955","",NA
 "A016443","Appropriative","","06/28/1955","06/28/1955","",NA
 "A016457","Appropriative","","07/11/1955","07/11/1955","",NA
-"A016467","Appropriative","07/18/1955","07/18/1955","07/18/1955","",NA
 "A016472","Appropriative","","","07/19/1955","",NA
-"A016478","Appropriative","","","07/21/1955","",NA
-"A016524","Appropriative","","","08/15/1955","",NA
-"A016525","Appropriative","","","08/15/1955","",NA
-"A016527","Appropriative","","","08/16/1955","",NA
 "A016545","Appropriative","","","08/23/1955","",NA
-"A016557","Appropriative","","","08/29/1955","",NA
-"A016561","Appropriative","","08/30/1955","08/30/1955","",NA
-"A016655","Appropriative","","","10/10/1955","",NA
-"A016670","Appropriative","","10/17/1955","10/17/1955","",NA
-"A016671","Appropriative","","10/17/1955","10/18/1955","",NA
-"A016673","Appropriative","","","10/17/1955","",NA
-"A016758","Appropriative","","","11/30/1955","",NA
-"A016777","Appropriative","","","12/09/1955","",NA
-"A016821","Appropriative","","","01/06/1956","",NA
-"A016825","Appropriative","","01/06/1956","01/12/1956","",NA
-"A016904","Appropriative","","","02/21/1956","",NA
-"A016961","Appropriative","","","03/21/1956","",NA
 "A016973","Appropriative","","","03/27/1956","",NA
-"A017056","Appropriative","","","04/30/1956","",NA
 "A017081","Appropriative","","","05/09/1956","",NA
-"A017091A","Appropriative","","","05/14/1956","",NA
-"A017091B","Appropriative","","","05/14/1956","",NA
 "A017091C","Appropriative","","","05/14/1956","",NA
-"A017098","Appropriative","","","05/22/1956","",NA
 "A017100","Appropriative","","","05/23/1956","",NA
-"A017121","Appropriative","06/08/1956","06/08/1956","06/11/1956","",NA
-"A017145","Appropriative","","06/21/1956","06/21/1956","",NA
-"A017232","Appropriative","","","08/10/1956","",NA
 "A017237","Appropriative","","","08/14/1956","",NA
-"A017240","Appropriative","","","08/15/1956","",NA
 "A017263","Appropriative","","","09/05/1956","",NA
-"A017271","Appropriative","","","09/07/1956","",NA
-"A017366","Appropriative","","","11/19/1956","",NA
 "A017477","Appropriative","","","02/26/1957","",NA
-"A017479","Appropriative","","","02/26/1957","",NA
-"A017508","Appropriative","","","03/14/1957","",NA
 "A017551","Appropriative","","","04/16/1957","",NA
 "A017587","Appropriative","","","05/08/1957","",NA
-"A017622","Appropriative","","","05/24/1957","",NA
-"A017624","Appropriative","","","05/24/1957","",NA
 "A017632","Appropriative","","05/29/1957","05/29/1957","",NA
-"A017642","Appropriative","","","06/11/1957","",NA
-"A017689","Appropriative","","","06/28/1957","",NA
-"A017717","Appropriative","","","07/12/1957","",NA
-"A017745","Appropriative","","","07/29/1957","",NA
-"A017795","Appropriative","","","08/22/1957","",NA
-"A017833","Appropriative","","","09/26/1957","",NA
 "A017868","Appropriative","","","10/31/1957","",NA
-"A017871","Appropriative","","","11/04/1957","",NA
-"A017881","Appropriative","","","11/14/1957","",NA
 "A017885","Appropriative","","","11/19/1957","",NA
-"A017911A","Appropriative","","","12/10/1957","",NA
-"A017911B","Appropriative","","12/10/1957","12/10/1957","",NA
-"A017919","Appropriative","","","12/18/1957","",NA
-"A017933","Appropriative","","","01/06/1958","",NA
 "A017978","Appropriative","","","02/05/1958","",NA
-"A017998","Appropriative","","","02/13/1958","",NA
-"A017999","Appropriative","","","02/13/1958","",NA
-"A018060","Appropriative","","","03/26/1958","",NA
-"A018093A","Appropriative","","04/11/1958","04/11/1958","",NA
-"A018093B","Appropriative","","04/11/1958","04/11/1958","",NA
-"A018127","Appropriative","","","05/08/1958","",NA
-"A018138","Appropriative","","","05/16/1958","",NA
-"A018192","Appropriative","","","06/23/1958","",NA
-"A018200","Appropriative","","","06/26/1958","",NA
-"A018235","Appropriative","","","07/24/1958","",NA
-"A018241","Appropriative","","","07/30/1958","",NA
 "A018274A","Appropriative","","","08/19/1958","",NA
-"A018274B","Appropriative","","","08/19/1958","",NA
 "A018277","Appropriative","","","08/20/1958","",NA
-"A018328","Appropriative","","","09/22/1958","",NA
-"A018392","Appropriative","","","10/30/1958","",NA
-"A018522","Appropriative","","","02/05/1959","",NA
-"A018648","Appropriative","04/17/1959","","04/17/1959","",NA
-"A018649","Appropriative","","","04/17/1959","",NA
-"A018736","Appropriative","","","05/25/1959","",NA
-"A018835","Appropriative","","06/29/1959","06/29/1959","",NA
-"A018843","Appropriative","","","07/06/1959","",NA
-"A018849","Appropriative","","","07/09/1959","",NA
 "A018948","Appropriative","","","08/28/1959","",NA
-"A018958","Appropriative","","","09/02/1959","",NA
-"A018963","Appropriative","","","09/02/1959","",NA
-"A019013","Appropriative","","","10/02/1959","",NA
-"A019071","Appropriative","","","11/09/1959","",NA
 "A019089","Appropriative","","","11/20/1959","",NA
-"A019135","Appropriative","","","12/14/1959","",NA
-"A019140","Appropriative","","","12/18/1959","",NA
 "A019200","Appropriative","","","01/28/1960","",NA
 "A019241","Appropriative","","","02/18/1960","",NA
-"A019336","Appropriative","","","04/01/1960","",NA
-"A019339","Appropriative","","","04/04/1960","",NA
-"A019351","Appropriative","","","04/12/1960","",NA
-"A019422","Appropriative","","","05/06/1960","",NA
 "A019427","Appropriative","","05/09/1960","05/10/1960","",NA
-"A019444","Appropriative","","","05/23/1960","",NA
-"A019470","Appropriative","","","06/02/1960","",NA
-"A019515","Appropriative","","","07/05/1960","",NA
 "A019554","Appropriative","","07/18/1960","07/18/1960","",NA
-"A019557","Appropriative","","","07/18/1960","",NA
-"A019642","Appropriative","","","08/01/1960","",NA
-"A019649","Appropriative","","","08/04/1960","",NA
 "A019652","Appropriative","","","08/09/1960","",NA
-"A019720","Appropriative","","","08/30/1960","",NA
-"A019722","Appropriative","","","08/30/1960","",NA
-"A019798","Appropriative","","","10/04/1960","",NA
 "A019806","Appropriative","","","10/07/1960","",NA
-"A019891","Appropriative","","","12/27/1960","",NA
 "A019921","Appropriative","","","01/17/1961","",NA
-"A020005","Appropriative","","","02/23/1961","",NA
-"A020015","Appropriative","","","03/02/1961","",NA
 "A020071","Appropriative","","","04/06/1961","",NA
-"A020078","Appropriative","","","04/10/1961","",NA
-"A020089","Appropriative","","","04/17/1961","",NA
-"A020100","Appropriative","","04/24/1961","04/25/1961","",NA
-"A020114","Appropriative","","","05/08/1961","",NA
-"A020127","Appropriative","","","05/12/1961","",NA
-"A020129","Appropriative","","","05/15/1961","",NA
 "A020134","Appropriative","","","05/17/1961","",NA
-"A020147","Appropriative","","","05/25/1961","",NA
-"A020261","Appropriative","","","06/13/1961","",NA
-"A020264","Appropriative","","","06/14/1961","",NA
-"A020333","Appropriative","","","07/31/1961","",NA
-"A020384","Appropriative","","","09/07/1961","",NA
-"A020401","Appropriative","","","09/19/1961","",NA
-"A020435","Appropriative","","","10/13/1961","",NA
-"A020436","Appropriative","","","10/16/1961","",NA
-"A020491","Appropriative","","","11/10/1961","",NA
 "A020493","Appropriative","","","11/14/1961","",NA
-"A020509","Appropriative","","","11/27/1961","",NA
-"A020540","Appropriative","","12/27/1961","12/28/1961","",NA
-"A020557","Appropriative","01/15/1962","01/15/1962","01/16/1962","",NA
-"A020573","Appropriative","","","01/26/1962","",NA
-"A020582","Appropriative","","","02/01/1962","",NA
-"A020583","Appropriative","","","02/01/1962","",NA
 "A020584","Appropriative","","","02/01/1962","",NA
-"A020624","Appropriative","","","02/21/1962","",NA
-"A020634","Appropriative","","","03/02/1962","",NA
-"A020657","Appropriative","","","03/16/1962","",NA
 "A020662","Appropriative","","","03/20/1962","",NA
 "A020720","Appropriative","","","04/12/1962","",NA
-"A020728","Appropriative","","","04/19/1962","",NA
-"A020733","Appropriative","","","04/23/1962","",NA
-"A020769","Appropriative","","","05/04/1962","",NA
 "A020788","Appropriative","","","05/23/1962","",NA
-"A020791","Appropriative","","","05/24/1962","",NA
-"A020798","Appropriative","","","05/31/1962","",NA
-"A020813","Appropriative","","06/11/1962","06/11/1962","",NA
-"A020846","Appropriative","","","07/06/1962","",NA
-"A020870","Appropriative","","","07/25/1962","",NA
-"A020872","Appropriative","","","07/26/1962","",NA
-"A020896","Appropriative","","","08/13/1962","",NA
 "A020901","Appropriative","","","08/15/1962","",NA
-"A020907","Appropriative","","","08/24/1962","",NA
-"A020920","Appropriative","","","08/30/1962","",NA
-"A020951","Appropriative","","","09/20/1962","",NA
 "A020953","Appropriative","","","09/21/1962","",NA
-"A020963","Appropriative","10/02/1962","","10/02/1962","",NA
 "A020979","Appropriative","","","10/15/1962","",NA
 "A021015","Appropriative","","","11/13/1962","",NA
-"A021052","Appropriative","","","11/28/1962","",NA
-"A021081","Appropriative","","","12/13/1962","",NA
-"A021106","Appropriative","","01/02/1963","01/03/1963","",NA
 "A021121","Appropriative","","","01/16/1963","",NA
-"A021126","Appropriative","","","01/21/1963","",NA
-"A021127","Appropriative","","","01/21/1963","",NA
-"A021148","Appropriative","","","02/04/1963","",NA
-"A021156","Appropriative","","","02/11/1963","",NA
 "A021187","Appropriative","","","03/11/1963","",NA
-"A021191","Appropriative","","","03/13/1963","",NA
-"A021202","Appropriative","","","03/22/1963","",NA
-"A021210","Appropriative","","","03/29/1963","",NA
-"A021235","Appropriative","","04/11/1963","04/12/1963","",NA
-"A021245","Appropriative","","","04/18/1963","",NA
 "A021271","Appropriative","","","05/02/1963","",NA
 "A021345","Appropriative","","","06/17/1963","",NA
 "A021355","Appropriative","","","06/24/1963","",NA
 "A021360","Appropriative","","","06/25/1963","",NA
-"A021419","Appropriative","","","08/05/1963","",NA
-"A021429A","Appropriative","","","08/15/1963","",NA
 "A021429B","Appropriative","","","08/15/1963","",NA
-"A021429C","Appropriative","","","08/15/1963","",NA
 "A021466","Appropriative","","","09/18/1963","",NA
-"A021506","Appropriative","","","10/17/1963","",NA
-"A021515","Appropriative","","","10/30/1963","",NA
-"A021516","Appropriative","","10/30/1963","10/31/1963","",NA
-"A021522","Appropriative","","","11/04/1963","",NA
 "A021540","Appropriative","","","11/14/1963","",NA
-"A021569","Appropriative","","","12/05/1963","",NA
-"A021570","Appropriative","","","12/05/1963","",NA
-"A021596","Appropriative","","","01/14/1964","",NA
-"A021658","Appropriative","","","02/28/1964","",NA
-"A021660","Appropriative","","","02/28/1964","",NA
-"A021666","Appropriative","03/02/1964","03/02/1964","03/03/1964","",NA
 "A021674","Appropriative","","","03/05/1964","",NA
-"A021691","Appropriative","","","03/16/1964","",NA
-"A021705","Appropriative","","","03/20/1964","",NA
-"A021710","Appropriative","","","03/20/1964","",NA
 "A021711","Appropriative","","","03/20/1964","",NA
-"A021756","Appropriative","","","04/27/1964","",NA
-"A021783A","Appropriative","","05/22/1964","05/22/1964","",NA
-"A021783B","Appropriative","","","05/22/1964","",NA
-"A021809","Appropriative","","","06/10/1964","",NA
-"A021817","Appropriative","","","06/16/1964","",NA
-"A021838","Appropriative","","","07/08/1964","",NA
-"A021856","Appropriative","","","07/20/1964","",NA
-"A021870","Appropriative","","08/17/1964","08/17/1964","",NA
-"A021886","Appropriative","","","08/28/1964","",NA
-"A021889","Appropriative","","","08/31/1964","",NA
-"A021919","Appropriative","","","09/30/1964","",NA
-"A021925","Appropriative","","","10/08/1964","",NA
-"A021927","Appropriative","","","10/08/1964","",NA
-"A021928","Appropriative","","","10/08/1964","",NA
-"A021929","Appropriative","","","10/08/1964","",NA
-"A021930","Appropriative","","","10/08/1964","",NA
-"A021931","Appropriative","","","10/08/1964","",NA
-"A021932","Appropriative","","","10/08/1964","",NA
-"A021939","Appropriative","","","10/15/1964","",NA
-"A021941","Appropriative","","","10/15/1964","",NA
-"A021942","Appropriative","","","10/15/1964","",NA
-"A021950","Appropriative","","","10/29/1964","",NA
-"A021966","Appropriative","","","11/19/1964","",NA
-"A021977","Appropriative","","","11/25/1964","",NA
-"A022005B","Appropriative","","","12/17/1964","",NA
-"A022038","Appropriative","","","02/05/1965","",NA
-"A022070","Appropriative","","","03/10/1965","",NA
-"A022079","Appropriative","","","03/22/1965","",NA
 "A022090","Appropriative","","","03/26/1965","",NA
-"A022141","Appropriative","","","05/07/1965","",NA
 "A022145","Appropriative","","05/10/1965","05/10/1965","",NA
-"A022151","Appropriative","","","05/17/1965","",NA
-"A022188","Appropriative","","","06/14/1965","",NA
 "A022208","Appropriative","","","07/01/1965","",NA
-"A022237","Appropriative","","","07/23/1965","",NA
-"A022273","Appropriative","","","08/24/1965","",NA
-"A022277","Appropriative","","","08/31/1965","",NA
-"A022306","Appropriative","","","10/06/1965","",NA
-"A022319","Appropriative","","","10/21/1965","",NA
-"A022342","Appropriative","","","11/23/1965","",NA
 "A022348","Appropriative","","","12/10/1965","",NA
 "A022359","Appropriative","","","01/03/1966","",NA
-"A022378","Appropriative","","","02/01/1966","",NA
 "A022426","Appropriative","","","03/17/1966","",NA
 "A022431","Appropriative","","03/28/1966","03/29/1966","",NA
-"A022432","Appropriative","","","03/29/1966","",NA
-"A022433","Appropriative","","","03/29/1966","",NA
-"A022445","Appropriative","","","04/11/1966","",NA
 "A022496","Appropriative","","","06/14/1966","",NA
-"A022498","Appropriative","","","06/15/1966","",NA
-"A022523","Appropriative","","","07/13/1966","",NA
-"A022565","Appropriative","","","08/29/1966","",NA
-"A022583","Appropriative","","","09/21/1966","",NA
-"A022608","Appropriative","","","10/14/1968","",NA
-"A022614","Appropriative","","","10/18/1966","",NA
 "A022615","Appropriative","","","10/18/1966","",NA
-"A022623","Appropriative","","","10/27/1966","",NA
-"A022652","Appropriative","","","12/02/1966","",NA
-"A022661","Appropriative","","","12/15/1966","",NA
-"A022667","Appropriative","","","12/20/1966","",NA
-"A022692","Appropriative","","","01/30/1967","",NA
-"A022702","Appropriative","","","02/14/1967","",NA
 "A022732","Appropriative","","","03/20/1967","",NA
 "A022745","Appropriative","","","03/30/1967","",NA
-"A022767","Appropriative","","","04/07/1967","",NA
-"A022802","Appropriative","","","06/05/1967","",NA
-"A022807","Appropriative","","","06/06/1967","",NA
-"A022815","Appropriative","","","06/09/1967","",NA
 "A022824","Appropriative","","","06/16/1967","",NA
-"A022881","Appropriative","","","08/10/1967","",NA
-"A022919","Appropriative","","","10/05/1967","",NA
-"A022929","Appropriative","","","10/13/1967","",NA
-"A022962","Appropriative","","","12/26/1967","",NA
-"A022993","Appropriative","","","02/26/1968","",NA
-"A023027","Appropriative","","","04/15/1968","",NA
 "A023035","Appropriative","","","04/26/1968","",NA
-"A023039","Appropriative","","","05/02/1968","",NA
 "A023040","Appropriative","","","05/02/1968","",NA
-"A023058","Appropriative","","","06/03/1968","",NA
 "A023067","Appropriative","","","06/14/1968","",NA
 "A023077","Appropriative","","","07/01/1968","",NA
 "A023086","Appropriative","","","07/16/1968","",NA
-"A023092","Appropriative","","","07/22/1968","",NA
-"A023094","Appropriative","","","07/23/1968","",NA
 "A023098","Appropriative","","","07/26/1968","",NA
 "A023144","Appropriative","","","10/02/1968","",NA
 "A023163","Appropriative","","","11/18/1968","",NA
-"A023165","Appropriative","","","11/22/1968","",NA
-"A023173","Appropriative","","","12/04/1968","",NA
-"A023212A","Appropriative","","","01/21/1969","",NA
-"A023212B","Appropriative","","","01/21/1969","",NA
-"A023213","Appropriative","","","01/21/1969","",NA
 "A023250","Appropriative","","","03/21/1969","",NA
-"A023255","Appropriative","","","04/09/1969","",NA
-"A023282","Appropriative","","","05/20/1969","",NA
-"A023290","Appropriative","","","06/11/1969","",NA
-"A023297","Appropriative","","","06/17/1969","",NA
-"A023326","Appropriative","","","08/12/1969","",NA
-"A023328","Appropriative","","","08/14/1969","",NA
-"A023337","Appropriative","","","08/25/1969","",NA
-"A023338","Appropriative","","","08/26/1969","",NA
-"A023339","Appropriative","","","08/26/1969","",NA
-"A023387","Appropriative","","10/31/1969","10/31/1969","",NA
 "A023399","Appropriative","","","11/17/1969","",NA
-"A023408","Appropriative","","","12/09/1969","",NA
-"A023446B","Appropriative","","","02/06/1970","",NA
-"A023451","Appropriative","","","02/18/1970","",NA
-"A023481","Appropriative","","","04/06/1970","",NA
-"A023488","Appropriative","","","04/27/1970","",NA
-"A023489","Appropriative","04/27/1970","","04/27/1970","",NA
-"A023534A","Appropriative","","","06/18/1970","",NA
-"A023534B","Appropriative","","","06/18/1970","",NA
-"A023536","Appropriative","","","06/24/1970","",NA
 "A023539","Appropriative","","","06/29/1970","",NA
 "A023540","Appropriative","","","06/29/1970","",NA
 "A023545","Appropriative","","","07/06/1970","",NA
-"A023558","Appropriative","","","07/14/1970","",NA
-"A023563","Appropriative","","","07/21/1970","",NA
-"A023605","Appropriative","","","09/11/1970","",NA
-"A023615","Appropriative","","","09/22/1970","",NA
-"A023629","Appropriative","","","10/14/1970","",NA
-"A023639","Appropriative","","","11/02/1970","",NA
-"A023654A","Appropriative","","","12/14/1970","",NA
 "A023654B","Appropriative","","","12/14/1970","",NA
-"A023655","Appropriative","","","12/14/1970","",NA
 "A023660","Appropriative","","","12/18/1970","",NA
-"A023663","Appropriative","12/21/1970","","12/21/1970","",NA
 "A023664","Appropriative","","12/22/1970","12/23/1970","",NA
-"A023670","Appropriative","","","01/12/1971","",NA
-"A023671","Appropriative","","","01/13/1971","",NA
-"A023678","Appropriative","","","01/22/1971","",NA
-"A023679","Appropriative","","","01/22/1971","",NA
-"A023681","Appropriative","","","01/22/1971","",NA
-"A023682","Appropriative","","","01/22/1971","",NA
-"A023700","Appropriative","","","02/09/1971","",NA
-"A023707","Appropriative","","","02/23/1971","",NA
-"A023737","Appropriative","","","03/24/1971","",NA
-"A023748","Appropriative","","","04/05/1971","",NA
-"A023766","Appropriative","","","04/22/1971","",NA
 "A023792","Appropriative","","","05/28/1971","",NA
 "A023793","Appropriative","","05/28/1971","05/28/1971","",NA
 "A023794","Appropriative","","","06/01/1971","",NA
-"A023802","Appropriative","","","06/08/1971","",NA
-"A023817","Appropriative","","","06/29/1971","",NA
-"A023835","Appropriative","","","08/03/1971","",NA
-"A023836","Appropriative","","","08/04/1971","",NA
-"A023839","Appropriative","","","08/11/1971","",NA
-"A023840","Appropriative","","","08/11/1971","",NA
 "A023868","Appropriative","","","09/17/1971","",NA
 "A023869","Appropriative","","02/21/2002","09/20/1971","",NA
-"A023880","Appropriative","","","09/30/1971","",NA
-"A023895","Appropriative","","","10/13/1971","",NA
-"A023902","Appropriative","10/21/1971","10/21/1971","10/21/1971","",NA
-"A023915","Appropriative","","","11/03/1971","",NA
-"A023916","Appropriative","","","11/10/1971","",NA
-"A023926A","Appropriative","","11/22/1971","11/22/1971","",NA
-"A023926B","Appropriative","","11/22/1971","11/23/1971","",NA
-"A023949","Appropriative","","","12/14/1971","",NA
-"A023998","Appropriative","","","03/13/1972","",NA
-"A024004","Appropriative","","","03/20/1972","",NA
-"A024010","Appropriative","","","03/31/1972","",NA
-"A024013","Appropriative","","03/31/1972","04/03/1972","",NA
-"A024014","Appropriative","","","04/03/1972","",NA
 "A024017","Appropriative","","","04/04/1972","",NA
-"A024025","Appropriative","","","04/10/1972","",NA
-"A024028","Appropriative","","04/12/1972","04/13/1972","",NA
 "A024044","Appropriative","","","04/14/1972","",NA
-"A024050","Appropriative","","04/19/1972","04/24/1972","",NA
 "A024051","Appropriative","","","04/24/1972","",NA
-"A024053","Appropriative","","","04/27/1972","",NA
-"A024056","Appropriative","","","05/01/1972","",NA
-"A024101","Appropriative","","","06/23/1972","",NA
-"A024104","Appropriative","","","06/30/1972","",NA
-"A024126","Appropriative","","","07/24/1972","",NA
 "A024130","Appropriative","","07/27/1972","07/27/1972","",NA
-"A024139","Appropriative","","","08/08/1972","",NA
-"A024140","Appropriative","","","08/08/1972","",NA
-"A024141","Appropriative","","08/08/1972","08/16/1972","",NA
 "A024163","Appropriative","","","08/25/1972","",NA
-"A024173","Appropriative","","","09/08/1972","",NA
 "A024205","Appropriative","","","10/11/1972","",NA
-"A024209A","Appropriative","","","10/17/1972","",NA
-"A024209B","Appropriative","","","10/17/1972","",NA
-"A024223","Appropriative","","","10/27/1972","",NA
-"A024238","Appropriative","","","11/03/1972","",NA
-"A024247","Appropriative","","","11/22/1972","",NA
-"A024266A","Appropriative","","","12/21/1972","",NA
-"A024266B","Appropriative","","","12/21/1972","",NA
-"A024268A","Appropriative","","","12/22/1972","",NA
-"A024268B","Appropriative","","","12/22/1972","",NA
-"A024269A","Appropriative","","","12/22/1972","",NA
-"A024269B","Appropriative","","","12/22/1972","",NA
-"A024270A","Appropriative","","12/22/1972","12/22/1972","",NA
 "A024270B","Appropriative","","12/22/1972","12/22/1972","",NA
-"A024271A","Appropriative","","","12/22/1972","",NA
-"A024271B","Appropriative","","","12/22/1972","",NA
-"A024300A","Appropriative","","","02/13/1973","",NA
-"A024301","Appropriative","","","02/15/1973","",NA
 "A024310A","Appropriative","","","02/28/1973","",NA
 "A024310B","Appropriative","","","02/28/1973","",NA
-"A024311A","Appropriative","","","02/08/1973","",NA
-"A024311B","Appropriative","","","02/28/1973","",NA
 "A024318","Appropriative","","","03/09/1973","",NA
-"A024344","Appropriative","","","04/05/1973","",NA
-"A024377","Appropriative","","","05/22/1973","",NA
 "A024378","Appropriative","","","05/24/1973","",NA
 "A024391","Appropriative","06/05/1973","06/05/1973","06/06/1973","",NA
-"A024404","Appropriative","","06/26/1973","06/28/1973","",NA
-"A024405","Appropriative","","","06/29/1973","",NA
-"A024408","Appropriative","","","07/05/1973","",NA
-"A024409","Appropriative","","","07/06/1973","",NA
-"A024412","Appropriative","","","07/10/1973","",NA
-"A024425","Appropriative","","","07/31/1973","",NA
-"A024457","Appropriative","","","09/13/1973","",NA
 "A024488","Appropriative","","","10/10/1973","",NA
-"A024502","Appropriative","","","11/16/1973","",NA
-"A024522A","Appropriative","","","01/11/1974","",NA
 "A024522B","Appropriative","","","01/11/1974","",NA
-"A024544","Appropriative","","","02/08/1974","",NA
 "A024569","Appropriative","","","03/01/1974","",NA
-"A024571A","Appropriative","","","03/05/1974","",NA
 "A024571B","Appropriative","","","03/05/1974","",NA
-"A024593A","Appropriative","","04/12/1974","04/12/1974","",NA
-"A024593B","Appropriative","","04/12/1974","04/12/1974","",NA
-"A024604","Appropriative","","","05/07/1974","",NA
-"A024617","Appropriative","","","06/06/1974","",NA
-"A024644","Appropriative","07/12/1974","07/12/1974","07/17/1974","",NA
-"A024645","Appropriative","","","07/17/1974","",NA
-"A024678B","Appropriative","","","08/26/1974","",NA
-"A024682","Appropriative","","","08/29/1974","",NA
-"A024688A","Appropriative","","","09/17/1974","",NA
-"A024688B","Appropriative","","","09/17/1974","",NA
-"A024691A","Appropriative","","","09/19/1974","",NA
-"A024691B","Appropriative","","","09/19/1974","",NA
 "A024706","Appropriative","","","11/08/1974","",NA
-"A024725","Appropriative","","","12/17/1974","",NA
-"A024741","Appropriative","","","01/21/1975","",NA
 "A024761","Appropriative","","","02/28/1975","",NA
 "A024762A","Appropriative","","","02/28/1975","",NA
-"A024762B","Appropriative","","","02/28/1975","",NA
-"A024763B","Appropriative","","","02/28/1975","",NA
-"A024764","Appropriative","","","02/28/1975","",NA
-"A024774","Appropriative","","","03/11/1975","",NA
 "A024780","Appropriative","","","03/18/1975","",NA
-"A024782","Appropriative","","","03/20/1975","",NA
-"A024783","Appropriative","","","03/20/1975","",NA
-"A024784","Appropriative","","","03/21/1975","",NA
-"A024789A","Appropriative","","","03/27/1975","",NA
-"A024789B","Appropriative","","","03/27/1975","",NA
-"A024790A","Appropriative","","03/31/1975","03/31/1975","",NA
-"A024791","Appropriative","","","03/31/1975","",NA
-"A024805","Appropriative","","","05/06/1975","",NA
-"A024807","Appropriative","","","05/07/1975","",NA
-"A024817","Appropriative","","","06/02/1975","",NA
-"A024820","Appropriative","","","06/12/1975","",NA
-"A024827","Appropriative","","","06/26/1975","",NA
-"A024854","Appropriative","","","08/08/1975","",NA
-"A024864A","Appropriative","","","08/25/1975","",NA
-"A024864B","Appropriative","","","08/25/1975","",NA
-"A024865A01","Appropriative","","","08/26/1975","",NA
 "A024865A02","Appropriative","","","08/26/1975","",NA
-"A024865B","Appropriative","","","08/26/1975","",NA
 "A024874","Appropriative","","","09/05/1975","",NA
-"A024877","Appropriative","","","09/10/1975","",NA
-"A024884","Appropriative","","","09/24/1975","",NA
-"A024889","Appropriative","","","09/29/1975","",NA
-"A024890","Appropriative","","09/22/1975","09/30/1975","",NA
 "A024891","Appropriative","","","09/30/1975","",NA
 "A024892A","Appropriative","","","09/30/1975","",NA
-"A024892B","Appropriative","","","09/30/1975","",NA
 "A024893A","Appropriative","","","09/30/1975","",NA
 "A024893B","Appropriative","","","09/30/1975","",NA
-"A024894","Appropriative","","","09/30/1975","",NA
-"A024898","Appropriative","10/10/1975","","10/10/1975","",NA
-"A024899","Appropriative","","","10/14/1975","",NA
-"A024905","Appropriative","","","10/17/1975","",NA
-"A024909","Appropriative","","","10/21/1975","",NA
-"A024912","Appropriative","","","10/22/1975","",NA
-"A024919","Appropriative","","","10/27/1975","",NA
-"A024921","Appropriative","","","10/29/1975","",NA
 "A024929","Appropriative","","11/17/1975","11/17/1975","",NA
-"A024931","Appropriative","","","11/17/1975","",NA
-"A024932","Appropriative","","","11/17/1975","",NA
 "A024935","Appropriative","","","11/18/1975","",NA
-"A024946","Appropriative","","","11/28/1975","",NA
-"A024951","Appropriative","","","12/05/1975","",NA
-"A024955","Appropriative","","","12/10/1975","",NA
-"A024958A","Appropriative","","","12/16/1975","",NA
 "A024958B","Appropriative","","","12/16/1975","",NA
-"A024959","Appropriative","","","12/17/1975","",NA
 "A024962","Appropriative","","","12/29/1975","",NA
 "A024963","Appropriative","","","12/29/1975","",NA
-"A024967","Appropriative","","","01/06/1976","",NA
 "A024968A","Appropriative","","","01/06/1976","",NA
-"A024968B","Appropriative","","","01/06/1976","",NA
-"A024969B","Appropriative","","","01/06/1976","",NA
-"A024972","Appropriative","","","01/12/1976","",NA
-"A024993","Appropriative","","","02/09/1976","",NA
 "A024995","Appropriative","","","02/18/1976","",NA
-"A024996","Appropriative","","","02/18/1976","",NA
-"A025005","Appropriative","","","02/25/1976","",NA
-"A025010","Appropriative","","","02/27/1976","",NA
-"A025012","Appropriative","","","02/27/1976","",NA
-"A025015","Appropriative","","","03/02/1976","",NA
-"A025019","Appropriative","","","03/12/1976","",NA
-"A025021","Appropriative","","","03/12/1976","",NA
-"A025025","Appropriative","","","03/22/1976","",NA
-"A025028","Appropriative","","","03/24/1976","",NA
 "A025032","Appropriative","","","03/31/1976","",NA
-"A025036","Appropriative","","","04/05/1976","",NA
 "A025052","Appropriative","","","04/20/1976","",NA
-"A025065","Appropriative","","","05/17/1976","",NA
-"A025070","Appropriative","","","05/21/1976","",NA
-"A025084","Appropriative","","","06/14/1976","",NA
-"A025110","Appropriative","","","07/21/1976","",NA
-"A025123","Appropriative","","","08/04/1976","",NA
-"A025125","Appropriative","","","08/11/1976","",NA
-"A025137","Appropriative","","","08/27/1976","",NA
-"A025154","Appropriative","","","09/21/1976","",NA
-"A025157","Appropriative","","","09/21/1976","",NA
-"A025201","Appropriative","","","11/23/1976","",NA
-"A025207","Appropriative","","","12/07/1976","",NA
 "A025222","Appropriative","","","12/27/1976","",NA
-"A025268","Appropriative","","","02/28/1977","",NA
-"A025282","Appropriative","","","03/07/1977","",NA
-"A025301","Appropriative","","","03/18/1977","",NA
-"A025325","Appropriative","","","04/12/1977","",NA
-"A025334","Appropriative","","","04/21/1977","",NA
-"A025344","Appropriative","","","04/27/1977","",NA
-"A025363","Appropriative","","","05/12/1977","",NA
 "A025367","Appropriative","","","05/17/1977","",NA
-"A025393A","Appropriative","","","06/13/1977","",NA
-"A025393B","Appropriative","","","06/13/1977","",NA
 "A025394","Appropriative","","","06/15/1977","",NA
-"A025405","Appropriative","","","06/24/1977","",NA
-"A025524","Appropriative","","","10/12/1977","",NA
-"A025583","Appropriative","","","11/29/1977","",NA
-"A025596","Appropriative","","12/08/1977","12/12/1977","",NA
-"A025600","Appropriative","","11/28/1977","12/15/1977","",NA
-"A025623","Appropriative","","","12/30/1977","",NA
-"A025674","Appropriative","","","02/09/1978","",NA
-"A025682","Appropriative","","","02/23/1978","",NA
-"A025691","Appropriative","","","03/07/1978","",NA
-"A025694","Appropriative","","","03/13/1978","",NA
-"A025740","Appropriative","","","05/16/1978","",NA
 "A025749A","Appropriative","","","05/26/1978","",NA
 "A025749B","Appropriative","","","05/26/1978","",NA
-"A025762","Appropriative","","","06/15/1978","",NA
-"A025773","Appropriative","","","06/27/1978","",NA
-"A025822A","Appropriative","","09/12/1978","09/13/1978","",NA
-"A025822B","Appropriative","","09/12/1978","09/13/1978","",NA
-"A025823A01","Appropriative","","09/14/1978","","",NA
-"A025823A02","Appropriative","","","09/14/1978","",NA
-"A025823A03","Appropriative","","09/14/1978","09/14/1978","",NA
-"A025823B","Appropriative","","","09/14/1978","",NA
 "A025830","Appropriative","","","09/21/1978","",NA
-"A025831","Appropriative","","","09/21/1978","",NA
-"A025850","Appropriative","","","10/12/1978","",NA
-"A025869","Appropriative","","","11/15/1978","",NA
 "A025887A","Appropriative","","","12/19/1978","",NA
-"A025887B","Appropriative","","","12/19/1978","",NA
 "A025888A","Appropriative","","","12/19/1978","",NA
-"A025888B","Appropriative","","","12/19/1978","",NA
-"A025939","Appropriative","","","03/13/1979","",NA
-"A025940","Appropriative","","","03/14/1979","",NA
-"A025964","Appropriative","","04/04/1979","04/04/1979","",NA
-"A025998","Appropriative","","","05/21/1979","",NA
-"A026016","Appropriative","","","06/06/1979","",NA
 "A026022A","Appropriative","","","06/12/1979","",NA
-"A026022B","Appropriative","","","06/12/1979","",NA
-"A026055A","Appropriative","","","07/26/1979","",NA
 "A026055B","Appropriative","","","07/26/1979","",NA
-"A026079","Appropriative","","","08/30/1979","",NA
-"A026110","Appropriative","","","10/10/1979","",NA
-"A026111","Appropriative","","10/10/1979","10/10/1979","",NA
-"A026113","Appropriative","","","10/12/1979","",NA
 "A026143","Appropriative","","","12/03/1979","",NA
-"A026181","Appropriative","","","01/22/1980","",NA
 "A026182","Appropriative","","","01/22/1980","",NA
-"A026183","Appropriative","","","01/22/1980","",NA
 "A026184","Appropriative","","","01/22/1980","",NA
-"A026201","Appropriative","","","02/13/1980","",NA
-"A026224","Appropriative","","","02/20/1980","",NA
-"A026228","Appropriative","","","02/21/1980","",NA
-"A026233","Appropriative","","","02/26/1980","",NA
-"A026240","Appropriative","","02/29/1980","02/29/1980","",NA
-"A026241","Appropriative","","","02/28/1980","",NA
-"A026250","Appropriative","","","03/10/1980","",NA
-"A026298A","Appropriative","","04/15/1980","04/15/1980","",NA
-"A026298B","Appropriative","","04/15/1980","05/15/1987","",NA
-"A026396","Appropriative","","","06/02/1980","",NA
-"A026402","Appropriative","","","06/05/1980","",NA
-"A026412","Appropriative","","","06/11/1980","",NA
-"A026413","Appropriative","","","06/11/1980","",NA
-"A026440","Appropriative","","","07/02/1980","",NA
-"A026442","Appropriative","","07/02/1980","07/02/1980","",NA
-"A026470","Appropriative","","07/25/1980","07/25/1980","",NA
 "A026503","Appropriative","","","08/20/1980","",NA
-"A026561","Appropriative","","10/02/1980","10/06/1980","",NA
-"A026600","Appropriative","","","11/03/1980","",NA
 "A026624","Appropriative","","","11/18/1980","",NA
-"A026672","Appropriative","","","12/23/1980","",NA
-"A026740","Appropriative","","","03/05/1981","",NA
-"A026769","Appropriative","","","03/31/1981","",NA
 "A026808","Appropriative","","","04/29/1981","",NA
-"A026927","Appropriative","","","07/21/1981","",NA
 "A026938","Appropriative","","","08/04/1981","",NA
-"A026975","Appropriative","","","09/01/1981","",NA
 "A026993","Appropriative","","","09/08/1981","",NA
-"A027022","Appropriative","","","09/23/1981","",NA
-"A027031","Appropriative","","","10/05/1981","",NA
-"A027036","Appropriative","","","10/07/1981","",NA
-"A027045","Appropriative","","","10/15/1981","",NA
-"A027046","Appropriative","","","10/16/1981","",NA
 "A027075","Appropriative","","","11/02/1981","",NA
-"A027081","Appropriative","","","11/05/1981","",NA
-"A027143","Appropriative","","","12/11/1981","",NA
-"A027149","Appropriative","","","12/11/1981","",NA
-"A027158","Appropriative","","","12/23/1981","",NA
-"A027177","Appropriative","","","01/11/1982","",NA
 "A027249","Appropriative","","","03/15/1982","",NA
-"A027301","Appropriative","","04/19/1982","04/23/1982","",NA
-"A027327","Appropriative","","","05/05/1982","",NA
-"A027362","Appropriative","","","06/14/1982","",NA
-"A027424","Appropriative","","","07/14/1982","",NA
-"A027440","Appropriative","","","07/20/1982","",NA
-"A027460","Appropriative","","","07/29/1982","",NA
-"A027478","Appropriative","","","08/13/1982","",NA
 "A027479","Appropriative","","","08/13/1982","",NA
 "A027523","Appropriative","","","09/16/1982","",NA
 "A027541","Appropriative","","","09/30/1982","",NA
-"A027557","Appropriative","","","10/21/1982","",NA
-"A027581","Appropriative","","","11/12/1982","",NA
-"A027582","Appropriative","","","11/12/1982","",NA
 "A027583","Appropriative","","","11/12/1982","",NA
-"A027584","Appropriative","","","11/12/1982","",NA
-"A027596","Appropriative","11/23/1982","11/23/1982","11/29/1982","",NA
-"A027702","Appropriative","","","04/04/1983","",NA
-"A027707","Appropriative","","","04/08/1983","",NA
-"A027757","Appropriative","","","05/24/1983","",NA
-"A027791","Appropriative","","","07/06/1983","",NA
 "A027841","Appropriative","","","08/16/1983","",NA
-"A027892","Appropriative","","","09/28/1983","",NA
-"A027941","Appropriative","","","01/09/1984","",NA
-"A027942","Appropriative","","","01/09/1984","",NA
-"A027943","Appropriative","","","01/09/1984","",NA
-"A027953","Appropriative","","","01/19/1984","",NA
-"A027955","Appropriative","","","01/23/1984","",NA
-"A027992","Appropriative","","03/06/1984","03/14/1984","",NA
 "A028116","Appropriative","","","04/18/1984","",NA
-"A028127","Appropriative","","","04/30/1984","",NA
-"A028176","Appropriative","","06/20/1984","06/26/1984","",NA
-"A028319","Appropriative","","","11/09/1984","",NA
-"A028320","Appropriative","","","11/09/1984","",NA
-"A028365","Appropriative","","","12/27/1984","",NA
-"A028370","Appropriative","","","01/17/1985","",NA
-"A028386","Appropriative","","","02/06/1985","",NA
-"A028402","Appropriative","","","03/07/1985","",NA
-"A028632","Appropriative","","","12/03/1985","",NA
 "A028633","Appropriative","","","12/03/1985","",NA
-"A028635","Appropriative","","","12/03/1985","",NA
-"A028636","Appropriative","","","12/03/1985","",NA
-"A028640","Appropriative","","","12/03/1985","",NA
-"A028641","Appropriative","","","12/03/1985","",NA
-"A028642","Appropriative","","","12/03/1985","",NA
-"A028643","Appropriative","","","12/03/1985","",NA
-"A028647","Appropriative","","","12/03/1985","",NA
 "A028648","Appropriative","","","12/03/1985","",NA
-"A028649","Appropriative","","","12/03/1985","",NA
-"A028650","Appropriative","","","12/03/1985","",NA
-"A028651","Appropriative","","","12/03/1985","",NA
-"A028653","Appropriative","","","12/04/1985","",NA
-"A028668","Appropriative","","","12/18/1985","",NA
-"A028676","Appropriative","","","12/23/1985","",NA
-"A028715","Appropriative","","","01/14/1986","",NA
 "A028738","Appropriative","","","01/17/1986","",NA
-"A028786","Appropriative","","01/28/1986","01/28/1986","",NA
-"A028787","Appropriative","","","01/28/1986","",NA
-"A028790","Appropriative","","","01/30/1986","",NA
-"A028824","Appropriative","","","04/08/1986","",NA
 "A028828","Appropriative","","","04/18/1986","",NA
-"A028854","Appropriative","","","06/09/1986","",NA
-"A028855","Appropriative","","","06/09/1986","",NA
-"A028860","Appropriative","","","06/19/1986","",NA
-"A028878","Appropriative","","","08/12/1986","",NA
-"A028886","Appropriative","","","09/08/1986","",NA
 "A028925","Appropriative","","","10/22/1986","",NA
 "A028926","Appropriative","","","10/22/1986","",NA
-"A028927","Appropriative","","","10/22/1986","",NA
-"A029044","Appropriative","","","06/04/1987","",NA
-"A029070","Appropriative","","","07/16/1987","",NA
-"A029086","Appropriative","","","08/10/1987","",NA
-"A029087","Appropriative","","","08/10/1987","",NA
-"A029108","Appropriative","","","09/11/1987","",NA
 "A029122","Appropriative","","","10/06/1987","",NA
-"A029199","Appropriative","","02/23/1988","03/01/1988","",NA
-"A029202","Appropriative","","","03/10/1988","",NA
-"A029203","Appropriative","","","03/10/1988","",NA
-"A029267","Appropriative","","","06/15/1988","",NA
-"A029272","Appropriative","","","06/15/1988","",NA
 "A029277","Appropriative","","","06/21/1988","",NA
-"A029327","Appropriative","","","08/22/1988","",NA
-"A029332","Appropriative","","","09/06/1988","",NA
-"A029333","Appropriative","","09/06/1988","09/06/1988","",NA
-"A029338","Appropriative","","09/28/1988","09/28/1988","",NA
-"A029372","Appropriative","","","11/18/1988","",NA
-"A029397","Appropriative","","","01/11/1989","",NA
 "A029401","Appropriative","","","01/19/1989","",NA
-"A029405","Appropriative","","","01/30/1989","",NA
-"A029406","Appropriative","","","02/01/1989","",NA
-"A029411","Appropriative","","","02/14/1989","",NA
-"A029412","Appropriative","","","02/14/1989","",NA
-"A029418","Appropriative","","","02/28/1989","",NA
-"A029419","Appropriative","","","02/28/1989","",NA
-"A029437","Appropriative","","","03/14/1989","",NA
-"A029462","Appropriative","","03/24/1989","04/11/1989","",NA
-"A029467","Appropriative","","","04/18/1989","",NA
-"A029479","Appropriative","","04/03/1989","04/28/1989","",NA
 "A029480","Appropriative","","","04/28/1989","",NA
-"A029495","Appropriative","","04/25/1989","05/15/1989","",NA
 "A029502","Appropriative","","","06/14/1989","",NA
-"A029512","Appropriative","","03/22/1989","07/06/1989","",NA
-"A029515","Appropriative","06/27/1989","06/27/1989","07/05/1989","",NA
-"A029517","Appropriative","","","07/06/1989","",NA
-"A029538","Appropriative","","","08/17/1989","",NA
-"A029547","Appropriative","","","08/22/1989","",NA
 "A029562","Appropriative","","06/14/1989","09/06/1989","",NA
-"A029591","Appropriative","","11/02/1988","10/23/1989","",NA
-"A029592","Appropriative","","11/02/1988","10/23/1989","",NA
-"A029595","Appropriative","","","10/26/1989","",NA
-"A029599","Appropriative","","","10/27/1989","",NA
-"A029610","Appropriative","","","11/09/1989","",NA
-"A029616","Appropriative","","11/01/1989","11/17/1989","",NA
 "A029628","Appropriative","","11/17/1989","12/11/1989","",NA
 "A029632","Appropriative","","","12/27/1989","",NA
-"A029662","Appropriative","02/20/1990","01/03/1990","02/20/1990","",NA
-"A029671","Appropriative","03/05/1990","12/27/1989","03/05/1990","",NA
-"A029682","Appropriative","","02/01/1990","03/07/1990","",NA
-"A029719","Appropriative","","","04/11/1990","",NA
-"A029723","Appropriative","","","04/23/1990","",NA
-"A029755","Appropriative","","","05/30/1990","",NA
-"A029772","Appropriative","","","07/05/1990","",NA
-"A029789","Appropriative","","","08/03/1990","",NA
-"A029802","Appropriative","","","08/17/1990","",NA
-"A029847","Appropriative","","","10/30/1990","",NA
-"A029848","Appropriative","","","11/01/1990","",NA
-"A029849","Appropriative","","","11/01/1990","",NA
-"A029850","Appropriative","","","11/01/1990","",NA
-"A029858","Appropriative","","","11/13/1990","",NA
-"A029901","Appropriative","","01/24/1991","02/06/1991","",NA
-"A029912","Appropriative","","","03/07/1991","",NA
-"A029986","Appropriative","","","08/07/1991","",NA
 "A029995","Appropriative","","","08/26/1991","",NA
-"A030036","Appropriative","","10/08/1991","11/12/1991","",NA
-"A030124","Appropriative","","","05/05/1992","",NA
-"A030125","Appropriative","","","05/05/1992","",NA
 "A030132","Appropriative","","05/11/1992","05/21/1992","",NA
-"A030173","Appropriative","08/27/1992","08/27/1992","08/27/1992","",NA
-"A030186","Appropriative","","04/27/1992","10/19/1992","",NA
-"A030245","Appropriative","02/09/1993","02/09/1993","04/19/1993","",NA
-"A030282","Appropriative","","08/10/1993","09/22/1993","",NA
-"A030298","Appropriative","","09/21/1993","10/28/1993","",NA
 "A030349","Appropriative","","02/22/1994","04/13/1994","",NA
-"A030363","Appropriative","","","05/10/1994","",NA
-"A030364","Appropriative","","02/07/1994","05/18/1994","",NA
-"A030365","Appropriative","","02/22/1994","05/18/1994","",NA
-"A030391","Appropriative","","08/05/1994","08/15/1994","",NA
-"A030397","Appropriative","","08/18/1994","09/07/1994","",NA
 "A030412","Appropriative","","09/27/1994","11/10/1994","",NA
 "A030560","Appropriative","","05/28/1996","08/22/1996","",NA
-"A030564","Appropriative","","08/19/1996","08/28/1996","",NA
-"A030745","Appropriative","","03/23/1998","03/23/1998","",NA
-"A030797","Appropriative","","06/16/1998","10/15/1998","",NA
-"A030815","Appropriative","","03/09/1998","11/20/1998","",NA
-"A030882","Appropriative","","03/25/1998","04/27/1999","",NA
-"A030931","Appropriative","06/29/1999","06/29/1999","08/18/1999","",NA
-"A030933","Appropriative","","08/02/1999","09/17/1999","",NA
 "A031050","Appropriative","","03/20/2000","05/12/2000","",NA
-"A031055","Appropriative","","01/13/2000","05/12/2000","",NA
-"A031059","Appropriative","09/01/1999","09/01/1999","06/05/2000","",NA
-"A031060","Appropriative","09/01/1999","09/01/1999","06/05/2000","",NA
-"A031094","Appropriative","","12/15/1992","08/22/2000","",NA
-"A031095","Appropriative","","08/03/2000","08/29/2000","",NA
 "A031171","Appropriative","","12/27/2000","03/26/2001","",NA
-"A031183","Appropriative","","02/27/2001","05/10/2001","",NA
-"A031255","Appropriative","","04/04/2001","12/11/2001","",NA
-"A031257","Appropriative","","06/07/2001","12/13/2001","",NA
 "A031259","Appropriative","04/04/2001","04/04/2001","12/18/2001","",NA
 "A031304","Appropriative","","01/24/2002","03/14/2002","",NA
 "A031362","Appropriative","","08/23/2002","09/26/2002","",NA
-"A031363","Appropriative","","08/23/2002","09/26/2002","",2005
-"A031383","Appropriative","01/15/2003","12/27/2002","01/15/2003","",NA
-"A031435","Appropriative","","06/03/2003","07/29/2003","",NA
-"A031447","Appropriative","","08/06/2003","09/16/2003","",NA
-"A031461","Appropriative","","09/30/2003","11/10/2003","",NA
 "A031501","Appropriative","04/27/2004","04/27/2004","04/27/2004","",NA
 "A031567","Appropriative","","03/17/2005","03/25/2005","",NA
-"A031620","Appropriative","05/30/2006","05/30/2006","06/28/2006","",NA
-"A031719","Appropriative","07/28/2008","07/28/2008","08/04/2008","",1965
-"A031737","Appropriative","12/18/2008","12/18/2008","12/23/2008","",1953
-"A031743","Appropriative","01/23/2009","01/23/2009","02/09/2009","",1996
-"A031836","Appropriative","06/29/2010","06/29/2010","06/29/2010","",2000
-"A031870","Appropriative","","01/18/2011","04/15/2011","",NA
-"A031877","Appropriative","02/22/2011","02/22/2011","04/14/2011","",NA
-"A032115","Appropriative","05/21/2013","05/21/2013","06/11/2013","",NA
-"A032372","Appropriative","","03/30/2015","07/17/2015","",NA
-"C000028","Stockpond","","","04/22/1975","",1949
-"C000222","Stockpond","","","03/22/1976","",1968
-"C000223","Stockpond","","","03/22/1976","",1968
-"C000511","Stockpond","","","12/03/1976","",1954
 "C000512","Stockpond","","","12/03/1976","",1948
-"C001166","Stockpond","","","09/27/1977","",1961
-"C001167","Stockpond","","","09/27/1977","",1961
-"C001168","Stockpond","","","09/27/1977","",1961
-"C001169","Stockpond","","","09/27/1977","",1961
-"C001171","Stockpond","","","09/27/1977","",1961
-"C001172","Stockpond","","","09/27/1977","",1961
-"C001173","Stockpond","","","09/27/1977","",1961
-"C001174","Stockpond","","","09/27/1977","",1961
-"C001175","Stockpond","","","09/27/1977","",1961
-"C001176","Stockpond","","","09/27/1977","",1961
-"C001177","Stockpond","","","09/27/1977","",1961
-"C001178","Stockpond","","","09/27/1977","",1961
-"C001179","Stockpond","","","09/27/1977","",1961
 "C001180","Stockpond","","","09/27/1977","",1961
-"C001216","Stockpond","","","11/28/1977","",1964
 "C002935","Stockpond","","","01/03/1978","",1936
-"C002936","Stockpond","","","01/03/1978","",1938
 "C003979","Stockpond","","","01/09/1991","",1962
-"C003981","Stockpond","","","04/02/1991","",1958
-"C005095","Stockpond","","12/30/1997","12/30/1997","",1965
 "C005161","Stockpond","","12/22/1997","12/22/1997","",1968
-"C005162","Stockpond","","12/22/1997","12/22/1997","",1968
-"C005163","Stockpond","","12/22/1997","12/22/1997","",1967
-"C005164","Stockpond","","12/22/1997","12/22/1997","",1962
 "C005165","Stockpond","","12/22/1997","12/22/1997","",1965
-"C005166","Stockpond","","12/22/1997","12/22/1997","",1963
-"C005343","Stockpond","","12/22/1997","12/22/1997","",1960
-"C005521","Stockpond","","12/29/1997","12/29/1997","",1958
-"C005522","Stockpond","","12/29/1997","12/29/1997","",1967
-"C005624","Stockpond","","12/22/1997","12/22/1997","",1961
-"C005834","Stockpond","","12/23/1997","12/23/1997","",1965
 "C006052","Stockpond","","12/29/1997","12/29/1997","",1961
-"D032013","Registration Domestic","","03/14/2013","03/14/2013","",NA
-"D032019","Registration Domestic","","04/12/2013","04/12/2013","",1965
-"D032022","Registration Domestic","04/16/2013","04/16/2013","04/16/2013","",NA
-"D032041","Registration Domestic","04/30/2013","04/30/2013","04/30/2013","",1975
-"D032057","Registration Domestic","","05/09/2013","05/09/2013","",1950
 "D032058","Registration Domestic","","05/10/2013","05/10/2013","",2014
 "D032062","Registration Domestic","","05/14/2013","05/14/2013","",NA
-"D032081","Registration Domestic","","05/21/2013","05/21/2013","",2001
-"D032138","Registration Domestic","","06/24/2013","06/24/2013","",2012
-"D032140","Registration Domestic","","06/26/2013","06/26/2013","",1958
 "D032141","Registration Domestic","06/28/2013","06/28/2013","06/28/2013","",1984
-"D032143","Registration Domestic","","07/03/2013","07/03/2013","",1980
-"D032149","Registration Domestic","07/05/2013","07/05/2013","03/17/2014","",1995
-"D032166","Registration Domestic","07/24/2013","07/24/2013","07/24/2013","",1970
 "D032187","Registration Domestic","08/23/2013","08/23/2013","08/23/2013","",1940
-"D032188","Registration Domestic","08/23/2013","08/23/2013","08/23/2013","",1957
-"D032206","Registration Domestic","10/11/2013","10/11/2013","10/11/2013","",1950
-"D032229","Registration Domestic","","01/06/2014","01/06/2014","",1955
-"D032238","Registration Domestic","01/31/2014","01/31/2014","01/31/2014","",1885
 "D032249","Registration Domestic","05/10/2016","03/19/2014","05/10/2016","",1976
-"D032262","Registration Domestic","05/08/2014","05/08/2014","05/08/2014","",NA
 "D032275","Registration Domestic","06/23/2014","06/23/2014","05/31/2017","",1962
-"D032313","Registration Domestic","10/31/2014","10/31/2014","10/31/2014","",1993
-"D032313","Registration Domestic","10/31/2014","10/31/2014","10/31/2014","",1993
-"D032314","Registration Domestic","10/31/2014","10/31/2014","10/31/2014","",2003
 "D032320","Registration Domestic","12/23/2014","12/23/2014","03/27/2017","",1975
-"D032346","Registration Domestic","02/11/2015","02/11/2015","07/25/2017","",1999
-"D032534","Registration Domestic","11/02/2015","11/02/2015","05/04/2017","",1940
 "D032708","Registration Domestic","09/11/2017","09/11/2017","08/29/2017","",2018
-"D032713","Registration Domestic","08/15/2016","08/15/2016","07/19/2017","",1960
-"D032725","Registration Domestic","09/19/2016","09/19/2016","08/11/2017","",1983
-"D032762","Registration Domestic","01/04/2017","01/04/2017","01/08/2018","",2014
-"D032768","Registration Domestic","01/25/2016","01/25/2017","","",NA
-"D032787","Registration Domestic","04/17/2017","04/17/2017","03/26/2018","",1948
-"D032850","Registration Domestic","08/07/2017","08/07/2017","08/25/2017","",1960
-"D032859","Registration Domestic","09/06/2017","09/06/2017","02/13/2018","",1991
-"D032971","Registration Domestic","09/17/2018","09/17/2018","","",2018
-"D033001","Registration Domestic","12/21/2018","12/21/2018","","",2020
-"D033025","Registration Domestic","03/01/2019","03/01/2019","03/12/2019","",1945
-"H031997","Registration Irrigation","12/26/2012","12/26/2012","12/26/2012","",2013
 "H032009","Registration Irrigation","02/22/2013","02/22/2013","02/22/2013","",NA
-"H032131","Registration Irrigation","06/17/2013","06/17/2013","06/17/2013","",NA
 "H032331","Registration Irrigation","","01/28/2015","","",NA
-"H032335","Registration Irrigation","01/30/2015","01/30/2015","01/30/2015","",NA
-"H032345","Registration Irrigation","02/16/2015","02/06/2015","02/06/2015","",1960
 "H033072","Registration Irrigation","09/17/2019","09/17/2019","03/23/2021","",1992
-"H500244","Registration Cannabis","02/06/2018","02/06/2018","","",2018
-"H500399","Registration Cannabis","03/30/2018","03/30/2018","","",2018
-"H500522","Registration Cannabis","03/21/2018","03/21/2018","","",2018
-"H500616","Registration Cannabis","03/27/2018","03/27/2018","","",2018
-"H500658","Registration Cannabis","09/27/2018","09/27/2018","","",2012
-"H500733","Registration Cannabis","04/30/2018","04/30/2018","","",2014
-"H500800","Registration Cannabis","10/09/2018","10/09/2018","","",2001
-"H500832","Registration Cannabis","04/26/2018","04/26/2018","","",1972
-"H500889","Registration Cannabis","04/23/2018","09/26/2018","","",2017
 "H501328","Registration Cannabis","06/12/2018","06/12/2018","","",2014
-"H501353","Registration Cannabis","02/06/2019","02/06/2019","","",2018
 "H501475","Registration Cannabis","07/02/2018","07/02/2018","","",2018
-"H501505","Registration Cannabis","06/12/2018","06/12/2018","","",1982
-"H501536","Registration Cannabis","07/18/2018","07/18/2018","","",2018
-"H501560","Registration Cannabis","06/13/2018","06/13/2018","","",2017
 "H501586","Registration Cannabis","07/12/2018","07/12/2018","","",2019
-"H501640","Registration Cannabis","06/26/2018","06/26/2018","","",2018
-"H502560","Registration Cannabis","10/02/2018","10/02/2018","","",2005
-"H502568","Registration Cannabis","10/19/2018","10/19/2018","","",2019
-"H503838","Registration Cannabis","11/02/2018","11/02/2018","","",2002
-"H503876","Registration Cannabis","02/06/2019","02/06/2019","","",2018
 "H504162","Registration Cannabis","01/15/2019","01/15/2019","","",2016
-"H505765","Registration Cannabis","04/05/2019","04/05/2019","","",2017
 "H505809","Registration Cannabis","05/14/2019","05/14/2019","","",1898
 "H505968","Registration Cannabis","04/12/2019","04/12/2019","","",2016
 "H505997","Registration Cannabis","10/18/2019","10/18/2019","","",2020
-"H506245","Registration Cannabis","06/06/2019","06/06/2019","","",2015
 "H506517","Registration Cannabis","06/14/2019","06/14/2019","","",19
-"H507504","Registration Cannabis","07/08/2019","07/08/2019","","",1999
-"H507549","Registration Cannabis","07/17/2019","07/17/2019","","",2010
-"H507821","Registration Cannabis","07/25/2019","07/25/2019","","",2016
-"H507877","Registration Cannabis","08/08/2019","08/08/2019","","",2018
-"H508419","Registration Cannabis","09/27/2019","09/27/2019","","",2020
-"H508968","Registration Cannabis","02/24/2020","02/24/2020","","",2000
-"H509254","Registration Cannabis","09/20/2019","09/20/2019","","",2019
 "H509523","Registration Cannabis","09/14/2020","09/14/2020","","",2018
-"L031319","Registration Livestock","05/09/2002","04/18/2002","05/09/2002","",NA
-"L031353","Registration Livestock","09/04/2002","06/28/2002","09/04/2002","",NA
 "L031378","Registration Livestock","12/17/2002","11/06/2002","12/17/2002","",1960
-"L031391","Registration Livestock","01/28/2003","10/16/2002","01/28/2003","",1986
-"L031392","Registration Livestock","01/29/2003","10/16/2002","01/29/2003","",NA
-"L031393","Registration Livestock","01/28/2003","10/16/2002","01/28/2003","",NA
-"L031414","Registration Livestock","04/17/2003","01/23/2003","04/17/2003","",NA
-"L031415A","Registration Livestock","","03/24/2015","03/24/2015","",NA
 "L031420","Registration Livestock","04/17/2003","02/05/2003","04/17/2003","",1955
 "L031422","Registration Livestock","03/06/2014","05/02/2003","05/02/2003","",1972
-"L031423","Registration Livestock","05/02/2003","05/02/2003","05/02/2003","",NA
-"L031424","Registration Livestock","05/02/2003","05/02/2003","05/02/2003","",1982
-"L031457","Registration Livestock","10/14/2003","10/14/2003","10/14/2003","",NA
-"L031528","Registration Livestock","08/12/2004","08/09/2004","08/09/2004","",NA
 "L031573","Registration Livestock","","06/03/2005","06/03/2005","",NA
-"L031582","Registration Livestock","08/05/2005","08/05/2005","08/05/2005","",NA
-"L031605","Registration Livestock","01/26/2006","01/26/2006","01/26/2006","",NA
-"L031607","Registration Livestock","01/26/2006","01/26/2006","01/26/2006","",NA
 "L031669","Registration Livestock","08/21/2007","08/21/2007","08/21/2007","",NA
 "L031764","Registration Livestock","","04/28/2009","04/28/2009","",NA
-"L031802","Registration Livestock","","10/06/2009","10/06/2009","",NA
-"L031856","Registration Livestock","10/06/2010","10/06/2010","10/06/2010","",1985
-"L031885","Registration Livestock","04/26/2011","04/26/2011","04/26/2011","",2010
-"L031908","Registration Livestock","10/24/2011","10/24/2011","10/24/2011","",NA
-"L032006","Registration Livestock","02/11/2013","02/11/2013","02/19/2013","",NA
-"L032027","Registration Livestock","04/22/2013","04/22/2013","04/22/2013","",NA
-"L032032","Registration Livestock","04/24/2013","04/24/2013","04/24/2013","",NA
-"L032128","Registration Livestock","06/17/2013","06/17/2013","06/17/2013","",NA
-"L032146","Registration Livestock","07/05/2013","07/05/2013","07/05/2013","",1980
-"L032147","Registration Livestock","07/05/2013","07/05/2013","07/05/2013","",1980
-"L032148","Registration Livestock","07/05/2013","07/05/2013","07/05/2013","",1980
-"L032271","Registration Livestock","06/11/2014","06/11/2014","04/28/2017","",2012
-"L032279","Registration Livestock","07/10/2014","07/10/2014","03/10/2017","",1980
 "L032288","Registration Livestock","07/21/2014","07/21/2014","02/27/2017","",1930
-"L032466","Registration Livestock","06/26/2015","06/26/2015","05/02/2018","",1960
 "L032735","Registration Livestock","10/18/2016","10/18/2016","04/07/2017","",1978
-"S000093","Statement of Div and Use","","","01/01/1966","RIPERIAN,",1928
-"S000113","Statement of Div and Use","","","01/03/1967","PRE1914,",1914
-"S000114","Statement of Div and Use","","","01/03/1967","PRE1914,",1914
-"S000115","Statement of Div and Use","","","01/03/1967","PRE1914,",1914
-"S000116","Statement of Div and Use","","","01/01/1967","PRE1914,",1914
-"S000549","Statement of Div and Use","","","04/12/1967","RIPERIAN,",1963
 "S000632","Statement of Div and Use","","","05/02/1967","RIPERIAN,",1949
 "S000652","Statement of Div and Use","","","05/10/1967","RIPERIAN,",1953
-"S000775","Statement of Div and Use","","","06/02/1967","RIPERIAN,",1965
-"S001010","Statement of Div and Use","","","01/01/1967","PRE1914,",1905
-"S001049","Statement of Div and Use","","","06/15/1967","RIPERIAN,",1966
-"S001181","Statement of Div and Use","","","01/01/1967","RIPERIAN,",1928
 "S002059","Statement of Div and Use","","","01/01/1967","RIPERIAN,",1944
 "S002341","Statement of Div and Use","","","01/01/1967","RIPERIAN,",1965
-"S002378","Statement of Div and Use","","","07/03/1967","RIPERIAN,",1960
-"S002379","Statement of Div and Use","","","07/03/1967","RIPERIAN,",1958
-"S002720","Statement of Div and Use","","","01/01/1967","RIPERIAN,",1942
-"S002929","Statement of Div and Use","","","01/01/1967","RIPERIAN,",1949
 "S003106","Statement of Div and Use","","","01/01/1967","RIPERIAN,",1962
-"S004240","Statement of Div and Use","","","01/01/1967","RIPERIAN,OTHER,",1967
-"S004241","Statement of Div and Use","","","01/01/1967","OTHER,",1967
-"S004341","Statement of Div and Use","","","01/01/1968","RIPERIAN,",1946
-"S004345","Statement of Div and Use","","","01/01/1968","PRE1914,",1850
-"S004347","Statement of Div and Use","","","01/01/1968","RIPERIAN,",1948
-"S004460","Statement of Div and Use","","","01/01/1968","PRE1914,",1945
-"S004704","Statement of Div and Use","","","01/01/1969","PRE1914,",1927
-"S004711","Statement of Div and Use","","","01/01/1969","PRE1914,",1873
-"S004997","Statement of Div and Use","","","01/01/1970","RIPERIAN,",1969
-"S005003","Statement of Div and Use","","","01/01/1970","PRE1914,",1907
-"S005225","Statement of Div and Use","","","01/01/1970","RIPERIAN,",1963
-"S005226","Statement of Div and Use","","","01/01/1970","RIPERIAN,",1951
-"S006298","Statement of Div and Use","","","01/01/1970","RIPERIAN,",1956
-"S006491","Statement of Div and Use","","","01/01/1971","RIPERIAN,",1939
-"S008071","Statement of Div and Use","","03/09/1973","03/09/1973","RIPERIAN,",1972
-"S008074","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1980
-"S008075","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1967
-"S008080","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1973
-"S008081","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1951
-"S008082","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1957
-"S008118","Statement of Div and Use","","","05/14/1973","RIPERIAN,",1958
-"S008121","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1930
-"S008122","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1930
-"S008128","Statement of Div and Use","","","05/30/1973","RIPERIAN,",1948
-"S008184","Statement of Div and Use","","","01/01/1973","RIPERIAN,",1957
-"S008348","Statement of Div and Use","","","01/01/1974","RIPERIAN,",1942
-"S008380","Statement of Div and Use","","","01/01/1974","RIPERIAN,",1910
-"S008384","Statement of Div and Use","","","01/01/1974","RIPERIAN,",1932
-"S008392","Statement of Div and Use","","","01/01/1974","RIPERIAN,",1972
 "S008430","Statement of Div and Use","","","01/01/1974","PRE1914,",1881
-"S008451","Statement of Div and Use","","","01/01/1974","RIPERIAN,",1972
-"S008453","Statement of Div and Use","","","01/01/1974","RIPERIAN,",1940
-"S008502","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1967
-"S008582","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
-"S008583","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1950
 "S008584","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
 "S008585","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1940
-"S008586","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
-"S008587","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
-"S008588","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
-"S008589","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
-"S008590","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1930
 "S008591","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1920
-"S008592","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1940
-"S008593","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1930
-"S008596","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1975
 "S008628","Statement of Div and Use","","","01/01/1975","PRE1914,",1869
-"S008659","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1974
-"S008661","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1958
 "S008664","Statement of Div and Use","","","01/01/1975","RIPERIAN,",1952
-"S008675","Statement of Div and Use","","","01/01/1976","RIPERIAN,PRE1914,",1890
-"S008703","Statement of Div and Use","","","02/10/1976","RIPERIAN,",1962
-"S008709","Statement of Div and Use","","","02/28/1976","PRE1914,",1900
-"S008714","Statement of Div and Use","","","03/11/1976","PRE1914,",1900
 "S008765","Statement of Div and Use","","","05/05/1976","RIPERIAN,",1915
-"S008766","Statement of Div and Use","","","05/05/1976","RIPERIAN,",1915
-"S008824","Statement of Div and Use","","","06/24/1976","RIPERIAN,",1965
-"S008910","Statement of Div and Use","","","08/19/1976","RIPERIAN,",1960
-"S009040","Statement of Div and Use","","","10/26/1976","RIPERIAN,",1910
-"S009045","Statement of Div and Use","","","11/08/1976","PRE1914,",1870
 "S009054","Statement of Div and Use","","","11/29/1976","PRE1914,",1905
-"S009055","Statement of Div and Use","","01/01/1987","01/01/1987","PRE1914,",1901
-"S009073","Statement of Div and Use","","","12/13/1976","RIPERIAN,",1906
 "S009168","Statement of Div and Use","","","03/28/1977","RIPERIAN,",1974
-"S009291","Statement of Div and Use","","","06/13/1977","RIPERIAN,",1968
-"S009292","Statement of Div and Use","","","06/13/1977","RIPERIAN,",1972
-"S009293","Statement of Div and Use","","","06/13/1977","PRE1914,",1860
-"S009294","Statement of Div and Use","","","06/13/1977","PRE1914,",1860
-"S009295","Statement of Div and Use","","","06/13/1977","PRE1914,",1860
-"S009299","Statement of Div and Use","","","06/07/1977","PRE1914,",1899
-"S009324","Statement of Div and Use","","","07/13/1977","RIPERIAN,",1976
-"S009525","Statement of Div and Use","","","12/26/1986","RIPERIAN,",1975
 "S009689","Statement of Div and Use","","","12/22/1978","RIPERIAN,",1960
-"S009905","Statement of Div and Use","","","05/30/1979","PRE1914,",1911
-"S010034","Statement of Div and Use","","","03/07/1980","RIPERIAN,",1900
-"S010045","Statement of Div and Use","","","03/27/1980","RIPERIAN,",1925
-"S010433","Statement of Div and Use","","","07/10/1981","RIPERIAN,",1960
-"S010482","Statement of Div and Use","","","04/21/1981","OTHER,",1926
 "S010489","Statement of Div and Use","","","04/21/1981","OTHER,",1926
 "S010490","Statement of Div and Use","","","04/21/1981","OTHER,",1926
 "S010515","Statement of Div and Use","","","04/21/1981","OTHER,",1926
 "S010522","Statement of Div and Use","","","06/30/1981","",NA
-"S010843","Statement of Div and Use","","","02/25/1982","RIPERIAN,",1940
 "S010889","Statement of Div and Use","","","07/19/1982","RIPERIAN,",1977
-"S010997","Statement of Div and Use","","","11/19/1982","RIPERIAN,",1975
-"S010999","Statement of Div and Use","","","11/23/1982","RIPERIAN,",1964
-"S011135","Statement of Div and Use","","","03/29/1983","RIPERIAN,",1982
-"S011330","Statement of Div and Use","","","11/21/1983","RIPERIAN,",1972
-"S011331","Statement of Div and Use","","","11/21/1983","RIPERIAN,",1974
-"S012241","Statement of Div and Use","","","09/09/1985","RIPERIAN,",1973
-"S012427","Statement of Div and Use","","","02/13/1986","RIPERIAN,OTHER,",1970
-"S012429","Statement of Div and Use","","","02/13/1986","RIPERIAN,",1969
-"S012430","Statement of Div and Use","","","02/13/1986","RIPERIAN,",1969
-"S012431","Statement of Div and Use","","","02/13/1986","RIPERIAN,",1971
 "S012432","Statement of Div and Use","","","02/13/1986","RIPERIAN,",1970
-"S012433","Statement of Div and Use","","","02/13/1986","RIPERIAN,",1969
-"S012484","Statement of Div and Use","","","05/16/1985","RIPERIAN,",1982
 "S012532","Statement of Div and Use","","","10/16/1985","RIPERIAN,OTHER,",1926
 "S012533","Statement of Div and Use","","","10/16/1985","OTHER,",1926
-"S012538","Statement of Div and Use","","","10/16/1985","RIPERIAN,OTHER,",1926
-"S012593","Statement of Div and Use","","","12/27/1985","RIPERIAN,",1965
-"S012594","Statement of Div and Use","","","12/27/1985","OTHER,",1965
-"S012595","Statement of Div and Use","","","12/27/1985","OTHER,",1968
-"S012596","Statement of Div and Use","","","12/27/1985","RIPERIAN,OTHER,",1968
-"S012597","Statement of Div and Use","","","12/27/1985","OTHER,",1965
-"S012749","Statement of Div and Use","","","08/26/1986","RIPERIAN,",1984
-"S012751","Statement of Div and Use","","","10/23/1986","RIPERIAN,",1986
-"S012930","Statement of Div and Use","","","02/02/1987","RIPERIAN,",1986
-"S013153","Statement of Div and Use","","","02/16/1988","RIPERIAN,",1988
 "S013187","Statement of Div and Use","","","09/13/1988","RIPERIAN,",1983
-"S013246","Statement of Div and Use","","","07/18/1989","RIPERIAN,",1981
-"S013392","Statement of Div and Use","","","11/04/1988","PRE1914,",1900
-"S013563","Statement of Div and Use","","","04/10/1991","RIPERIAN,",1979
 "S013696","Statement of Div and Use","","","06/14/1991","RIPERIAN,",1950
 "S013709","Statement of Div and Use","","","05/13/1991","RIPERIAN,",1981
-"S013724","Statement of Div and Use","","","07/26/1991","RIPERIAN,",1969
-"S013755","Statement of Div and Use","","","10/15/1991","PRE1914,",1891
 "S013760","Statement of Div and Use","","","12/03/1991","RIPERIAN,",1961
 "S013792","Statement of Div and Use","","","03/09/1992","RIPERIAN,",1965
-"S013793","Statement of Div and Use","","","03/09/1992","RIPERIAN,",1965
-"S013814","Statement of Div and Use","","","05/29/1992","RIPERIAN,",1930
 "S013850","Statement of Div and Use","","","10/13/1992","RIPERIAN,",1955
 "S013915","Statement of Div and Use","","","07/21/1992","RIPERIAN,OTHER,",1992
-"S013947","Statement of Div and Use","","","11/06/1992","RIPERIAN,",1975
-"S013977","Statement of Div and Use","","","01/28/1993","RIPERIAN,",1975
-"S014005","Statement of Div and Use","","","05/11/1993","RIPERIAN,",1990
 "S014016","Statement of Div and Use","","","06/22/1993","RIPERIAN,",1965
-"S014057","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1940
-"S014058","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1989
-"S014059","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1948
-"S014060","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1960
-"S014061","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1960
-"S014062","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1950
 "S014063","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1950
-"S014064","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1950
-"S014065","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1950
-"S014066","Statement of Div and Use","","","08/04/1993","RIPERIAN,",1950
 "S014070","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014071","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014072","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1977
-"S014073","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1977
-"S014074","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014075","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014076","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014077","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014078","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014079","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014080","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014081","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014082","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
 "S014083","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014084","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014085","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1974
-"S014086","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1988
-"S014087","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014088","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1952
-"S014089","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1972
 "S014090","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1973
-"S014091","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1979
-"S014092","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1978
-"S014094","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1970
 "S014095","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1970
-"S014096","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1970
-"S014097","Statement of Div and Use","","","08/10/1993","RIPERIAN,",1970
-"S014129","Statement of Div and Use","","","10/25/1993","PRE1914,",1910
 "S014139","Statement of Div and Use","","12/21/1993","12/21/1993","RIPERIAN,",1961
-"S014200","Statement of Div and Use","","08/05/1994","08/05/1994","RIPERIAN,",1986
-"S014205","Statement of Div and Use","","07/22/1994","07/22/1994","RIPERIAN,",1945
-"S014230","Statement of Div and Use","","10/04/1994","10/04/1994","RIPERIAN,",1964
-"S014231","Statement of Div and Use","","10/04/1994","10/04/1994","RIPERIAN,",1965
-"S014237","Statement of Div and Use","","10/17/1994","10/17/1994","PRE1914,",1886
-"S014292","Statement of Div and Use","","12/12/1994","12/12/1994","RIPERIAN,",1979
-"S014293","Statement of Div and Use","","12/12/1994","12/12/1994","RIPERIAN,",1973
-"S014313","Statement of Div and Use","","01/31/1995","01/31/1995","RIPERIAN,",1928
-"S014322","Statement of Div and Use","","02/07/1995","02/07/1995","RIPERIAN,",1995
-"S014373","Statement of Div and Use","","04/10/1995","04/10/1995","RIPERIAN,",1980
-"S014374","Statement of Div and Use","","04/10/1995","04/10/1995","RIPERIAN,",1983
 "S014392","Statement of Div and Use","","05/23/1995","05/23/1995","RIPERIAN,",1977
 "S014393","Statement of Div and Use","","05/23/1995","05/23/1995","RIPERIAN,",1940
 "S014479","Statement of Div and Use","","09/11/1995","09/11/1995","RIPERIAN,",1963
-"S014554","Statement of Div and Use","","02/28/1996","02/28/1996","RIPERIAN,",1995
-"S014724","Statement of Div and Use","","04/24/1997","04/24/1997","RIPERIAN,",1918
 "S014749","Statement of Div and Use","","04/24/1997","04/24/1997","RIPERIAN,",1918
 "S014847","Statement of Div and Use","","11/10/1997","11/10/1997","RIPERIAN,",1960
-"S014851","Statement of Div and Use","","12/01/1997","12/01/1997","RIPERIAN,",1940
 "S014857","Statement of Div and Use","","01/12/1998","01/12/1998","PRE1914,",1912
-"S014861","Statement of Div and Use","","01/29/1998","01/29/1998","RIPERIAN,",1940
-"S014862","Statement of Div and Use","","01/29/1998","01/29/1998","RIPERIAN,",1940
-"S014863","Statement of Div and Use","","01/29/1998","01/29/1998","RIPERIAN,",1940
-"S014864","Statement of Div and Use","","01/29/1998","01/29/1998","RIPERIAN,",1940
-"S014865","Statement of Div and Use","","01/29/1998","01/29/1998","RIPERIAN,",1960
-"S014866","Statement of Div and Use","","01/29/1998","01/29/1998","RIPERIAN,",1960
-"S014910","Statement of Div and Use","","02/03/1998","02/03/1998","RIPERIAN,",1990
-"S014922","Statement of Div and Use","","02/09/1998","02/09/1998","RIPERIAN,",1977
 "S014923","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014924","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014925","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
 "S014926","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014927","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014928","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014929","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014930","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014931","Statement of Div and Use","","03/19/1998","03/19/1998","RIPERIAN,",1997
-"S014946","Statement of Div and Use","","03/23/1998","03/23/1998","RIPERIAN,",1940
-"S014973","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014974","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014975","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
 "S014976","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014977","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014978","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014979","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014980","Statement of Div and Use","","07/03/1998","07/03/1998","RIPERIAN,",1982
-"S014996","Statement of Div and Use","","08/12/1998","08/12/1998","RIPERIAN,",1961
-"S015020","Statement of Div and Use","","11/18/1998","11/18/1998","RIPERIAN,",1905
-"S015023","Statement of Div and Use","","10/28/1998","10/28/1998","RIPERIAN,",1994
-"S015035","Statement of Div and Use","","01/29/1999","01/29/1999","RIPERIAN,",1950
-"S015036","Statement of Div and Use","","01/29/1999","01/29/1999","RIPERIAN,",1950
-"S015037","Statement of Div and Use","","01/29/1999","01/29/1999","RIPERIAN,",1950
 "S015038","Statement of Div and Use","","01/29/1999","01/29/1999","RIPERIAN,",1950
-"S015041","Statement of Div and Use","","02/10/1999","02/10/1999","RIPERIAN,",1980
 "S015042","Statement of Div and Use","","02/10/1999","02/10/1999","RIPERIAN,",1930
-"S015043","Statement of Div and Use","","02/10/1999","02/10/1999","RIPERIAN,",1960
 "S015044","Statement of Div and Use","","01/21/1999","01/21/1999","RIPERIAN,",1978
-"S015093","Statement of Div and Use","","04/06/1999","04/06/1999","RIPERIAN,",1980
-"S015094","Statement of Div and Use","","04/06/1999","04/06/1999","RIPERIAN,",1980
-"S015107","Statement of Div and Use","","10/30/2000","10/30/2000","RIPERIAN,",2000
-"S015118","Statement of Div and Use","","10/30/2000","10/30/2001","RIPERIAN,",1959
-"S015147","Statement of Div and Use","","10/03/2001","10/03/2001","RIPERIAN,",2001
-"S015184","Statement of Div and Use","","01/16/2002","01/16/2002","RIPERIAN,",1985
-"S015196","Statement of Div and Use","","07/02/2001","07/02/2001","RIPERIAN,PRE1914,",1875
-"S015197","Statement of Div and Use","","07/02/2001","07/02/2001","RIPERIAN,",1903
-"S015198","Statement of Div and Use","","07/02/2001","07/02/2001","RIPERIAN,",1903
-"S015199","Statement of Div and Use","","10/21/2001","10/21/2001","RIPERIAN,",1980
-"S015200","Statement of Div and Use","","10/21/2001","10/21/2001","RIPERIAN,",1980
-"S015201","Statement of Div and Use","","10/20/2001","10/21/2001","RIPERIAN,",1980
-"S015202","Statement of Div and Use","","10/21/2001","10/21/2001","RIPERIAN,",1980
-"S015214","Statement of Div and Use","","01/26/2000","01/26/2000","RIPERIAN,",1999
-"S015228","Statement of Div and Use","","04/22/2002","04/22/2002","RIPERIAN,",1947
-"S015238","Statement of Div and Use","","06/04/2001","06/04/2001","RIPERIAN,",1946
-"S015246","Statement of Div and Use","","03/01/2000","03/01/2000","RIPERIAN,",1979
-"S015253","Statement of Div and Use","","04/05/2000","04/05/2000","RIPERIAN,",1944
-"S015273","Statement of Div and Use","","12/22/2000","12/22/2000","RIPERIAN,",1998
-"S015303","Statement of Div and Use","","07/24/2000","07/24/2000","RIPERIAN,",1940
-"S015313","Statement of Div and Use","","11/08/2002","11/08/2002","RIPERIAN,",1988
 "S015314","Statement of Div and Use","","11/08/2002","11/08/2002","RIPERIAN,",1984
 "S015315","Statement of Div and Use","","11/08/2002","11/08/2002","RIPERIAN,",1987
-"S015316","Statement of Div and Use","","11/08/2002","11/08/2002","RIPERIAN,",1973
 "S015317","Statement of Div and Use","","11/08/2002","11/08/2002","RIPERIAN,",1987
-"S015318","Statement of Div and Use","","11/08/2002","11/08/2002","RIPERIAN,",1973
 "S015334","Statement of Div and Use","","04/10/2000","04/10/2000","RIPERIAN,",1989
-"S015335","Statement of Div and Use","","02/20/2001","02/20/2001","RIPERIAN,",1998
-"S015336","Statement of Div and Use","","02/20/2001","02/20/2001","RIPERIAN,",1982
-"S015337","Statement of Div and Use","","02/20/2001","02/20/2001","RIPERIAN,",1982
-"S015338","Statement of Div and Use","","02/20/2001","02/20/2001","RIPERIAN,",2000
-"S015349","Statement of Div and Use","","12/27/2002","12/27/2002","RIPERIAN,",1920
 "S015353","Statement of Div and Use","","03/01/2001","03/01/2001","RIPERIAN,",1920
-"S015358","Statement of Div and Use","","08/16/2002","08/16/2002","RIPERIAN,",1850
-"S015362","Statement of Div and Use","","03/10/2003","03/10/2003","RIPERIAN,",1968
-"S015365","Statement of Div and Use","","09/28/2001","09/28/2001","RIPERIAN,",1870
-"S015400","Statement of Div and Use","","01/09/2003","01/09/2003","RIPERIAN,",1997
-"S015401","Statement of Div and Use","","01/09/2003","01/09/2003","RIPERIAN,",1997
 "S015402","Statement of Div and Use","","01/09/2003","01/09/2003","RIPERIAN,",1987
-"S015403","Statement of Div and Use","","01/28/2003","01/28/2003","RIPERIAN,",1947
-"S015404","Statement of Div and Use","","01/28/2003","01/28/2003","RIPERIAN,",1990
 "S015414","Statement of Div and Use","","01/17/2003","01/17/2003","RIPERIAN,",1935
-"S015418","Statement of Div and Use","","01/02/2002","01/02/2002","PRE1914,",1878
-"S015459","Statement of Div and Use","","12/13/2003","01/06/2004","RIPERIAN,",1952
-"S015460","Statement of Div and Use","","12/13/2002","01/06/2004","RIPERIAN,",1998
-"S015461","Statement of Div and Use","","12/13/2002","01/06/2004","RIPERIAN,",1958
-"S015462","Statement of Div and Use","","12/13/2002","01/06/2004","RIPERIAN,",1998
-"S015463","Statement of Div and Use","","12/13/2003","01/07/2004","RIPERIAN,",1998
-"S015472","Statement of Div and Use","","03/08/2002","01/07/2004","RIPERIAN,",1976
 "S015473","Statement of Div and Use","","06/19/2002","01/08/2004","RIPERIAN,",2001
-"S015474","Statement of Div and Use","","06/19/2002","01/08/2004","RIPERIAN,",2001
-"S015477","Statement of Div and Use","","11/19/2001","01/14/2004","RIPERIAN,",1954
-"S015478","Statement of Div and Use","","11/19/2001","01/14/2004","RIPERIAN,",1963
-"S015479","Statement of Div and Use","","11/19/2001","01/14/2004","RIPERIAN,",1974
-"S015480","Statement of Div and Use","","11/19/2001","01/14/2004","RIPERIAN,",1975
-"S015508","Statement of Div and Use","","12/02/2002","02/20/2004","PRE1914,",1914
-"S015509","Statement of Div and Use","","12/02/2002","02/19/2004","PRE1914,",1911
-"S015510","Statement of Div and Use","","12/02/2002","02/19/2004","PRE1914,",1914
-"S015520","Statement of Div and Use","","12/18/2003","03/17/2004","RIPERIAN,",1950
-"S015522","Statement of Div and Use","","01/21/2004","03/17/2004","RIPERIAN,",1977
-"S015532","Statement of Div and Use","","07/26/2004","07/28/2004","RIPERIAN,",1980
-"S015549","Statement of Div and Use","","09/19/2003","09/01/2004","RIPERIAN,",1953
-"S015621","Statement of Div and Use","","11/05/2004","11/05/2004","RIPERIAN,",1935
-"S015641","Statement of Div and Use","","06/11/2004","06/11/2001","RIPERIAN,",1969
-"S015677","Statement of Div and Use","","07/29/2001","07/29/2001","RIPERIAN,",1957
-"S015686","Statement of Div and Use","","05/26/1999","05/26/1999","RIPERIAN,",1869
-"S015689","Statement of Div and Use","","02/04/2002","02/04/2002","RIPERIAN,",1989
-"S015690","Statement of Div and Use","","02/04/2002","02/04/2002","RIPERIAN,",1978
 "S015691","Statement of Div and Use","","02/04/2002","02/04/2002","RIPERIAN,",1978
-"S015702","Statement of Div and Use","","09/11/2003","09/11/2003","RIPERIAN,",1983
-"S015721","Statement of Div and Use","","05/07/2002","05/07/2002","RIPERIAN,",1982
-"S015722","Statement of Div and Use","","05/07/2002","05/07/2002","RIPERIAN,",1955
 "S015723","Statement of Div and Use","","05/07/2002","05/07/2002","RIPERIAN,",1950
-"S015731","Statement of Div and Use","","08/24/2000","08/24/2000","RIPERIAN,",1990
-"S015745","Statement of Div and Use","","12/11/2002","12/11/2002","RIPERIAN,",NA
-"S015746","Statement of Div and Use","","12/11/2002","12/11/2002","RIPERIAN,",NA
-"S015751","Statement of Div and Use","","07/15/2002","07/15/2002","RIPERIAN,",1933
-"S015752","Statement of Div and Use","","07/15/2002","07/15/2002","RIPERIAN,",1962
-"S015753","Statement of Div and Use","","07/15/2002","07/15/2002","RIPERIAN,",1972
 "S015758","Statement of Div and Use","","06/28/2005","06/28/2004","RIPERIAN,",2002
-"S015759","Statement of Div and Use","","06/28/2004","06/28/2004","RIPERIAN,",2002
-"S015781","Statement of Div and Use","","09/19/2001","09/19/2001","RIPERIAN,",1947
-"S015790","Statement of Div and Use","","01/26/2004","01/26/2004","RIPERIAN,",1999
-"S015800","Statement of Div and Use","","04/02/2003","04/02/2003","",1930
-"S015805","Statement of Div and Use","","05/28/2002","05/28/2002","RIPERIAN,",1940
-"S015806","Statement of Div and Use","","05/28/2002","05/28/2002","RIPERIAN,",1948
 "S015813","Statement of Div and Use","","03/25/2005","03/25/2005","RIPERIAN,",1966
-"S015816","Statement of Div and Use","","04/15/2005","04/15/2005","RIPERIAN,",1955
-"S015821","Statement of Div and Use","","09/06/2005","09/06/2005","RIPERIAN,",1959
-"S015823","Statement of Div and Use","","04/08/2005","04/08/2005","RIPERIAN,",1973
-"S015825","Statement of Div and Use","","10/07/2005","10/07/2005","PRE1914,",1900
-"S015828","Statement of Div and Use","","06/20/2005","06/20/2005","RIPERIAN,",1985
-"S015830","Statement of Div and Use","","02/28/2005","02/28/2005","RIPERIAN,",1981
-"S015831","Statement of Div and Use","","02/28/2005","02/28/2005","RIPERIAN,",1981
-"S015833","Statement of Div and Use","","07/01/2005","07/01/2005","RIPERIAN,",1970
-"S015840","Statement of Div and Use","","04/25/2005","04/25/2005","RIPERIAN,",1983
 "S015844","Statement of Div and Use","","03/29/2005","03/29/2005","RIPERIAN,",1928
-"S015850","Statement of Div and Use","","04/14/2005","04/14/2005","RIPERIAN,",1965
 "S015862","Statement of Div and Use","","07/11/2005","07/11/2005","RIPERIAN,",1962
-"S015863","Statement of Div and Use","","05/02/2005","05/02/2005","RIPERIAN,",1976
 "S015865","Statement of Div and Use","","11/04/2005","11/04/2005","RIPERIAN,",2005
-"S015871","Statement of Div and Use","","05/02/2005","05/02/2005","RIPERIAN,",1964
-"S015872","Statement of Div and Use","","04/27/2005","04/27/2005","RIPERIAN,",1984
 "S015874","Statement of Div and Use","","04/11/2005","04/11/2005","RIPERIAN,",1950
-"S015882","Statement of Div and Use","","07/12/2005","","RIPERIAN,",1980
-"S015884","Statement of Div and Use","","03/25/2005","03/25/2005","RIPERIAN,",1976
-"S015885","Statement of Div and Use","","07/05/2005","07/05/2005","RIPERIAN,",1978
-"S015886","Statement of Div and Use","","07/05/2005","07/05/2005","RIPERIAN,",1978
-"S015887","Statement of Div and Use","","07/05/2005","07/05/2005","RIPERIAN,",1985
-"S015895","Statement of Div and Use","","03/30/2005","03/30/2005","RIPERIAN,",1967
-"S015900","Statement of Div and Use","","11/23/2005","11/23/2005","RIPERIAN,",1998
-"S015901","Statement of Div and Use","","11/23/2005","11/23/2005","RIPERIAN,",1998
-"S015903","Statement of Div and Use","","05/11/2005","05/11/2005","RIPERIAN,",1993
-"S015906","Statement of Div and Use","","03/30/2005","03/30/2005","RIPERIAN,",1942
-"S015908","Statement of Div and Use","","05/16/2005","05/16/2005","RIPERIAN,",1978
-"S015909","Statement of Div and Use","","10/06/2005","10/06/2005","PRE1914,",1896
-"S015910","Statement of Div and Use","","03/23/2005","03/23/2005","PRE1914,",1974
-"S015916","Statement of Div and Use","","07/05/2005","07/05/2005","RIPERIAN,",1953
-"S015923","Statement of Div and Use","","05/31/2005","05/31/2005","RIPERIAN,",1967
-"S015924","Statement of Div and Use","","04/27/2005","04/27/2005","RIPERIAN,",1970
-"S015925","Statement of Div and Use","","05/25/2005","05/25/2005","RIPERIAN,",1900
-"S015935","Statement of Div and Use","","04/07/2005","04/07/2005","RIPERIAN,",1952
-"S015942","Statement of Div and Use","","03/01/2006","","RIPERIAN,",1971
 "S015944","Statement of Div and Use","","03/18/2005","03/18/2005","RIPERIAN,",1990
-"S015945","Statement of Div and Use","","08/03/2005","08/03/2005","RIPERIAN,",1965
-"S015948","Statement of Div and Use","","03/30/2005","03/30/2005","RIPERIAN,",1947
-"S015950","Statement of Div and Use","","05/06/2005","05/06/2005","RIPERIAN,",1947
-"S015951","Statement of Div and Use","","12/27/2005","12/27/2005","RIPERIAN,",1973
 "S015952","Statement of Div and Use","","06/03/2005","06/03/2005","RIPERIAN,",1930
-"S015953","Statement of Div and Use","","06/29/2005","06/29/2005","RIPERIAN,",1958
-"S015955","Statement of Div and Use","","03/28/2005","03/28/2005","RIPERIAN,",1936
-"S015962","Statement of Div and Use","","03/30/2006","03/30/2006","RIPERIAN,",1973
-"S015963","Statement of Div and Use","","03/30/2006","03/30/2006","RIPERIAN,",1973
 "S015964","Statement of Div and Use","","03/30/2006","03/30/2006","RIPERIAN,",1973
-"S015965","Statement of Div and Use","","03/30/2006","03/30/2006","RIPERIAN,",1975
 "S015981","Statement of Div and Use","","07/27/2006","07/27/2006","RIPERIAN,",1998
-"S015989","Statement of Div and Use","","06/07/2006","06/07/2006","RIPERIAN,",1950
-"S015990","Statement of Div and Use","","06/08/2006","06/08/2006","RIPERIAN,",1950
 "S015997","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1973
-"S015998","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1976
-"S015999","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1974
 "S016000","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1987
 "S016001","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1976
-"S016002","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1985
 "S016003","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1975
 "S016004","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1988
-"S016005","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1975
-"S016006","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1974
-"S016007","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1974
-"S016008","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1974
 "S016009","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1978
-"S016010","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1979
-"S016011","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1978
-"S016012","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1976
-"S016013","Statement of Div and Use","","11/13/2006","11/13/2006","RIPERIAN,",1977
-"S016021","Statement of Div and Use","","03/30/2007","03/30/2007","RIPERIAN,",1986
-"S016022","Statement of Div and Use","","03/03/2007","03/30/2007","RIPERIAN,",1986
-"S016023","Statement of Div and Use","","03/30/2007","03/30/2007","RIPERIAN,",1986
-"S016024","Statement of Div and Use","","03/30/2007","03/30/2007","RIPERIAN,",1986
-"S016025","Statement of Div and Use","","03/30/2007","03/30/2007","RIPERIAN,",1989
-"S016032","Statement of Div and Use","","05/11/2007","05/11/2007","RIPERIAN,",1973
-"S016036","Statement of Div and Use","","06/11/2007","06/11/2007","RIPERIAN,",2002
-"S016038","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1986
 "S016039","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1986
-"S016044","Statement of Div and Use","","08/15/2006","","RIPERIAN,",2008
-"S016045","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1975
-"S016046","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1964
-"S016047","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1984
-"S016048","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1970
-"S016049","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1972
-"S016050","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1991
-"S016051","Statement of Div and Use","","10/23/2008","","RIPERIAN,",1991
-"S016052","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1964
-"S016053","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1976
-"S016054","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1999
-"S016055","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",2002
 "S016056","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",2002
-"S016057","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1970
 "S016058","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1970
 "S016059","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1984
 "S016060","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1984
-"S016061","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1996
-"S016062","Statement of Div and Use","","08/15/2006","","RIPERIAN,",1979
-"S016063","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1990
 "S016064","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1970
 "S016065","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1980
-"S016066","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1940
-"S016067","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1980
-"S016068","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1972
-"S016069","Statement of Div and Use","","08/15/2006","08/15/2006","RIPERIAN,",1970
-"S016093","Statement of Div and Use","","11/26/2007","11/26/2007","RIPERIAN,",1983
 "S016118","Statement of Div and Use","","06/09/2008","06/09/2008","RIPERIAN,",1960
-"S016134","Statement of Div and Use","","03/21/2008","03/21/2008","RIPERIAN,",1991
-"S016164","Statement of Div and Use","","11/17/2005","11/17/2005","RIPERIAN,",1970
-"S016165","Statement of Div and Use","","11/17/2005","11/17/2005","RIPERIAN,",1965
-"S016166","Statement of Div and Use","","11/17/2005","11/17/2005","RIPERIAN,",1970
-"S016167","Statement of Div and Use","","11/17/2005","11/17/2005","RIPERIAN,",1965
-"S016304","Statement of Div and Use","","02/09/2009","02/09/2009","RIPERIAN,",2007
-"S016322","Statement of Div and Use","","11/30/2009","11/30/2009","RIPERIAN,",1920
-"S016328","Statement of Div and Use","","03/22/2010","03/22/2010","RIPERIAN,",1980
-"S016329","Statement of Div and Use","","03/26/2010","03/26/2010","RIPERIAN,",1920
 "S016352","Statement of Div and Use","","04/29/2010","04/29/2010","OTHER,",1997
-"S016363","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1946
 "S016364","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1946
-"S016366","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1968
-"S016367","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1949
-"S016368","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1944
-"S016369","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1968
 "S016370","Statement of Div and Use","","05/19/2010","05/19/2010","RIPERIAN,",1980
 "S016399","Statement of Div and Use","","06/08/2010","06/08/2010","OTHER,",1986
-"S016628","Statement of Div and Use","","09/28/2009","10/26/2012","RIPERIAN,",1986
-"S016632","Statement of Div and Use","","11/23/2009","03/15/2012","RIPERIAN,",1950
-"S016633","Statement of Div and Use","","04/23/2009","04/23/2009","RIPERIAN,",2002
-"S016670","Statement of Div and Use","","06/23/2010","03/21/2012","RIPERIAN,",1960
-"S016671","Statement of Div and Use","","06/30/2010","06/30/2010","OTHER,",1990
-"S016680","Statement of Div and Use","","03/30/2009","03/30/2009","RIPERIAN,",1950
-"S016681","Statement of Div and Use","","03/30/2009","03/30/2009","RIPERIAN,",1950
-"S016682","Statement of Div and Use","","04/09/2009","04/09/2009","RIPERIAN,",1997
-"S016683","Statement of Div and Use","","04/09/2009","04/09/2009","RIPERIAN,",1994
 "S016684","Statement of Div and Use","","04/09/2009","03/21/2012","RIPERIAN,",1994
-"S016685","Statement of Div and Use","","04/09/2009","03/21/2012","RIPERIAN,",1994
 "S016686","Statement of Div and Use","","04/09/2009","03/22/2012","RIPERIAN,",2006
-"S016687","Statement of Div and Use","","04/23/2009","03/22/2012","RIPERIAN,",1980
-"S016690","Statement of Div and Use","","03/08/2010","03/23/2012","RIPERIAN,",2010
 "S016698","Statement of Div and Use","","11/19/2009","03/28/2012","RIPERIAN,",1972
-"S016699","Statement of Div and Use","","01/27/2010","03/28/2012","RIPERIAN,",1948
-"S016700","Statement of Div and Use","","01/27/2010","03/30/2012","RIPERIAN,",1948
-"S016707","Statement of Div and Use","","04/22/2010","03/29/2012","RIPERIAN,",1984
-"S016708","Statement of Div and Use","","04/23/2010","03/29/2012","OTHER,",1975
 "S016731","Statement of Div and Use","","01/29/2010","04/05/2012","RIPERIAN,",2009
 "S016732","Statement of Div and Use","","02/01/2010","04/05/2012","RIPERIAN,",1988
-"S016771","Statement of Div and Use","","06/23/2010","04/16/2012","OTHER,",1996
 "S016773","Statement of Div and Use","","06/29/2010","04/16/2012","RIPERIAN,",1962
-"S016774","Statement of Div and Use","","06/24/2010","04/16/2012","RIPERIAN,",1950
 "S016775","Statement of Div and Use","","06/29/2010","04/16/2012","RIPERIAN,",1950
-"S016776","Statement of Div and Use","","06/29/2010","04/16/2012","RIPERIAN,",1950
-"S016777","Statement of Div and Use","","06/29/2010","04/16/2012","RIPERIAN,",1950
-"S016778","Statement of Div and Use","","06/29/2010","04/18/2012","OTHER,",1930
-"S016779","Statement of Div and Use","","06/29/2010","04/18/2012","OTHER,",1930
-"S016781","Statement of Div and Use","","06/29/2010","04/18/2012","RIPERIAN,",2000
-"S016782","Statement of Div and Use","","06/29/2010","04/18/2012","RIPERIAN,",2000
-"S016783","Statement of Div and Use","","06/29/2010","04/18/2012","RIPERIAN,",2000
-"S016790","Statement of Div and Use","","06/29/2010","04/19/2012","RIPERIAN,",1950
-"S016812","Statement of Div and Use","","06/28/2010","04/02/2012","RIPERIAN,",1963
-"S016819","Statement of Div and Use","","06/25/2010","04/02/2012","OTHER,",1999
 "S016836","Statement of Div and Use","","06/23/2010","04/03/2012","RIPERIAN,",1960
-"S016837","Statement of Div and Use","","06/23/2010","04/03/2012","RIPERIAN,",1970
-"S016838","Statement of Div and Use","","06/23/2010","04/03/2012","RIPERIAN,",1970
-"S016839","Statement of Div and Use","","06/23/2010","04/04/2012","RIPERIAN,",1960
 "S016840","Statement of Div and Use","","06/23/2010","04/04/2012","RIPERIAN,",1970
-"S016841","Statement of Div and Use","","06/23/2010","04/04/2012","RIPERIAN,",1980
-"S016842","Statement of Div and Use","","06/23/2010","04/04/2012","RIPERIAN,",1980
-"S016853","Statement of Div and Use","","06/24/2010","04/04/2012","OTHER,",1960
 "S016885","Statement of Div and Use","","06/25/2010","06/25/2010","RIPERIAN,",1994
-"S016886","Statement of Div and Use","","06/25/2010","04/04/2012","RIPERIAN,",1996
-"S016887","Statement of Div and Use","","06/25/2010","04/04/2012","RIPERIAN,",1994
 "S016892","Statement of Div and Use","","06/25/2010","04/05/2012","OTHER,",1983
 "S016897","Statement of Div and Use","","06/25/2010","04/05/2012","RIPERIAN,PENDING,",2001
 "S016900","Statement of Div and Use","","06/29/2010","10/17/2011","PRE1914,",1912
 "S016901","Statement of Div and Use","","06/29/2010","04/09/2012","OTHER,",1960
 "S016911","Statement of Div and Use","","06/30/2010","06/30/2010","RIPERIAN,",1990
-"S017020","Statement of Div and Use","","07/01/2010","01/26/2012","PRE1914,",1900
-"S017033","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1970
-"S017034","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1970
 "S017035","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1970
-"S017036","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1994
 "S017037","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1970
 "S017038","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1970
 "S017039","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1995
-"S017040","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",1940
-"S017041","Statement of Div and Use","","06/29/2010","06/29/2010","RIPERIAN,",2004
-"S017049","Statement of Div and Use","","06/25/2010","06/25/2010","OTHER,",1957
-"S017050","Statement of Div and Use","","06/25/2010","06/25/2010","RIPERIAN,",1980
-"S017052","Statement of Div and Use","","06/25/2010","06/25/2010","RIPERIAN,",1980
-"S017157","Statement of Div and Use","","07/01/2010","04/10/2012","PRE1914,",1913
 "S017160","Statement of Div and Use","","07/01/2010","04/10/2012","PRE1914,",1908
-"S017203","Statement of Div and Use","","06/30/2010","06/30/2010","RIPERIAN,",1976
-"S017281","Statement of Div and Use","","07/01/2010","05/04/2012","RIPERIAN,",1872
 "S017301","Statement of Div and Use","","07/01/2010","04/19/2012","RIPERIAN,",1872
-"S017309","Statement of Div and Use","","07/01/2010","04/19/2012","RIPERIAN,",1988
-"S017312","Statement of Div and Use","","07/01/2010","04/19/2012","RIPERIAN,",1930
-"S017348","Statement of Div and Use","","11/20/2015","07/01/2010","RIPERIAN,",1999
-"S017474","Statement of Div and Use","","07/01/2010","04/13/2012","RIPERIAN,",1966
-"S017651","Statement of Div and Use","","07/07/2010","04/18/2012","RIPERIAN,",1975
 "S017657","Statement of Div and Use","","07/06/2010","04/19/2012","RIPERIAN,",1986
-"S017742","Statement of Div and Use","","06/29/2010","05/09/2012","RIPERIAN,",1970
-"S017745","Statement of Div and Use","","06/29/2010","05/09/2012","RIPERIAN,",1948
 "S017748","Statement of Div and Use","","06/29/2010","05/09/2012","RIPERIAN,",1948
-"S017751","Statement of Div and Use","","06/29/2010","05/15/2012","RIPERIAN,",1990
-"S017791","Statement of Div and Use","","07/02/2010","05/22/2012","RIPERIAN,",1940
-"S017975","Statement of Div and Use","","07/01/2010","05/22/2012","RIPERIAN,",1976
-"S017987","Statement of Div and Use","","07/01/2010","05/23/2012","RIPERIAN,",1970
 "S017990","Statement of Div and Use","","07/01/2010","05/25/2012","RIPERIAN,",1970
-"S017992","Statement of Div and Use","","07/01/2010","05/25/2012","RIPERIAN,",1970
 "S017993","Statement of Div and Use","","07/01/2010","05/25/2012","RIPERIAN,",1970
 "S017995","Statement of Div and Use","","07/01/2010","05/25/2012","RIPERIAN,",1970
-"S018130","Statement of Div and Use","","06/28/2010","05/30/2012","RIPERIAN,",1990
-"S018133","Statement of Div and Use","","06/28/2010","05/30/2012","RIPERIAN,",1990
 "S018136","Statement of Div and Use","","06/28/2010","05/30/2012","RIPERIAN,",1985
-"S018138","Statement of Div and Use","","07/02/2010","05/30/2012","RIPERIAN,",1977
-"S018139","Statement of Div and Use","","06/29/2010","05/31/2012","RIPERIAN,",1970
-"S018141","Statement of Div and Use","","07/02/2010","05/30/2012","RIPERIAN,",1955
-"S018142","Statement of Div and Use","","06/28/2010","05/31/2012","OTHER,",1950
 "S018151","Statement of Div and Use","","06/28/2010","05/31/2012","RIPERIAN,",1990
-"S018153","Statement of Div and Use","","06/24/2010","05/31/2012","OTHER,",1990
-"S018154","Statement of Div and Use","","06/28/2010","06/20/2012","RIPERIAN,",2002
 "S018160","Statement of Div and Use","","06/28/2010","06/21/2010","RIPERIAN,",1955
-"S018187","Statement of Div and Use","","06/28/2010","06/21/2012","RIPERIAN,",1990
 "S018190","Statement of Div and Use","","06/28/2010","06/21/2012","OTHER,",1990
-"S018193","Statement of Div and Use","","06/28/2010","06/21/2012","RIPERIAN,",1999
-"S018205","Statement of Div and Use","","06/28/2010","06/06/2012","OTHER,",1950
-"S018208","Statement of Div and Use","","06/24/2010","06/06/2012","RIPERIAN,",1999
-"S018211","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1993
-"S018213","Statement of Div and Use","","06/28/2010","07/06/2012","RIPERIAN,",1963
-"S018214","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1995
 "S018216","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1960
-"S018217","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1986
-"S018220","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1986
-"S018222","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1955
-"S018223","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1950
-"S018225","Statement of Div and Use","","06/28/2010","06/07/2012","RIPERIAN,",1978
 "S018277","Statement of Div and Use","","06/28/2010","07/10/2012","RIPERIAN,",1996
-"S018387","Statement of Div and Use","","06/30/2010","06/21/2012","RIPERIAN,",1946
-"S018456","Statement of Div and Use","","07/06/2010","06/22/2012","RIPERIAN,",1905
-"S018457","Statement of Div and Use","","07/06/2010","06/27/2012","RIPERIAN,",1905
-"S018467","Statement of Div and Use","","06/28/2010","06/25/2012","RIPERIAN,",1989
 "S018470","Statement of Div and Use","","06/28/2010","06/25/2012","RIPERIAN,",1980
-"S018473","Statement of Div and Use","","06/28/2010","06/25/2012","RIPERIAN,",1950
 "S018474","Statement of Div and Use","","06/25/2010","06/25/2012","RIPERIAN,",1990
-"S018477","Statement of Div and Use","","06/25/2010","06/25/2012","RIPERIAN,",1990
-"S018479","Statement of Div and Use","","06/25/2010","06/26/2012","OTHER,",1929
-"S018480","Statement of Div and Use","","06/25/2010","06/26/2012","RIPERIAN,",1990
-"S018483","Statement of Div and Use","","06/25/2010","06/26/2012","OTHER,",1950
-"S018486","Statement of Div and Use","","06/25/2010","06/26/2012","OTHER,",1973
-"S018490","Statement of Div and Use","","06/28/2010","06/26/2012","RIPERIAN,",1950
-"S018503","Statement of Div and Use","","07/06/2010","01/06/2012","RIPERIAN,",2001
-"S018523","Statement of Div and Use","","07/06/2010","01/10/2012","RIPERIAN,",1905
-"S018640","Statement of Div and Use","","06/30/2010","12/29/2011","RIPERIAN,",1964
-"S018671","Statement of Div and Use","","06/21/2010","12/29/2011","RIPERIAN,",1972
-"S018674","Statement of Div and Use","","06/21/2010","02/16/2012","RIPERIAN,",1972
-"S018677","Statement of Div and Use","","06/21/2010","02/16/2012","RIPERIAN,",1972
-"S018710","Statement of Div and Use","","07/06/2010","01/12/2012","RIPERIAN,",1960
-"S018763","Statement of Div and Use","","07/06/2010","01/31/2012","RIPERIAN,",1984
 "S018787","Statement of Div and Use","","07/06/2010","02/09/2012","RIPERIAN,",1955
 "S019027","Statement of Div and Use","","07/01/2010","07/01/2010","RIPERIAN,",1999
-"S019030","Statement of Div and Use","","07/01/2010","07/01/2010","RIPERIAN,",1988
-"S019039","Statement of Div and Use","","07/07/2010","08/07/2010","RIPERIAN,",1967
-"S019045","Statement of Div and Use","","07/01/2010","07/01/2010","RIPERIAN,",2000
 "S019190","Statement of Div and Use","","06/30/2010","01/18/2012","OTHER,",1950
 "S019193","Statement of Div and Use","","06/30/2010","01/18/2012","OTHER,",1998
 "S019196","Statement of Div and Use","","06/30/2010","01/19/2012","RIPERIAN,",1960
 "S019202","Statement of Div and Use","","07/01/2010","01/24/2012","RIPERIAN,",1958
-"S019205","Statement of Div and Use","","06/30/2010","01/26/2012","OTHER,",1950
-"S019214","Statement of Div and Use","","06/30/2010","01/24/2012","RIPERIAN,",1981
-"S019220","Statement of Div and Use","","06/28/2010","01/19/2012","OTHER,",1975
-"S019232","Statement of Div and Use","","06/30/2010","01/18/2012","RIPERIAN,",1950
-"S019235","Statement of Div and Use","","06/30/2010","","OTHER,",1978
 "S019287","Statement of Div and Use","","07/02/2010","01/18/2012","RIPERIAN,",1915
-"S019291","Statement of Div and Use","","07/06/2010","01/20/2012","OTHER,",1998
-"S019312","Statement of Div and Use","","06/30/2010","04/19/2012","RIPERIAN,",2002
-"S019384","Statement of Div and Use","","06/28/2010","04/20/2012","RIPERIAN,",1997
-"S019386","Statement of Div and Use","","06/29/2010","04/23/2012","OTHER,",2003
-"S019389","Statement of Div and Use","","06/29/2010","04/23/2012","PRE1914,",1911
-"S019392","Statement of Div and Use","","06/29/2010","04/23/2012","RIPERIAN,",1911
-"S019394","Statement of Div and Use","","06/29/2010","04/23/2012","OTHER,",1960
 "S019395","Statement of Div and Use","","06/29/2010","04/23/2012","RIPERIAN,",1911
 "S019406","Statement of Div and Use","","06/29/2010","01/10/2012","RIPERIAN,",1950
-"S019409","Statement of Div and Use","","06/28/2010","01/10/2012","RIPERIAN,",1950
 "S019412","Statement of Div and Use","","06/28/2010","01/10/2012","RIPERIAN,",1950
-"S019547","Statement of Div and Use","","06/29/2010","07/02/2012","RIPERIAN,",1981
 "S019550","Statement of Div and Use","","06/29/2010","07/02/2012","RIPERIAN,",1981
-"S019553","Statement of Div and Use","","06/29/2010","07/03/2012","RIPERIAN,",1977
-"S019556","Statement of Div and Use","","06/29/2010","07/02/2012","RIPERIAN,",1964
-"S019559","Statement of Div and Use","","06/25/2010","07/03/2012","RIPERIAN,",1980
-"S019594","Statement of Div and Use","","07/06/2010","07/02/2012","RIPERIAN,",1930
-"S019643","Statement of Div and Use","","07/02/2010","07/05/2012","OTHER,",1972
-"S019697","Statement of Div and Use","","08/23/2010","01/04/2012","OTHER,",1949
-"S019738","Statement of Div and Use","","06/30/2010","12/20/2011","OTHER,",1959
 "S019760","Statement of Div and Use","","06/30/2010","04/26/2012","RIPERIAN,",1970
-"S019762","Statement of Div and Use","","06/30/2010","04/26/2012","RIPERIAN,",1950
 "S019763","Statement of Div and Use","","06/30/2010","04/26/2012","RIPERIAN,",1970
-"S019766","Statement of Div and Use","","06/30/2010","04/26/2012","PRE1914,",1914
 "S019769","Statement of Div and Use","","06/30/2010","04/26/2012","PRE1914,",1914
-"S019893","Statement of Div and Use","","09/08/2010","01/26/2012","OTHER,",2008
-"S019908","Statement of Div and Use","","07/07/2010","07/11/2012","RIPERIAN,",1973
-"S019911","Statement of Div and Use","","06/30/2010","07/11/2012","RIPERIAN,",1979
-"S019914","Statement of Div and Use","","06/30/2010","07/11/2012","RIPERIAN,",1979
-"S019917","Statement of Div and Use","","06/30/2010","07/11/2012","RIPERIAN,",1989
 "S019924","Statement of Div and Use","","07/06/2010","07/10/2012","RIPERIAN,",1960
-"S019926","Statement of Div and Use","","06/30/2010","07/10/2012","OTHER,",1960
-"S019932","Statement of Div and Use","","06/30/2010","07/10/2012","OTHER,",1948
-"S019943","Statement of Div and Use","","06/25/2010","07/10/2012","OTHER,",1960
-"S019969","Statement of Div and Use","","07/01/2010","07/11/2012","RIPERIAN,OTHER,",1988
-"S019972","Statement of Div and Use","","09/20/2010","07/11/2012","RIPERIAN,",1975
 "S020069","Statement of Div and Use","","07/06/2010","03/08/2012","RIPERIAN,",2000
-"S020083","Statement of Div and Use","","06/28/2010","07/11/2012","RIPERIAN,",1974
-"S020086","Statement of Div and Use","","06/28/2010","07/11/2012","RIPERIAN,",1969
-"S020090","Statement of Div and Use","","06/28/2010","07/11/2012","RIPERIAN,",1978
-"S020091","Statement of Div and Use","","06/28/2010","07/11/2012","RIPERIAN,",1978
-"S020094","Statement of Div and Use","","06/28/2010","07/11/2012","RIPERIAN,",1978
-"S020096","Statement of Div and Use","","07/06/2010","07/11/2012","RIPERIAN,",1900
-"S020098","Statement of Div and Use","","06/28/2010","07/11/2012","RIPERIAN,",1950
-"S020102","Statement of Div and Use","","06/28/2010","02/07/2012","RIPERIAN,COURTADJ,",1972
-"S020134","Statement of Div and Use","","09/03/2010","08/02/2012","RIPERIAN,",1980
-"S020148","Statement of Div and Use","","07/01/2010","02/15/2012","OTHER,",1982
-"S020152","Statement of Div and Use","","07/01/2010","02/15/2012","OTHER,",1994
-"S020175","Statement of Div and Use","","09/01/2010","02/10/2012","RIPERIAN,",2000
-"S020240","Statement of Div and Use","","11/17/2010","02/14/2010","RIPERIAN,",2000
-"S020289","Statement of Div and Use","","06/30/2010","02/22/2012","RIPERIAN,",1963
-"S020290","Statement of Div and Use","","06/30/2010","03/19/2013","RIPERIAN,",1963
 "S020291","Statement of Div and Use","","06/30/2010","02/19/2013","RIPERIAN,",1963
 "S020293","Statement of Div and Use","","06/30/2010","02/19/2013","RIPERIAN,",1963
-"S020294","Statement of Div and Use","","06/30/2010","02/19/2013","RIPERIAN,",1963
-"S020356","Statement of Div and Use","","08/31/2010","03/06/2012","RIPERIAN,",1985
-"S020433","Statement of Div and Use","","04/26/2010","07/26/2012","OTHER,",1946
-"S020443","Statement of Div and Use","","07/02/2010","08/01/2012","RIPERIAN,OTHER,",1988
-"S020523","Statement of Div and Use","","02/16/2011","07/13/2012","RIPERIAN,",1960
 "S020527","Statement of Div and Use","","02/16/2011","07/13/2012","RIPERIAN,",1960
-"S020596","Statement of Div and Use","","07/23/2010","07/18/2012","RIPERIAN,",NA
-"S020627","Statement of Div and Use","","07/01/2010","02/03/2012","OTHER,",1994
-"S020709","Statement of Div and Use","","07/06/2010","07/19/2012","PRE1914,",2002
-"S020788","Statement of Div and Use","","06/16/2010","08/02/2012","RIPERIAN,",1995
-"S020828","Statement of Div and Use","","06/30/2011","01/26/2012","RIPERIAN,",2010
-"S021071","Statement of Div and Use","","05/01/2012","05/14/2012","OTHER,",1957
 "S021080","Statement of Div and Use","","05/31/2012","06/20/2012","OTHER,",1998
-"S021081","Statement of Div and Use","","09/29/2010","07/03/2012","OTHER,",1961
-"S021082","Statement of Div and Use","","09/29/2010","07/03/2012","OTHER,",1961
-"S021309","Statement of Div and Use","","06/28/2010","08/07/2012","RIPERIAN,",1957
 "S021321","Statement of Div and Use","","07/01/2010","08/07/2012","RIPERIAN,",1920
 "S021339","Statement of Div and Use","","06/30/2010","08/07/2012","RIPERIAN,",1999
-"S021352","Statement of Div and Use","","07/06/2010","08/08/2012","RIPERIAN,",1983
-"S021353","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1941
-"S021358","Statement of Div and Use","","07/06/2010","08/08/2012","RIPERIAN,",1856
-"S021381","Statement of Div and Use","","07/02/2010","08/08/2012","RIPERIAN,",1960
-"S021382","Statement of Div and Use","","07/02/2010","08/08/2012","RIPERIAN,",1909
-"S021384","Statement of Div and Use","","07/02/2010","08/08/2012","RIPERIAN,",1990
-"S021385","Statement of Div and Use","","07/02/2010","08/08/2012","RIPERIAN,",1934
 "S021386","Statement of Div and Use","","07/02/2010","08/08/2012","RIPERIAN,",1942
-"S021387","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1985
 "S021388","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1979
-"S021394","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",2001
-"S021395","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1981
 "S021396","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",2000
 "S021397","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1968
-"S021398","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1996
-"S021399","Statement of Div and Use","","06/29/2010","08/08/2012","RIPERIAN,",1992
-"S021466","Statement of Div and Use","","07/08/2009","08/15/2012","RIPERIAN,",2009
-"S021470","Statement of Div and Use","","06/29/2010","08/15/2012","RIPERIAN,",1981
-"S021471","Statement of Div and Use","","06/29/2010","08/15/2012","RIPERIAN,",1982
 "S021472","Statement of Div and Use","","06/29/2010","08/15/2012","RIPERIAN,",1982
 "S021473","Statement of Div and Use","","06/29/2010","08/15/2012","RIPERIAN,",1990
 "S021475","Statement of Div and Use","","06/24/2010","08/15/2012","RIPERIAN,",1947
-"S021480","Statement of Div and Use","","06/30/2010","08/15/2012","RIPERIAN,",1970
-"S021482","Statement of Div and Use","","07/02/2010","08/15/2012","RIPERIAN,",NA
-"S021483","Statement of Div and Use","","07/02/2010","08/15/2012","RIPERIAN,",1921
-"S021484","Statement of Div and Use","","07/02/2010","08/15/2012","RIPERIAN,",1921
-"S021485","Statement of Div and Use","","07/02/2010","08/15/2012","OTHER,",1997
-"S021487","Statement of Div and Use","","06/28/2010","08/15/2012","OTHER,",1975
-"S021488","Statement of Div and Use","","06/30/2010","08/15/2012","RIPERIAN,",1982
-"S021568","Statement of Div and Use","","07/02/2010","08/22/2012","RIPERIAN,",1987
-"S021985","Statement of Div and Use","","07/12/2010","09/21/2012","OTHER,",1970
-"S021986","Statement of Div and Use","","07/12/2010","09/21/2012","OTHER,",1994
-"S021990","Statement of Div and Use","","07/06/2010","09/21/2012","RIPERIAN,",1930
 "S021991","Statement of Div and Use","","07/06/2010","09/24/2012","RIPERIAN,",1960
-"S021993","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1994
-"S021994","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1994
-"S021995","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1994
-"S021996","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1994
-"S021997","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1973
-"S021998","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",2001
 "S021999","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1996
-"S022000","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",2001
-"S022001","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1998
-"S022002","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",2003
-"S022003","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1995
-"S022004","Statement of Div and Use","","06/29/2010","09/24/2012","RIPERIAN,",1995
-"S022006","Statement of Div and Use","","07/15/2011","09/24/2012","RIPERIAN,",1930
 "S022008","Statement of Div and Use","","06/30/2010","09/24/2012","RIPERIAN,",1985
-"S022009","Statement of Div and Use","","06/30/2011","09/25/2012","RIPERIAN,",2007
-"S022012","Statement of Div and Use","","06/30/2011","09/25/2012","RIPERIAN,",2009
-"S022013","Statement of Div and Use","","06/30/2011","09/25/2012","RIPERIAN,",2009
-"S022014","Statement of Div and Use","","06/30/2010","09/25/2012","RIPERIAN,",2009
 "S022015","Statement of Div and Use","","06/22/2011","09/25/2012","RIPERIAN,",2007
-"S022016","Statement of Div and Use","","06/22/2011","09/25/2012","RIPERIAN,",1990
-"S022017","Statement of Div and Use","","06/22/2011","09/25/2012","RIPERIAN,",1974
-"S022128","Statement of Div and Use","","03/22/2011","10/09/2012","RIPERIAN,",1973
 "S022130","Statement of Div and Use","","06/20/2011","10/09/2012","RIPERIAN,",1969
-"S022156","Statement of Div and Use","","01/14/2011","11/06/2012","OTHER,",1965
 "S022287","Statement of Div and Use","","01/14/2011","10/26/2012","OTHER,",NA
-"S022288","Statement of Div and Use","","04/29/2011","10/26/2012","RIPERIAN,",1971
-"S022309","Statement of Div and Use","","09/26/2011","11/07/2012","OTHER,",2001
-"S022310","Statement of Div and Use","","09/26/2011","11/07/2012","OTHER,",1999
-"S022312","Statement of Div and Use","","03/03/2011","11/08/2012","OTHER,",1993
-"S022313","Statement of Div and Use","","04/29/2011","11/08/2012","OTHER,",1973
-"S022314","Statement of Div and Use","","04/29/2011","11/08/2012","OTHER,",1919
-"S022316","Statement of Div and Use","","09/22/2011","11/08/2012","RIPERIAN,",1973
-"S022319","Statement of Div and Use","","10/13/2011","11/13/2012","RIPERIAN,",1980
-"S022326","Statement of Div and Use","","10/13/2011","11/14/2012","RIPERIAN,",1930
-"S022335","Statement of Div and Use","","11/18/2011","11/15/2012","RIPERIAN,",1998
-"S022339","Statement of Div and Use","","07/06/2011","11/20/2012","RIPERIAN,",2000
-"S022342","Statement of Div and Use","","05/16/2012","11/27/2012","RIPERIAN,",1965
-"S022386","Statement of Div and Use","","12/02/2011","11/28/2012","OTHER,",1990
-"S022400","Statement of Div and Use","","02/22/2012","12/03/2012","RIPERIAN,",2011
-"S022401","Statement of Div and Use","","10/11/2011","12/11/2012","RIPERIAN,",1968
 "S022407","Statement of Div and Use","","06/28/2011","01/15/2013","RIPERIAN,",2010
-"S022408","Statement of Div and Use","","06/28/2011","01/15/2013","RIPERIAN,",2010
-"S022409","Statement of Div and Use","","06/28/2011","01/15/2013","RIPERIAN,",2010
-"S022410","Statement of Div and Use","","06/28/2011","01/15/2013","RIPERIAN,",2010
-"S022411","Statement of Div and Use","","06/28/2011","01/15/2013","RIPERIAN,",2010
-"S022463","Statement of Div and Use","","07/05/2011","02/06/2013","RIPERIAN,",1970
-"S022464","Statement of Div and Use","","07/05/2011","02/06/2013","RIPERIAN,",1955
-"S022465","Statement of Div and Use","","07/05/2011","02/06/2013","RIPERIAN,",2010
 "S022466","Statement of Div and Use","","07/05/2011","02/06/2013","RIPERIAN,",2010
-"S022490","Statement of Div and Use","","05/13/2011","04/29/2013","RIPERIAN,",1970
 "S022496","Statement of Div and Use","","12/12/2011","04/29/2013","RIPERIAN,",1952
-"S022512","Statement of Div and Use","","05/04/2012","04/30/2013","OTHER,",1990
-"S022523","Statement of Div and Use","","02/07/2012","05/01/2013","RIPERIAN,",2011
-"S022528","Statement of Div and Use","","04/20/2012","05/02/2013","RIPERIAN,",2011
 "S022557","Statement of Div and Use","","05/17/2012","05/07/2013","OTHER,",1990
 "S022558","Statement of Div and Use","","05/17/2012","05/07/2013","OTHER,",1990
-"S022559","Statement of Div and Use","","05/14/2012","05/07/2013","OTHER,",1974
-"S022560","Statement of Div and Use","","05/14/2012","05/07/2013","OTHER,",2010
-"S022561","Statement of Div and Use","","05/14/2012","05/07/2013","OTHER,",1974
-"S022565","Statement of Div and Use","","05/14/2012","05/09/2013","OTHER,",1974
 "S022566","Statement of Div and Use","","05/17/2012","05/09/2013","OTHER,",1974
-"S022598","Statement of Div and Use","","07/02/2012","05/14/2013","RIPERIAN,",2011
 "S022607","Statement of Div and Use","","05/17/2012","05/16/2013","OTHER,",1974
-"S022703","Statement of Div and Use","","08/06/2012","06/04/2013","OTHER,",1938
-"S022713","Statement of Div and Use","","08/13/2012","06/05/2013","RIPERIAN,",NA
-"S022724","Statement of Div and Use","","02/09/2012","06/12/2013","RIPERIAN,",NA
-"S022725","Statement of Div and Use","","02/09/2012","06/17/2013","RIPERIAN,",NA
-"S022726","Statement of Div and Use","","02/09/2012","06/17/2013","RIPERIAN,",NA
-"S022731","Statement of Div and Use","","08/14/2012","06/18/2013","RIPERIAN,",1916
-"S022777","Statement of Div and Use","","08/22/2012","07/05/2013","OTHER,",1954
-"S022799","Statement of Div and Use","","04/16/2012","07/18/2013","OTHER,",1965
-"S022800","Statement of Div and Use","","04/16/2012","07/18/2013","OTHER,",1965
-"S022801","Statement of Div and Use","","04/16/2012","07/18/2013","OTHER,",1965
-"S022803","Statement of Div and Use","","04/16/2012","07/18/2013","OTHER,",1965
-"S022804","Statement of Div and Use","","04/16/2012","07/18/2013","OTHER,",1965
-"S022832","Statement of Div and Use","","08/27/2012","07/24/2013","OTHER,",1988
-"S022853","Statement of Div and Use","","09/13/2012","07/26/2013","RIPERIAN,",1895
 "S022856","Statement of Div and Use","","09/13/2012","07/26/2013","RIPERIAN,",1895
-"S022857","Statement of Div and Use","","09/13/2012","07/26/2013","RIPERIAN,",2000
-"S022859","Statement of Div and Use","","09/13/2012","07/26/2013","RIPERIAN,",1960
 "S022860","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1902
-"S022861","Statement of Div and Use","","09/14/2012","07/29/2013","RIPERIAN,",1902
-"S022862","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1902
-"S022864","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1902
-"S022865","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1902
-"S022867","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1902
-"S022868","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1940
-"S022869","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1940
-"S022870","Statement of Div and Use","","09/11/2012","07/29/2013","RIPERIAN,",1940
-"S022877","Statement of Div and Use","","01/11/2012","08/06/2013","RIPERIAN,",1963
-"S022879","Statement of Div and Use","","01/17/2012","08/06/2013","RIPERIAN,",1983
-"S022882","Statement of Div and Use","","01/17/2012","08/07/2013","RIPERIAN,",1998
-"S022886","Statement of Div and Use","","09/19/2012","08/07/2013","RIPERIAN,",2007
-"S022889","Statement of Div and Use","","09/18/2012","08/07/2013","RIPERIAN,",1973
 "S022890","Statement of Div and Use","","09/18/2012","08/07/2013","RIPERIAN,",1998
-"S022895","Statement of Div and Use","","05/17/2012","08/07/2013","PENDING,",1974
-"S022914","Statement of Div and Use","","05/31/2012","08/09/2013","OTHER,",1998
-"S023005","Statement of Div and Use","","09/06/2012","08/20/2013","RIPERIAN,",1958
-"S023451","Statement of Div and Use","","02/17/2010","10/14/2013","RIPERIAN,",1940
-"S023462","Statement of Div and Use","","07/07/2010","10/14/2013","RIPERIAN,",1960
-"S023470","Statement of Div and Use","","06/29/2010","10/14/2013","RIPERIAN,",1974
-"S023512","Statement of Div and Use","","07/01/2010","10/16/2013","OTHER,",1950
-"S023513","Statement of Div and Use","","07/01/2010","10/17/2013","OTHER,",1950
-"S023514","Statement of Div and Use","","07/01/2010","10/17/2013","OTHER,",1950
 "S023515","Statement of Div and Use","","07/01/2010","10/17/2013","OTHER,",1950
-"S023678","Statement of Div and Use","","06/30/2011","10/30/2013","RIPERIAN,",1950
-"S023680","Statement of Div and Use","","06/30/2011","10/30/2013","RIPERIAN,",1921
-"S023681","Statement of Div and Use","","06/30/2011","10/30/2013","RIPERIAN,",NA
 "S023682","Statement of Div and Use","","06/30/2011","10/30/2013","RIPERIAN,",1970
 "S023685","Statement of Div and Use","","06/30/2011","10/30/2013","RIPERIAN,",NA
-"S023687","Statement of Div and Use","","06/30/2011","10/30/2013","RIPERIAN,",1900
 "S023695","Statement of Div and Use","","01/16/2013","11/14/2013","RIPERIAN,",1980
-"S023696","Statement of Div and Use","","01/16/2013","11/14/2013","RIPERIAN,",1980
 "S023697","Statement of Div and Use","","01/16/2013","11/14/2013","RIPERIAN,",1980
-"S023707","Statement of Div and Use","","02/11/2013","11/15/2013","RIPERIAN,",2013
-"S023711","Statement of Div and Use","","01/30/2013","11/18/2013","OTHER,",1990
 "S023712","Statement of Div and Use","","01/30/2013","11/18/2013","OTHER,",1990
-"S023728","Statement of Div and Use","","02/04/2013","11/21/2013","OTHER,",1970
-"S023729","Statement of Div and Use","","02/04/2013","11/21/2013","OTHER,",1967
-"S023849","Statement of Div and Use","","04/30/2013","12/04/2013","RIPERIAN,",1960
-"S023862","Statement of Div and Use","","05/06/2013","12/05/2013","RIPERIAN,",1999
 "S023869","Statement of Div and Use","","05/09/2013","12/06/2013","OTHER,",2001
-"S023870","Statement of Div and Use","","05/09/2013","12/06/2013","OTHER,",1950
-"S023888","Statement of Div and Use","","05/28/2013","12/11/2013","PRE1914,",1872
-"S023896","Statement of Div and Use","","05/30/2013","12/12/2013","RIPERIAN,",1980
-"S023897","Statement of Div and Use","","05/30/2013","12/12/2013","RIPERIAN,",1985
-"S023905","Statement of Div and Use","","04/12/2013","12/13/2013","OTHER,",1962
-"S023907","Statement of Div and Use","","04/12/2013","12/13/2013","OTHER,",1962
 "S023909","Statement of Div and Use","","04/12/2013","12/13/2013","OTHER,",2000
-"S023910","Statement of Div and Use","","04/12/2013","12/13/2013","OTHER,",1950
-"S023932","Statement of Div and Use","","06/17/2013","12/16/2013","OTHER,",2000
-"S023954","Statement of Div and Use","","06/24/2013","12/18/2013","RIPERIAN,",1949
-"S023955","Statement of Div and Use","","06/24/2013","12/18/2013","RIPERIAN,",1969
-"S023956","Statement of Div and Use","","06/24/2013","12/18/2014","RIPERIAN,",1982
-"S023959","Statement of Div and Use","","05/29/2013","12/19/2013","OTHER,",1965
-"S023960","Statement of Div and Use","","05/29/2013","12/19/2013","OTHER,",1993
-"S023995","Statement of Div and Use","","06/19/2013","12/24/2013","OTHER,",1984
-"S023996","Statement of Div and Use","","06/19/2013","12/24/2013","OTHER,",1984
-"S023997","Statement of Div and Use","","06/19/2013","12/24/2013","OTHER,",1984
-"S024097","Statement of Div and Use","","06/25/2013","01/08/2014","RIPERIAN,",1950
 "S024104","Statement of Div and Use","","08/30/2013","01/09/2014","OTHER,",1964
-"S024131","Statement of Div and Use","","07/29/2013","01/13/2014","RIPERIAN,",1950
-"S024188","Statement of Div and Use","","09/09/2013","01/17/2014","RIPERIAN,",1920
-"S024229","Statement of Div and Use","","06/19/2007","01/22/2014","PRE1914,",1877
-"S024280","Statement of Div and Use","","11/04/2013","01/24/2014","RIPERIAN,",1980
-"S024349","Statement of Div and Use","","02/19/2014","02/19/2014","RIPERIAN,",2013
 "S024370","Statement of Div and Use","","03/09/2014","03/19/2014","RIPERIAN,",2012
-"S024372","Statement of Div and Use","","03/06/2014","03/19/2014","RIPERIAN,OTHER,",1945
 "S024404","Statement of Div and Use","","04/23/2014","05/13/2014","RIPERIAN,",1989
-"S024405","Statement of Div and Use","","04/23/2014","05/13/2014","RIPERIAN,",1989
 "S024410","Statement of Div and Use","","05/12/2014","05/16/2014","RIPERIAN,",1972
-"S024427","Statement of Div and Use","","05/20/2014","05/30/2014","RIPERIAN,",2011
 "S024444","Statement of Div and Use","","06/03/2014","06/10/2014","PENDING,",1950
 "S024445","Statement of Div and Use","","06/03/2014","06/10/2014","",1992
-"S024452","Statement of Div and Use","","06/10/2014","07/11/2014","OTHER,",1958
-"S024464","Statement of Div and Use","","06/03/2014","07/25/2014","OTHER,",1985
-"S024466","Statement of Div and Use","","06/03/2014","07/25/2014","OTHER,",1940
-"S024467","Statement of Div and Use","","06/03/2014","07/25/2014","OTHER,",1940
 "S024481","Statement of Div and Use","","06/27/2014","07/28/2014","RIPERIAN,",2010
 "S024495","Statement of Div and Use","","06/26/2014","08/01/2014","RIPERIAN,",1955
 "S024509","Statement of Div and Use","","07/01/2014","08/06/2014","RIPERIAN,",1990
-"S024511","Statement of Div and Use","","07/01/2014","08/07/2014","RIPERIAN,",1955
-"S024512","Statement of Div and Use","","07/01/2014","08/08/2014","RIPERIAN,",1955
-"S024513","Statement of Div and Use","","07/01/2014","08/08/2014","RIPERIAN,",1955
-"S024526","Statement of Div and Use","","06/30/2014","08/11/2014","RIPERIAN,",1964
-"S024552","Statement of Div and Use","","06/30/2014","08/21/2014","RIPERIAN,",1986
-"S024597","Statement of Div and Use","","07/03/2014","09/05/2014","RIPERIAN,",2013
-"S024621","Statement of Div and Use","","06/30/2014","09/09/2014","RIPERIAN,",1969
-"S024681","Statement of Div and Use","","09/29/2014","10/28/2014","RIPERIAN,",2012
-"S024682","Statement of Div and Use","","09/29/2014","10/28/2014","RIPERIAN,",2012
-"S024683","Statement of Div and Use","","10/02/2014","10/29/2014","RIPERIAN,PRE1914,",1901
-"S024728","Statement of Div and Use","","01/29/2015","02/05/2015","RIPERIAN,",1993
 "S024769","Statement of Div and Use","","02/24/2015","04/08/2015","RIPERIAN,",1975
-"S024770","Statement of Div and Use","","02/24/2015","04/08/2015","RIPERIAN,",1980
-"S024858","Statement of Div and Use","","05/15/2015","05/22/2015","RIPERIAN,",1990
-"S025029","Statement of Div and Use","","06/30/2015","07/21/2015","RIPERIAN,",2014
-"S025042","Statement of Div and Use","","06/29/2015","07/23/2015","RIPERIAN,",2014
 "S025066","Statement of Div and Use","","07/14/2015","07/28/2015","RIPERIAN,",2014
-"S025197","Statement of Div and Use","","08/28/2015","09/11/2015","RIPERIAN,OTHER,",1946
-"S025227","Statement of Div and Use","","09/22/2015","10/09/2015","RIPERIAN,",1947
-"S025228","Statement of Div and Use","","09/30/2015","10/12/2015","RIPERIAN,",1987
-"S025235","Statement of Div and Use","","10/12/2015","10/16/2015","OTHER,",1981
-"S025236","Statement of Div and Use","","10/09/2015","10/19/2015","RIPERIAN,",1981
-"S025237","Statement of Div and Use","","10/04/2015","10/21/2015","RIPERIAN,",1960
-"S025242","Statement of Div and Use","","10/16/2015","10/26/2015","RIPERIAN,",1976
-"S025243","Statement of Div and Use","","10/16/2015","10/28/2015","RIPERIAN,",1860
-"S025250","Statement of Div and Use","","10/13/2015","10/29/2015","RIPERIAN,",2008
-"S025251","Statement of Div and Use","","10/22/2015","10/30/2015","RIPERIAN,OTHER,",1964
 "S025263","Statement of Div and Use","","10/16/2015","11/12/2015","RIPERIAN,",1976
-"S025270","Statement of Div and Use","","11/02/2015","11/23/2015","RIPERIAN,",NA
-"S025300","Statement of Div and Use","","12/11/2015","01/04/2016","RIPERIAN,",1997
-"S025301","Statement of Div and Use","","12/21/2015","01/04/2016","RIPERIAN,OTHER,",2015
-"S025305","Statement of Div and Use","","12/21/2015","01/06/2016","RIPERIAN,",2000
-"S025343","Statement of Div and Use","","01/15/2016","01/22/2016","RIPERIAN,",2010
-"S025344","Statement of Div and Use","","01/15/2016","01/22/2016","RIPERIAN,",2010
 "S025345","Statement of Div and Use","","01/15/2016","01/22/2016","RIPERIAN,",2010
-"S025346","Statement of Div and Use","","01/15/2016","01/22/2016","RIPERIAN,",2010
-"S025354","Statement of Div and Use","","01/27/2016","02/04/2016","RIPERIAN,",2012
-"S025398","Statement of Div and Use","","03/07/2016","03/30/2016","RIPERIAN,",1980
 "S025401","Statement of Div and Use","","03/03/2016","04/01/2016","RIPERIAN,PRE1914,",1860
-"S025471","Statement of Div and Use","","04/27/2016","05/26/2016","RIPERIAN,",2015
-"S025479","Statement of Div and Use","","05/20/2016","06/06/2016","RIPERIAN,",1940
-"S025481","Statement of Div and Use","","05/20/2016","06/06/2016","RIPERIAN,",1986
-"S025482","Statement of Div and Use","","05/20/2016","06/06/2016","RIPERIAN,",1986
-"S025484","Statement of Div and Use","","05/20/2016","06/07/2016","RIPERIAN,",1940
-"S025485","Statement of Div and Use","","05/20/2016","06/07/2016","RIPERIAN,",1940
 "S025486","Statement of Div and Use","","05/20/2016","06/08/2016","RIPERIAN,",1940
 "S025487","Statement of Div and Use","","05/20/2016","06/08/2016","RIPERIAN,",1940
-"S025488","Statement of Div and Use","","05/20/2016","06/08/2016","RIPERIAN,",1940
-"S025489","Statement of Div and Use","","05/20/2016","06/08/2016","RIPERIAN,",1986
-"S025553","Statement of Div and Use","","06/22/2016","07/26/2016","RIPERIAN,",1960
-"S025576","Statement of Div and Use","","06/23/2016","08/01/2016","RIPERIAN,",1995
-"S025590","Statement of Div and Use","","07/08/2016","08/04/2016","RIPERIAN,",1978
-"S025594","Statement of Div and Use","","06/29/2016","08/05/2016","RIPERIAN,",1900
-"S025611","Statement of Div and Use","","07/01/2016","08/11/2016","RIPERIAN,",1950
-"S025675","Statement of Div and Use","","08/02/2016","08/18/2016","RIPERIAN,",2015
-"S025689","Statement of Div and Use","","08/02/2016","08/19/2016","RIPERIAN,",1930
-"S025690","Statement of Div and Use","","06/29/2016","08/19/2016","RIPERIAN,",1900
-"S025698","Statement of Div and Use","","07/21/2016","08/19/2016","RIPERIAN,",1977
-"S025702","Statement of Div and Use","","08/03/2016","08/22/2016","RIPERIAN,",1960
 "S025703","Statement of Div and Use","","07/18/2016","08/22/2016","RIPERIAN,",1973
 "S025714","Statement of Div and Use","","08/18/2016","08/23/2016","RIPERIAN,",1976
-"S025769","Statement of Div and Use","","07/29/2016","09/01/2016","RIPERIAN,",1921
-"S025784","Statement of Div and Use","","07/22/2016","09/02/2016","PRE1914,",1914
 "S025792","Statement of Div and Use","","07/22/2016","09/06/2016","RIPERIAN,",1980
-"S025816","Statement of Div and Use","","07/28/2016","09/29/2016","RIPERIAN,",1965
-"S025818","Statement of Div and Use","","08/19/2016","10/07/2016","RIPERIAN,",1942
-"S025827","Statement of Div and Use","","08/17/2016","10/10/2016","RIPERIAN,",2002
-"S025833","Statement of Div and Use","","07/22/2016","10/10/2016","RIPERIAN,",1967
-"S025834","Statement of Div and Use","","07/22/2016","10/10/2016","RIPERIAN,",1965
-"S025847","Statement of Div and Use","","09/26/2016","10/26/2016","RIPERIAN,",1947
-"S025883","Statement of Div and Use","","10/13/2016","11/02/2016","RIPERIAN,",1958
 "S025888","Statement of Div and Use","","09/16/2016","11/10/2016","RIPERIAN,",1992
-"S025889","Statement of Div and Use","","09/26/2016","11/10/2016","RIPERIAN,",1945
 "S025890","Statement of Div and Use","","09/26/2016","11/10/2016","RIPERIAN,",1945
-"S025891","Statement of Div and Use","","09/26/2016","11/10/2016","RIPERIAN,",1950
 "S025893","Statement of Div and Use","","09/26/2016","11/16/2016","RIPERIAN,",1970
-"S025957","Statement of Div and Use","","11/15/2016","12/29/2016","RIPERIAN,PRE1914,",1905
-"S026037","Statement of Div and Use","","02/02/2017","02/28/2017","RIPERIAN,",2016
 "S026053","Statement of Div and Use","","01/04/2017","03/02/2017","PENDING,",2014
-"S026054","Statement of Div and Use","","01/04/2017","03/02/2017","PENDING,",2014
-"S026091","Statement of Div and Use","","03/17/2017","04/25/2017","RIPERIAN,",2012
-"S026123","Statement of Div and Use","","03/27/2017","05/17/2017","RIPERIAN,",1955
-"S026214","Statement of Div and Use","","04/10/2017","06/15/2017","RIPERIAN,",1972
-"S026217","Statement of Div and Use","","05/08/2017","06/15/2017","RIPERIAN,",1929
-"S026284","Statement of Div and Use","","06/09/2017","07/10/2017","PENDING,",2000
-"S026314","Statement of Div and Use","","06/15/2017","07/12/2017","RIPERIAN,",1984
 "S026323","Statement of Div and Use","","06/16/2017","07/12/2017","RIPERIAN,",1986
 "S026464","Statement of Div and Use","","06/27/2017","07/24/2017","RIPERIAN,",2005
-"S026496","Statement of Div and Use","","06/27/2017","07/25/2017","OTHER,",2005
 "S026633","Statement of Div and Use","","06/27/2017","08/03/2017","RIPERIAN,",1954
-"S026639","Statement of Div and Use","","06/28/2017","08/03/2017","RIPERIAN,PRE1914,",1967
 "S026643","Statement of Div and Use","","06/30/2017","08/03/2017","RIPERIAN,",2008
-"S026644","Statement of Div and Use","","06/28/2017","08/03/2017","RIPERIAN,",1993
-"S026645","Statement of Div and Use","","06/30/2017","08/03/2017","RIPERIAN,",1998
-"S026652","Statement of Div and Use","","06/30/2017","08/03/2017","RIPERIAN,",1998
 "S026656","Statement of Div and Use","","06/30/2017","08/03/2017","RIPERIAN,",1998
-"S026678","Statement of Div and Use","","06/29/2017","08/07/2017","RIPERIAN,",2011
-"S026687","Statement of Div and Use","","06/29/2017","08/07/2017","RIPERIAN,",2014
 "S026690","Statement of Div and Use","","06/29/2017","08/07/2017","RIPERIAN,",2014
-"S026692","Statement of Div and Use","","06/29/2017","08/07/2017","RIPERIAN,",2014
-"S026695","Statement of Div and Use","","06/29/2017","08/07/2017","OTHER,",2016
-"S026735","Statement of Div and Use","","06/30/2017","08/08/2017","RIPERIAN,",2000
-"S026745","Statement of Div and Use","","06/30/2017","08/09/2017","OTHER,",1960
-"S026754","Statement of Div and Use","","06/30/2017","08/09/2017","OTHER,",1960
-"S026781","Statement of Div and Use","","06/30/2017","08/11/2017","RIPERIAN,",2000
 "S026792","Statement of Div and Use","","06/28/2017","08/11/2017","RIPERIAN,",1993
-"S026794","Statement of Div and Use","","06/28/2017","08/11/2017","RIPERIAN,",2016
-"S026797","Statement of Div and Use","","06/28/2017","08/11/2017","RIPERIAN,",1965
 "S026853","Statement of Div and Use","","06/30/2017","08/17/2017","RIPERIAN,",1976
-"S026879","Statement of Div and Use","","06/30/2017","08/18/2017","RIPERIAN,",1969
-"S026889","Statement of Div and Use","","06/30/2017","08/18/2017","RIPERIAN,",2005
-"S026903","Statement of Div and Use","","06/30/2017","08/21/2017","RIPERIAN,",1974
-"S026905","Statement of Div and Use","","06/30/2017","08/21/2017","RIPERIAN,",2016
-"S026919","Statement of Div and Use","","06/30/2017","08/22/2017","RIPERIAN,",1970
-"S026934","Statement of Div and Use","","06/30/2017","08/22/2017","RIPERIAN,",2012
-"S026992","Statement of Div and Use","","06/30/2017","08/28/2017","RIPERIAN,",2014
-"S027032","Statement of Div and Use","","06/30/2017","08/29/2017","RIPERIAN,",1984
-"S027035","Statement of Div and Use","","06/30/2017","08/29/2017","RIPERIAN,",1986
 "S027081","Statement of Div and Use","","06/29/2017","08/31/2017","RIPERIAN,",1984
-"S027088","Statement of Div and Use","","06/29/2017","08/31/2017","RIPERIAN,",2003
-"S027089","Statement of Div and Use","","06/29/2017","08/31/2017","RIPERIAN,",1984
-"S027090","Statement of Div and Use","","06/29/2017","08/31/2017","RIPERIAN,",1987
 "S027091","Statement of Div and Use","","06/29/2017","08/31/2017","RIPERIAN,",1999
-"S027137","Statement of Div and Use","","07/03/2017","09/05/2017","RIPERIAN,",2015
-"S027159","Statement of Div and Use","","06/30/2017","09/07/2017","RIPERIAN,",1970
-"S027190","Statement of Div and Use","","07/05/2017","09/08/2017","RIPERIAN,",2015
 "S027251","Statement of Div and Use","","07/03/2017","09/15/2017","RIPERIAN,PRE1914,",1910
-"S027297","Statement of Div and Use","","07/14/2017","09/19/2017","RIPERIAN,",1960
 "S027304","Statement of Div and Use","","06/30/2017","09/22/2017","RIPERIAN,",2001
-"S027305","Statement of Div and Use","","06/30/2017","09/22/2017","RIPERIAN,",1992
-"S027326","Statement of Div and Use","","09/01/2017","09/22/2017","RIPERIAN,",1988
-"S027330","Statement of Div and Use","","07/20/2017","09/25/2017","RIPERIAN,",1995
-"S027331","Statement of Div and Use","","07/20/2017","09/25/2017","RIPERIAN,",1987
-"S027371","Statement of Div and Use","","06/30/2017","09/28/2017","RIPERIAN,",2016
-"S027372","Statement of Div and Use","","06/30/2017","09/28/2017","RIPERIAN,",2001
-"S027379","Statement of Div and Use","","07/03/2017","10/02/2017","OTHER,",1990
-"S027382","Statement of Div and Use","","07/03/2017","10/02/2017","RIPERIAN,",2012
-"S027385","Statement of Div and Use","","06/30/2017","10/02/2017","RIPERIAN,",1990
-"S027405","Statement of Div and Use","","06/30/2017","10/06/2017","OTHER,",NA
-"S027413","Statement of Div and Use","","09/29/2017","10/10/2017","RIPERIAN,",2015
-"S027435","Statement of Div and Use","","08/14/2017","10/19/2017","RIPERIAN,",1972
-"S027438","Statement of Div and Use","","09/18/2017","10/19/2017","RIPERIAN,",2013
 "S027456","Statement of Div and Use","","10/23/2017","10/26/2017","RIPERIAN,",2000
 "S027491","Statement of Div and Use","","10/29/2017","11/01/2017","RIPERIAN,",1972
-"S027500","Statement of Div and Use","","09/17/2017","11/02/2017","RIPERIAN,",NA
-"S027502","Statement of Div and Use","","07/10/2017","11/02/2017","RIPERIAN,",2009
-"S027519","Statement of Div and Use","","10/31/2017","11/08/2017","RIPERIAN,",1972
 "S027572","Statement of Div and Use","","10/31/2017","11/17/2017","RIPERIAN,",1970
 "S027597","Statement of Div and Use","","10/30/2017","11/28/2017","RIPERIAN,",2015
-"S027620","Statement of Div and Use","","12/07/2017","12/27/2017","RIPERIAN,PENDING,",1993
-"S027644","Statement of Div and Use","","11/13/2017","04/06/2018","RIPERIAN,",1971
-"S027648","Statement of Div and Use","","12/11/2017","04/11/2018","RIPERIAN,PRE1914,",1876
 "S027650","Statement of Div and Use","","10/30/2017","04/23/2018","RIPERIAN,",2010
-"S027654","Statement of Div and Use","","10/31/2017","04/23/2018","RIPERIAN,",2016
-"S027664","Statement of Div and Use","","10/30/2017","04/25/2018","RIPERIAN,",1970
 "S027747","Statement of Div and Use","","03/06/2018","06/15/2018","RIPERIAN,",2011
 "S027768","Statement of Div and Use","","05/21/2018","06/26/2018","RIPERIAN,",2015
-"S027791","Statement of Div and Use","","06/15/2018","07/05/2018","PENDING,",1913
-"S027799","Statement of Div and Use","","02/25/2018","07/16/2018","RIPERIAN,PRE1914,",1908
-"S027851","Statement of Div and Use","","06/29/2018","07/17/2018","RIPERIAN,",2017
-"S027865","Statement of Div and Use","","12/22/2017","07/18/2018","RIPERIAN,",NA
-"S027883","Statement of Div and Use","","07/18/2018","08/23/2018","RIPERIAN,",1997
-"S027894","Statement of Div and Use","","05/10/2018","08/27/2018","RIPERIAN,PRE1914,",1890
-"S027934","Statement of Div and Use","","08/31/2018","09/18/2018","RIPERIAN,",1985
 "S027965","Statement of Div and Use","","07/01/2018","10/01/2018","RIPERIAN,",2017
-"S027969","Statement of Div and Use","","06/27/2018","10/03/2018","RIPERIAN,PRE1914,",1950
 "S027997","Statement of Div and Use","","10/08/2018","10/16/2018","RIPERIAN,",1970
 "S028034","Statement of Div and Use","","11/26/2018","12/04/2018","RIPERIAN,",1996
 "S028035","Statement of Div and Use","","11/26/2018","12/04/2018","RIPERIAN,PRE1914,",2017
-"S028118","Statement of Div and Use","","04/09/2019","04/18/2019","RIPERIAN,",1995
-"S028233","Statement of Div and Use","","08/05/2019","09/04/2019","RIPERIAN,",1989
 "S028257","Statement of Div and Use","","09/27/2019","10/09/2019","RIPERIAN,",1970
-"S028258","Statement of Div and Use","","09/27/2019","10/09/2019","RIPERIAN,",1970
-"S028280","Statement of Div and Use","","11/01/2019","12/13/2019","RIPERIAN,",2018
-"S028289","Statement of Div and Use","","12/06/2019","12/16/2019","RIPERIAN,",2018
-"S028299","Statement of Div and Use","","10/11/2019","12/26/2019","PRE1914,",1897
-"S028307","Statement of Div and Use","","11/05/2019","12/26/2019","RIPERIAN,",2013
-"S028309","Statement of Div and Use","","12/10/2019","12/26/2019","RIPERIAN,",1985
-"S028323","Statement of Div and Use","","12/18/2019","02/10/2020","RIPERIAN,",NA
-"S028355","Statement of Div and Use","","02/19/2020","03/11/2020","PRE1914,",1897
 "S028364","Statement of Div and Use","","04/14/2020","09/15/2020","RIPERIAN,",2014
-"S028394","Statement of Div and Use","","06/10/2020","09/23/2020","RIPERIAN,",2018
