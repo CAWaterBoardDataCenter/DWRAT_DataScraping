@@ -1,7 +1,7 @@
 # Compare the data in an XLSX module to the results of its script counterpart
 
 
-# In the "Module and Script Comparisons" folder, there is a separate folder for each module
+# In the "ModuleAndScriptComparisons" folder, there is a separate folder for each module
 # Inside each folder, there should be at least three files:
 #   (1) The script output file (Something ending with "_Scripted_[Date].xlsx")
 #   (2) The input CSV file that helped produce that script output file
@@ -47,7 +47,12 @@ mainProcedure <- function () {
     
     # Next, read in the module and the script output file
     # (Read in all columns as text strings)
-    modXLSX <- suppressMessages(read_xlsx(paste0("Module and Script Comparisons/", 
+    modXLSX <- list.files(paste0("ModuleAndScriptComparisons/", comparisonList[i]), full.names = TRUE) %>%
+      str_subset("\\.xlsx$") %>% str_subset("Scripted", negate = TRUE) %>%
+      read_xlsx(col_types = "text", sheet = getSheetNum(comparisonList[i]))
+      
+      
+      suppressMessages(read_xlsx(paste0("Module and Script Comparisons/", 
                                                  comparisonList[i], "/", 
                                 comparisonList[i], ".xlsx"), 
                          col_types = "text", col_names = FALSE, 
@@ -92,7 +97,7 @@ getUserChoice <- function () {
   
   
   # First, get a list of modules in the "Module and Script Comparisons" folder
-  optionVec <- list.dirs("Module and Script Comparisons/", recursive = FALSE, full.names = FALSE)
+  optionVec <- list.dirs("ModuleAndScriptComparisons/", recursive = FALSE, full.names = FALSE)
   
   
   # Using the pre-installed utils package, create a Windows dialog box
@@ -123,7 +128,7 @@ dirCheck <- function (folderName) {
   
   
   # Get a list of files in the folder
-  fileList <- list.files(paste0("Module and Script Comparisons/", folderName))
+  fileList <- list.files(paste0("ModuleAndScriptComparisons/", folderName))
   
   
   # Verify that 'fileList' has a length of at least 3
@@ -156,6 +161,21 @@ dirCheck <- function (folderName) {
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+getSheetNum <- function (modName) {
+  
+  # The Excel module files have multiple sheets
+  # Depending on the module, the actual module sheet location may vary
+  
+  
+  if (modName %in% c("Beneficial_Use_Return_Flow")) {
+    return()
+  }
+  
+  
   
 }
 

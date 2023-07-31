@@ -79,6 +79,28 @@ Flat_File_PODs <- read.csv(url("http://intapps.waterboards.ca.gov/downloadFile/f
                     "WATER_RIGHT_TYPE", "WATERSHED", "WR_WATER_RIGHT_ID")
   
   Flat_File_eWRIMS <- Flat_File_eWRIMS[, cols_to_keep, drop = FALSE]
+  
+  #Replace Meridian Names with Meridian Short Names----
+  Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
+    mutate(MERIDIAN = case_when(
+      MERIDIAN == " San Bernardino" ~"S",
+      MERIDIAN == "Mount Diablo" ~"M",
+      MERIDIAN == "Humboldt" ~"H",
+      TRUE ~ MERIDIAN
+    ))
+      
+  #Add the FFMTRS field----
+    #This field serves as the Flat File Mountain Township Range Section field
+    #This field concatenates the Meridian, Township Number, Township Direction, Range Number, Range Direction, and Section Number fields
+    #This field is used as a basis of comparison with the MTRS field in the PLSS_Sections_Fill shapefile
+  
+  Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, Flat_File_eWRIMS$TOWNSHIP_NUMBER, 
+                                   Flat_File_eWRIMS$TOWNSHIP_DIRECTION, Flat_File_eWRIMS$RANGE_NUMBER, Flat_File_eWRIMS$RANGE_DIRECTION,
+                                   Flat_File_eWRIMS$SECTION_NUMBER)
+  
+  #Convert Coordinate Fields From Character Format to Numeric Format----
+  Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
+    mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
 write.csv(Flat_File_eWRIMS,"OutputData\\Flat_File_eWRIMS_2023-06-16.csv", row.names = FALSE)

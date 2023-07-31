@@ -296,4 +296,4 @@ getEWRIMS <- function () {
 
 #### Script Execution ####
 
-# mainProcedure()
+mainProcedure()
