@@ -33,7 +33,7 @@ mainProcedure <- function () {
   # Column J: AnnualTotalDiversion
   # Column K: NumberOfOccurencesWithinSingleReport
   # Column L: OccurencesAcrossReports
-
+  
   
   # Start with the first column "TotalMonthlyDiverted"
   

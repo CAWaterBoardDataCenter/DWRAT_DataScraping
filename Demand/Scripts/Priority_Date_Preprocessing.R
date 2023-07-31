@@ -64,7 +64,7 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # Remove all data from before 2014 because this is when the data structure changes in the system
 water_use_report_Date <- water_use_report_Combined %>%
   filter(YEAR >= 2014)
-
+  
 
 # Output the data to a CSV file
 write.csv(water_use_report_Date,"InputData/water_use_report_DATE.csv", row.names = FALSE)
@@ -99,7 +99,7 @@ ewrims_flat_file_use_season_Combined_USE_STATUS <- ewrims_flat_file_use_season_C
 # Perform additional filters for collection season status
 ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_USE_STATUS %>%
   filter(COLLECTION_SEASON_STATUS %in% c("Migrated from old WRIMS data", "Reduced by order",
-                                         "Reduced when licensed", "Requested when filed", ""))
+                                           "Reduced when licensed", "Requested when filed", ""))
 
 
 ################################################################# DIRECT_DIV_SEASON_STATUS ########################################################################
@@ -109,7 +109,7 @@ ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_fil
 # This time, check the three different status columns
 ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS %>%
   filter(DIRECT_DIV_SEASON_STATUS %in% c("Migrated from old WRIMS data", "Reduced by order",
-                                         "Reduced when licensed", "Requested when filed", ""))
+                                           "Reduced when licensed", "Requested when filed", ""))
 
 # Write the output to a file
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
@@ -209,7 +209,7 @@ Duplicate_Values_Months_and_Years <- Duplicate_Values_Months_and_Years %>%
 # Remove USE from DIVERSION_TYPE
 Duplicate_Values_Months_and_Years_FINAL <- Duplicate_Values_Months_and_Years %>%
   filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE"))
-
+  
 
 # Output a CSV
 write.csv(Duplicate_Values_Months_and_Years_FINAL,"InputData/Duplicate_Values_Months_and_Years_FINAL.csv", row.names = FALSE)
@@ -318,70 +318,4 @@ remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
        Duplicate_Reports_Same_Owner_Multiple_WR_FINAL, Duplicate_Values_Months_and_Years,
        Duplicate_Values_Months_and_Years_FINAL, Priority_Date, Priority_Date_FINAL, 
        Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,Statistics_FINAL)
-
-
-###################################################################Missing RMS Reports############################################################
-
-# Prepare the input file for the missing RMS reports module
-
-
-# Read in a flat file CSV
-Missing_RMS_Reports <- read.csv("InputData/water_use_report_DATE.csv")
-
-
-# Priority Date script runs here
-
-
-# Read in from Priority date calculator  
-Priority_Date <- read.csv("Input_Files/Priority_Date.csv")
-#### Matching column names to merge
-colnames(water_use_report)[2] <- "APPLICATION_NUMBER"
-####Merge with Application list to reduce data
-Missing_RMS_Reports_Priority_Date_Combined <- merge(Priority_Date,Missing_RMS_Reports,by="APPLICATION_NUMBER")
-####Keep necessary columns
-Missing_RMS_Reports <- Missing_RMS_Reports_Priority_Date_Combined[ , c("APPLICATION_NUMBER", "WATER_RIGHT_ID","YEAR","MONTH","AMOUNT","DIVERSION_TYPE","ASSIGNED_PRIORITY_DATE")]
-####Keep necessary columns
-Missing_RMS_Reports_FINAL <-Missing_RMS_Reports [Missing_RMS_Reports $DIVERSION_TYPE == "DIRECT" | 
-                                                   Missing_RMS_Reports $DIVERSION_TYPE== "STORAGE"
-                                                 , ] 
-####Output to file structure
-write.csv(Missing_RMS_Reports_FINAL,"Output\\Missing_RMS_Reports_FINAL.csv", row.names = FALSE)
-######################################## QAQC Working Files###################################
-####################Application Numbers############################
-Application_Number <- read_xlsx("Input_Files/APPID_MAX_MAF.xlsx") #revised on 2/3/2023 by Payman Alemi to account for xlsx extension
-#### Matching column names to merge
-colnames(Application_Number )[1] <- "APPLICATION_NUMBER" #revised column 2 to 1 on 2/3/2023 by Payman Alemi
-####Keep necessary columns
-Application_Number <- Application_Number[ , c("APPLICATION_NUMBER", "FREQUENCY")]
-####Keep necessary columns
-ewrims_flat_file  <- ewrims_flat_file [ , c("APPLICATION_NUMBER", "WATER_RIGHT_TYPE","WATER_RIGHT_STATUS","PRIMARY_OWNER_ENTITY_TYPE","APPLICATION_PRIMARY_OWNER","SOURCE_NAME","TRIB_DESC","WATERSHED")]
-####Merge with Application list to reduce data
-ewrims_flat_file_one <- merge(Application_Number,ewrims_flat_file,by="APPLICATION_NUMBER", all=TRUE)
-####Merge with Application list to reduce data
-ewrims_flat_file_two <- merge(Application_Number,ewrims_flat_file_one,by="APPLICATION_NUMBER")
-######Remove duplicate application numbers in the flat file. 
-ewrims_flat_file_Three<- ewrims_flat_file_two[!duplicated(ewrims_flat_file_two$APPLICATION_NUMBER), ]
-####Keep necessary columns
-ewrims_flat_file_Working_File <- ewrims_flat_file_Three[ , c("APPLICATION_NUMBER", "WATER_RIGHT_TYPE","WATER_RIGHT_STATUS","PRIMARY_OWNER_ENTITY_TYPE","APPLICATION_PRIMARY_OWNER","SOURCE_NAME","TRIB_DESC","WATERSHED")]
-####Output to file structure
-write.csv(ewrims_flat_file_Working_File,"Output\\ewrims_flat_file_Working_File.csv", row.names = FALSE)
-####################################################Contact Information#################################################
-#### Download ewrims flat file Party for contact information
-ewrims_flat_file_party <- read.csv(url("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_party.csv"))
-####Keep necessary columns
-ewrims_flat_file_party <- ewrims_flat_file_party[ , c("APPLICATION_ID","CONTACT_INFORMATION_PHONE", "CONTACT_INFORMATION_EMAIL")]
-####Remove Duplicates 
-ewrims_flat_file_party_APPLICATION_ID <- ewrims_flat_file_party [!duplicated(ewrims_flat_file_party $APPLICATION_ID), ]
-#########Subset blank phone numbers 
-Phone <- ewrims_flat_file_party_APPLICATION_ID [ which(ewrims_flat_file_party_APPLICATION_ID$CONTACT_INFORMATION_PHONE =="" ), ]
-#########Subset blank emails 
-Email <- ewrims_flat_file_party_APPLICATION_ID [ which(ewrims_flat_file_party_APPLICATION_ID$CONTACT_INFORMATION_EMAIL ==""), ]
-#########Subset 999-999-9999 from Phone numbers
-Nine <- ewrims_flat_file_party_APPLICATION_ID [ which(ewrims_flat_file_party_APPLICATION_ID$CONTACT_INFORMATION_PHONE =="999-999-9999" ), ]
-#########Combine the three different dataframes
-ewrims_flat_file_party_Final <- rbind(Phone, Nine, Email)
-#########Output to files in folder structure
-write.csv(ewrims_flat_file_party_Final,"Output\\Missing_Contact_Information.csv", row.names = FALSE)
-
-
 
