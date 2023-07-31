@@ -14,5 +14,14 @@ Supply/InputData/*.gag
 .Rproj.user
 
 #DEMAND
-#R Demand files and folders
+# R Demand files and folders
+Demand/.Rproj.user
+Demand/.Rhistory
+Demand/.RData
+Demand/.Ruserdata
+Demand/Scripts/.RHistory
+Demand/Experimental/.RHistory
 
+# ignoring Demand data files
+Demand/RawData/
+Demand/InputData/
