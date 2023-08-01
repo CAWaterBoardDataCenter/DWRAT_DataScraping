@@ -9,7 +9,7 @@ title: "DWRAT DataScraping GitHub Repository README"
 author: "Payman Alemi"
 date: "2023-08-01"
 output:
-  pdf_document:
+  html_document:
     latex_engine: miktex
     pandoc_args: [
       "--variable=mainfont:Arial",
