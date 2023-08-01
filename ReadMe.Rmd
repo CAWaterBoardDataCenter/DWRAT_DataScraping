@@ -76,7 +76,7 @@ This folder will contain the files necessary for running the URR and LRR
 DWRATs, each of which will have a separate folder.
 
 -   ***URR DWRAT***
-    -   *Input**:*** This folder contains the input files for the URR
+    -   *Input:* This folder contains the input files for the URR
         DWRAT run.
     -   *Output:* This folder contains the output files for the URR
         DWRAT run.
