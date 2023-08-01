@@ -17,7 +17,7 @@ the repository's structural integrity.
 **Supply**\
 This folder contains the files necessary for automating the Santa Rosa
 Plains (SRP) GS Flow and PRMS (Precipitation-Runoff Modeling System)
-hydrology models. As of `r Sys.Date()` this folder has 5 subfolders. The
+hydrology models. As of 2023-08-01 this folder has 5 subfolders. The
 pre-processing and post-processing of the *PRMS* model has been nearly
 entirely automated. By contrast, much of the *SRP GS Flow* model still
 needs to be automated.
@@ -44,7 +44,7 @@ needs to be automated.
 **Demand**\
 This folder contains the files necessary for converting the raw diverter
 demand data from eWRIMS into a processed, QAQC'd demand dataset ready
-for importation into DWRAT. As of `r Sys.Date()`, this folder has 4
+for importation into DWRAT. As of 2023-08-01, this folder has 4
 subfolders, which just contain placeholder scripts--the actual scripts
 have yet to be written.
 
