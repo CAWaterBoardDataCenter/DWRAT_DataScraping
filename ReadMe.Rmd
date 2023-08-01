@@ -3,9 +3,7 @@
 title: "DWRAT DataScraping GitHub Repository README"
 author: "Payman Alemi"
 date: "2023-08-01"
-output:
-  html_document:
-    keep_md: true
+output: rmarkdown::github_document
 ---
 
 I have set up 3 folders for this project, each of which has several subfolders. 
