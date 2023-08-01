@@ -1,0 +1,185 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{graphicx}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={DWRAT DataScraping GitHub Repository README},
+  pdfauthor={Payman Alemi},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{DWRAT DataScraping GitHub Repository README}
+\author{Payman Alemi}
+\date{2023-08-01}
+
+\begin{document}
+\maketitle
+
+\#README BEGINS HERE
+
+I have set up 3 folders for this project, each of which has several
+subfolders. We have intentionally added some of the subfolder paths to
+the .gitignore file for this repository because they contain massive
+files that GitHub cannot handle. While the files themselves are ignored,
+the folders are referenced by Git to maintain the repository's
+structural integrity.
+
+\textbf{Supply}\\
+This folder contains the files necessary for automating the Santa Rosa
+Plains (SRP) GS Flow and PRMS (Precipitation-Runoff Modeling System)
+hydrology models. As of 2023-08-01 this folder has 5 subfolders. The
+pre-processing and post-processing of the \emph{PRMS} model has been
+nearly entirely automated. By contrast, much of the \emph{SRP GS Flow}
+model still needs to be automated.
+
+\begin{itemize}
+\item
+  \textbf{Documentation:} This folder contains relevant emails, PDFs,
+  Word Documents and other files containing instructions or information
+  about the project.
+\item
+  \textbf{InputData:} This folder contains the datasets used for loops
+  and functions, e.g.~station lists. Maintaining these datasets as CSVs
+  is easier than creating then as dataframes. \emph{Gag files in this
+  folder are ignored by the .gitignore file.}
+\item
+  \textbf{ProcessedData:} This folder contains datasets that have been
+  manipulated in some way by R Scripts, spreadsheets, etc. \emph{Files
+  in this folder are ignored by the .gitignore file.}
+\item
+  \textbf{Scripts:} This folder contains all scripts associated with
+  this project
+\item
+  \textbf{WebData:} This folder contains unaltered datasets scraped or
+  downloaded from the Internet, e.g.~weather station data. \emph{Files
+  in this folder are ignored by the .gitignore file.}
+\end{itemize}
+
+\textbf{Demand}\\
+This folder contains the files necessary for converting the raw diverter
+demand data from eWRIMS into a processed, QAQC'd demand dataset ready
+for importation into DWRAT. As of 2023-08-01, this folder has 4
+subfolders, which just contain placeholder scripts--the actual scripts
+have yet to be written.
+
+\begin{itemize}
+\item
+  \emph{Documentation}: This folder will contain relevant emails, PDFs,
+  Word Documents and other files containing instructions or information
+  about the project.
+\item
+  \emph{InputData:} This folder just contains the output CSV from the
+  GIS pre-processing steps, which serves as the input file for the R
+  pre-processing steps and ultimately the demand module scripts.
+\item
+  \emph{Intermediate Data:} This folder contains datasets that have been
+  modified from the RawData folder. These datasets are considered
+  intermediate because they will be used as inputs for other R Scripts.
+  \emph{Files in this folder are ignored by the .gitignore file.}
+\item
+  \emph{Module and Script Comparison}: This folder compares the outputs
+  of the Excel Demand Data Modules and the outputs of the corresponding
+  R scripts. Each Excel module has a corresponding R Script.
+\item
+  \emph{OutputData:} This folder will contain the final demand dataset
+  CSVs that are ready for importation to the Upper Russian River (URR)
+  and Lower Russian River (LRR) Drought Water Rights Allocation (DWRAT)
+  models.
+\item
+  \emph{RawData:} This folder contains the downloaded flat files from
+  eWRIMS.\emph{Files in this folder are ignored by the .gitignore file.}
+\item
+  \emph{Scripts:} This folder will contain the scripts that convert the
+  raw diverter demand datasets into the final datasets to be used by the
+  DWRAT models.
+\end{itemize}
+
+\textbf{Allocation}\\
+This folder will contain the files necessary for running the URR and LRR
+DWRATs, each of which will have a separate folder.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\emph{URR DWRAT}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{Input\textbf{:}} This folder contains the input files for the
+    URR DWRAT run.
+  \item
+    \emph{Output:} This folder contains the output files for the URR
+    DWRAT run.
+  \end{itemize}
+\item
+  \textbf{\emph{LRR DWRAT}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{Input:} This folder contains the input files for the LRR DWRAT
+    run.
+  \item
+    \emph{Output:} This folder contains the output files for the URR
+    DWRAT run.
+  \end{itemize}
+\end{itemize}
+
+\end{document}
