@@ -2,7 +2,7 @@
 
 
 # Data from the previous Excel modules will be compiled here
-# The end result will be a spreadsheet with two worksheets ("DiversionData" and "MasterDemandTable)
+# The end result will be a spreadsheet with two worksheets ("DiversionData" and "MasterDemandTable")
 
 
 #### Dependencies ####
@@ -150,7 +150,7 @@ mainProcedure <- function () {
   
   # The basis of the table will be "ewrims_flat_file_Working_File.csv"
   # (In the master table, "PRIMARY_OWNER_ENTITY_TYPE" is called "PRIMARY_OWNER_TYPE")
-  ewrimsDF <- read.csv("InputData/ewrims_flat_file_Working_File.csv") %>%
+  ewrimsDF <- read.csv("IntermediateData/ewrims_flat_file_Working_File.csv") %>%
     rename(PRIMARY_OWNER_TYPE = PRIMARY_OWNER_ENTITY_TYPE)
   
   

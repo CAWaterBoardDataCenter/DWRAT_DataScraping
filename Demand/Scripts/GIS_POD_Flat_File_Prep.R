@@ -29,8 +29,8 @@ read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.x
 
 
 # Save the Water Rights Uses and Seasons flat file as well
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv",
-              "RawData/ewrims_flat_file_use_season.csv", mode = "wb", quiet = TRUE)
+read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+  write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
