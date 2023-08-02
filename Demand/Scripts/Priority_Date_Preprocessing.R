@@ -1,19 +1,8 @@
 # Run the scripts one chunk at a time to insure that everything is working correctly. When you become more familiar with the code you can run in larger sections. 
 #Install if you do not have in your current packages or are not up to date.----
 # install.packages("tidyverse")
-# install.packages("readxl")
-# install.packages("geosphere")
-# install.packages("stringi")
-# install.packages("stringr")
-# install.packages("pracma")
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
-library(readxl)
-library(geosphere)
-library(stringi)
-library(stringr)
-library(pracma) #required for strcmpi function
-
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################
@@ -39,7 +28,7 @@ ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by
                                         relationship = "many-to-many")
 
 # Output 'ewrims_flat_file_Combined' to a folder
-write.csv(ewrims_flat_file_Combined,"InputData/ewrims_flat_file_WITH_FILTERS.csv", row.names = FALSE)
+write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILTERS.csv", row.names = FALSE)
 
 
 ######################################################################## Break ####################################################################################
@@ -67,7 +56,7 @@ water_use_report_Date <- water_use_report_Combined %>%
   
 
 # Output the data to a CSV file
-write.csv(water_use_report_Date,"InputData/water_use_report_DATE.csv", row.names = FALSE)
+write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 
 
 # Remove variables from the environment that will no longer be used (free up memory)
@@ -75,8 +64,8 @@ remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, w
 
 ######################################################################## Break ####################################################################################
 
-# Read the POD flat file next
-ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_pod.csv")
+# Read the use season flat file next
+ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv")
 
 
 # Perform another inner join
@@ -98,7 +87,12 @@ ewrims_flat_file_use_season_Combined_USE_STATUS <- ewrims_flat_file_use_season_C
 
 # Perform additional filters for collection season status
 ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_USE_STATUS %>%
-  filter(COLLECTION_SEASON_STATUS %in% c("Migrated from old WRIMS data", "Reduced by order",
+  filter(COLLECTION_SEASON_STATUS_1 %in% c("Migrated from old WRIMS data", "Reduced by order",
+                                           "Reduced when licensed", "Requested when filed", "") |
+           COLLECTION_SEASON_STATUS_2 %in% c("Migrated from old WRIMS data", "Reduced by order",
+                                           "Reduced when licensed", "Requested when filed", "") |
+           COLLECTION_SEASON_STATUS_3
+         %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", ""))
 
 
@@ -108,12 +102,16 @@ ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_fil
 # Filter 'ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS' further
 # This time, check the three different status columns
 ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS %>%
-  filter(DIRECT_DIV_SEASON_STATUS %in% c("Migrated from old WRIMS data", "Reduced by order",
+  filter(DIRECT_DIV_SEASON_STATUS_1 %in% c("Migrated from old WRIMS data", "Reduced by order",
+                                           "Reduced when licensed", "Requested when filed", "") |
+           DIRECT_DIV_SEASON_STATUS_2 %in% c("Migrated from old WRIMS data", "Reduced by order",
+                                             "Reduced when licensed", "Requested when filed", "") |
+         DIRECT_DIV_SEASON_STATUS_3 %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", ""))
 
 # Write the output to a file
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
-          "InputData/ewrims_flat_file_use_season_WITH_FILTERS.csv", row.names = FALSE)
+          "IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv", row.names = FALSE)
 
 
 # Remove unnecessary variables again to save memory
@@ -128,7 +126,7 @@ remove(ewrims_flat_file, ewrims_flat_file_use_season, ewrims_flat_file_use_seaso
 
 
 # Read back in the filtered ewrims flat file
-Duplicate_Reports_POD <- read.csv("InputData/ewrims_flat_file_WITH_FILTERS.csv")
+Duplicate_Reports_POD <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
 
 
 # Select a subset of these columns
@@ -139,7 +137,7 @@ Duplicate_Reports_POD_FINAL_List <- Duplicate_Reports_POD %>%
 
 
 # Write the shortened variable to a new CSV file
-write.csv(Duplicate_Reports_POD_FINAL_List,"InputData/Duplicate_Reports_POD_FINAL_List.csv", row.names = FALSE)
+write.csv(Duplicate_Reports_POD_FINAL_List,"IntermediateData/Duplicate_Reports_POD_FINAL_List.csv", row.names = FALSE)
 
 
 
@@ -162,7 +160,7 @@ write.csv(Duplicate_Reports_POD_FINAL_List,"InputData/Duplicate_Reports_POD_FINA
 
 
 # First, read in a flat file
-Priority_Date <- read.csv("InputData/ewrims_flat_file_WITH_FILTERS.csv")
+Priority_Date <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
 
 
 # Extract a subset of the columns
@@ -171,7 +169,7 @@ Priority_Date_FINAL <- Priority_Date %>%
 
 
 # Output that variable to a CSV file
-write.csv(Priority_Date_FINAL,"InputData/Priority_Date_FINAL.csv", row.names = FALSE)
+write.csv(Priority_Date_FINAL,"IntermediateData/Priority_Date_FINAL.csv", row.names = FALSE)
 
 
 ################################################################### Beneficial Use and Return Flow ############################################################
@@ -179,7 +177,7 @@ write.csv(Priority_Date_FINAL,"InputData/Priority_Date_FINAL.csv", row.names = F
 # Prepare the input file for the beneficial use module next
 
 # Read in the CSV
-Beneficial_Use_and_Return_Flow <- read.csv("InputData/ewrims_flat_file_use_season_WITH_FILTERS.csv")
+Beneficial_Use_and_Return_Flow <- read.csv("IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv")
 
 
 # Keep a subset of the columns
@@ -190,7 +188,7 @@ Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
 
 
 ####Output the variable to a file
-write.csv(Beneficial_Use_and_Return_Flow_FINAL,"InputData/Beneficial_Use_and_Return_Flow_FINAL.csv", row.names = FALSE)
+write.csv(Beneficial_Use_and_Return_Flow_FINAL,"IntermediateData/Beneficial_Use_and_Return_Flow_FINAL.csv", row.names = FALSE)
 
 
 ###################################################################Duplicate Values - Months and Years############################################################
@@ -198,7 +196,7 @@ write.csv(Beneficial_Use_and_Return_Flow_FINAL,"InputData/Beneficial_Use_and_Ret
 # Create the input file for the duplicate months and years module
 
 # Read in the CSV 
-Duplicate_Values_Months_and_Years <- read.csv("InputData/water_use_report_DATE.csv")
+Duplicate_Values_Months_and_Years <- read.csv("IntermediateData/water_use_report_DATE.csv")
 
 
 # Keep only necessary columns
@@ -212,7 +210,7 @@ Duplicate_Values_Months_and_Years_FINAL <- Duplicate_Values_Months_and_Years %>%
   
 
 # Output a CSV
-write.csv(Duplicate_Values_Months_and_Years_FINAL,"InputData/Duplicate_Values_Months_and_Years_FINAL.csv", row.names = FALSE)
+write.csv(Duplicate_Values_Months_and_Years_FINAL,"IntermediateData/Duplicate_Values_Months_and_Years_FINAL.csv", row.names = FALSE)
 
 
 ###################################################################Statistics############################################################
@@ -220,7 +218,7 @@ write.csv(Duplicate_Values_Months_and_Years_FINAL,"InputData/Duplicate_Values_Mo
 # Get statistical data next
 
 # Read in a CSV 
-Statistics <- read.csv("InputData/water_use_report_DATE.csv")
+Statistics <- read.csv("IntermediateData/water_use_report_DATE.csv")
 
 
 # Keep a subset of the columns
@@ -229,11 +227,11 @@ Statistics_FINAL  <- Statistics %>%
 
 
 # Output the data
-write.csv(Statistics_FINAL ,"InputData/Statistics_FINAL.csv", row.names = FALSE)
+write.csv(Statistics_FINAL ,"IntermediateData/Statistics_FINAL.csv", row.names = FALSE)
 
 
 # Read in another CSV next 
-Statistics_FaceValue_IniDiv <- read.csv("InputData/ewrims_flat_file_WITH_FILTERS.csv")
+Statistics_FaceValue_IniDiv <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
 
 
 # Remove most variables from the data frame
@@ -243,7 +241,7 @@ Statistics_FaceValue_IniDiv_Final  <- Statistics_FaceValue_IniDiv %>%
 
 
 # Output results to a file structure
-write.csv(Statistics_FaceValue_IniDiv_Final ,"InputData/Statistics_FaceValue_IniDiv_Final.csv", row.names = FALSE)
+write.csv(Statistics_FaceValue_IniDiv_Final ,"IntermediateData/Statistics_FaceValue_IniDiv_Final.csv", row.names = FALSE)
 
 
 ################################################################### Diversion out of Season Part A ############################################################
@@ -251,7 +249,7 @@ write.csv(Statistics_FaceValue_IniDiv_Final ,"InputData/Statistics_FaceValue_Ini
 # Write a CSV file for the first Diversion out of Season module
 
 # Read in the use season flat file
-Diversion_out_of_Season_Part_A <- read.csv("RawData/ewrims_flat_file_use_season.csv")
+Diversion_out_of_Season_Part_A <- read.csv("IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv")
 
 
 
@@ -263,7 +261,7 @@ Diversion_out_of_Season_Part_A_FINAL <- Diversion_out_of_Season_Part_A %>%
 
 
 # Output the data to a file
-write.csv(Diversion_out_of_Season_Part_A_FINAL,"InputData/Diversion_out_of_Season_Part_A_FINAL.csv", row.names = FALSE)
+write.csv(Diversion_out_of_Season_Part_A_FINAL,"IntermediateData/Diversion_out_of_Season_Part_A_FINAL.csv", row.names = FALSE)
 
 
 ###################################################################Diversion out of Season Part B############################################################
@@ -271,7 +269,7 @@ write.csv(Diversion_out_of_Season_Part_A_FINAL,"InputData/Diversion_out_of_Seaso
 # Write a CSV file for the second Diversion out of Season module
 
 # Read in a flat file
-Diversion_out_of_Season_Part_B <- read.csv("InputData/water_use_report_DATE.csv")
+Diversion_out_of_Season_Part_B <- read.csv("IntermediateData/water_use_report_DATE.csv")
 
 
 # Filter down the table to remove application numbers that start with "S" (statements of diversion and use)
@@ -287,7 +285,7 @@ Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
 
 
 # Output a CSV file
-write.csv(Diversion_out_of_Season_Part_B_FINAL,"InputData/Diversion_out_of_Season_Part_B_FINAL.csv", row.names = FALSE)
+write.csv(Diversion_out_of_Season_Part_B_FINAL,"IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv", row.names = FALSE)
 
 
 ###################################################################Duplicate_Reports_Same Owner_Multiple_WR############################################################
@@ -295,7 +293,7 @@ write.csv(Diversion_out_of_Season_Part_B_FINAL,"InputData/Diversion_out_of_Seaso
 # Create the input file for the duplicate owner module
 
 # Read in the CSV
-Duplicate_Reports_Same_Owner_Multiple_WR <- read.csv("InputData/water_use_report_DATE.csv")
+Duplicate_Reports_Same_Owner_Multiple_WR <- read.csv("IntermediateData/water_use_report_DATE.csv")
 
 
 # Save a subset of the columns
@@ -306,7 +304,7 @@ Duplicate_Reports_Same_Owner_Multiple_WR_FINAL <- Duplicate_Reports_Same_Owner_M
 
 
 # Output the variable to a file structure
-write.csv(Duplicate_Reports_Same_Owner_Multiple_WR_FINAL,"InputData/Duplicate_Reports_Same_Owner_Multiple_WR_FINAL.csv", row.names = FALSE)
+write.csv(Duplicate_Reports_Same_Owner_Multiple_WR_FINAL,"IntermediateData/Duplicate_Reports_Same_Owner_Multiple_WR_FINAL.csv", row.names = FALSE)
 
 
 # Remove unnecessary variables at this step to free up memory

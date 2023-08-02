@@ -24,7 +24,7 @@ mainProcedure <- function () {
   
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv("InputData/Priority_Date_FINAL.csv")
+  priorityDateCSV <- read.csv("IntermediateData/Priority_Date_FINAL.csv")
   
   
   

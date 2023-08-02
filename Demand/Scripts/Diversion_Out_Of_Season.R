@@ -21,7 +21,7 @@ mainProcedure <- function () {
   
   
   # Read data from the input file
-  diverDF <- read.csv("InputData/Diversion_out_of_Season_Part_A_FINAL.csv")
+  diverDF <- read.csv("IntermediateData/Diversion_out_of_Season_Part_A_FINAL.csv")
   
   
   
@@ -116,7 +116,7 @@ mainProcedure <- function () {
   
   # Another input file is "Diversion_out_of_Season_Part_B_FINAL.csv"
   # Read that file into R
-  oosDF <- read.csv("InputData/Diversion_out_of_Season_Part_B_FINAL.csv")
+  oosDF <- read.csv("IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv")
   
   
   

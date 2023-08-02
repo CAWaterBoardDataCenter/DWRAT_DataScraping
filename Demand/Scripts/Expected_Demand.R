@@ -25,8 +25,8 @@ mainProcedure <- function () {
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv("InputData/Statistics_FINAL.csv")
-  fvDF <- read.csv("InputData/Statistics_FaceValue_IniDiv_Final .csv") %>% unique()
+  statDF <- read.csv("IntermediateData/Statistics_FINAL.csv")
+  fvDF <- read.csv("IntermediateData/Statistics_FaceValue_IniDiv_Final.csv") %>% unique()
   
   
   # Create and append two new columns to 'statDF'
