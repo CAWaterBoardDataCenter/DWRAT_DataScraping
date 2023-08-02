@@ -21,7 +21,7 @@ mainProcedure <- function () {
   
   
   # Read in the input CSV file "Missing_RMS_Reports_FINAL.csv"
-  reportDF <- read.csv("InputData/Missing_RMS_Reports_FINAL.csv")
+  reportDF <- read.csv("IntermediateData/Missing_RMS_Reports_FINAL.csv")
   
   
   
