@@ -3,6 +3,7 @@
 # install.packages("tidyverse")
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
+library(readxl)
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################
@@ -15,17 +16,19 @@ Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx"
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
 Application_Number <- Application_Number %>%
   rename(APPLICATION_NUMBER = APPL_ID) %>%
-  select(APPLICATION_NUMBER, FREQUENCY)
+  select(APPLICATION_NUMBER, FREQUENCY) %>%
+  unique()
 
 
 # Read in the eWRIMS Flat File
-ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv")
+ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
+  unique()
 
 
 # Perform an inner join using "APPLICATION_NUMBER"
-# Multiple rows in 'Application_Number' may match with multiple rows in 'ewrims_flat_file'
 ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by = "APPLICATION_NUMBER",
-                                        relationship = "many-to-many")
+                                        relationship = "one-to-one")
+
 
 # Output 'ewrims_flat_file_Combined' to a folder
 write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILTERS.csv", row.names = FALSE)
@@ -45,9 +48,9 @@ water_use_report <- water_use_report %>%
   rename(APPLICATION_NUMBER = APPL_ID)
 
 
-# Perform an inner join (it is a many-to-many relationship once again)
+# Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
-                                        relationship = "many-to-many")
+                                        relationship = "one-to-many")
 
 
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
@@ -71,7 +74,7 @@ ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv
 
 # Perform another inner join
 ewrims_flat_file_use_season_Combined <- inner_join(Application_Number, ewrims_flat_file_use_season, by = "APPLICATION_NUMBER", 
-                                                   relationship = "many-to-many")
+                                                   relationship = "one-to-many")
 
 
 # Remove rows where "APPLICATION_NUMBER" starts with "S" (statements of diversion and use)
@@ -188,7 +191,8 @@ Beneficial_Use_and_Return_Flow <- read.csv("IntermediateData/ewrims_flat_file_us
 Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
   select(APPLICATION_NUMBER, USE_CODE, WATER_RIGHT_TYPE, FACE_VALUE_AMOUNT,
          INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, APPLICATION_PRIMARY_OWNER,
-         PRIMARY_OWNER_ENTITY_TYPE)
+         PRIMARY_OWNER_ENTITY_TYPE) %>%
+  unique()
 
 
 ####Output the variable to a file
@@ -257,7 +261,6 @@ write.csv(Statistics_FaceValue_IniDiv_Final ,"IntermediateData/Statistics_FaceVa
 
 # Read in the use season flat file
 Diversion_out_of_Season_Part_A <- read.csv("IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv")
-
 
 
 # Extract a portion of the table
