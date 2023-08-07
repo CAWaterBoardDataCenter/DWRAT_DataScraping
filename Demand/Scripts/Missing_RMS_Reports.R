@@ -26,8 +26,8 @@ mainProcedure <- function () {
   
   
   # Define the default starting year for reports
-  # (It will be 2014)
-  reportStartYear <- 2014
+  # (It will be 2017)
+  reportStartYear <- 2017
   
   
   

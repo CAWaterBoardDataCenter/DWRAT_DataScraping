@@ -2,17 +2,9 @@
 #Install if you do not have in your current packages or are not up to date.----
 # install.packages("tidyverse")
 # install.packages("readxl")
-# install.packages("geosphere")
-# install.packages("stringi")
-# install.packages("stringr")
-# install.packages("pracma")
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
 library(readxl)
-library(geosphere)
-library(stringi)
-library(stringr)
-library(pracma) #required for strcmpi function
 
 
 
@@ -22,7 +14,8 @@ library(pracma) #required for strcmpi function
 
 
 # Read in a flat file CSV
-Missing_RMS_Reports <- read.csv("IntermediateData/water_use_report_DATE.csv")
+Missing_RMS_Reports <- read.csv("IntermediateData/water_use_report_DATE.csv") %>%
+  unique()
 
 
 # Read in the results from the Priority Date module
@@ -31,10 +24,10 @@ Priority_Date <- read_xlsx("OutputData/Priority_Date_Scripted.xlsx", col_types =
 
 
 # Perform an inner join, merging the application list to reduce data
-# ("many-to-many" is the relationship because duplicates can occur in both data frames)
+# ("one-to-many" is the relationship because rights have separate rows for each month and year in 'Missing_RMS_Reports')
 Missing_RMS_Reports_Priority_Date_Combined <- Priority_Date %>%
   inner_join(Missing_RMS_Reports, by = "APPLICATION_NUMBER",
-             relationship = "many-to-many")
+             relationship = "one-to-many")
 
 
 # Keep only a subset of the columns
