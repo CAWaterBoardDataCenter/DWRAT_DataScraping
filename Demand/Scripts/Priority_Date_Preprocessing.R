@@ -3,6 +3,7 @@
 # install.packages("tidyverse")
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
+library(readxl)
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################
@@ -15,17 +16,19 @@ Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx"
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
 Application_Number <- Application_Number %>%
   rename(APPLICATION_NUMBER = APPL_ID) %>%
-  select(APPLICATION_NUMBER, FREQUENCY)
+  select(APPLICATION_NUMBER, FREQUENCY) %>%
+  unique()
 
 
 # Read in the eWRIMS Flat File
-ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv")
+ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
+  unique()
 
 
 # Perform an inner join using "APPLICATION_NUMBER"
-# Multiple rows in 'Application_Number' may match with multiple rows in 'ewrims_flat_file'
 ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by = "APPLICATION_NUMBER",
-                                        relationship = "many-to-many")
+                                        relationship = "one-to-one")
+
 
 # Output 'ewrims_flat_file_Combined' to a folder
 write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILTERS.csv", row.names = FALSE)
@@ -45,14 +48,15 @@ water_use_report <- water_use_report %>%
   rename(APPLICATION_NUMBER = APPL_ID)
 
 
-# Perform an inner join (it is a many-to-many relationship once again)
+# Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
-                                        relationship = "many-to-many")
+                                        relationship = "one-to-many")
 
 
-# Remove all data from before 2014 because this is when the data structure changes in the system
+# Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
+# (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
-  filter(YEAR >= 2014)
+  filter(YEAR >= 2017)
   
 
 # Output the data to a CSV file
@@ -70,7 +74,7 @@ ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv
 
 # Perform another inner join
 ewrims_flat_file_use_season_Combined <- inner_join(Application_Number, ewrims_flat_file_use_season, by = "APPLICATION_NUMBER", 
-                                                   relationship = "many-to-many")
+                                                   relationship = "one-to-many")
 
 
 # Remove rows where "APPLICATION_NUMBER" starts with "S" (statements of diversion and use)
@@ -80,14 +84,16 @@ ewrims_flat_file_use_season_Combined <- ewrims_flat_file_use_season_Combined %>%
 
 # Filter by use status next
 ewrims_flat_file_use_season_Combined_USE_STATUS <- ewrims_flat_file_use_season_Combined %>%
-  filter(USE_STATUS %in% c("Added by change order", "Added by correction order",
-                           "Added under section 798 of Regs", "Migrated from old WRIMS data",
-                           "Requested when filed", ""))
+  filter(is.na(USE_STATUS) |
+           USE_STATUS %in% c("Added by change order", "Added by correction order",
+                             "Added under section 798 of Regs", "Migrated from old WRIMS data",
+                             "Requested when filed", ""))
 
 
 # Perform additional filters for collection season status
 ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_USE_STATUS %>%
-  filter(COLLECTION_SEASON_STATUS_1 %in% c("Migrated from old WRIMS data", "Reduced by order",
+  filter(is.na(COLLECTION_SEASON_STATUS_1) | is.na(COLLECTION_SEASON_STATUS_2) | is.na(COLLECTION_SEASON_STATUS_3) |
+           COLLECTION_SEASON_STATUS_1 %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", "") |
            COLLECTION_SEASON_STATUS_2 %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", "") |
@@ -102,7 +108,8 @@ ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_fil
 # Filter 'ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS' further
 # This time, check the three different status columns
 ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS %>%
-  filter(DIRECT_DIV_SEASON_STATUS_1 %in% c("Migrated from old WRIMS data", "Reduced by order",
+  filter(is.na(DIRECT_DIV_SEASON_STATUS_1) | is.na(DIRECT_DIV_SEASON_STATUS_2) | is.na(DIRECT_DIV_SEASON_STATUS_3) |
+           DIRECT_DIV_SEASON_STATUS_1 %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", "") |
            DIRECT_DIV_SEASON_STATUS_2 %in% c("Migrated from old WRIMS data", "Reduced by order",
                                              "Reduced when licensed", "Requested when filed", "") |
@@ -184,7 +191,8 @@ Beneficial_Use_and_Return_Flow <- read.csv("IntermediateData/ewrims_flat_file_us
 Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
   select(APPLICATION_NUMBER, USE_CODE, WATER_RIGHT_TYPE, FACE_VALUE_AMOUNT,
          INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, APPLICATION_PRIMARY_OWNER,
-         PRIMARY_OWNER_ENTITY_TYPE)
+         PRIMARY_OWNER_ENTITY_TYPE) %>%
+  unique()
 
 
 ####Output the variable to a file
@@ -205,9 +213,12 @@ Duplicate_Values_Months_and_Years <- Duplicate_Values_Months_and_Years %>%
 
 
 # Remove USE from DIVERSION_TYPE
+# unique() will be used to remove duplicated rows
+# This sounds contradictory but the intended purpose of this module is to check for
+# duplicated submissions across a right's submissions, not for duplicates of the same year-month pair
 Duplicate_Values_Months_and_Years_FINAL <- Duplicate_Values_Months_and_Years %>%
-  filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE"))
-  
+  filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>% 
+  unique()
 
 # Output a CSV
 write.csv(Duplicate_Values_Months_and_Years_FINAL,"IntermediateData/Duplicate_Values_Months_and_Years_FINAL.csv", row.names = FALSE)
@@ -252,12 +263,12 @@ write.csv(Statistics_FaceValue_IniDiv_Final ,"IntermediateData/Statistics_FaceVa
 Diversion_out_of_Season_Part_A <- read.csv("IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv")
 
 
-
 # Extract a portion of the table
 Diversion_out_of_Season_Part_A_FINAL <- Diversion_out_of_Season_Part_A %>%
   select(APPLICATION_NUMBER, USE_STATUS, DIRECT_SEASON_START_MONTH_1, DIRECT_SEASON_START_MONTH_2,
          DIRECT_DIV_SEASON_END_MONTH_1, DIRECT_DIV_SEASON_END_MONTH_2, STORAGE_SEASON_START_MONTH_1,
-         STORAGE_SEASON_START_MONTH_2, STORAGE_SEASON_END_MONTH_1, STORAGE_SEASON_END_MONTH_2)
+         STORAGE_SEASON_START_MONTH_2, STORAGE_SEASON_END_MONTH_1, STORAGE_SEASON_END_MONTH_2) %>%
+  unique()
 
 
 # Output the data to a file
@@ -281,7 +292,8 @@ Diversion_out_of_Season_Part_B_N <- Diversion_out_of_Season_Part_B %>%
 
 # Extract a subset of the columns after that
 Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
-  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
+  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>%
+  unique()
 
 
 # Output a CSV file
@@ -298,9 +310,13 @@ Duplicate_Reports_Same_Owner_Multiple_WR <- read.csv("IntermediateData/water_use
 
 # Save a subset of the columns
 # Also, filter the table to only diversion types that are "DIRECT" or "STORAGE"
+# unique() will be used to remove duplicated rows
+# This sounds contradictory but the intended purpose of this module is to check for
+# duplicated submissions across a right's submissions, not for duplicates of the same year-month pair
 Duplicate_Reports_Same_Owner_Multiple_WR_FINAL <- Duplicate_Reports_Same_Owner_Multiple_WR %>%
   select(APPLICATION_NUMBER, WATER_RIGHT_ID, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>%
-  filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE"))
+  filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>% 
+  unique()
 
 
 # Output the variable to a file structure
@@ -316,4 +332,3 @@ remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
        Duplicate_Reports_Same_Owner_Multiple_WR_FINAL, Duplicate_Values_Months_and_Years,
        Duplicate_Values_Months_and_Years_FINAL, Priority_Date, Priority_Date_FINAL, 
        Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,Statistics_FINAL)
-
