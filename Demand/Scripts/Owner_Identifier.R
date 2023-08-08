@@ -68,7 +68,7 @@ mainProcedure <- function () {
   # Check for applications with multiple rows in 'partyDF'
   freq <- table(partyDF$APPLICATION_NUMBER)
   
-  extraApp <- names(freq)[freq > 1]
+  extraApp <- names(freq)[freq > 1] #501 water rights have more than 1 party ID
   
   
   
