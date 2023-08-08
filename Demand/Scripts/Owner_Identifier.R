@@ -6,6 +6,7 @@
 #### Dependencies ####
 
 library(tidyverse)
+library(writexl)
 
 #### Functions ####
 
@@ -26,6 +27,8 @@ mainProcedure <- function () {
     mutate(EFFECTIVE_TO_YEAR = as.numeric(str_extract(EFFECTIVE_TO_DATE, "[0-9]{4}$"))) %>%
     filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= min(appYears$YEAR))
   
+  #Export partyDF as a spreadsheet for lookup purposes in the IntermediateData folder
+  write_xlsx("IntermediateData/Russian_River_Parties.xlsx")
   
   
   # Ideally, there should only be one row per application number in 'partyDF'
