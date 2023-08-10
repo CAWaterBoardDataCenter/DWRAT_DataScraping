@@ -86,7 +86,7 @@ mainProcedure <- function () {
   # But to simplify the process, join by more shared columns
   # That way, each row of 'statDF' will have exactly one match in 'dupMonths'
   # (By doing so, "one-to-one" can be specified in left_join() for an extra error check)
-  statDF2 <- left_join(statDF,
+  statDF <- left_join(statDF,
                       dupMonths %>%
                         select(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE, 
                                AnnualReportedTotalDirect, AnnualTotalStorage, AnnualTotalDiversion) %>%
@@ -296,4 +296,4 @@ getEWRIMS <- function () {
 
 #### Script Execution ####
 
-#mainProcedure()
+mainProcedure()
