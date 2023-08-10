@@ -28,7 +28,7 @@ mainProcedure <- function () {
     filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= min(appYears$YEAR))
   
   #Export partyDF as a spreadsheet for lookup purposes in the IntermediateData folder
-  write_xlsx("IntermediateData/Russian_River_Parties.xlsx")
+  write_xlsx(partyDF2, path = "IntermediateData/Russian_River_Parties.xlsx")
   
   
   # Ideally, there should only be one row per application number in 'partyDF'
