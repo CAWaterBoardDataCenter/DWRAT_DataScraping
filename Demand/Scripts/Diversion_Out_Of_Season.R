@@ -116,7 +116,8 @@ mainProcedure <- function () {
   
   # Another input file is "Diversion_out_of_Season_Part_B_FINAL.csv"
   # Read that file into R
-  oosDF <- read.csv("IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv")
+  oosDF <- read.csv("IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv") %>%
+    filter(AMOUNT > 1)
   
   
   
@@ -223,7 +224,9 @@ mainProcedure <- function () {
              if_else(OUT_OF_SEASON_DIRECT == "OUT_OF_SEASON_DIRECT" | 
                        OUT_OF_SEASON_STOR == "OUT_OF_SEASON_STOR",
                      1,
-                     0))
+                     0)) %>%
+    filter(DIVERSION_OUT_OF_SEASON_RECORD > 0) %>%
+    arrange(desc(AMOUNT))
   
   
   
@@ -231,7 +234,8 @@ mainProcedure <- function () {
   # For each unique application number, a count of records for out-of-season use will be calculated
   oosCounts <- oosDF %>%
     group_by(APPLICATION_NUMBER) %>%
-    summarize(`NUMBER OF OUT OF SEASON RECORDS` = sum(DIVERSION_OUT_OF_SEASON_RECORD))
+    summarize(`NUMBER OF OUT OF SEASON RECORDS` = sum(DIVERSION_OUT_OF_SEASON_RECORD)) %>%
+    filter(`NUMBER OF OUT OF SEASON RECORDS` > 0)
   
   
   

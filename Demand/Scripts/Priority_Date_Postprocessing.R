@@ -48,21 +48,22 @@ write.csv(Missing_RMS_Reports_FINAL,"IntermediateData/Missing_RMS_Reports_FINAL.
 # Use "RR_pod_points_MAX_MAF_[DATE].xlsx", extract two columns (and rename "APPL_ID" to "APPLICATION_NUMBER")
 Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx") %>%
   rename(APPLICATION_NUMBER = APPL_ID) %>%
-  select(APPLICATION_NUMBER, FREQUENCY)
+  select(APPLICATION_NUMBER, FREQUENCY) %>%
+  unique()
 
 
 # Read in the eWRIMS Flat File
 ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
   select(APPLICATION_NUMBER, WATER_RIGHT_TYPE, WATER_RIGHT_STATUS, 
          PRIMARY_OWNER_ENTITY_TYPE, APPLICATION_PRIMARY_OWNER, SOURCE_NAME,
-         TRIB_DESC, WATERSHED)
+         TRIB_DESC, WATERSHED) %>%
+  unique()
 
 
 # Perform a left join (keeping the rows from 'Application_Number', even if there is no match)
-# The relationship is "one-to-many" because each row in 'Application_Number' 
-# can have multiple matches in 'ewrims_flat_file' (and vice versa)
+# The relationship is "one-to-one"
 ewrims_flat_file_one <- Application_Number %>%
-  left_join(ewrims_flat_file, by = "APPLICATION_NUMBER", relationship = "many-to-many")
+  left_join(ewrims_flat_file, by = "APPLICATION_NUMBER", relationship = "one-to-one")
 
 
 # Remove rows with the same value for "APPLICATION_NUMBER" (only the first instance is preserved)
