@@ -23,14 +23,54 @@ download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwr
 
 
 # Download the Water Rights Annual Water Use Report file next
-# read_csv() and write_csv() are used instead of download.file() because the file is very big (more than 370 MB)
-# download.file() will fail if the required download time is greater than 60 seconds
+  # read_csv() and write_csv() are used instead of download.file() because the file is very big (more than 370 MB)
+  # download.file() will fail if the required download time is greater than 60 seconds
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report.csv", show_col_types = FALSE) %>%
   write_csv("RawData/water_use_report.csv")
 
-# Download the Water Rights Annual Water Use Report Extended flat file
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", show_col_types = FALSE) %>%
-  write_csv("RawData/water_use_report.csv")
+# Download the Water Rights Annual Report Flat File
+read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_annual_report.csv", show_col_types = FALSE) %>%
+  write.csv("RawData/water_rights_annual_report.csv")
+
+# Download the Water Rights Annual Water Use Report Extended flat file manually from:
+  # "http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv"
+  # File needs to be downloaded manually because it's 16 GB and too large for read_csv to download.
+  # Save the file manually to the RawData folder
+# Water_Use_Report_Extended_Header <- read.csv("RawData/water_use_report_extended.csv", nrows = 1000,)
+# write.csv(Water_Use_Report_Extended_Header, "IntermediateData/water_use_report_extended_top1000.csv", row.names = FALSE)
+# 
+# WURE <- read.csv("RawData/water_use_report_extended.csv",
+#                  colClasses = c("NULL", NA , NA , "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 NA , NA , "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", NA , "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", NA , NA , NA , NA , NA , NA , NA , NA , 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", 
+#                                 "NULL", "NULL", NA , "NULL", "NULL", "NULL", "NULL", NA ,
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", NA , NA , "NULL",
+#                                 "NULL", "NULL", "NULL", "NULL", "NULL", "NULL" ))
+# 
+# # Filter WURE to just 2017 - present and primary owners
+# WURE2 = WURE%>% filter(YEAR >2016, RELATIONSHIP_TYPE == "Primary Owner")
+# 
+# #Filter WURE2 for cases where APPLICATION_PRIMARY_OWNER != PRIMARY_OWNER_NAME
+# WURE_Owner_Mismatches = WURE2 %>% filter(APPLICATION_PRIMARY_OWNER != PRIMARY_OWNER_NAME)
 
 # Save the Water Rights Uses and Seasons flat file as well
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
