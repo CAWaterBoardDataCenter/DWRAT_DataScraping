@@ -8,8 +8,6 @@ Supply/Scripts/.RHistory
 Supply/Experimental/.RHistory
 
 # ignoring Supply data files
-Supply/WebData/
-Supply/ProcessedData/
 Supply/InputData/*.gag
 .Rproj.user
 
@@ -19,8 +17,5 @@ Demand/.Rproj.user
 Demand/.Rhistory
 Demand/.RData
 Demand/.Ruserdata
+Demand/.RHistory
 Demand/Scripts/.RHistory
-
-# ignoring Demand data files
-Demand/RawData/
-Demand/IntermediateData/
