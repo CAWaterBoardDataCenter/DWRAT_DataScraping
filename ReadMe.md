@@ -56,8 +56,6 @@ have yet to be written.
 - *Intermediate Data:* This folder contains datasets that have been
   modified from the RawData folder. These datasets are considered
   intermediate because they will be used as inputs for other R Scripts.
-   A copy of each flat file is also saved in this SharePoint folder, which was last updated on 8/16/2023:
-  https://cawaterboards.sharepoint.com/:f:/r/DWR/SDA/Shared%20Documents/DWRAT/RawData?csf=1&web=1&e=xk4aZa.
   *Files in this folder are ignored by the .gitignore file.*
 
 - *Module and Script Comparison*: This folder compares the outputs of
@@ -70,7 +68,9 @@ have yet to be written.
   models.
 
 - *RawData:* This folder contains the downloaded flat files from
-  eWRIMS.*Files in this folder are ignored by the .gitignore file.*
+  eWRIMS. A copy of each flat file is also saved in this SharePoint folder, which was last updated on 8/16/2023:
+  https://cawaterboards.sharepoint.com/:f:/r/DWR/SDA/Shared%20Documents/DWRAT/RawData?csf=1&web=1&e=xk4aZa.
+  *Files in this folder are ignored by the .gitignore file.*
 
 - *Scripts:* This folder will contain the scripts that convert the raw
   diverter demand datasets into the final datasets to be used by the
