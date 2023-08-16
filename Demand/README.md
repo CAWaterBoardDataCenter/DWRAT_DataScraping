@@ -26,7 +26,7 @@ have yet to be written.
   *Lower Russian River (LRR)* Drought Water Rights Allocation (DWRAT)
   models.
 
-- **RawData:** This folder contains the eWRIMS flat files downloaded from https://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml. A copy of each flat file is also saved in this SharePoint folder, which was laste updated on 8/16/2023:
+- **RawData:** This folder contains the eWRIMS flat files downloaded from https://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml. A copy of each flat file is also saved in this SharePoint folder, which was last updated on 8/16/2023:
 - https://cawaterboards.sharepoint.com/:f:/r/DWR/SDA/Shared%20Documents/DWRAT/RawData?csf=1&web=1&e=xk4aZa
 *Files in this folder are ignored by the .gitignore file.*
 
