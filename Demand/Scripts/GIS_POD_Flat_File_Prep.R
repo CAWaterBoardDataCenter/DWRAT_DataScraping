@@ -1,7 +1,8 @@
 # Run the scripts one chunk at a time to insure that everything is working correctly.
 #Install if you do not have in your current packages or are not up to date.----
-#install.packages("tidyverse")
-#install.packages("dplyr")
+
+  #install.packages("tidyverse")
+  #install.packages("dplyr")
 
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
@@ -138,4 +139,4 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
-write.csv(Flat_File_eWRIMS,"IntermediateData/Flat_File_eWRIMS_2023-06-16.csv", row.names = FALSE)
+write.csv(Flat_File_eWRIMS,paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date(), ".csv"), row.names = FALSE)
