@@ -30,7 +30,7 @@ read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.x
 
 # Download the Water Rights Annual Report Flat File
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_annual_report.csv", show_col_types = FALSE) %>%
-  write.csv("RawData/water_rights_annual_report.csv")
+  write.csv("RawData/water_rights_annual_report.csv", row.names = FALSE)
 
 # Download the Water Rights Annual Water Use Report Extended flat file manually from:
   # "http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv"

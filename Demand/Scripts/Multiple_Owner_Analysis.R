@@ -1,92 +1,113 @@
 # Load required libraries----
 library(dplyr)
+library(janitor)
 library(lubridate)
 library(readxl)
 library(here)
 library(writexl)
 library(readr)
 library(stringr)
+library(openxlsx)
 
 # Define the reporting years
 reporting_years <- seq(2017, 2023)
 
 # Import Relevant Files----
-#Import Water Rights with Multiple Owners in the RR watershed
+# Import Water Rights with Multiple Owners in the RR watershed
 Multiple_Owners<- read_excel(here("IntermediateData/WATER_RIGHTS_WITH_MULTIPLE_OWNERS.xlsx"))
 
 # Import Application Numbers for Water Rights in the RR watershed
 appYears <- read_csv("IntermediateData/Statistics_FINAL.csv", show_col_types = FALSE) %>%
-  select(APPLICATION_NUMBER, YEAR) %>% unique() #Just select the unique application_number and year combos
+  #Just select the unique application_number and year combos
+  select(APPLICATION_NUMBER, YEAR) %>% unique()
+
+## Import eWRIMS Annual Report Flat File-----
+  # We need to find out if there's a field for reporting party ID--
+  # if we know who submitted the report in a given year,
+  # then perhaps we can bypass the manual review of the individual reports in eWRIMS
+Reporting_Flat_File <- read_csv("RawData/ewrims_flat_file_annual_report.csv") %>% 
+  #Filter Reporting_Flat_File to just the water rights in the RR watershed
+  filter(APPLICATION_NUMBER %in% appYears$APPLICATION_NUMBER) %>% 
+  #Filter to just the reporting years 2017 to 2023
+  filter(REPORT_YEAR %in% reporting_years)
+
+# Whittle Reporting_Flat_File to a few relevant fields
+Report_Flat_File_Slim = Reporting_Flat_File %>% 
+  select(APPLICATION_NUMBER, PRIMARY_OWNER, PRIMARY_CONTACT, 
+         REPORT_YEAR, DATE_SUBMITTED, REVISION, REPORT_SYSTEM_UNIQUE_ID) %>%
+  #Sort alphabetically by PRIMARY_OWNER
+  arrange(PRIMARY_OWNER)
+
+## Import 'ewrims_flat_file_party.csv'----
+# Filter to only "Primary Owner" records and "APPLICATION_ID" values that
+partyDF <- read_csv("RawData/ewrims_flat_file_party.csv", col_types = cols(.default = col_character())) %>%
+  mutate(PARTY_NAME = str_replace_all(PARTY_NAME, "  ", " ")) %>%  # Eliminate extra spaces in the middle of the string
+  filter(RELATIONSHIP_TYPE == "Primary Owner") %>%
+  mutate(PARTY_NAME = trimws(PARTY_NAME)) %>%  # Remove leading and trailing spaces
+
+# Add an EFFECTIVE_TO_YEAR field as a 4-digit year 
+  mutate(EFFECTIVE_TO_YEAR = as.numeric(str_extract(EFFECTIVE_TO_DATE, "[0-9]{4}$")))
+  #filter(is.na(EFFECTIVE_TO_DATE)) #generates 55,209 records
+  # Filter to records that are currently ACTIVE OR that ceased to be active after 1/1/2017
+  #filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= min(appYears$YEAR)) #generates 34,827 records
+  #filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= 2016) #generates 35,475 records
+  #filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= 2015) #generates 36,028 records
+       
+#Whittle the partyDF to just a few relevant fields and unique party_IDs
+partyDF_slim <-select(partyDF,PARTY_ID, PARTY_NAME, FIRST_NAME, MIDDLE_NAME,
+                      LAST_NAME_OR_COMPANY_NAME,ENTITY_TYPE, EFFECTIVE_FROM_DATE, 
+                      EFFECTIVE_TO_DATE,) %>%
+  unique() %>%
+  #arrange(PARTY_ID)
+  arrange(EFFECTIVE_TO_DATE)
+
+# Remove extra spaces from PARTY_NAME field
+# Remove extra spaces from PARTY_NAME field
+partyDF_slim$PARTY_NAME <- gsub("\\s{2,}", " ", partyDF_slim$PARTY_NAME)
+
+#Unique Owners in the RR from 2017 - present----
+RR_Owners <- unique(Report_Flat_File_Slim$PRIMARY_OWNER) %>%
+  trimws() %>%  # Remove leading and trailing spaces
+  str_replace_all("  ", " ") %>%  # Replace extra spaces in the middle of the string
+  data.frame(PARTY_NAME = .) %>%  # Create a data frame with a single column
+  mutate(PARTY_NAME = str_replace_all(PARTY_NAME, "  ", " "))  # Replace extra spaces again
+
+print(RR_Owners)
+ #Returns 1280 records 
+
+#Left Join RR_Owners to partyDF_Slim by PARTY_NAME
+RR_Owners2 = left_join(x = RR_Owners, 
+          y = partyDF_slim, 
+          by = "PARTY_NAME") %>% 
+        select(PARTY_NAME, PARTY_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME_OR_COMPANY_NAME) %>%
+    unique() %>%
+  arrange(PARTY_NAME) 
+#Returns 1310 records when just PARTY_NAME and PARTY_ID columns are selected
+#Returns 1311 records when PARTY_NAME, PARTY_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME_OR_COMPANY_NAME are selected
+#Returns 1319 records when we don't filter out any primary owners in partyDF
+
+# Check for NA Party IDs in RR_Owners
+RR_Owners2 %>% filter(is.na(PARTY_ID)) %>% nrow() 
+#360 owners with no corresponding PartyID when we don't filter any primary owners in partyDF
+#365 owners with no corresponding party ID
+
+#Check for duplicate PARTY_NAMES
+dupe_RR = get_dupes(RR_Owners2,PARTY_NAME)
+#76 records with duplicate party_names; so multiple party IDs are tied to the same party_name
 
 
-#Import eWRIMS Water Use Report Flat File
-#We need to find out if there's a fieed for reporting party ID--if we know who submitted the report in a given year,
-#then perhaps we can bypass the manual review of the individual reports in eWRIMS
-Reporting_Flat_File <- read_csv("RawData/water_use_report.csv") %>% 
-  filter(APPL_ID %in% appYears$APPLICATION_NUMBER) %>% #Whittle Reporting_Flat_File to just the water rights in the RR watershed
-  filter(YEAR %in% reporting_years) #Filter to just the reporting_years 
+# Export RR_Owners2 to Excel to manually review duplicate primary owners and NA party IDs; goal is to 
+  # generate a one to one list of party_name to party_ID for the Russian River
 
+openxlsx::write.xlsx(RR_Owners2, "Documentation/RR_Owner_Manual_Review.xlsx")
 
-# Also read in 'ewrims_flat_file_party.csv'
-  # Filter it down to only "Primary Owner" records and "APPLICATION_ID" values that
-  # match "APPLICATION_NUMBER" in 'appYears'
-  # Along with that, the "EFFECTIVE_TO_DATE" should be NA (currently active), 
-  # or the ownership ended during the dataset's timeframe ("EFFECTIVE_TO_DATE" is between 2017-present)
-partyDF <- readr::read_csv("RawData/ewrims_flat_file_party.csv", col_types = cols(.default = col_character())) %>%
-  filter(RELATIONSHIP_TYPE == "Primary Owner" & APPLICATION_ID %in% appYears$APPLICATION_NUMBER) %>%
-  mutate(EFFECTIVE_TO_YEAR = as.numeric(str_extract(EFFECTIVE_TO_DATE, "[0-9]{4}$"))) %>%
-  filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= min(appYears$YEAR)) %>%
+# Import RR_Owner_Manual_Review spreadsheet After Manual Review----
+  # After finishing the manual review of party IDs and party names in eWRIMS, import the review spreadsheet
+    #goal is to eliminate the erroneous party IDs and finalize a one to one list of party_name to party_ID for RR
 
-#Whittle the partyDF to just a few relevant fields
-partyDF_slim <-select(partyDF,PARTY_ID, PARTY_NAME, ENTITY_TYPE, EFFECTIVE_FROM_DATE, EFFECTIVE_TO_DATE)
+#In case you accidentally overwrite the fully reviewed version of the spreadsheet, a copy has been saved to our 
+RR_Owner_Manual_Review =  read_excel("Documentation/RR_Owner_Manual_Review.xlsx")  # SDA sharepoint: https://cawaterboards.sharepoint.com/:x:/r/DWR/SDA/Shared%20Documents/SOPs%20and%20Documentation/1.%20Demand%20Data/SDA%20Methodology/RR_Owner_Manual_Review.xlsx?d=wd885472edd3946b28e06cacbf70b5b93&csf=1&web=1&e=lrxYXG
 
-# Analysis----
-## Export owners for each water right by reporting year----
-RY_2018 <- Multiple_Owners %>%
-  mutate(Reporting_Year = 2018) %>%
-  filter(START_YEAR <= Reporting_Year,
-         is.na(END_YEAR) | END_YEAR >= Reporting_Year)
-
-RY_2019 <- Multiple_Owners %>%
-  mutate(Reporting_Year = 2019) %>%
-  filter(START_YEAR <= Reporting_Year,
-         is.na(END_YEAR) | END_YEAR >= Reporting_Year)
-
-RY_2020 <- Multiple_Owners %>%
-  mutate(Reporting_Year = 2020) %>%
-  filter(START_YEAR <= Reporting_Year,
-         is.na(END_YEAR) | END_YEAR >= Reporting_Year)
-
-RY_2021 <- Multiple_Owners %>%
-  mutate(Reporting_Year = 2021) %>%
-  filter(START_YEAR <= Reporting_Year,
-         is.na(END_YEAR) | END_YEAR >= Reporting_Year)
-
-RY_2022 <- Multiple_Owners %>%
-  mutate(Reporting_Year = 2022) %>%
-  filter(START_YEAR <= Reporting_Year,
-         is.na(END_YEAR) | END_YEAR >= Reporting_Year)
-
-RY_2023 <- Multiple_Owners %>%
-  mutate(Reporting_Year = 2023) %>%
-  filter(START_YEAR <= Reporting_Year,
-         is.na(END_YEAR) | END_YEAR >= Reporting_Year)
-
-# Create a list of your labeled data frames
-RY <- list(
-  RY_2018 = RY_2018,
-  RY_2019 = RY_2019,
-  RY_2020 = RY_2020,
-  RY_2021 = RY_2021,
-  RY_2022 = RY_2022,
-  RY_2023 = RY_2023
-)
-
-# Export data frames to an Excel file with separate sheets
-write_xlsx(RY, path = here("IntermediateData/ReportingYears_MultipleOwners.xlsx"))
-
-
-# Generate List of Primary Owners for Russian River from 2018-2023----
-
-
-
+#Records to Delete 
+RR_Delete = filter(RR_Owner_Manual_Review, Action_Taken == "Delete")
+RR_Delete
