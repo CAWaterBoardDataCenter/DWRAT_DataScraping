@@ -8,10 +8,14 @@ Supply/Scripts/.RHistory
 Supply/Experimental/.RHistory
 
 # ignoring Supply data files
-Supply/ProcessedData/*
-!Supply/ProcessedData/*.txt
-Supply/WebData/*
-!Supply/WebData/*.txt
+  # Ignore all files in ProcessedData and WebData
+  Supply/ProcessedData/*
+  Supply/WebData/*
+
+  # Except for .txt files
+  !Supply/ProcessedData/*.txt
+  !Supply/WebData/*.txt
+
 Supply/InputData/*.gag
 .Rproj.user
 
