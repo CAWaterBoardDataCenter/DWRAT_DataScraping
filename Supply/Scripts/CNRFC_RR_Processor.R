@@ -185,3 +185,6 @@ CNRFC_Temp_Final$Date <- as.Date(CNRFC_Temp_Final$Date, format="%m/%d/%Y")
 CNRFC_Processed = merge(CNRFC_Precip_Final, CNRFC_Temp_Final, by = "Date")
 str(CNRFC_Processed)
 write.csv(CNRFC_Processed, here("ProcessedData/CNRFC_Processed.csv"), row.names = FALSE)
+
+#Change working directory back to Supply folder
+setwd(here())
