@@ -111,6 +111,24 @@ mainProcedure <- function () {
   
   
   
+  # Super season check
+  # Create columns for each month that will be "IN_SEASON" if either "STORAGE" or "DIRECT" is "IN_SEASON" for that month
+  finalDF <- finalDF %>%
+    mutate(JAN_SUPER_DIVERSION = if_else(JAN_DIRECT == "IN_SEASON" | JAN_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           FEB_SUPER_DIVERSION = if_else(FEB_DIRECT == "IN_SEASON" | FEB_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           MAR_SUPER_DIVERSION = if_else(MAR_DIRECT == "IN_SEASON" | MAR_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           APR_SUPER_DIVERSION = if_else(APR_DIRECT == "IN_SEASON" | APR_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           MAY_SUPER_DIVERSION = if_else(MAY_DIRECT == "IN_SEASON" | MAY_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           JUN_SUPER_DIVERSION = if_else(JUN_DIRECT == "IN_SEASON" | JUN_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           JUL_SUPER_DIVERSION = if_else(JUL_DIRECT == "IN_SEASON" | JUL_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           AUG_SUPER_DIVERSION = if_else(AUG_DIRECT == "IN_SEASON" | AUG_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           SEP_SUPER_DIVERSION = if_else(SEP_DIRECT == "IN_SEASON" | SEP_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           OCT_SUPER_DIVERSION = if_else(OCT_DIRECT == "IN_SEASON" | OCT_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           NOV_SUPER_DIVERSION = if_else(NOV_DIRECT == "IN_SEASON" | NOV_STORAGE == "IN_SEASON", "IN_SEASON", ""),
+           DEC_SUPER_DIVERSION = if_else(DEC_DIRECT == "IN_SEASON" | DEC_STORAGE == "IN_SEASON", "IN_SEASON", ""))
+  
+  
+  
   # 'finalDF' serves as an input for Part B of the module
   
   
@@ -195,6 +213,39 @@ mainProcedure <- function () {
   
   
   
+  
+  
+  
+  
+  oosDF <- oosDF %>%
+    mutate(`month in SUPER season?` = 
+             if_else(MONTH == 1,
+                     if_else(JAN_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                     if_else(MONTH == 2,
+                             if_else(FEB_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                             if_else(MONTH == 3,
+                                     if_else(MAR_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                     if_else(MONTH == 4,
+                                             if_else(APR_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                             if_else(MONTH == 5,
+                                                     if_else(MAY_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                     if_else(MONTH == 6,
+                                                             if_else(JUN_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                             if_else(MONTH == 7,
+                                                                     if_else(JUL_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                                     if_else(MONTH == 8,
+                                                                             if_else(AUG_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                                             if_else(MONTH == 9,
+                                                                                     if_else(SEP_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                                                     if_else(MONTH == 10,
+                                                                                             if_else(OCT_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                                                             if_else(MONTH == 11,
+                                                                                                     if_else(NOV_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                                                                     if_else(MONTH == 12,
+                                                                                                             if_else(DEC_SUPER_DIVERSION == "IN_SEASON", "IN_SEASON", ""),
+                                                                                                             "")))))))))))))
+  
+  
   # The next column checks if the reported DD usage is out-of-season
   # If the row is for "DIRECT" use with a non-zero "AMOUNT" specified while
   # "month in DIRECT season?" is empty (""), an out-of-season diversion occurred
@@ -215,6 +266,14 @@ mainProcedure <- function () {
                      ""))
   
   
+  # Create a similar column for out-of-super-season
+  oosDF <- oosDF %>%
+    mutate(OUT_OF_SEASON_SUPER = 
+             if_else(`month in SUPER season?` == "" & AMOUNT > 0,
+                     "OUT_OF_SEASON_SUPER",
+                     ""))
+  
+  
   
   # The next column is a binary counter column
   # If the row is an out-of-season use (either "DIRECT" or "STOR"), the value is 1
@@ -229,6 +288,14 @@ mainProcedure <- function () {
     arrange(desc(AMOUNT))
   
   
+  oosDF_Super <- oosDF %>%
+    mutate(DIVERSION_OUT_OF_SEASON_RECORD = 
+             if_else(OUT_OF_SEASON_SUPER == "OUT_OF_SEASON_SUPER",
+                     1,
+                     0)) %>%
+    filter(DIVERSION_OUT_OF_SEASON_RECORD > 0) %>%
+    arrange(desc(AMOUNT))
+  
   
   # The final new column will be a summary of counts based on "DIVERSION_OUT_OF_SEASON_RECORD"
   # For each unique application number, a count of records for out-of-season use will be calculated
@@ -238,10 +305,16 @@ mainProcedure <- function () {
     filter(`NUMBER OF OUT OF SEASON RECORDS` > 0)
   
   
+  oosCounts_Super <- oosDF_Super %>%
+    group_by(APPLICATION_NUMBER) %>%
+    summarize(`NUMBER OF OUT OF SEASON RECORDS` = sum(DIVERSION_OUT_OF_SEASON_RECORD)) %>%
+    filter(`NUMBER OF OUT OF SEASON RECORDS` > 0)
+  
+  
   
   # After that, the last step is to export the data into two Excel files
   # Complete those steps in a separate function
-  excelExport(diverDF, finalDF, oosDF, oosCounts)
+  excelExport(diverDF, finalDF, oosDF, oosDF_Super, oosCounts, oosCounts_Super)
   
   
   
@@ -638,7 +711,7 @@ applicantSeasonSummary <- function (inputDF) {
 }
 
 
-excelExport <- function (diverDF, finalDF, oosDF, oosCounts) {
+excelExport <- function (diverDF, finalDF, oosDF, oosDF_Super, oosCounts, oosCounts_Super) {
   
   # Create two Excel files using the previously defined variables
   
@@ -740,6 +813,7 @@ excelExport <- function (diverDF, finalDF, oosDF, oosCounts) {
   # This file will have two worksheets
   addWorksheet(wbB, "DATA_FROM_PART_A")
   addWorksheet(wbB, "DIVERSION_OUT_OF_SEASON")
+  addWorksheet(wbB, "DIVERSION_OUT_OF_SUPER_SEASON")
   
   
   
@@ -833,6 +907,55 @@ excelExport <- function (diverDF, finalDF, oosDF, oosCounts) {
   
   
   writeData(wbB, "DIVERSION_OUT_OF_SEASON", startCol = 13, startRow = 2, "FILL DOWN")
+  
+  
+  
+  
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 1, startRow = 3,
+            oosDF_Super %>%
+              select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE, 
+                     `month in SUPER season?`, 
+                     OUT_OF_SEASON_SUPER, DIVERSION_OUT_OF_SEASON_RECORD))
+  
+  
+  
+  # After a gap column, add 'oosCounts' too
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 12, startRow = 3,
+            oosCounts_Super)
+  
+  
+  
+  # Then, fill in the explanatory text cells
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 1, startRow = 1, "INFO:")
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 1, startRow = 2, "ACTION:")
+  
+  
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 2, startRow = 1, 
+            "INPUT DATA FOR SPREADSHEET - FROM WATER_USE_REPORT FLAT FILES")
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 2, startRow = 2, 
+            "PASTE NEW INPUT DATA FROM [NAME OF SCRIPT] SCRIPT HERE - DELETE SAMPLE DATA BELOW")
+  
+  
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 6, startRow = 1, 
+            "FORMULA - INTERMEDIATE CALCULATION")
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 6, startRow = 2, 
+            "FILL DOWN FORMULA - DO NOT MODIFY FORMULA")
+  
+  
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 10, startRow = 1, 
+            "RESULT - OUT OF SEASON DIVERSION")
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 10, startRow = 2, 
+            "FILL DOWN FORMULAS")
+  
+  
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 12, startRow = 1, 
+            "RESULT - NO OF OUT OF SEASON DIVERSIONS BY APPLICATION ID")
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 12, startRow = 2, 
+            "ARRAY - DO NOT FILL")
+  
+  
+  writeData(wbB, "DIVERSION_OUT_OF_SUPER_SEASON", startCol = 13, startRow = 2, "FILL DOWN")
+  
   
   
   
