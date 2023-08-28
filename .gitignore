@@ -1,0 +1,32 @@
+#SUPPLY
+# R Supply files and folders
+Supply/.Rproj.user
+Supply/.Rhistory
+Supply/.RData
+Supply/.Ruserdata
+Supply/Scripts/.RHistory
+Supply/Experimental/.RHistory
+
+# ignoring Supply data files
+  # Ignore all files in ProcessedData and WebData
+  Supply/ProcessedData/*
+  Supply/WebData/*
+
+  # Except for .txt files
+  !Supply/ProcessedData/*.txt
+  !Supply/WebData/*.txt
+
+Supply/InputData/*.gag
+.Rproj.user
+
+#DEMAND
+# R Demand files and folders
+Demand/.Rproj.user
+Demand/.Rhistory
+Demand/.RData
+Demand/.Ruserdata
+Demand/Scripts/.RHistory
+
+# ignoring Demand data files
+Demand/RawData/*
+Demand/IntermediateData/*
