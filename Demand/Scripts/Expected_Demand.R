@@ -196,6 +196,21 @@ mainProcedure <- function () {
   
   
   
+  # Add counterparts to the 'Diversion_as_Percent_of_FV' column
+  # These use the alternative unit columns in place of "CALENDAR_YEAR_TOTAL"
+  monthlyDF <- monthlyDF %>%
+    mutate(Gallons_as_percent_of_FV = Annual_Diversion_if_reported_in_Gallons / FACE_VALUE_AMOUNT,
+           GPM_as_percent_of_FV = Annual_Diversion_if_reported_in_GPM / FACE_VALUE_AMOUNT,
+           GPD_as_percent_of_FV = Annual_Diversion_if_reported_in_GPD / FACE_VALUE_AMOUNT,
+           CFS_as_percent_of_FV = Annual_Diversion_if_reported_in_CFS / FACE_VALUE_AMOUNT,
+           Gallons_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_Gallons / IniDiv_Converted_to_AF,
+           GPM_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_GPM / IniDiv_Converted_to_AF,
+           GPD_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_GPD / IniDiv_Converted_to_AF,
+           CFS_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_CFS / IniDiv_Converted_to_AF,
+           QAQC_Action_Taken = NA_character_,
+           QAQC_Reason = NA_character_)
+  
+  
   # A new data frame is needed for the next group of columns
   
   # Each row will be for one unique application number
@@ -334,6 +349,26 @@ mainProcedure <- function () {
   
   
   
+  # Also save a separate spreadsheet with just columns related to assessing unit conversion errors
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, YEAR,
+           CALENDAR_YEAR_TOTAL,
+           FACE_VALUE_AMOUNT, IniDiv_Converted_to_AF,
+           Diversion_as_Percent_of_FV, Diversion_as_Percent_of_IniDiv,
+           Annual_Diversion_if_reported_in_Gallons, Gallons_as_percent_of_FV,
+           Gallons_as_percent_of_IniDiv,
+           Annual_Diversion_if_reported_in_GPM, GPM_as_percent_of_FV, GPM_as_percent_of_IniDiv,
+           Annual_Diversion_if_reported_in_GPD, GPD_as_percent_of_FV, GPD_as_percent_of_IniDiv,
+           Annual_Diversion_if_reported_in_CFS, CFS_as_percent_of_FV, CFS_as_percent_of_IniDiv,
+           QAQC_Action_Taken, QAQC_Reason) %>%
+    filter((Diversion_as_Percent_of_FV > 10 & FACE_VALUE_AMOUNT > 0) | 
+             (Diversion_as_Percent_of_FV < 0.1 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
+             (Diversion_as_Percent_of_IniDiv > 10 & IniDiv_Converted_to_AF > 0) | 
+             (Diversion_as_Percent_of_IniDiv < 0.1 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
+    write.xlsx("OutputData/Expected_Demand_Units_QAQC.xlsx", overwrite = TRUE)
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
 }
@@ -349,6 +384,7 @@ monthlyUseValues <- function (statDF) {
   monthNames <- month.abb %>% toupper()
   
   useTypes <- unique(statDF$DIVERSION_TYPE) %>%
+    sort() %>%
     str_subset("Combined ", negate = TRUE)
   
   
@@ -990,3 +1026,58 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 #### Script Execution ####
 
 mainProcedure()
+
+
+
+
+
+
+# Code to look at diversion percentage variables
+# (Use this code after the completion of 'monthlyDF' around Line 191)
+
+
+# Considering applications with a Face Value amount specified
+# (Some statement application numbers have no Initial Diversion amount specified, and they have a Face Value of 0 in the database; 
+# they are removed from this count)
+
+# # The first count is of rows with a ratio exceeding 1 (possible sign of unit conversion errors)
+# monthlyDF %>% filter(!is.na(Diversion_as_Percent_of_FV) & !grepl("^S", APPLICATION_NUMBER)) %>% 
+#   filter(Diversion_as_Percent_of_FV > 1) %>%
+#   nrow()
+# 
+# # This count is of rows with a ratio less than or equal to 1 (unlikely to have unit conversion errors)
+# monthlyDF %>% filter(!is.na(Diversion_as_Percent_of_FV) & !grepl("^S", APPLICATION_NUMBER)) %>% 
+#   filter(Diversion_as_Percent_of_FV <= 1) %>%
+#   nrow()
+# 
+# 
+# # These next lines focus on statement application numbers and their Initial Diversion amount ratios
+# 
+# # This count is for rows with a ratio above 1 (flag for unit conversion errors)
+# monthlyDF %>% filter(!is.na(Diversion_as_Percent_of_IniDiv)) %>% 
+#   filter(Diversion_as_Percent_of_IniDiv > 1) %>%
+#   nrow()
+# 
+# 
+# # This count is for rows with a ratio less than or equal to 1
+# monthlyDF %>% filter(!is.na(Diversion_as_Percent_of_IniDiv)) %>% 
+#   filter(Diversion_as_Percent_of_IniDiv <= 1) %>%
+#   nrow()
+# 
+# 
+# # This is a count of records where the right is a statement, but it has no Initial Diversion amount specified
+# monthlyDF %>% filter(is.na(Diversion_as_Percent_of_IniDiv) & grepl("^S", APPLICATION_NUMBER)) %>%
+#   nrow()
+# 
+# 
+# # This is a subset of the above count; it gives the number of records with a specified Face Value amount (of 0 AF)
+# monthlyDF %>% filter(is.na(Diversion_as_Percent_of_IniDiv) & grepl("^S", APPLICATION_NUMBER)) %>%
+#   filter(!is.na(Diversion_as_Percent_of_FV)) %>%
+#   nrow()
+# 
+# 
+# # This is a different subset, noting the number of records with a sizable DD, Storage, or Use value
+# monthlyDF %>% filter(is.na(Diversion_as_Percent_of_IniDiv) & grepl("^S", APPLICATION_NUMBER)) %>%
+#   filter(ANNUAL_DIRECT > 5 | ANNUAL_STORAGE > 5 | ANNUAL_USE > 5) %>%
+#   nrow()
+
