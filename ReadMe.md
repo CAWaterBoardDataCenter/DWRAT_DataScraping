@@ -43,8 +43,6 @@ This folder contains the files necessary for converting the raw diverter
 demand data from eWRIMS into a processed, QAQC’d demand dataset ready
 for importation into DWRAT.
 
-- *Documentation*: This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
-
 - *InputData:* This folder just contains the output CSV from the GIS
   pre-processing steps, which serves as the input file for the R
   pre-processing steps and ultimately the demand module scripts.
