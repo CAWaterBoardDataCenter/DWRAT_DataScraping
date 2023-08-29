@@ -18,7 +18,7 @@ pre-processing and post-processing of the *PRMS* model has been nearly
 entirely automated. By contrast, much of the *SRP GS Flow* model still
 needs to be automated.
 
-- **Documentation:** This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
+- *Documentation:* This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
 
 - *InputData:* This folder contains the datasets used for loops and
   functions, e.g. station lists. Maintaining these datasets as CSVs is
@@ -43,9 +43,7 @@ for importation into DWRAT. As of 2023-08-01, this folder has 4
 subfolders, which just contain placeholder scripts–the actual scripts
 have yet to be written.
 
-- *Documentation*: This folder will contain relevant emails, PDFs, Word
-  Documents and other files containing instructions or information about
-  the project.
+- *Documentation*: This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
 
 - *InputData:* This folder just contains the output CSV from the GIS
   pre-processing steps, which serves as the input file for the R
