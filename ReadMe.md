@@ -1,7 +1,6 @@
 DWRAT DataScraping GitHub Repository README
 ================
 Author: Payman Alemi
-
 Last Updated On: 2023-08-28
 
 I have set up 3 folders for this project, each of which has several
