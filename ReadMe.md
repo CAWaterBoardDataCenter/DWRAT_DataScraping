@@ -18,23 +18,21 @@ pre-processing and post-processing of the *PRMS* model has been nearly
 entirely automated. By contrast, much of the *SRP GS Flow* model still
 needs to be automated.
 
-- **Documentation:** This folder contains relevant emails, PDFs, Word
-  Documents and other files containing instructions or information about
-  the project.
+- **Documentation:** This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
 
-- **InputData:** This folder contains the datasets used for loops and
+- *InputData:* This folder contains the datasets used for loops and
   functions, e.g. station lists. Maintaining these datasets as CSVs is
   easier than creating then as dataframes. *Gag files in this folder are
   ignored by the .gitignore file.*
 
-- **ProcessedData:** This folder contains datasets that have been
+- *ProcessedData:* This folder contains datasets that have been
   manipulated in some way by R Scripts, spreadsheets, etc. *Files in
   this folder are ignored by the .gitignore file.*
 
-- **Scripts:** This folder contains all scripts associated with this
+- *Scripts:* This folder contains all scripts associated with this
   project
 
-- **WebData:** This folder contains unaltered datasets scraped or
+- *WebData:* This folder contains unaltered datasets scraped or
   downloaded from the Internet, e.g. weather station data. *Files in
   this folder are ignored by the .gitignore file.*
 
