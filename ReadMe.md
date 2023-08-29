@@ -20,7 +20,7 @@ entirely automated. By contrast, much of the *SRP GS Flow* model still
 needs to be automated.
 
 - *Documentation:*
- This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
+ This folder contains relevant documentation like the RR_PRMS model files.
 
 - *InputData:* This folder contains the datasets used for loops and
   functions, e.g. station lists. Maintaining these datasets as CSVs is
