@@ -40,9 +40,7 @@ needs to be automated.
 **Demand**  
 This folder contains the files necessary for converting the raw diverter
 demand data from eWRIMS into a processed, QAQC’d demand dataset ready
-for importation into DWRAT. As of 2023-08-01, this folder has 4
-subfolders, which just contain placeholder scripts–the actual scripts
-have yet to be written.
+for importation into DWRAT.
 
 - *Documentation*: This folder contains SharePoint links to relevant documentation (spreadsheets, Word documents, emails, etc), as well as HTML snippets from webpages that we're scraping.
 
