@@ -21,13 +21,13 @@ mainProcedure <- function () {
   
   
   # Read in the input CSV file "Missing_RMS_Reports_FINAL.csv"
-  reportDF <- read.csv("InputData/Missing_RMS_Reports_FINAL.csv")
+  reportDF <- read.csv("IntermediateData/Missing_RMS_Reports_FINAL.csv")
   
   
   
   # Define the default starting year for reports
-  # (It will be 2014)
-  reportStartYear <- 2014
+  # (It will be 2017)
+  reportStartYear <- 2017
   
   
   

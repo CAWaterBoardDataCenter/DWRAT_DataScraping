@@ -15,7 +15,8 @@ library(lubridate)
 
 #Import Downsizer Data----
 # Get the file name (it will be the latest CSV file that starts with "Downsizer")
-downsizerCSVname <- list.files() %>% str_subset("^Downsizer.+\\.csv$") %>% tail(1)
+downsizerCSVname <- list.files("WebData", full.names = T) %>% 
+  str_subset("^WebData/Downsizer.+\\.csv$") %>% tail(1)
 
 
 # Error Check

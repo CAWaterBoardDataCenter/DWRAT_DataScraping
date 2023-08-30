@@ -20,7 +20,7 @@ mainProcedure <- function () {
   
   
   # Read in the input CSV file for this analysis
-  inputDF <- read.csv("InputData/Beneficial_Use_and_Return_Flow_FINAL.csv")
+  inputDF <- read.csv("IntermediateData/Beneficial_Use_and_Return_Flow_FINAL.csv")
   
   
   
