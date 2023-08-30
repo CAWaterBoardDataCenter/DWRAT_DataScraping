@@ -23,7 +23,7 @@ mainProcedure <- function () {
   
   
   # Read in the input CSV file ("Statistics_FINAL.csv")
-  statFinal <- read.csv("InputData/Statistics_FINAL.csv")
+  statFinal <- read.csv("IntermediateData/Statistics_FINAL.csv")
   
   
   # Add the following columns to 'statFinal'
@@ -33,7 +33,7 @@ mainProcedure <- function () {
   # Column J: AnnualTotalDiversion
   # Column K: NumberOfOccurencesWithinSingleReport
   # Column L: OccurencesAcrossReports
-
+  
   
   # Start with the first column "TotalMonthlyDiverted"
   
