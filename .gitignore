@@ -31,6 +31,6 @@ Demand/Scripts/.RHistory
 Demand/RawData/*
 Demand/IntermediateData/*
 
-# Do not ignore the .gitignore files in these folders
-!Demand/RawData/.gitignore
-!Demand/IntermediateData/.gitignore
+# Do not ignore the .gitkeep files in these folders
+!Demand/RawData/.gitkeep
+!Demand/IntermediateData/.gitkeep
