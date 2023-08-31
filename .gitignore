@@ -2,6 +2,7 @@ Demand/**/*.csv #Ignores all CSVs in Demand sub-repository
 Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
 **/.Rhistory
 **/.RData
+**/.Rproj.user #Ignores this entire folder
 **/.Ruserdata
 
 
