@@ -30,3 +30,7 @@ Demand/Scripts/.RHistory
 # ignoring Demand data files
 Demand/RawData/*
 Demand/IntermediateData/*
+
+	#Except for .txt files
+	!Demand/RawData/*.txt
+	!Demand/IntermediateData/*.txt
