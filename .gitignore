@@ -1,4 +1,3 @@
-
 **/.Rhistory
 **/.RData
 **/.Rproj.user* #Ignores this entire folder
@@ -15,6 +14,7 @@ Supply/InputData/*.gag
 Demand/RawData/*.csv
 Demand/IntermediateData/*.csv
 Demand/IntermediateData/*.xlsx
+Demand/ModuleAndScriptComparisons/*.csv
 
 ##OLD GITIGNORE CODE--keep just in case, as of 9/5/2023, update by Payman Alemi
 #Demand/**/*.csv #Ignores all CSVs in Demand sub-repository
@@ -57,4 +57,3 @@ Demand/IntermediateData/*.xlsx
 #!Demand/RawData/.gitignore
 #!Demand/IntermediateData/.gitignore
 #
-.Rproj.user
