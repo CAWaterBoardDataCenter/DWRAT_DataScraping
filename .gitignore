@@ -56,3 +56,4 @@ Demand/OutputData/*.xlsx
 #!Demand/RawData/.gitignore
 #!Demand/IntermediateData/.gitignore
 #
+.Rproj.user
