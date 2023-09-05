@@ -16,46 +16,5 @@ Demand/ModuleAndScriptComparisons/*.xlsx
 Demand/OutputData/*.csv
 Demand/OutputData/*.xlsx
 
-#root folder rproj
+#Ignore root folder Rproj
 .Rproj.user
-
-##OLD GITIGNORE CODE--keep just in case, as of 9/5/2023, update by Payman Alemi
-#Demand/**/*.csv #Ignores all CSVs in Demand sub-repository
-#Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
-
-##SUPPLY
-## R Supply files and folders
-#Supply/.Rproj.user
-#Supply/.Rhistory
-#Supply/.RData
-#Supply/.Ruserdata
-#Supply/Scripts/.RHistory
-#Supply/Experimental/.RHistory
-#
-## ignoring Supply data files
-#  # Ignore all files in ProcessedData and WebData
-#  Supply/ProcessedData/*
-#  Supply/WebData/*
-#
-#  # Except for .txt files
-#  !Supply/ProcessedData/*.txt
-#  !Supply/WebData/*.txt
-#
-#Supply/InputData/*.gag
-#.Rproj.user
-#
-##DEMAND
-## R Demand files and folders
-#Demand/.Rproj.user
-#Demand/.Rhistory
-#Demand/.RData
-#Demand/.Ruserdata
-#Demand/Scripts/.RHistory
-#
-## ignoring Demand data files
-#Demand/RawData/*
-#Demand/IntermediateData/*
-#
-## Do not ignore the .gitignore files in these folders
-#!Demand/RawData/.gitignore
-#!Demand/IntermediateData/.gitignore
