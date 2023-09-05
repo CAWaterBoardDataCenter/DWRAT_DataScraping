@@ -44,6 +44,3 @@ Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
 #!Demand/RawData/.gitignore
 #!Demand/IntermediateData/.gitignore
 #
-
-
-.Rproj.user
