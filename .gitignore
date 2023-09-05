@@ -1,12 +1,25 @@
-Demand/**/*.csv #Ignores all CSVs in Demand sub-repository
-Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
+
 **/.Rhistory
 **/.RData
 **/.Rproj.user* #Ignores this entire folder
 **/.Ruserdata
 
+#IGNORE SUPPLY DATA FILES
+# Ignore all files in ProcessedData and WebData
+Supply/ProcessedData/*.csv
+Supply/WebData/*.csv
+Supply/InputData/*.gag
+
+#IGNORE DEMAND DATA FILES 
+# Ignore all CSVs and xlsx files in IntermediateData, RawData and ProcessedData folders
+Demand/RawData/*.csv
+Demand/IntermediateData/*.csv
+Demand/IntermediateData/*.xlsx
 
 ##OLD GITIGNORE CODE--keep just in case, as of 9/5/2023, update by Payman Alemi
+#Demand/**/*.csv #Ignores all CSVs in Demand sub-repository
+#Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
+
 ##SUPPLY
 ## R Supply files and folders
 #Supply/.Rproj.user
