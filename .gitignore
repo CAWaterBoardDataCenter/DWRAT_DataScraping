@@ -1,13 +1,13 @@
 #IGNORE SUPPLY DATA FILES
 # Ignore all files in ProcessedData and WebData
-Supply/.Rproj.user  #Ignore Rproj garbage
+Supply/.Rproj.user
 Supply/ProcessedData/*.csv
 Supply/WebData/*.csv
 Supply/InputData/*.gag
 
 #IGNORE DEMAND DATA FILES 
 # Ignore all CSVs and xlsx files in IntermediateData, RawData and ProcessedData folders
-Demand/.Rproj.user #Ignores Rproj nonsense
+Demand/.Rproj.user
 Demand/RawData/*.csv
 Demand/IntermediateData/*.csv
 Demand/IntermediateData/*.xlsx
