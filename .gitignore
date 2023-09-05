@@ -6,6 +6,7 @@ Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
 **/.Ruserdata
 
 
+##OLD GITIGNORE CODE--keep just in case, as of 9/5/2023, update by Payman Alemi
 ##SUPPLY
 ## R Supply files and folders
 #Supply/.Rproj.user
@@ -45,3 +46,4 @@ Supply/**/*.csv #Ignores all CSVs in Supply sub-repository
 #
 
 
+.Rproj.user
