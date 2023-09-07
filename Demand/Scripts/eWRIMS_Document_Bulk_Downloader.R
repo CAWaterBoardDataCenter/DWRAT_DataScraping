@@ -14,7 +14,7 @@ AppNum <- eWRIMS_List$APPL_ID
 WR_Type <- eWRIMS_List$WATER_RIGHT_TYPE
 
 for (i in 1:nrow(eWRIMS_List)) {
-#for (i in 1:10) {
+  #for (i in 1:10) {
   tryCatch({
     # Download the document (permit, license, statement, registration, etc.)
     download.file(url = paste0("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/DocumentRetriever.jsp?appNum=",
