@@ -24,44 +24,35 @@ Application_Number <- Application_Number %>%
 ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
   unique()
 
-
 # Perform an inner join using "APPLICATION_NUMBER"
 ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by = "APPLICATION_NUMBER",
                                         relationship = "one-to-one")
 
-
 # Output 'ewrims_flat_file_Combined' to a folder
 write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILTERS.csv", row.names = FALSE)
-
 
 ######################################################################## Break ####################################################################################
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
-
 # Read in the (very large) water use report flat file
 water_use_report <- read.csv("RawData/water_use_report.csv")
-
 
 # Rename "APPL_ID" to "APPLICATION_NUMBER" to allow joins with 'Application_Number'
 water_use_report <- water_use_report %>%
   rename(APPLICATION_NUMBER = APPL_ID)
 
-
 # Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
                                         relationship = "one-to-many")
-
 
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
   filter(YEAR >= 2017)
   
-
 # Output the data to a CSV file
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
-
 
 # Remove variables from the environment that will no longer be used (free up memory)
 remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, water_use_report_Date)
@@ -71,16 +62,13 @@ remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, w
 # Read the use season flat file next
 ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv")
 
-
 # Perform another inner join
 ewrims_flat_file_use_season_Combined <- inner_join(Application_Number, ewrims_flat_file_use_season, by = "APPLICATION_NUMBER", 
                                                    relationship = "one-to-many")
 
-
 # Remove rows where "APPLICATION_NUMBER" starts with "S" (statements of diversion and use)
 ewrims_flat_file_use_season_Combined <- ewrims_flat_file_use_season_Combined %>%
   filter(!grepl("^S", APPLICATION_NUMBER)) 
-
 
 # Filter by use status next
 ewrims_flat_file_use_season_Combined_USE_STATUS <- ewrims_flat_file_use_season_Combined %>%
@@ -88,7 +76,6 @@ ewrims_flat_file_use_season_Combined_USE_STATUS <- ewrims_flat_file_use_season_C
            USE_STATUS %in% c("Added by change order", "Added by correction order",
                              "Added under section 798 of Regs", "Migrated from old WRIMS data",
                              "Requested when filed", ""))
-
 
 # Perform additional filters for collection season status
 ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_file_use_season_Combined_USE_STATUS %>%
@@ -101,9 +88,7 @@ ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS <- ewrims_flat_fil
          %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", ""))
 
-
 ################################################################# DIRECT_DIV_SEASON_STATUS ########################################################################
-
 
 # Filter 'ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS' further
 # This time, check the three different status columns
@@ -120,13 +105,11 @@ ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_fil
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
           "IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv", row.names = FALSE)
 
-
 # Remove unnecessary variables again to save memory
 remove(ewrims_flat_file, ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
        ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS,
        ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
        ewrims_flat_file_use_season_Combined_USE_STATUS)
-
 
 ###########################################################################Duplicate_Reports_POD(F1)###################################################################
 #################################################################################### Break ############################################################################
@@ -165,15 +148,12 @@ write.csv(Duplicate_Reports_POD_FINAL_List,"IntermediateData/Duplicate_Reports_P
 
 # Produce the input file for the Priority Date module
 
-
 # First, read in a flat file
 Priority_Date <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
-
 
 # Extract a subset of the columns
 Priority_Date_FINAL <- Priority_Date %>%
   select(APPLICATION_NUMBER, WATER_RIGHT_TYPE, PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, SUB_TYPE, YEAR_DIVERSION_COMMENCED)
-
 
 # Output that variable to a CSV file
 write.csv(Priority_Date_FINAL,"IntermediateData/Priority_Date_FINAL.csv", row.names = FALSE)
