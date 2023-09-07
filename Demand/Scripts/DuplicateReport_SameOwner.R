@@ -41,7 +41,7 @@ mainProcedure <- function () {
   
   
   # Then, read in the input file for this module ("Statistics_FINAL.csv")
-  statDF <- read.csv("InputData/Statistics_FINAL.csv")
+  statDF <- read.csv("IntermediateData/Statistics_FINAL.csv")
   
   
   # Also, use the output of "DuplicateMonths_Years.R" ("DuplicateMonths_Years_Scripted.xlsx")
@@ -89,7 +89,8 @@ mainProcedure <- function () {
   statDF <- left_join(statDF,
                       dupMonths %>%
                         select(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE, 
-                               AnnualReportedTotalDirect, AnnualTotalStorage, AnnualTotalDiversion), 
+                               AnnualReportedTotalDirect, AnnualTotalStorage, AnnualTotalDiversion) %>%
+                        unique(), 
                       by = c("APPLICATION_NUMBER", "YEAR", "MONTH", "DIVERSION_TYPE"), relationship = "one-to-one")
   
   
@@ -165,8 +166,7 @@ getEWRIMS <- function () {
   
   
   # Download an eWRIMS flat file (VPN required)
-  ewrimsDF <- "https://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file.csv" %>%
-    read_csv(col_types = cols(.default = col_character()))
+  ewrimsDF <- read_csv("RawData/ewrims_flat_file.csv", col_types = cols(.default = col_character()))
   
   
   # The two required columns are already present in this variable
@@ -296,4 +296,4 @@ getEWRIMS <- function () {
 
 #### Script Execution ####
 
-# mainProcedure()
+mainProcedure()
