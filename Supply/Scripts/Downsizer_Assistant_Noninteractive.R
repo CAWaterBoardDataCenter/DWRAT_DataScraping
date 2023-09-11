@@ -15,9 +15,9 @@ require(KeyboardSimulator)
 
 #### Script Procedure ####
 
-mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 1, 
-                                                  date = as_date("2023-04-01")), 
-                           EndDate = data.frame(year = 2023, month = 5, day = 29, date = as_date("2023-05-29"))) {
+mainProcedure <- function (StartDate = data.frame(year = 2022, month = 10, day = 1, 
+                                                  date = as_date("2022-10-01")), 
+                           EndDate = data.frame(year = 2023, month = 9, day = 6, date = as_date("2023-09-06"))) {
   
   # This is the main body of the script
   
