@@ -57,14 +57,20 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
   filter(YEAR >= 2017)
-  
+
+
+# Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
+# correct entries in 'water_use_report_Date' for unit conversion errors
+water_use_report_Date <- water_use_report_Date %>%
+  unitFixer()
+
 
 # Output the data to a CSV file
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 
 
 # Remove variables from the environment that will no longer be used (free up memory)
-remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, water_use_report_Date)
+remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, water_use_report_Date, unitFixer)
 
 ######################################################################## Break ####################################################################################
 
