@@ -369,6 +369,11 @@ mainProcedure <- function () {
   
   
   
+  # After that, include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
+    write.xlsx("OutputData/Calendar_Year_Totals_AF.xlsx", overwrite = TRUE)
+  
   # Return nothing
   return(invisible(NULL))
 }
