@@ -48,21 +48,23 @@ mainProcedure <- function () {
   # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
   # Also, include three QA/QC columns at the end
   diverDF <- diverDF %>%
-    mutate(JAN_TOTAL_DIVERSION = JAN_DIRECT_DIVERSION + JAN_STORAGE_DIVERSION,
-           FEB_TOTAL_DIVERSION = FEB_DIRECT_DIVERSION + FEB_STORAGE_DIVERSION,
-           MAR_TOTAL_DIVERSION = MAR_DIRECT_DIVERSION + MAR_STORAGE_DIVERSION,
-           APR_TOTAL_DIVERSION = APR_DIRECT_DIVERSION + APR_STORAGE_DIVERSION,
-           MAY_TOTAL_DIVERSION = MAY_DIRECT_DIVERSION + MAY_STORAGE_DIVERSION,
-           JUN_TOTAL_DIVERSION = JUN_DIRECT_DIVERSION + JUN_STORAGE_DIVERSION,
-           JUL_TOTAL_DIVERSION = JUL_DIRECT_DIVERSION + JUL_STORAGE_DIVERSION,
-           AUG_TOTAL_DIVERSION = AUG_DIRECT_DIVERSION + AUG_STORAGE_DIVERSION,
-           SEP_TOTAL_DIVERSION = SEP_DIRECT_DIVERSION + SEP_STORAGE_DIVERSION,
-           OCT_TOTAL_DIVERSION = OCT_DIRECT_DIVERSION + OCT_STORAGE_DIVERSION,
-           NOV_TOTAL_DIVERSION = NOV_DIRECT_DIVERSION + NOV_STORAGE_DIVERSION,
-           DEC_TOTAL_DIVERSION = DEC_DIRECT_DIVERSION + DEC_STORAGE_DIVERSION,
+    rowwise() %>%
+    mutate(JAN_TOTAL_DIVERSION = sum(JAN_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION, na.rm = TRUE),
+           FEB_TOTAL_DIVERSION = sum(FEB_DIRECT_DIVERSION, FEB_STORAGE_DIVERSION, na.rm = TRUE),
+           MAR_TOTAL_DIVERSION = sum(MAR_DIRECT_DIVERSION, MAR_STORAGE_DIVERSION, na.rm = TRUE),
+           APR_TOTAL_DIVERSION = sum(APR_DIRECT_DIVERSION, APR_STORAGE_DIVERSION, na.rm = TRUE),
+           MAY_TOTAL_DIVERSION = sum(MAY_DIRECT_DIVERSION, MAY_STORAGE_DIVERSION, na.rm = TRUE),
+           JUN_TOTAL_DIVERSION = sum(JUN_DIRECT_DIVERSION, JUN_STORAGE_DIVERSION, na.rm = TRUE),
+           JUL_TOTAL_DIVERSION = sum(JUL_DIRECT_DIVERSION, JUL_STORAGE_DIVERSION, na.rm = TRUE),
+           AUG_TOTAL_DIVERSION = sum(AUG_DIRECT_DIVERSION, AUG_STORAGE_DIVERSION, na.rm = TRUE),
+           SEP_TOTAL_DIVERSION = sum(SEP_DIRECT_DIVERSION, SEP_STORAGE_DIVERSION, na.rm = TRUE),
+           OCT_TOTAL_DIVERSION = sum(OCT_DIRECT_DIVERSION, OCT_STORAGE_DIVERSION, na.rm = TRUE),
+           NOV_TOTAL_DIVERSION = sum(NOV_DIRECT_DIVERSION, NOV_STORAGE_DIVERSION, na.rm = TRUE),
+           DEC_TOTAL_DIVERSION = sum(DEC_DIRECT_DIVERSION, DEC_STORAGE_DIVERSION, na.rm = TRUE),
            QAQC_ACTION_TAKEN_Y_N = NA_character_,
            CHANGE_MADE = NA_character_,
-           REASON_FOR_CHANGE = NA_character_)
+           REASON_FOR_CHANGE = NA_character_) %>%
+    ungroup()
   
   
   
@@ -251,6 +253,12 @@ mainProcedure <- function () {
   
   
   
+  # Assign basin information to 'ewrimsDF' using information output by "Assign_Subbasin_to_POD.R"
+  ewrimsDF <- ewrimsDF %>%
+    assignBasinData()
+  
+  
+  
   # Finally, add several empty columns, including QA/QC columns, to 'ewrimsDF'
   ewrimsDF <- ewrimsDF %>%
     mutate(BASIN = NA_character_, 
@@ -309,6 +317,80 @@ spreadsheetAdjustment <- function (sheetDF) {
 
 }
 
+
+assignBasinData <- function (ewrimsDF) {
+  
+  # 'ewrimsDF' will be updated to contain columns related to the right's subbasin and lat/long coordinates
+  
+  # More than one input source will be used to supply this data in 'ewrimsDF'
+  
+  
+  # Start by using "RUSSIAN_RIVER_DATABASE_2022.xlsx"
+  # This file originated from the DWRAT GitHub repository as "RUSSIAN_RIVER_DATABASE_2022.csv"
+  # It contains data used with the original demand dataset and methodology
+  # (Note: This spreadsheet has one row per unique "APPLICATION_NUMBER" value)
+  rrDF <- read_xlsx("InputData/RUSSIAN_RIVER_DATABASE_2022.xlsx", sheet = "in") %>%
+    select(APPLICATION_NUMBER, BASIN, MAINSTEM, LONGITUDE, LATITUDE)
+  
+  
+  # Based on the value of "APPLICATION_NUMBER", join this data to 'ewrimsDF'
+  ewrimsDF <- ewrimsDF %>%
+    left_join(rrDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  
+  # Next, read in "POD_Subbasin_Assignment.xlsx"
+  # Keep records for rights with only 1 POD
+  # Also, create a variable called "BASIN" with an ID based on the value in "Basin_Num"
+  # (Without mainstem data, "BASIN" cannot be assigned with certainty at this step)
+  subbasinDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
+    rename(APPLICATION_NUMBER = APPL_ID) %>%
+    group_by(APPLICATION_NUMBER) %>%
+    filter(n() == 1) %>%
+    ungroup() %>%
+    mutate(BASIN = if_else(Basin_Num < 10, 
+                           paste0("R_0", Basin_Num, " or R_0", Basin_Num, "_M"),
+                           paste0("R_", Basin_Num, " or R_", Basin_Num, "_M"))) %>%
+    select(APPLICATION_NUMBER, LATITUDE, LONGITUDE, BASIN)
+  
+  
+  # Filter down 'subbasinDF' to only records for which 'ewrimsDF' is missing basin and lat/long data
+  subbasinDF <- subbasinDF %>%
+    filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$BASIN)])
+  
+  
+  
+  # Iterate through 'subbasinDF' and insert its data into 'ewrimsDF'
+  for (i in 1:nrow(subbasinDF)) {
+    
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == subbasinDF$APPLICATION_NUMBER[i], ]$BASIN <- subbasinDF$BASIN[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == subbasinDF$APPLICATION_NUMBER[i], ]$LATITUDE <- subbasinDF$LATITUDE[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == subbasinDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- subbasinDF$LONGITUDE[i]
+    
+  }
+  
+  
+  
+  #ewrimsDF %>%
+    #filter(is.na(MAINSTEM)) %>%
+    #write.xlsx("Missing_Basin_or_Mainstem_Data.xlsx")
+  
+  
+  
+  
+  # Read in data from "POD_Subbasin_Assignment.xlsx"
+  #subbasinDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx")
+  
+  #subbasinDF %>%
+    #group_by(APPL_ID) %>%
+    #summarize(POD_COUNT = n(), BASINS = paste0(sort(unique(Basin_Num)), collapse = "; ")) %>%
+    #filter(POD_COUNT > 1) %>%
+    #filter(grepl("; ", BASINS)) %>%
+    #write.xlsx("PODs_in_Multiple_Subbasins.xlsx")
+    #filter(!(APPL_ID %in% rrDF$APPLICATION_NUMBER))
+
+  
+}
 
 
 #### Original Code ####
