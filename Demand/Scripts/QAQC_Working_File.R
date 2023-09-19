@@ -344,7 +344,7 @@ assignBasinData <- function (ewrimsDF) {
   # Also, create a variable called "BASIN" with an ID based on the value in "Basin_Num"
   # (Without mainstem data, "BASIN" cannot be assigned with certainty at this step)
   subbasinDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
-    rename(APPLICATION_NUMBER = APPL_ID) %>%
+    rename(APPLICATION_NUMBER = APPLICATIO) %>%
     group_by(APPLICATION_NUMBER) %>%
     filter(n() == 1) %>%
     ungroup() %>%
@@ -370,10 +370,24 @@ assignBasinData <- function (ewrimsDF) {
   }
   
   
+  # Manual Entry
   
-  #ewrimsDF %>%
-    #filter(is.na(MAINSTEM)) %>%
-    #write.xlsx("Missing_Basin_or_Mainstem_Data.xlsx")
+  
+  # A030912
+  # The two options were 6 and 9
+  # We chose to assign this right to Subbasin 6 because it is upstream of Subbasin 9
+  if ("A030912" %in% ewrimsDF$APPLICATION_NUMBER) {
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$BASIN <- "R_06"
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LONGITUDE <- 38.86998
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LATITUDE <- -123.0542
+  }
+  
+  
+  
+  
+  ewrimsDF %>%
+    filter(is.na(MAINSTEM)) %>%
+    write.xlsx("Missing_Basin_or_Mainstem_Data.xlsx")
   
   
   
@@ -382,12 +396,12 @@ assignBasinData <- function (ewrimsDF) {
   #subbasinDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx")
   
   #subbasinDF %>%
-    #group_by(APPL_ID) %>%
+    #group_by(APPLICATIO) %>%
     #summarize(POD_COUNT = n(), BASINS = paste0(sort(unique(Basin_Num)), collapse = "; ")) %>%
     #filter(POD_COUNT > 1) %>%
     #filter(grepl("; ", BASINS)) %>%
     #write.xlsx("PODs_in_Multiple_Subbasins.xlsx")
-    #filter(!(APPL_ID %in% rrDF$APPLICATION_NUMBER))
+    #filter(!(APPLICATIO %in% rrDF$APPLICATION_NUMBER))
 
   
 }

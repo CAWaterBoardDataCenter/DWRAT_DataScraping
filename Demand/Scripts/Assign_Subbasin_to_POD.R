@@ -76,24 +76,24 @@ podTable_Buffer <- st_drop_geometry(subbasinPOD_Buffer)
 
 # Add a column to indicate whether each row's "POD_ID" and "APPL_NUM" pair appears more than once
 uniqueCounts <- podTable %>%
-  group_by(APPL_ID, POD_ID) %>%
+  group_by(APPLICATIO, POD_ID) %>%
   summarize(COUNTS = n(), .groups = "drop")
 
 
 podTable <- podTable %>%
-  left_join(uniqueCounts, by = c("APPL_ID", "POD_ID"), relationship = "one-to-one") %>%
+  left_join(uniqueCounts, by = c("APPLICATIO", "POD_ID"), relationship = "one-to-one") %>%
   mutate(HAS_DUPLICATES = if_else(COUNTS > 1, TRUE, FALSE)) %>%
   select(-COUNTS)
 
 
 
 uniqueCounts_Buffer <- podTable_Buffer %>%
-  group_by(APPL_ID, POD_ID) %>%
+  group_by(APPLICATIO, POD_ID) %>%
   summarize(COUNTS = n(), .groups = "drop")
 
 
 podTable_Buffer <- podTable_Buffer %>%
-  left_join(uniqueCounts_Buffer, by = c("APPL_ID", "POD_ID"), relationship = "many-to-one") %>%
+  left_join(uniqueCounts_Buffer, by = c("APPLICATIO", "POD_ID"), relationship = "many-to-one") %>%
   mutate(HAS_DUPLICATES = if_else(COUNTS > 1, TRUE, FALSE)) %>%
   select(-COUNTS)
 

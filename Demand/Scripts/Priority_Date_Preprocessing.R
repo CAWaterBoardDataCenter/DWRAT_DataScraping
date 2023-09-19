@@ -12,10 +12,8 @@ library(readxl)
 Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx") 
 
 
-# Change the column name from "APPL_ID" to "APPLICATION_NUMBER"
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
 Application_Number <- Application_Number %>%
-  rename(APPLICATION_NUMBER = APPL_ID) %>%
   select(APPLICATION_NUMBER, FREQUENCY) %>%
   unique()
 
@@ -36,15 +34,14 @@ write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILT
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
 # Read in the (very large) water use report flat file
-water_use_report <- read.csv("RawData/water_use_report.csv")
+water_use_report <- read.csv("RawData/water_use_report_extended.csv") %>%
+  select(WATER_RIGHT_ID, APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
 
-# Rename "APPL_ID" to "APPLICATION_NUMBER" to allow joins with 'Application_Number'
-water_use_report <- water_use_report %>%
-  rename(APPLICATION_NUMBER = APPL_ID)
 
 # Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
                                         relationship = "one-to-many")
+
 
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
