@@ -12,10 +12,8 @@ library(readxl)
 Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx") 
 
 
-# Change the column name from "APPL_ID" to "APPLICATION_NUMBER"
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
 Application_Number <- Application_Number %>%
-  rename(APPLICATION_NUMBER = APPL_ID) %>%
   select(APPLICATION_NUMBER, FREQUENCY) %>%
   unique()
 
@@ -36,26 +34,32 @@ write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILT
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
 # Read in the (very large) water use report flat file
-water_use_report <- read.csv("RawData/water_use_report.csv")
+water_use_report <- read.csv("RawData/water_use_report_extended.csv") %>%
+  select(WATER_RIGHT_ID, APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
 
-# Rename "APPL_ID" to "APPLICATION_NUMBER" to allow joins with 'Application_Number'
-water_use_report <- water_use_report %>%
-  rename(APPLICATION_NUMBER = APPL_ID)
 
 # Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
                                         relationship = "one-to-many")
 
+
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
   filter(YEAR >= 2017)
-  
+
+
+# Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
+# correct entries in 'water_use_report_Date' for unit conversion errors
+water_use_report_Date <- water_use_report_Date %>%
+  unitFixer()
+
+
 # Output the data to a CSV file
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
-remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, water_use_report_Date)
+remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, water_use_report_Date, unitFixer)
 
 ######################################################################## Break ####################################################################################
 

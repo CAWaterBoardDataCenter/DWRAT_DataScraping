@@ -47,7 +47,7 @@ ncols #creates 252 columns, but only the first 36 have content
 colmn <- paste0("Col", 1:ncols) #creates a set of 252 columns named Col1, Col2, ....
 colmn
 
-##Split Downsizer into 253 columns by using spaces as delimiters----
+##Split Downsizer into columns by using spaces as delimiters----
 Downsizer_Processed <-
   tidyr::separate(
     data = Downsizer,
@@ -58,7 +58,7 @@ Downsizer_Processed <-
   )
 
 ##Delete extra columns and apply column names----
-Downsizer_Processed[38:253] = NULL 
+Downsizer_Processed[38:261] = NULL 
 Downsizer_Processed[5:7] = NULL
 Downsizer_Processed[1] = NULL
 

@@ -45,9 +45,8 @@ write.csv(Missing_RMS_Reports_FINAL,"IntermediateData/Missing_RMS_Reports_FINAL.
 
 ####################Application Numbers############################
 
-# Use "RR_pod_points_MAX_MAF_[DATE].xlsx", extract two columns (and rename "APPL_ID" to "APPLICATION_NUMBER")
+# Use "RR_pod_points_MAX_MAF_[DATE].xlsx", extract two columns
 Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx") %>%
-  rename(APPLICATION_NUMBER = APPL_ID) %>%
   select(APPLICATION_NUMBER, FREQUENCY) %>%
   unique()
 
