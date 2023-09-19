@@ -4,6 +4,7 @@
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
 library(readxl)
+library(data.table) #for fread function
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################
@@ -33,10 +34,13 @@ write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILT
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
-# Read in the (very large) water use report flat file
-water_use_report <- read.csv("RawData/water_use_report_extended.csv") %>%
-  select(WATER_RIGHT_ID, APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
+# Read in the (very large) water use report extended flat file
 
+file_path <- "RawData/water_use_report_extended.csv"
+selected_columns <- c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")
+
+#Import only the selected_columns of the water_use_report_extended.csv
+water_use_report <- fread(file = file_path, select = selected_columns) %>% unique()
 
 # Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
@@ -51,8 +55,8 @@ water_use_report_Date <- water_use_report_Combined %>%
 
 # Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
 # correct entries in 'water_use_report_Date' for unit conversion errors
-water_use_report_Date <- water_use_report_Date %>%
-  unitFixer()
+  #water_use_report_Date <- water_use_report_Date %>%
+    #unitFixer()
 
 
 # Output the data to a CSV file
@@ -125,7 +129,7 @@ Duplicate_Reports_POD <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTER
 
 # Select a subset of these columns
 Duplicate_Reports_POD_FINAL_List <- Duplicate_Reports_POD %>%
-  select("WR_WATER_RIGHT_ID", "APPLICATION_NUMBER","POD_ID","LATITUDE","LONGITUDE","SOURCE_NAME","APPLICATION_PRIMARY_OWNER" ,"PRIMARY_OWNER_NAME","CERTIFICATE_ID","PERMIT_ID",	
+  select("APPLICATION_NUMBER","POD_ID","LATITUDE","LONGITUDE","SOURCE_NAME","APPLICATION_PRIMARY_OWNER" ,"PRIMARY_OWNER_NAME","CERTIFICATE_ID","PERMIT_ID",	
          "LICENSE_ID",	"WATER_RIGHT_TYPE",	"WATER_RIGHT_STATUS",	"PRIMARY_OWNER_ENTITY_TYPE","MAX_DD_APPL","MAX_DD_UNITS","MAX_DD_ANN","MAX_STORAGE","MAX_TAKEN_FROM_SOURCE","USE_DIRECT_DIV_ANNUAL_AMOUNT",	
          "USE_STORAGE_AMOUNT",	"POD_NUMBER",	"POD_STATUS",	"DIRECT_DIVERSION_RATE",	"POD_TYPE")
 
@@ -193,7 +197,7 @@ Duplicate_Values_Months_and_Years <- read.csv("IntermediateData/water_use_report
 
 # Keep only necessary columns
 Duplicate_Values_Months_and_Years <- Duplicate_Values_Months_and_Years %>%
-  select(APPLICATION_NUMBER, WATER_RIGHT_ID, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
+  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
 
 
 # Remove USE from DIVERSION_TYPE
@@ -218,7 +222,7 @@ Statistics <- read.csv("IntermediateData/water_use_report_DATE.csv")
 
 # Keep a subset of the columns
 Statistics_FINAL  <- Statistics %>%
-  select(APPLICATION_NUMBER, WATER_RIGHT_ID, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
+  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
 
 
 # Output the data
@@ -298,7 +302,7 @@ Duplicate_Reports_Same_Owner_Multiple_WR <- read.csv("IntermediateData/water_use
 # This sounds contradictory but the intended purpose of this module is to check for
 # duplicated submissions across a right's submissions, not for duplicates of the same year-month pair
 Duplicate_Reports_Same_Owner_Multiple_WR_FINAL <- Duplicate_Reports_Same_Owner_Multiple_WR %>%
-  select(APPLICATION_NUMBER, WATER_RIGHT_ID, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>%
+  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>%
   filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>% 
   unique()
 

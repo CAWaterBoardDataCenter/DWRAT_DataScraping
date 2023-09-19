@@ -33,7 +33,7 @@ Missing_RMS_Reports_Priority_Date_Combined <- Priority_Date %>%
 # Keep only a subset of the columns
 # Also, filter the data based on diversion type
 Missing_RMS_Reports_FINAL <- Missing_RMS_Reports_Priority_Date_Combined %>%
-  select(APPLICATION_NUMBER, WATER_RIGHT_ID,YEAR,MONTH,AMOUNT,DIVERSION_TYPE,ASSIGNED_PRIORITY_DATE) %>%
+  select(APPLICATION_NUMBER,YEAR,MONTH,AMOUNT,DIVERSION_TYPE,ASSIGNED_PRIORITY_DATE) %>%
   filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE"))
 
 
