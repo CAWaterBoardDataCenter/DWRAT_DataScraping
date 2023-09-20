@@ -35,12 +35,10 @@ write.csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILT
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
 # Read in the (very large) water use report extended flat file
-
-file_path <- "RawData/water_use_report_extended.csv"
-selected_columns <- c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")
-
 #Import only the selected_columns of the water_use_report_extended.csv
-water_use_report <- fread(file = file_path, select = selected_columns) %>% unique()
+water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
+                          select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% unique()
+
 
 # Perform an inner join (it is a one-to-many relationship)
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
