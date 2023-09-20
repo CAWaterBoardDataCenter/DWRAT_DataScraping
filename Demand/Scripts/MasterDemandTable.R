@@ -256,5 +256,21 @@ ewrimsDF <- ewrimsDF %>%
 ewrimsDF <- ewrimsDF %>%
   assignBasinData()
 
+# Add Upper_Russian Field
+  #For basins 01 to 13, Upper_Russian should be "Y". This includes basins with an "_M" 
+  #suffix for "main stem". For the remaining basins, 14 to 28, the Upper_Russian field should be "N."
+  #the str_sub looks at the 3rd and 4th characters of the Basin column which contain the 2-digit 
+  #basin number. 
+
+ewrimsDF <- ewrimsDF %>%
+  mutate(Upper_Russian = ifelse(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
+                                                            "06", "07", "08", "09", "10", "11", 
+                                                            "12", "13"), "Y", "N"))
+
+
+# Rename a few more columns----
+ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE_SOURCE)
+ewrimsDF = rename(ewrimsDF, MAINSTEM_RR = MAINSTEM)
+
 #Write the MasterDemandTable to a CSV----
 write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
