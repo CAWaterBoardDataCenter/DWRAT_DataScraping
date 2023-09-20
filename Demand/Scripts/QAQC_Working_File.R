@@ -259,13 +259,9 @@ mainProcedure <- function () {
   
   
   
-  # Finally, add several empty columns, including QA/QC columns, to 'ewrimsDF'
+  # Finally, add several empty QA/QC columns to 'ewrimsDF'
   ewrimsDF <- ewrimsDF %>%
-    mutate(BASIN = NA_character_, 
-           MAINSTEM = NA_character_, 
-           LATITUDE = NA_character_, 
-           LONGITUDE = NA_character_,
-           QAQC_ACTION_TAKEN_Y_N = NA_character_,
+    mutate(QAQC_ACTION_TAKEN_Y_N = NA_character_,
            CHANGE_MADE = NA_character_,
            REASON_FOR_CHANGE = NA_character_)
   
@@ -322,6 +318,12 @@ assignBasinData <- function (ewrimsDF) {
   
   # 'ewrimsDF' will be updated to contain columns related to the right's subbasin and lat/long coordinates
   
+  # BASIN
+  # MAINSTEM
+  # LATITUDE
+  # LONGITUDE
+  
+  
   # More than one input source will be used to supply this data in 'ewrimsDF'
   
   
@@ -339,87 +341,57 @@ assignBasinData <- function (ewrimsDF) {
   
   
   
-  # Next, read in "POD_Subbasin_Assignment.xlsx"
-  # Keep records for rights with only 1 POD
-  # Also, create a variable called "BASIN" with an ID based on the value in "Basin_Num"
-  # (Without mainstem data, "BASIN" cannot be assigned with certainty at this step)
-  subbasinDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
-    rename(APPLICATION_NUMBER = APPLICATIO) %>%
-    group_by(APPLICATION_NUMBER) %>%
-    filter(n() == 1) %>%
-    ungroup() %>%
-    mutate(BASIN = if_else(Basin_Num < 10, 
-                           paste0("R_0", Basin_Num, " or R_0", Basin_Num, "_M"),
-                           paste0("R_", Basin_Num, " or R_", Basin_Num, "_M"))) %>%
-    select(APPLICATION_NUMBER, LATITUDE, LONGITUDE, BASIN)
+  # Also consult a manual review spreadsheet
+  manualDF <- read_xlsx("InputData/Missing_MainStem_GIS_Manual_Assignment.xlsx") %>%
+    filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   
-  
-  subbasinDF <- subbasinDF %>%
-    rbind(read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
-            rename(APPLICATION_NUMBER = APPLICATIO) %>%
-            group_by(APPLICATION_NUMBER) %>%
-            filter(n() > 1) %>%
-            summarize(Basin_Num = paste0(sort(unique(Basin_Num)), collapse = "; "),
-                      LATITUDE = min(LATITUDE),
-                      LONGITUDE = LONGITUDE[which(LATITUDE == min(LATITUDE))[1]]) %>%
-            filter(!grepl(";", Basin_Num)) %>%
-            mutate(BASIN = if_else(Basin_Num < 10, 
-                                   paste0("R_0", Basin_Num, " or R_0", Basin_Num, "_M"),
-                                   paste0("R_", Basin_Num, " or R_", Basin_Num, "_M"))) %>%
-            select(APPLICATION_NUMBER, LATITUDE, LONGITUDE, BASIN))
-  
-  
-  
-  # Filter down 'subbasinDF' to only records for which 'ewrimsDF' is missing basin and lat/long data
-  subbasinDF <- subbasinDF %>%
-    filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$BASIN)])
-  
-  
-  
-  # Iterate through 'subbasinDF' and insert its data into 'ewrimsDF'
-  for (i in 1:nrow(subbasinDF)) {
+  # Iterate through 'manualDF' and apply these values to 'ewrimsDF'
+  for (i in 1:nrow(manualDF)) {
     
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == subbasinDF$APPLICATION_NUMBER[i], ]$BASIN <- subbasinDF$BASIN[i]
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == subbasinDF$APPLICATION_NUMBER[i], ]$LATITUDE <- subbasinDF$LATITUDE[i]
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == subbasinDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- subbasinDF$LONGITUDE[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$BASIN <- manualDF$BASIN[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$LATITUDE <- manualDF$LATITUDE[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- manualDF$LONGITUDE[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- manualDF$MAINSTEM[i]
     
   }
   
   
-  # Manual Entry
+  # Finally, rely on the output of "Assign_Subbasin_to_POD.R"
+  podDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
+    filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   
-  # A030912
-  # The two options were 6 and 9
-  # We chose to assign this right to Subbasin 6 because it is upstream of Subbasin 9
-  if ("A030912" %in% ewrimsDF$APPLICATION_NUMBER) {
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$BASIN <- "R_06"
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LATITUDE <- 38.86998
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LONGITUDE <- -123.0542
+  # This procedure will not work if the remaining rights have multiple PODs
+  stopifnot(nrow(podDF) == length(unique(podDF$APPLICATION_NUMBER)))
+  
+  
+  
+  # Iterate through 'podDF' and apply these values to 'ewrimsDF'
+  for (i in 1:nrow(podDF)) {
+    
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$BASIN <- paste0("R_", 
+                                                                                           if_else(podDF$Basin_Num[i] < 10, "0", ""), 
+                                                                                           podDF$Basin_Num[i], 
+                                                                                           if_else(podDF$MAIN_STEM[i] == "Y", "_M", ""))
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LATITUDE <- podDF$LATITUDE2[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- podDF$LONGITUDE2[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- podDF$MAIN_STEM[i]
+    
   }
   
   
   
+  # Check for errors
+  stopifnot(!anyNA(ewrimsDF$BASIN))
+  stopifnot(!anyNA(ewrimsDF$MAINSTEM))
+  stopifnot(!anyNA(ewrimsDF$LONGITUDE))
+  stopifnot(!anyNA(ewrimsDF$LATITUDE))
   
-  ewrimsDF %>%
-    filter(is.na(MAINSTEM)) %>%
-    write.xlsx("Missing_Basin_or_Mainstem_Data.xlsx", overwrite = TRUE)
   
   
-  
-  
-  # Read in data from "POD_Subbasin_Assignment.xlsx"
-  #subbasinDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx")
-  
-  #subbasinDF %>%
-    #group_by(APPLICATIO) %>%
-    #summarize(POD_COUNT = n(), BASINS = paste0(sort(unique(Basin_Num)), collapse = "; ")) %>%
-    #filter(POD_COUNT > 1) %>%
-    #filter(grepl("; ", BASINS)) %>%
-    #write.xlsx("PODs_in_Multiple_Subbasins.xlsx")
-    #filter(!(APPLICATIO %in% rrDF$APPLICATION_NUMBER))
-
+  # Return 'ewrimsDF'
+  return(ewrimsDF)
   
 }
 

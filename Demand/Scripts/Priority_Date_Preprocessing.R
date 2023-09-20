@@ -10,7 +10,7 @@ library(data.table) #for fread function
 ######################################################################## List of Application from GIS Step ####################################################################################
 
 # Import GIS data reviewed by SDU on 7/17/2023
-Application_Number <- read_xlsx("InputData/RR_pod_points_MAX_MAF__20230717.xlsx") 
+Application_Number <- read_xlsx("InputData/RR_POD_MAX_MAF_PA_2023-09-19.xlsx") 
 
 
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
