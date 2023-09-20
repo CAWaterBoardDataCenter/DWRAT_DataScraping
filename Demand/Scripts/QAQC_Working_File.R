@@ -354,6 +354,23 @@ assignBasinData <- function (ewrimsDF) {
     select(APPLICATION_NUMBER, LATITUDE, LONGITUDE, BASIN)
   
   
+  
+  subbasinDF <- subbasinDF %>%
+    rbind(read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
+            rename(APPLICATION_NUMBER = APPLICATIO) %>%
+            group_by(APPLICATION_NUMBER) %>%
+            filter(n() > 1) %>%
+            summarize(Basin_Num = paste0(sort(unique(Basin_Num)), collapse = "; "),
+                      LATITUDE = min(LATITUDE),
+                      LONGITUDE = LONGITUDE[which(LATITUDE == min(LATITUDE))[1]]) %>%
+            filter(!grepl(";", Basin_Num)) %>%
+            mutate(BASIN = if_else(Basin_Num < 10, 
+                                   paste0("R_0", Basin_Num, " or R_0", Basin_Num, "_M"),
+                                   paste0("R_", Basin_Num, " or R_", Basin_Num, "_M"))) %>%
+            select(APPLICATION_NUMBER, LATITUDE, LONGITUDE, BASIN))
+  
+  
+  
   # Filter down 'subbasinDF' to only records for which 'ewrimsDF' is missing basin and lat/long data
   subbasinDF <- subbasinDF %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$BASIN)])
@@ -378,8 +395,8 @@ assignBasinData <- function (ewrimsDF) {
   # We chose to assign this right to Subbasin 6 because it is upstream of Subbasin 9
   if ("A030912" %in% ewrimsDF$APPLICATION_NUMBER) {
     ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$BASIN <- "R_06"
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LONGITUDE <- 38.86998
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LATITUDE <- -123.0542
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LATITUDE <- 38.86998
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == "A030912", ]$LONGITUDE <- -123.0542
   }
   
   
@@ -387,7 +404,7 @@ assignBasinData <- function (ewrimsDF) {
   
   ewrimsDF %>%
     filter(is.na(MAINSTEM)) %>%
-    write.xlsx("Missing_Basin_or_Mainstem_Data.xlsx")
+    write.xlsx("Missing_Basin_or_Mainstem_Data.xlsx", overwrite = TRUE)
   
   
   
