@@ -9,7 +9,12 @@ library(sf)
 
 
 
+# Read in a spreadsheet with coordinate data
+# Convert it into a spatial feature
+# (Also, keep copies of the latitude and longitude coordinates in new columns)
+# (When the geometry is dropped, the coordinate data could be removed)
 POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
+  mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"))
 
 st_crs(POD) <- "WGS84"
@@ -98,8 +103,8 @@ podTable %>%
 
 
 # Remove the variables from the workspace
-remove(podDF, podTable, podTable_Buffer, subbasinPOD, subbasinPOD_Buffer, bufferPoly, 
-       POD, subRR, uniqueCounts, uniqueCounts_Buffer, bufferOverlap, i, overlapCheck)
+remove(podTable, podTable_Buffer, subbasinPOD, subbasinPOD_Buffer, bufferPoly, 
+       POD, subRR, uniqueCounts, uniqueCounts_Buffer, bufferOverlap, overlapCheck)
 
 
 # 
