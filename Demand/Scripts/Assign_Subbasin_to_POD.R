@@ -9,7 +9,7 @@ library(sf)
 
 
 
-POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered .xlsx") %>%
+POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"))
 
 st_crs(POD) <- "WGS84"
@@ -26,24 +26,6 @@ subRR <- st_read("InputData/DWRAT_ForImportIntoPortal.gdb", layer = "RR_Basins_U
 
 # Change the CRS of 'subRR' to match 'POD'
 subRR <- st_transform(subRR, st_crs(POD))
-
-
-
-# Two POD entries need their coordinates to be fixed
-# Use the POD spreadsheet to fix them
-podDF <- read_xlsx("InputData/RR_pod_points_Merge_filtered .xlsx") %>%
-  filter(New_Latitude != "<Null>")
-
-
-for (i in 1:nrow(podDF)) {
-  
-  st_geometry(POD[POD$POD_ID == podDF$POD_ID[i], ]) <- c(podDF$New_Longitude[i],
-                                                         podDF$New_Latitude[i]) %>%
-    as.numeric() %>% st_point() %>% st_sfc(crs = st_crs(POD))
-
-}
-
-
 
 # Check that each 'POD' intersects with a subbasin
 overlapCheck <- st_intersects(POD, subRR) %>% lengths()
@@ -81,24 +63,24 @@ podTable_Buffer <- st_drop_geometry(subbasinPOD_Buffer)
 
 # Add a column to indicate whether each row's "POD_ID" and "APPL_NUM" pair appears more than once
 uniqueCounts <- podTable %>%
-  group_by(APPLICATION, POD_ID) %>%
+  group_by(APPLICATION_NUMBER, POD_ID) %>%
   summarize(COUNTS = n(), .groups = "drop")
 
 
 podTable <- podTable %>%
-  left_join(uniqueCounts, by = c("APPLICATION", "POD_ID"), relationship = "one-to-one") %>%
+  left_join(uniqueCounts, by = c("APPLICATION_NUMBER", "POD_ID"), relationship = "one-to-one") %>%
   mutate(HAS_DUPLICATES = if_else(COUNTS > 1, TRUE, FALSE)) %>%
   select(-COUNTS)
 
 
 
 uniqueCounts_Buffer <- podTable_Buffer %>%
-  group_by(APPLICATION, POD_ID) %>%
+  group_by(APPLICATION_NUMBER, POD_ID) %>%
   summarize(COUNTS = n(), .groups = "drop")
 
 
 podTable_Buffer <- podTable_Buffer %>%
-  left_join(uniqueCounts_Buffer, by = c("APPLICATION", "POD_ID"), relationship = "many-to-one") %>%
+  left_join(uniqueCounts_Buffer, by = c("APPLICATION_NUMBER", "POD_ID"), relationship = "many-to-one") %>%
   mutate(HAS_DUPLICATES = if_else(COUNTS > 1, TRUE, FALSE)) %>%
   select(-COUNTS)
 
@@ -110,8 +92,8 @@ podTable %>%
 
 
 
-podTable_Buffer %>%
-  write.xlsx("OutputData/POD_Subbasin_Assignment_50m_Buffer.xlsx", overwrite = TRUE)
+#podTable_Buffer %>%
+  #write.xlsx("OutputData/POD_Subbasin_Assignment_50m_Buffer.xlsx", overwrite = TRUE)
 
 
 
