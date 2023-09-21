@@ -263,7 +263,7 @@ ewrimsDF <- ewrimsDF %>%
   #basin number. 
 
 ewrimsDF <- ewrimsDF %>%
-  mutate(Upper_Russian = ifelse(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
+  mutate(UPPER_RUSSIAN = ifelse(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
                                                             "06", "07", "08", "09", "10", "11", 
                                                             "12", "13"), "Y", "N"))
 
