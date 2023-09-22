@@ -124,3 +124,5 @@ remove(ewrims_flat_file, ewrims_flat_file_one, ewrims_flat_file_party,
        ewrims_flat_file_Three, ewrims_flat_file_Working_File, Application_Number,
        Nine, Phone, Priority_Date, Email, Missing_RMS_Reports, Missing_RMS_Reports_FINAL,
        Missing_RMS_Reports_Priority_Date_Combined)
+
+print("Priority_Date_Postprocessing.R has finished running!")
