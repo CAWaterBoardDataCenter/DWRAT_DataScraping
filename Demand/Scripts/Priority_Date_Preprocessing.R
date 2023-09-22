@@ -12,7 +12,8 @@ library(data.table) #for fread function
 # Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023
 Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
   group_by(APPLICATION_NUMBER, POD_ID) %>%
-  summarize(FREQUENCY = n(), .groups = "drop")
+  summarize(FREQUENCY = n(), .groups = "drop") #Summarizes records by APPLICATION_NUMBER and POD_ID; 
+  #adds a FREQUENCY column and drops the other columns
 
 
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
@@ -25,7 +26,9 @@ Application_Number <- Application_Number %>%
 ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
   unique()
 
-# Perform an inner join using "APPLICATION_NUMBER"
+# Perform an inner join using "APPLICATION_NUMBER"; 
+  # force a one_to_one relationship to avoid duplicate application_numbers
+
 ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by = "APPLICATION_NUMBER",
                                         relationship = "one-to-one")
 
@@ -42,10 +45,10 @@ water_use_report <- fread(file = "RawData/water_use_report_extended.csv",
                           select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% unique()
 
 
-# Perform an inner join (it is a one-to-many relationship)
+# Perform an inner join (it is a one-to-many relationship) because we want to preserve the 
+  # individual reporting months and years
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
-                                        relationship = "one-to-many")
-
+                                        relationship = "one-to-many") 
 
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
@@ -59,7 +62,7 @@ water_use_report_Date <- water_use_report_Combined %>%
     #unitFixer()
 
 
-# Output the data to a CSV file
+# Output water_use_report_Date to a CSV file
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
@@ -70,7 +73,7 @@ remove(ewrims_flat_file_Combined, water_use_report, water_use_report_Combined, w
 # Read the use season flat file next
 ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv")
 
-# Perform another inner join
+# Perform another inner join with a one-to-many relationship to preserve the different diversion season records
 ewrims_flat_file_use_season_Combined <- inner_join(Application_Number, ewrims_flat_file_use_season, by = "APPLICATION_NUMBER", 
                                                    relationship = "one-to-many")
 
@@ -109,7 +112,7 @@ ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_fil
          DIRECT_DIV_SEASON_STATUS_3 %in% c("Migrated from old WRIMS data", "Reduced by order",
                                            "Reduced when licensed", "Requested when filed", ""))
 
-# Write the output to a file
+# Write ewrims_flat_file_use_season_WITH_FILTERS to a CSV file
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
           "IntermediateData/ewrims_flat_file_use_season_WITH_FILTERS.csv", row.names = FALSE)
 
@@ -134,7 +137,7 @@ Duplicate_Reports_POD_FINAL_List <- Duplicate_Reports_POD %>%
          "USE_STORAGE_AMOUNT",	"POD_NUMBER",	"POD_STATUS",	"DIRECT_DIVERSION_RATE",	"POD_TYPE")
 
 
-# Write the shortened variable to a new CSV file
+# Write Duplicate_Reports_POD_FINAL_List to a new CSV file
 write.csv(Duplicate_Reports_POD_FINAL_List,"IntermediateData/Duplicate_Reports_POD_FINAL_List.csv", row.names = FALSE)
 
 
@@ -183,7 +186,7 @@ Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
   unique()
 
 
-####Output the variable to a file
+####Output Beneficial_Use_And_Return_Flow_FINAL to a file
 write.csv(Beneficial_Use_and_Return_Flow_FINAL,"IntermediateData/Beneficial_Use_and_Return_Flow_FINAL.csv", row.names = FALSE)
 
 
@@ -191,7 +194,7 @@ write.csv(Beneficial_Use_and_Return_Flow_FINAL,"IntermediateData/Beneficial_Use_
 
 # Create the input file for the duplicate months and years module
 
-# Read in the CSV 
+# Read in water_use_report_DATE CSV 
 Duplicate_Values_Months_and_Years <- read.csv("IntermediateData/water_use_report_DATE.csv")
 
 
@@ -225,11 +228,11 @@ Statistics_FINAL  <- Statistics %>%
   select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
 
 
-# Output the data
+# Output Statistics_FINAL to a CSV
 write.csv(Statistics_FINAL ,"IntermediateData/Statistics_FINAL.csv", row.names = FALSE)
 
 
-# Read in another CSV next 
+# Read in ewrims_flat_file_WITH_FILTERS CSV next 
 Statistics_FaceValue_IniDiv <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
 
 
@@ -239,7 +242,7 @@ Statistics_FaceValue_IniDiv_Final  <- Statistics_FaceValue_IniDiv %>%
          FACE_VALUE_AMOUNT, FACE_VALUE_UNITS)
 
 
-# Output results to a file structure
+# Output Statistics_Face_Value_IniDiv_Final results to a file structure
 write.csv(Statistics_FaceValue_IniDiv_Final ,"IntermediateData/Statistics_FaceValue_IniDiv_Final.csv", row.names = FALSE)
 
 
@@ -259,7 +262,7 @@ Diversion_out_of_Season_Part_A_FINAL <- Diversion_out_of_Season_Part_A %>%
   unique()
 
 
-# Output the data to a file
+# Output Diversion_out_of_Season_Part_A_FINAL to a file
 write.csv(Diversion_out_of_Season_Part_A_FINAL,"IntermediateData/Diversion_out_of_Season_Part_A_FINAL.csv", row.names = FALSE)
 
 
@@ -284,7 +287,7 @@ Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
   unique()
 
 
-# Output a CSV file
+# Output Diversion_out_of_Season_Part_B_FINAL to a CSV
 write.csv(Diversion_out_of_Season_Part_B_FINAL,"IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv", row.names = FALSE)
 
 
@@ -307,7 +310,7 @@ Duplicate_Reports_Same_Owner_Multiple_WR_FINAL <- Duplicate_Reports_Same_Owner_M
   unique()
 
 
-# Output the variable to a file structure
+# Output the Duplicate_Reports_Same_Owner_Multiple_WR_FINAL variable to a file structure
 write.csv(Duplicate_Reports_Same_Owner_Multiple_WR_FINAL,"IntermediateData/Duplicate_Reports_Same_Owner_Multiple_WR_FINAL.csv", row.names = FALSE)
 
 
@@ -320,3 +323,5 @@ remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
        Duplicate_Reports_Same_Owner_Multiple_WR_FINAL, Duplicate_Values_Months_and_Years,
        Duplicate_Values_Months_and_Years_FINAL, Priority_Date, Priority_Date_FINAL, 
        Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,Statistics_FINAL)
+
+print("Priority_Date_Preprocessing.R has finished running!")
