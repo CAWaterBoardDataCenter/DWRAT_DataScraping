@@ -45,8 +45,10 @@ write.csv(Missing_RMS_Reports_FINAL,"IntermediateData/Missing_RMS_Reports_FINAL.
 
 ####################Application Numbers############################
 
-# Use "RR_pod_points_MAX_MAF_[DATE].xlsx", extract two columns
-Application_Number <- read_xlsx("InputData/RR_POD_MAX_MAF_PA_2023-09-19.xlsx") %>%
+# Use "RR_pod_points_Merge_filtered_PA_[DATE].xlsx", extract two columns
+Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
+  group_by(APPLICATION_NUMBER, POD_ID) %>%
+  summarize(FREQUENCY = n(), .groups = "drop") %>%
   select(APPLICATION_NUMBER, FREQUENCY) %>%
   unique()
 

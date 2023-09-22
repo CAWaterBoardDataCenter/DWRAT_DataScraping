@@ -9,8 +9,10 @@ library(data.table) #for fread function
 
 ######################################################################## List of Application from GIS Step ####################################################################################
 
-# Import GIS data reviewed by SDU on 7/17/2023
-Application_Number <- read_xlsx("InputData/RR_POD_MAX_MAF_PA_2023-09-19.xlsx") 
+# Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023
+Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
+  group_by(APPLICATION_NUMBER, POD_ID) %>%
+  summarize(FREQUENCY = n(), .groups = "drop")
 
 
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
