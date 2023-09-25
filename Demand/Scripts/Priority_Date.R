@@ -265,3 +265,4 @@ mainProcedure <- function () {
 #### Script Execution ####
 
 mainProcedure()
+print("Priority_Date.R has finished running!")

@@ -12,7 +12,8 @@ library(data.table) #for fread function
 # Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023
 Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
   group_by(APPLICATION_NUMBER, POD_ID) %>%
-  summarize(FREQUENCY = n(), .groups = "drop")
+  summarize(FREQUENCY = n(), .groups = "drop") #Summarizes records by APPLICATION_NUMBER and POD_ID; 
+  #adds a FREQUENCY column and drops the other columns
 
 
 # Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
@@ -25,14 +26,14 @@ Application_Number <- Application_Number %>%
 ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
   unique()
 
-# Perform an inner join using "APPLICATION_NUMBER"
+# Perform an inner join using "APPLICATION_NUMBER"; 
+  # force a one_to_one relationship to avoid duplicate application_numbers
+
 ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by = "APPLICATION_NUMBER",
                                         relationship = "one-to-one")
 
 # Output 'ewrims_flat_file_Combined' to a folder
 write_csv(ewrims_flat_file_Combined,"IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
-
-
 ################################################################### Priority Date ############################################################
 
 # Produce the input file for the Priority Date module

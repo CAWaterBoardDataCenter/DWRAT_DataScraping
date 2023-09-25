@@ -187,6 +187,14 @@ priorityDF <- read_xlsx("OutputData/Priority_Date_Scripted.xlsx", col_types = "t
          PRE_1914, RIPARIAN, APPROPRIATIVE) %>%
   unique()
 
+#Change RIPARIAN values in RIPARIAN column to Y or N values
+priorityDF$RIPARIAN <- ifelse(test =priorityDF$RIPARIAN == "RIPARIAN", 
+                              yes = "Y", 
+                              no = "N")
+
+# Replace NA values in Riparian column with N
+priorityDF$RIPARIAN[is.na(priorityDF$RIPARIAN)] <- "N"
+
 # Use a left join once again
 ewrimsDF <- ewrimsDF %>%
   left_join(priorityDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
@@ -267,10 +275,24 @@ ewrimsDF <- ewrimsDF %>%
                                                             "06", "07", "08", "09", "10", "11", 
                                                             "12", "13"), "Y", "N"))
 
+# Convert columns to appropriate data types
+ewrimsDF$ASSIGNED_PRIORITY_DATE_SUB = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE_SUB) #convert from character to integer
 
 # Rename a few more columns----
-ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE_SOURCE)
+ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE)
 ewrimsDF = rename(ewrimsDF, MAINSTEM_RR = MAINSTEM)
 
 #Write the MasterDemandTable to a CSV----
 write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+
+#Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv
+MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
+RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
+
+# Structure of 2023_RRMasterDemandTable
+structure_MDT = data.frame(
+  MDT_ColumnName = colnames(MasterDemandTable),
+  MDT_VariableType = sapply(MasterDemandTable, class),
+)
+
+# Structure of Russian_River_Database_2022
