@@ -50,7 +50,10 @@ source("Scripts/Assign_Subbasin_to_POD.R")
 
 
 # QA/QC Working File Module
-source("Scripts/QAQC_Working_File.R")
+source("Scripts/QAQC_Working_File.R") 
+
+# MasterDemandTable.CSV for DWRAT
+source("Scripts/MasterDemandTable.R")
 
 
 # * = Script is not needed for the master demand table
