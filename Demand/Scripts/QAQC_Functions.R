@@ -1,5 +1,8 @@
-# Prepare a function that will be used in "Scripts/Priority_Date_Preprocessing.R"
-# This function will update "Statistics_Final.csv" with corrections related to unit conversion errors
+# Prepare functions that will be used in "Scripts/Priority_Date_Postprocessing.R"
+# These function will update source files with manual corrections 
+
+
+# "Statistics_Final.csv" will be adjusted for unit conversion errors and duplicate reporting
 
 
 # Dependencies
@@ -58,8 +61,36 @@ unitFixer <- function (inputDF) {
 
 
 
+dupReportingFixer <- function (inputDF) {
+  
+  # Given the water use report dataset ('inputDF'), perform corrections on specified values
+  
+  # A single spreadsheet will be used for these corrections, "Duplicate_Reports_Manual_Review_20230925.xlsx"
+  qaqcDF <- read_xlsx("InputData/Duplicate_Reports_Manual_Review_20230925.xlsx")
+  
+  
+  # Remove entries in 'qaqcDF' where no actions are required
+  # Also, rename "APPL_ID" to "APPLICATION_NUMBER"
+  qaqcDF <- qaqcDF %>%
+    filter(!grepl("^None", QAQC_Action_Taken)) %>%
+    rename(APPLICATION_NUMBER = APPL_ID)
+  
+  
+  # Rely on iterateQAQC() to apply changes to 'inputDF'
+  inputDF <- inputDF %>% 
+    iterateQAQC(qaqcDF)
+  
+  
+  # Return 'inputDF' after these changes
+  return(inputDF)
+  
+}
+
+
+
 iterateQAQC <- function (inputDF, unitsQAQC) {
   
+  # Given a source dataset and data frame of corrections, apply changes based on the "QAQC_Action_Taken" column
   
   
   
@@ -67,14 +98,30 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
   for (i in 1:nrow(unitsQAQC)) {
     
     
+    # For this first issue, values for this right and year will be set to 0
+    if (grepl("^Change monthly (Direct )?(Storage )?values to 0$", unitsQAQC$QAQC_Action_Taken[i])) {
     
-    # For this first issue, all values for this right and year will be set to 0
-    if (unitsQAQC$QAQC_Action_Taken[i] == "Change monthly values to 0") {
-    
+      
+      # If "Direct" or "Storage" are in the action string, only those values will be set to 0
+      if (grepl("Direct", unitsQAQC$QAQC_Action_Taken[i])) {
+        
+        useChoice <- "DIRECT"
+        
+      } else if (grepl("Storage", unitsQAQC$QAQC_Action_Taken[i])) {
+        
+        useChoice <- "STORAGE"
+        
+      } else {
+        
+        useChoice <- c("DIRECT", "STORAGE")
+        
+      }
+      
+      
       
       inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                 inputDF$YEAR == unitsQAQC$YEAR[i] &
-                inputDF$DIVERSION_TYPE %in% c("DIRECT", "STORAGE") &
+                inputDF$DIVERSION_TYPE %in% useChoice &
                 inputDF$AMOUNT > 0, ]$AMOUNT <- 0
       
       
@@ -312,6 +359,27 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
       # Use a separate function for this step
       inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ])
       
+      
+    # Another type of issue is needing to select one right's entries among two or more options
+    # (The other rights' values are changed to zero)
+    # In this case, make a selection based on priority (computed by the "Priority Date" module)
+    } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep One") {
+      
+      
+      # Apply these changes in a separate function
+      inputDF <- inputDF %>%
+        removeDups(unitsQAQC, i)
+      
+      
+      # As a final step, set "QAQC_Action_Taken" to "None" for all entries with this "PARTY_ID"
+      unitsQAQC[unitsQAQC$PARTY_ID == unitsQAQC$PARTY_ID[i], ]$QAQC_Action_Taken <- "None"
+      
+      
+      
+      # If an action is "None", skip it
+    } else if (unitsQAQC$QAQC_Action_Taken[i] == "None") {
+      
+      next
     
       # Throw an error for any other action  
     } else {
@@ -397,6 +465,96 @@ useMeasurementData <- function (inputDF, qaqcInfo) {
   
   
   # Return 'inputData' after these changes
+  return(inputDF)
+  
+}
+
+
+
+removeDups <- function (inputDF, unitsQAQC, i) {
+  
+  # Excluding the right with the earliest priority date (lowest value),
+  # set the values for a given year and diversion type to zero for all other rights
+  
+  
+  # Extract a subset of 'unitsQAQC'; all records that share this iteration's PARTY_ID
+  qaqcSubset <- unitsQAQC %>%
+    filter(PARTY_ID == unitsQAQC$PARTY_ID[i])
+  
+  
+  # Create a vector of unique years for the data in 'qaqcSubset'
+  yearVec <- qaqcSubset$YEAR %>% unique() %>% sort()
+  
+  
+  # Get the unique water rights for this party as well
+  appVec <- qaqcSubset$APPLICATION_NUMBER %>% unique() %>% sort()
+  
+  
+  # More than one use type may appear as well
+  # Get all relevant use types as well
+  useVec <- qaqcSubset$DIVERSION_TYPE %>% unique() %>% sort()
+  
+  
+  # Get the priority dates for these application numbers next
+  priorityDF <- read_xlsx("OutputData/Priority_Date_Scripted.xlsx", col_types = "text") %>%
+    select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE) %>%
+    filter(APPLICATION_NUMBER %in% appVec)
+  
+  
+  # Error Check
+  # Every value in 'appVec' should have a corresponding priority date in 'priorityDF'
+  stopifnot(sum(appVec %in% priorityDF$APPLICATION_NUMBER) == length(appVec))
+  
+  
+  # Join the data in 'priorityDF' to 'qaqcSubset'
+  qaqcSubset <- qaqcSubset %>%
+    left_join(priorityDF, by = "APPLICATION_NUMBER", relationship = "many-to-one")
+  
+  
+  # Iterate through 'yearVec' next
+  for (j in 1:length(yearVec)) {
+    
+    
+    # Nested in that loop is an iteration through the diversion types in 'useVec'
+    for (k in 1:length(useVec)) {
+      
+      
+      # Create a subset of 'qaqcSubset' that only has data for this iteration's year and diversion type
+      # It should be sorted so that the lowest priority date appears first in the tibble
+      qaqcSubSub <- qaqcSubset %>%
+        filter(YEAR == yearVec[j] & DIVERSION_TYPE == useVec[k]) %>%
+        arrange(ASSIGNED_PRIORITY_DATE, APPLICATION_NUMBER)
+      
+      
+      # If 'qaqcSubSub' has 0 records, skip to the next iteration
+      # (This may happen if "DIRECT" and "STORAGE" are not always relevant to duplicate reporting errors in all years)
+      if (nrow(qaqcSubSub) == 0) {
+        next
+      }
+      
+      
+      # Error Check
+      # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
+      stopifnot(nrow(qaqcSubSub) > 1)
+      stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
+      
+      
+      # Ignore the first row of 'qaqcSubSub' (it has the lowest priority date)
+      qaqcSubSub <- qaqcSubSub[-1, ]
+      
+      
+      # The other rights will have their values set to 0 for this year
+      inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                inputDF$YEAR == yearVec[j] &
+                inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
+      
+    } # End of 'useVec' loop (k)
+    
+  } # End of 'yearVec' loop (j)
+  
+  
+  
+  # Return 'inputDF' after these changes
   return(inputDF)
   
 }
