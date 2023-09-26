@@ -5,6 +5,9 @@
 # The end result will be a spreadsheet with two worksheets ("DiversionData" and "MasterDemandTable")
 
 
+cat("Starting 'MasterDemandTable.R'...\n")
+
+
 #### Dependencies ####
 
 require(tidyverse)
@@ -47,6 +50,12 @@ assignBasinData <- function (ewrimsDF) {
   # Based on the value of "APPLICATION_NUMBER", join this data to 'ewrimsDF'
   ewrimsDF <- ewrimsDF %>%
     left_join(rrDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  # Several rights had multiple PODs but only one POD's data has to be selected
+  # All but one case already had a selection made (in "RUSSIAN_RIVER_DATABASE_2022.xlsx")
+  # That case (and others with missing data) were manually assigned data in the 
+  # manual review spreadsheet "Missing_MainStem_GIS_Manual_Assignment.xlsx"
   
   
   # Also consult a manual review spreadsheet
@@ -95,16 +104,19 @@ assignBasinData <- function (ewrimsDF) {
 }
 
 # Import the data from the Expected Demand module----
-expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
-                        col_types = "text") %>%
-  spreadsheetAdjustment()
+#expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+                        #col_types = "text") #%>%
+#  spreadsheetAdjustment()
 
 
 # Make one table with diversion information
-diverDF <- expectedDF[, c(which(names(expectedDF) == "APPLICATION_NUMBER")[2],
-                          grep("^[A-Z]{3}_DIRECT_DIVERSION$", names(expectedDF)),
-                          grep("^[A-Z]{3}_STORAGE_DIVERSION$", names(expectedDF)))] %>%
-  mutate(across(ends_with("DIVERSION"), as.numeric))
+# It will have the APPLICATION_NUMBER and both DIRECT and STORAGE diversion data
+# (The other columns in 'expectedDF' are not needed here)
+#diverDF <- #expectedDF[, c(which(names(expectedDF) == "APPLICATION_NUMBER")[3],
+          #                grep("^[A-Z]{3}_DIRECT_DIVERSION$", names(expectedDF)),
+           #               grep("^[A-Z]{3}_STORAGE_DIVERSION$", names(expectedDF)))] %>%
+  #mutate(across(ends_with("DIVERSION"), as.numeric))
+diverDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx")
 
 
 # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
@@ -174,7 +186,7 @@ beneficialUse <- beneficialUse[, c(which(names(beneficialUse) == "APPLICATION_NU
                                    which(names(beneficialUse) %in% c("ASSIGNED_BENEFICIAL_USE",
                                                                      "FULLY NON-CONSUMPTIVE",
                                                                      "POWER_DEMAND_ZEROED")))] %>%
-  rename(PRIMARY_BENEFICIAL_USE = ASSIGNED_BENEFICIAL_USE)
+  rename(PRIMARY_USE = ASSIGNED_BENEFICIAL_USE)
 
 # Join those columns to 'ewrimsDF'
 ewrimsDF <- ewrimsDF %>%
@@ -202,16 +214,21 @@ ewrimsDF <- ewrimsDF %>%
 
 
 # Import the expected demand module----
-expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
-                        col_types = "text") %>%
-  spreadsheetAdjustment()
-
+#expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+#                        col_types = "text") %>%
+#  spreadsheetAdjustment()
+expectedDF <- read_xlsx("OutputData/ExpectedDemand_FV.xlsx", col_types = "text")
 
 # Get two sub-tables from the main dataset
 # (Rename some columns too)
-faceVars <- expectedDF[, c(which(names(expectedDF) == "APPLICATION_NUMBER")[3],
-                           which(names(expectedDF) == "FACE_VALUE_AMOUNT")[2],
-                           which(names(expectedDF) == "IniDiv_Converted_to_AF"))] %>%
+# faceVars <- expectedDF[, c(which(names(expectedDF) == "APPLICATION_NUMBER")[3],
+#                            which(names(expectedDF) == "FACE_VALUE_AMOUNT")[2],
+#                            which(names(expectedDF) == "IniDiv_Converted_to_AF"))] %>%
+#   unique() %>%
+#   rename(INI_REPORTED_DIV_AMOUNT_AF = IniDiv_Converted_to_AF,
+#          FACE_VALUE_AMOUNT_AF = FACE_VALUE_AMOUNT)
+faceVars <- expectedDF %>% 
+  select(APPLICATION_NUMBER, FACE_VALUE_AMOUNT, IniDiv_Converted_to_AF) %>%
   unique() %>%
   rename(INI_REPORTED_DIV_AMOUNT_AF = IniDiv_Converted_to_AF,
          FACE_VALUE_AMOUNT_AF = FACE_VALUE_AMOUNT)
@@ -219,9 +236,11 @@ faceVars <- expectedDF[, c(which(names(expectedDF) == "APPLICATION_NUMBER")[3],
 
 # For the second sub-table, add a new indicator variable for whether the 
 # APPLICATION_NUMBER column is NA
-nullVar <- expectedDF[, which(names(expectedDF) == "APPLICATION_NUMBER")[4]] %>%
+nullVar <- #expectedDF[, which(names(expectedDF) == "APPLICATION_NUMBER")[4]] %>%
+  expectedDF %>% select(APPLICATION_NUMBER) %>% unique() %>%
   mutate(NULL_DEMAND = if_else(!is.na(APPLICATION_NUMBER), "N", "Y")) %>%
   unique()
+
 
 # Join both of these datasets to 'ewrimsDF'
 ewrimsDF <- ewrimsDF %>%
@@ -283,8 +302,58 @@ ewrimsDF$ASSIGNED_PRIORITY_DATE = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE)
 ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE)
 ewrimsDF = rename(ewrimsDF, MAINSTEM_RR = MAINSTEM)
 
+
+
+# Append COUNTY to 'ewrimsDF'
+
+# Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
+podDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx")
+
+
+# Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
+countyDF <- podDF %>%
+  select(APPLICATION_NUMBER, COUNTY) %>% unique() %>%
+  group_by(APPLICATION_NUMBER) %>%
+  filter(n() == 1)
+
+
+# Join this data to 'ewrimsDF'
+ewrimsDF <- ewrimsDF %>%
+  left_join(countyDF, by = "APPLICATION_NUMBER")
+
+
+
+# If there are still NA values in "COUNTY", try to use the "LATITUDE" and "LONGITUDE" to help
+if (anyNA(ewrimsDF$COUNTY)) {
+  
+  # Iterate through 'ewrimsDF'
+  for (i in 1:nrow(ewrimsDF)) {
+    
+    # Skip rows with a non-NA "COUNTY"
+    if (!is.na(ewrimsDF$COUNTY[i])) {
+      next
+    }
+    
+    # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
+    ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
+                                  round(podDF$LONGITUDE2, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
+      unique()
+    
+  }
+  
+  
+}
+
+
+# Error Check
+# Every entry should have a non-NA "COUNTY" value
+stopifnot(!anyNA(ewrimsDF$COUNTY))
+
+
+
 #Write the MasterDemandTable to a CSV----
 write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv
 MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
@@ -298,3 +367,9 @@ RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_202
 
 # Structure of Russian_River_Database_2022
 print("The MasterDemandTable.R script has finished running")
+
+
+
+remove(assignBasinData, spreadsheetAdjustment, beneficialUse, diverDF,
+       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,
+       MasterDemandTable, RussianRiverDatabase2022, countyDF, podDF, i)
