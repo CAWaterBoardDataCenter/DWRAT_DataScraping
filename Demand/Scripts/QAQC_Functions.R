@@ -558,3 +558,5 @@ removeDups <- function (inputDF, unitsQAQC, i) {
   return(inputDF)
   
 }
+
+print("The QAQC_Functions.R script is done running!")

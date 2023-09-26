@@ -23,9 +23,42 @@ Water_Use_Report = read.csv("RawData/water_use_report.csv")
   Water_Use_Report <- Water_Use_Report[Water_Use_Report$DIVERSION_TYPE != "USE",]
   
   # Sum all the DIVERSION_AMOUNT data by water right
-  Water_Use_Report_Summary <- Water_Use_Report %>%
-    group_by(APPL_ID) %>%
-    summarise(DIVERSION_AMOUNT = sum(AMOUNT))
+  # Water_Use_Report_Summary <- Water_Use_Report %>%
+  #   group_by(APPL_ID %>%
+  #   summarise(DIVERSION_AMOUNT = sum(AMOUNT))
+  
+  
+# Sum the annual diversion to storage and direct diversion amounts by right----
+  
+  # Split the DIVERSION_TYPE column into two columns
+  Water_Use_Report <- Water_Use_Report %>%
+    mutate(STORAGE = ifelse(DIVERSION_TYPE == "STORAGE", AMOUNT, 0),
+           DIRECT = ifelse(DIVERSION_TYPE == "DIRECT", AMOUNT, 0))
+  
+  # Group the data frame by YEAR, MONTH, RIGHT, and DIVERSION_TYPE
+  Water_Use_Report <- Water_Use_Report %>%
+    group_by(YEAR, MONTH, APPL_ID, DIVERSION_TYPE)
+  
+  # Calculate the total amount of water used for STORAGE and DIRECT for each group
+  Water_Use_Report <- Water_Use_Report %>%
+      summarise(STORAGE = sum(STORAGE, na.rm = TRUE),
+                DIRECT = sum(DIRECT, na.rm = TRUE))
+  
+  # Select the YEAR, MONTH, RIGHT, DIVERSION_TYPE, STORAGE, and DIRECT columns
+  Water_Use_Report <- Water_Use_Report %>%
+    select(YEAR, MONTH, APPL_ID, DIVERSION_TYPE, STORAGE, DIRECT)
+  
+  # Pivot the data frame to show the total amount of water used for STORAGE and DIRECT for each year and right
+  Water_Use_Report <- Water_Use_Report %>%
+    pivot_wider(names_from = DIVERSION_TYPE, values_from = c(STORAGE, DIRECT))
+  
+  # Select the YEAR, MONTH, RIGHT, STORAGE, and DIRECT columns
+  Water_Use_Report <- Water_Use_Report %>%
+    select(YEAR, APPL_ID, STORAGE, DIRECT)
+  
+  # Print the data frame
+  print(Water_Use_Report)
+  
   
   # Print the summary table
   print(Water_Use_Report_Summary)
