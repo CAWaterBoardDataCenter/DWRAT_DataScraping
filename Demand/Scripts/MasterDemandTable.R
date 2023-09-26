@@ -277,7 +277,7 @@ ewrimsDF <- ewrimsDF %>%
 
 # Convert columns to appropriate data types
   # convert from character to integer
-ewrimsDF$ASSIGNED_PRIORITY_DATE_SUB = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE_SUB) 
+ewrimsDF$ASSIGNED_PRIORITY_DATE = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE) 
 
 # Rename a few more columns----
 ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE)
@@ -291,9 +291,10 @@ MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
 RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
 
 # Structure of 2023_RRMasterDemandTable
-structure_MDT = data.frame(
-  MDT_ColumnName = colnames(MasterDemandTable),
-  MDT_VariableType = sapply(MasterDemandTable, class),
-)
+# structure_MDT = data.frame(
+#   MDT_ColumnName = colnames(MasterDemandTable),
+#   MDT_VariableType = sapply(MasterDemandTable, class),
+# )
 
 # Structure of Russian_River_Database_2022
+print("The MasterDemandTable.R script has finished running")

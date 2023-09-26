@@ -51,3 +51,5 @@ write_csv(Priority_Date_FINAL,"IntermediateData/Priority_Date_FINAL.csv")
 
 # Remove variables that are no longer needed
 remove(Priority_Date, Priority_Date_FINAL, ewrims_flat_file, ewrims_flat_file_Combined)
+
+print("The Priority_Date_Preprocessing.R script has finished running!")

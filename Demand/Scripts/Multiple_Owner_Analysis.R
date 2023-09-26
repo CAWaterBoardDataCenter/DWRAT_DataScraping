@@ -117,7 +117,7 @@ RMS_parties4 = inner_join(x = RMS_parties2,
 Duplicate_Reports = get_dupes(RMS_parties4, PK)
 writexl::write_xlsx(x= Duplicate_Reports, path = "IntermediateData/Duplicate_Reports_Manual_Review.xlsx", col_names = TRUE)
 
-
+print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 

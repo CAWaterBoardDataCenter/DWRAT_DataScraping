@@ -1039,7 +1039,7 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 
 mainProcedure()
 
-
+print("The Expected_Demand.R script is done running!")
 
 
 
