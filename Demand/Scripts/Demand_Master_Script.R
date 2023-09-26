@@ -2,7 +2,7 @@
 
 
 # GIS Pre-Processing
-source("Scripts/GIS_POD_Flat_File_Prep.R")
+#source("Scripts/GIS_POD_Flat_File_Prep.R")
 
 
 # A QA/QC function for unit conversion errors
@@ -20,9 +20,13 @@ source("Scripts/Priority_Date.R")
 source("Scripts/Priority_Date_Postprocessing.R")
 
 
-# Duplicate Months, Years Module*
-source("Scripts/DuplicateMonths_Years.R")
-
+# Duplicate Report Module *
+  # Identifies 1 owner per water right per reporting year
+  # Identifies if a single owner submitted duplicate reports across multiple water rights
+  # in the same year
+  # Doesn't need to be run again unless we want to analyze new Russian River water rights; 
+  # the manual review has already been performed on the duplicates
+source("Scripts/Multiple_Owner_Analysis.R")
 
 # Expected Demand Module
 source("Scripts/Expected_Demand.R")
@@ -34,10 +38,6 @@ source("Scripts/Beneficial_Use_Return_Flow.R")
 
 # Diversion Out of Season Module (Parts A and B)*
 source("Scripts/Diversion_Out_Of_Season.R")
-
-
-# Duplicate Report, Same Owner Module*
-source("Scripts/DuplicateReport_SameOwner.R")
 
 
 # Missing RMS Reports Module*
