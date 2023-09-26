@@ -264,9 +264,9 @@ ewrimsDF <- ewrimsDF %>%
 ewrimsDF <- ewrimsDF %>%
   assignBasinData()
 
-# Add Upper_Russian Field
-  #For basins 01 to 13, Upper_Russian should be "Y". This includes basins with an "_M" 
-  #suffix for "main stem". For the remaining basins, 14 to 28, the Upper_Russian field should be "N."
+# Add UPPER_RUSSIAN Field
+  #For basins 01 to 13, UPPER_RUSSIAN should be "Y". This includes basins with an "_M" 
+  #suffix for "main stem". For the remaining basins, 14 to 28, the UPPER_RUSSIAN field should be "N."
   #the str_sub looks at the 3rd and 4th characters of the Basin column which contain the 2-digit 
   #basin number. 
 
@@ -276,7 +276,8 @@ ewrimsDF <- ewrimsDF %>%
                                                             "12", "13"), "Y", "N"))
 
 # Convert columns to appropriate data types
-ewrimsDF$ASSIGNED_PRIORITY_DATE_SUB = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE_SUB) #convert from character to integer
+  # convert from character to integer
+ewrimsDF$ASSIGNED_PRIORITY_DATE = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE) 
 
 # Rename a few more columns----
 ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE)
@@ -290,9 +291,10 @@ MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
 RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
 
 # Structure of 2023_RRMasterDemandTable
-structure_MDT = data.frame(
-  MDT_ColumnName = colnames(MasterDemandTable),
-  MDT_VariableType = sapply(MasterDemandTable, class),
-)
+# structure_MDT = data.frame(
+#   MDT_ColumnName = colnames(MasterDemandTable),
+#   MDT_VariableType = sapply(MasterDemandTable, class),
+# )
 
 # Structure of Russian_River_Database_2022
+print("The MasterDemandTable.R script has finished running")

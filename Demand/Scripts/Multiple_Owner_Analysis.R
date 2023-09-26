@@ -50,11 +50,11 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
 
 #Prepare the RMS_parties dataset for manual review----
 
-  #Filter to just 2017 
+  #Filter to 2017-present records
   RMS_parties <- filter(RMS_parties, YEAR >= 2017)
 
-  #Filter to just direct diversion and  diversion to storage--usage is irrelevant because we care about 
-  #what's taken out of stream
+  #Filter to just direct diversion and  diversion to storage--usage is irrelevant because we only care about 
+    #what's diverted out of stream
   RMS_parties <- filter(RMS_parties, DIVERSION_TYPE != "USE")
 
   #Filter RMS_parties to just the Russian River
@@ -111,11 +111,13 @@ RMS_parties4 = inner_join(x = RMS_parties2,
   filter(PKCount >1) %>% #Look for PKCount > 1
   arrange(desc(PKCount)) #There are 211 duplicate PKs
 
-#Extract duplicate PKs and export to Excel for manual review
+#Extract duplicate PKs and export to Excel for manual review; the purpose of this
+  #manual review spreadsheet is to catch instances where the same owner reported the same
+  #diversions across 2 or more rights; hence "duplicate_reports"
 Duplicate_Reports = get_dupes(RMS_parties4, PK)
 writexl::write_xlsx(x= Duplicate_Reports, path = "IntermediateData/Duplicate_Reports_Manual_Review.xlsx", col_names = TRUE)
 
-
+print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 

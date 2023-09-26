@@ -106,7 +106,7 @@ podTable %>%
 remove(podTable, podTable_Buffer, subbasinPOD, subbasinPOD_Buffer, bufferPoly, 
        POD, subRR, uniqueCounts, uniqueCounts_Buffer, bufferOverlap, overlapCheck)
 
-
+print("The Assign_Subbasin_to_POD.R script is done running!")
 # 
 # test <- st_intersects(POD, subRR)
 # 
