@@ -32,9 +32,9 @@ mainProcedure <- function () {
   # Create and append two new columns to 'statDF'
   # "COMPOSITE_MONTHLY" and "COMPOSITE_ANNUAL"
   # These columns are simply concatenations of columns in 'statDF'
-  statDF <- statDF %>%
-    mutate(COMPOSITE_MONTHLY = paste0(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE),
-           COMPOSITE_ANNUAL = paste0(APPLICATION_NUMBER, MONTH, DIVERSION_TYPE))
+  # statDF <- statDF %>%
+  #   mutate(COMPOSITE_MONTHLY = paste0(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE),
+  #          COMPOSITE_ANNUAL = paste0(APPLICATION_NUMBER, MONTH, DIVERSION_TYPE))
   
   
   
@@ -350,9 +350,31 @@ mainProcedure <- function () {
   # The final step of this script is to output a spreadsheet 
   # in a similar format as "ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics.xlsx"
   # Use a separate function to create the workbook
-  makeXLSX(avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear, minYear,
-           numRights, numYears, uniqAppNum)
+  # makeXLSX(avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear, minYear,
+  #          numRights, numYears, uniqAppNum)
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, YEAR, JAN_DIRECT_DIVERSION,
+           FEB_DIRECT_DIVERSION, MAR_DIRECT_DIVERSION,
+           APR_DIRECT_DIVERSION, MAY_DIRECT_DIVERSION,
+           JUN_DIRECT_DIVERSION, JUL_DIRECT_DIVERSION,
+           AUG_DIRECT_DIVERSION, SEP_DIRECT_DIVERSION,
+           OCT_DIRECT_DIVERSION, NOV_DIRECT_DIVERSION,
+           DEC_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION,
+           FEB_STORAGE_DIVERSION, MAR_STORAGE_DIVERSION,
+           APR_STORAGE_DIVERSION, MAY_STORAGE_DIVERSION,
+           JUN_STORAGE_DIVERSION, JUL_STORAGE_DIVERSION,
+           AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
+           OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
+           DEC_STORAGE_DIVERSION) %>%
+    write.xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+               overwrite = TRUE)
   
+  
+  
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
+           FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
+    write.xlsx("OutputData/ExpectedDemand_FV.xlsx", overwrite = TRUE)
   
   
   # Also save a separate spreadsheet with just columns related to assessing unit conversion errors
@@ -379,6 +401,13 @@ mainProcedure <- function () {
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
     write.xlsx("OutputData/Calendar_Year_Totals_AF.xlsx", overwrite = TRUE)
+  
+  
+  
+  # Output a message to the console
+  cat("Done!\n")
+  
+  
   
   # Return nothing
   return(invisible(NULL))
@@ -1037,10 +1066,15 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 
 #### Script Execution ####
 
+cat("Starting 'Expected_Demand.R'...")
+
 mainProcedure()
+
 
 print("The Expected_Demand.R script is done running!")
 
+
+remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues)
 
 
 
