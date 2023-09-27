@@ -5,6 +5,11 @@
 # "Diversion out of Season_Part_A.xlsx" and "Diversion out of Season_Part_B.xlsx"
 
 
+# This script also contains a unique procedure where the direct diversion and
+# storage season are combined into a single "super" season; the analysis is repeated
+# with this super season instead of the separate direct and storage seasons
+
+
 #### Dependencies ####
 
 

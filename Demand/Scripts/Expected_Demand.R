@@ -32,9 +32,9 @@ mainProcedure <- function () {
   # Create and append two new columns to 'statDF'
   # "COMPOSITE_MONTHLY" and "COMPOSITE_ANNUAL"
   # These columns are simply concatenations of columns in 'statDF'
-  statDF <- statDF %>%
-    mutate(COMPOSITE_MONTHLY = paste0(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE),
-           COMPOSITE_ANNUAL = paste0(APPLICATION_NUMBER, MONTH, DIVERSION_TYPE))
+  # statDF <- statDF %>%
+  #   mutate(COMPOSITE_MONTHLY = paste0(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE),
+  #          COMPOSITE_ANNUAL = paste0(APPLICATION_NUMBER, MONTH, DIVERSION_TYPE))
   
   
   
@@ -74,29 +74,35 @@ mainProcedure <- function () {
   # Get the annual direct diversion for each application and year
   # Add that column to 'monthlyDF' with the name "ANNUAL_DIRECT"
   monthlyDF <- monthlyDF %>%
-    mutate(ANNUAL_DIRECT = JAN_DIRECT_DIVERSION + FEB_DIRECT_DIVERSION + 
-             MAR_DIRECT_DIVERSION + APR_DIRECT_DIVERSION + MAY_DIRECT_DIVERSION + 
-             JUN_DIRECT_DIVERSION + JUL_DIRECT_DIVERSION + AUG_DIRECT_DIVERSION + 
-             SEP_DIRECT_DIVERSION + OCT_DIRECT_DIVERSION + NOV_DIRECT_DIVERSION +
-             DEC_DIRECT_DIVERSION)
+    rowwise() %>%
+    mutate(ANNUAL_DIRECT = sum(JAN_DIRECT_DIVERSION, FEB_DIRECT_DIVERSION, 
+             MAR_DIRECT_DIVERSION, APR_DIRECT_DIVERSION, MAY_DIRECT_DIVERSION, 
+             JUN_DIRECT_DIVERSION, JUL_DIRECT_DIVERSION, AUG_DIRECT_DIVERSION, 
+             SEP_DIRECT_DIVERSION, OCT_DIRECT_DIVERSION, NOV_DIRECT_DIVERSION, 
+             DEC_DIRECT_DIVERSION, na.rm = TRUE)) %>%
+    ungroup()
   
   
   # Do the same for the storage values (call the column "ANNUAL_STORAGE")
   monthlyDF <- monthlyDF %>%
-    mutate(ANNUAL_STORAGE = JAN_STORAGE_DIVERSION + FEB_STORAGE_DIVERSION + 
-             MAR_STORAGE_DIVERSION + APR_STORAGE_DIVERSION + MAY_STORAGE_DIVERSION + 
-             JUN_STORAGE_DIVERSION + JUL_STORAGE_DIVERSION + AUG_STORAGE_DIVERSION + 
-             SEP_STORAGE_DIVERSION + OCT_STORAGE_DIVERSION + NOV_STORAGE_DIVERSION +
-             DEC_STORAGE_DIVERSION)
+    rowwise() %>%
+    mutate(ANNUAL_STORAGE = sum(JAN_STORAGE_DIVERSION, FEB_STORAGE_DIVERSION, 
+             MAR_STORAGE_DIVERSION, APR_STORAGE_DIVERSION, MAY_STORAGE_DIVERSION, 
+             JUN_STORAGE_DIVERSION, JUL_STORAGE_DIVERSION, AUG_STORAGE_DIVERSION, 
+             SEP_STORAGE_DIVERSION, OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION, 
+             DEC_STORAGE_DIVERSION, na.rm = TRUE)) %>%
+    ungroup()
   
   
   # Although it appears later in the module, define "ANNUAL_USE" now
   monthlyDF <- monthlyDF %>%
-    mutate(ANNUAL_USE = JAN_REPORTED_USE + FEB_REPORTED_USE + 
-             MAR_REPORTED_USE + APR_REPORTED_USE + MAY_REPORTED_USE + 
-             JUN_REPORTED_USE + JUL_REPORTED_USE + AUG_REPORTED_USE + 
-             SEP_REPORTED_USE + OCT_REPORTED_USE + NOV_REPORTED_USE +
-             DEC_REPORTED_USE)
+    rowwise() %>%
+    mutate(ANNUAL_USE = sum(JAN_REPORTED_USE, FEB_REPORTED_USE, 
+             MAR_REPORTED_USE, APR_REPORTED_USE, MAY_REPORTED_USE, 
+             JUN_REPORTED_USE, JUL_REPORTED_USE, AUG_REPORTED_USE, 
+             SEP_REPORTED_USE, OCT_REPORTED_USE, NOV_REPORTED_USE, 
+             DEC_REPORTED_USE, na.rm = TRUE)) %>%
+    ungroup()
   
   
   # Create two flag columns:
@@ -106,11 +112,11 @@ mainProcedure <- function () {
   # Make a note if that is the case
   # Otherwise, set it to an empty string ("")
   monthlyDF <- monthlyDF %>%
-    mutate(DUPLICATE_STORAGE_USE = if_else(ANNUAL_STORAGE > 0 & 
+    mutate(DUPLICATE_STORAGE_USE = if_else(!is.na(ANNUAL_STORAGE) & ANNUAL_STORAGE > 0 & 
                                              ANNUAL_STORAGE == ANNUAL_USE,
                                            "DUPLICATE_STOR_USE", 
                                            ""),
-           DUPLICATE_DIRECT_STORAGE = if_else(ANNUAL_STORAGE > 0 &
+           DUPLICATE_DIRECT_STORAGE = if_else(!is.na(ANNUAL_STORAGE) & ANNUAL_STORAGE > 0 &
                                                 ANNUAL_STORAGE == ANNUAL_DIRECT,
                                               "DUPLICATE_DIV_STOR",
                                               ""))
@@ -315,7 +321,7 @@ mainProcedure <- function () {
                 filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>%
                 select(APPLICATION_NUMBER, AMOUNT) %>%
                 group_by(APPLICATION_NUMBER) %>%
-                summarize(Total_Cumulative_Diverted = sum(AMOUNT)),
+                summarize(Total_Cumulative_Diverted = sum(AMOUNT, na.rm = TRUE)),
               by = "APPLICATION_NUMBER", relationship = "one-to-one")
   
   
@@ -325,7 +331,7 @@ mainProcedure <- function () {
                 filter(DIVERSION_TYPE == "USE") %>%
                 select(APPLICATION_NUMBER, AMOUNT) %>%
                 group_by(APPLICATION_NUMBER) %>%
-                summarize(Total_Cumulative_Use = sum(AMOUNT)),
+                summarize(Total_Cumulative_Use = sum(AMOUNT, na.rm = TRUE)),
               by = "APPLICATION_NUMBER", relationship = "one-to-one")
   
   
@@ -344,9 +350,31 @@ mainProcedure <- function () {
   # The final step of this script is to output a spreadsheet 
   # in a similar format as "ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics.xlsx"
   # Use a separate function to create the workbook
-  makeXLSX(avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear, minYear,
-           numRights, numYears, uniqAppNum)
+  # makeXLSX(avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear, minYear,
+  #          numRights, numYears, uniqAppNum)
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, YEAR, JAN_DIRECT_DIVERSION,
+           FEB_DIRECT_DIVERSION, MAR_DIRECT_DIVERSION,
+           APR_DIRECT_DIVERSION, MAY_DIRECT_DIVERSION,
+           JUN_DIRECT_DIVERSION, JUL_DIRECT_DIVERSION,
+           AUG_DIRECT_DIVERSION, SEP_DIRECT_DIVERSION,
+           OCT_DIRECT_DIVERSION, NOV_DIRECT_DIVERSION,
+           DEC_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION,
+           FEB_STORAGE_DIVERSION, MAR_STORAGE_DIVERSION,
+           APR_STORAGE_DIVERSION, MAY_STORAGE_DIVERSION,
+           JUN_STORAGE_DIVERSION, JUL_STORAGE_DIVERSION,
+           AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
+           OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
+           DEC_STORAGE_DIVERSION) %>%
+    write.xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+               overwrite = TRUE)
   
+  
+  
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
+           FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
+    write.xlsx("OutputData/ExpectedDemand_FV.xlsx", overwrite = TRUE)
   
   
   # Also save a separate spreadsheet with just columns related to assessing unit conversion errors
@@ -366,6 +394,18 @@ mainProcedure <- function () {
              (Diversion_as_Percent_of_IniDiv > 10 & IniDiv_Converted_to_AF > 0) | 
              (Diversion_as_Percent_of_IniDiv < 0.1 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
     write.xlsx("OutputData/Expected_Demand_Units_QAQC.xlsx", overwrite = TRUE)
+  
+  
+  
+  # After that, include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
+  monthlyDF %>%
+    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
+    write.xlsx("OutputData/Calendar_Year_Totals_AF.xlsx", overwrite = TRUE)
+  
+  
+  
+  # Output a message to the console
+  cat("Done!\n")
   
   
   
@@ -404,7 +444,7 @@ monthlyUseValues <- function (statDF) {
         group_by(APPLICATION_NUMBER, YEAR) %>%
         summarize(!! paste0(monthNames[j], "_",
                          c("DIRECT_DIVERSION", "STORAGE_DIVERSION", "REPORTED_USE")[i]) :=
-                    sum(AMOUNT), .groups = "keep")
+                    sum(AMOUNT, na.rm = TRUE), .groups = "keep")
       
       
       # NOTE
@@ -702,6 +742,7 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
   # This line will fill in Columns 20/T to 68/BP
   writeData(wb, "ReportedDiversionAnalysis",
             monthlyDF %>%
+              rowwise() %>%
               mutate(INDEX = which(uniqAppNum == APPLICATION_NUMBER)) %>%
               select(YEAR, INDEX, APPLICATION_NUMBER, 
                      JAN_DIRECT_DIVERSION, FEB_DIRECT_DIVERSION, MAR_DIRECT_DIVERSION,
@@ -1025,10 +1066,15 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 
 #### Script Execution ####
 
+cat("Starting 'Expected_Demand.R'...")
+
 mainProcedure()
 
 
+print("The Expected_Demand.R script is done running!")
 
+
+remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues)
 
 
 

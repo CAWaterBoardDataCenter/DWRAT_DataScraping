@@ -13,7 +13,7 @@ library(KeyboardSimulator)
 
 # set start and end dates -------------------------------------------------
 ## Set start date----
-StartDate <- as.Date("2023-01-01") # 1-2 months before previous end date
+StartDate <- as.Date("2022-10-01") # 1-2 months before previous end date
 #Serves as the start date for the observed data forecast and the DAT_Shell
 
 # Extract Day, Month, and Year from StartDate; functions require lubridate package
