@@ -116,6 +116,8 @@ write.csv(SRP_monthly, here("ProcessedData/SRP_2023-10.csv"), row.names = FALSE)
 
 # merge data to include the rest of LRR subbasins
 PRMS <- read.csv(here("ProcessedData/PRMS_2023-10.csv"))
+PRMS$Date <- as.Date(PRMS$Date)
+colnames(PRMS)[2:23] <- c(1:22)
 Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 
 # write Raw Flows to cvs for DWRAT input
