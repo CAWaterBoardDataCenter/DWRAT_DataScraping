@@ -112,10 +112,11 @@ colnames(SRP_monthly)[colnames(SRP_monthly) == "Month"] <- "Date"
 colnames(SRP_monthly)[2:7] <- c(23:28)
 
 # write subset data to CSV----
-write.csv(SRP_monthly, here("ProcessedData/SRP_update_AF_2023-10.csv"), row.names = FALSE)
+write.csv(SRP_monthly, here("ProcessedData/SRP_2023-10.csv"), row.names = FALSE)
 
 # merge data to include the rest of LRR subbasins
-Raw_Flows <- merge(RR_Subset_Summed, SRP_monthly, by = "Date")
+PRMS <- read.csv(here("ProcessedData/PRMS_2023-10.csv"))
+Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 
 # write Raw Flows to cvs for DWRAT input
 write.csv(Raw_Flows, here("ProcessedData/Raw_Flows_2023-10.csv"), row.names = FALSE)
