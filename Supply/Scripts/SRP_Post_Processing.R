@@ -34,7 +34,7 @@ date_seq <- seq(from = start_date, length.out = nrow(gag), by = "day")
 gag$Date <- date_seq[1:nrow(gag)]
 
 # create a subset for the timeframe of interest----
-gag <- subset(gag, Date>= "2023-1-01" & Date <= "2023-05-31")
+gag <- subset(gag, Date>= "2023-07-01" & Date <= "2023-10-31")
 date_seq = gag$Date
 
 # gag manipulation----
@@ -107,8 +107,18 @@ months <- SRP_monthly$Month
 # convert the month values to date objects
 SRP_monthly$Month <- as.Date(paste0(months, "/01/2023"), format = "%m/%d/%Y")
 
+# rename columns to match DWRAT naming convention
+colnames(SRP_monthly)[colnames(SRP_monthly) == "Month"] <- "Date"
+colnames(SRP_monthly)[2:7] <- c(23:28)
+
 # write subset data to CSV----
-write.csv(SRP_monthly, here("ProcessedData/SRP_update_AF_2023.04.05.csv"), row.names = FALSE)
+write.csv(SRP_monthly, here("ProcessedData/SRP_update_AF_2023-10.csv"), row.names = FALSE)
+
+# merge data to include the rest of LRR subbasins
+Raw_Flows <- merge(RR_Subset_Summed, SRP_monthly, by = "Date")
+
+# write Raw Flows to cvs for DWRAT input
+write.csv(Raw_Flows, here("ProcessedData/Raw_Flows_2023-10.csv"), row.names = FALSE)
 
 # write daily values - if needed - to CSV
 # write.csv(SRP, here("ProcessedData/SRP_daily_AcFt_2023.04.05.csv"), row.names = FALSE)
