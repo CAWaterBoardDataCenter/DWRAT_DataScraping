@@ -5,7 +5,7 @@ library(here)
 library(lubridate) #for make_date function
 
 #Import DAT stuff
-DAT_File <- read.delim(here("InputData/data_update_to_11.30.2022.txt"), sep = "\t")
+DAT_File <- read.delim(here("InputData/data_update_to_9.27.2023.txt"), sep = "\t")
 DAT_Fields <- read.csv(here("InputData/DAT_Fields.csv"))
 
 #Set DAT_File column names
@@ -30,7 +30,7 @@ DAT_File$Date <- make_date(year = DAT_File$Year,
 #Start_Date <- as.Date("2023-01-11")
 #The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
 #End_Date <- Sys.Date() + 5
-DAT_Shell <- subset(DAT_File, Date >= StartDate & Date <= End_Date) #Adjust as needed
+DAT_Shell <- subset(DAT_File, Date >= StartDate$date & Date <= End_Date) #Adjust as needed
 DAT_Shell
 
 #Set Date as the 7th column in DAT_Shell
