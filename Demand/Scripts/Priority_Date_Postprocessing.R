@@ -252,30 +252,6 @@ Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
 # Output a CSV file
 write.csv(Diversion_out_of_Season_Part_B_FINAL,"IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv", row.names = FALSE)
 
-
-###################################################################Duplicate_Reports_Same Owner_Multiple_WR############################################################
-
-# Create the input file for the duplicate owner module
-
-# Read in the CSV
-Duplicate_Reports_Same_Owner_Multiple_WR <- read.csv("IntermediateData/water_use_report_DATE.csv")
-
-
-# Save a subset of the columns
-# Also, filter the table to only diversion types that are "DIRECT" or "STORAGE"
-# unique() will be used to remove duplicated rows
-# This sounds contradictory but the intended purpose of this module is to check for
-# duplicated submissions across a right's submissions, not for duplicates of the same year-month pair
-Duplicate_Reports_Same_Owner_Multiple_WR_FINAL <- Duplicate_Reports_Same_Owner_Multiple_WR %>%
-  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>%
-  filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>% 
-  unique()
-
-
-# Output the variable to a file structure
-write.csv(Duplicate_Reports_Same_Owner_Multiple_WR_FINAL,"IntermediateData/Duplicate_Reports_Same_Owner_Multiple_WR_FINAL.csv", row.names = FALSE)
-
-
 # Remove unnecessary variables at this step to free up memory
 remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
        Diversion_out_of_Season_Part_A, Diversion_out_of_Season_Part_A_FINAL,
@@ -390,12 +366,6 @@ Nine <- ewrims_flat_file_party_APPLICATION_ID %>%
 
 # Combine these three data frames
 ewrims_flat_file_party_Final <- rbind(Phone, Nine, Email)
-
-
-# Output the data to a CSV file
-write.csv(ewrims_flat_file_party_Final,"IntermediateData/Missing_Contact_Information.csv", row.names = FALSE)
-
-
 
 # Finally, remove all variables from the workspace
 remove(ewrims_flat_file, ewrims_flat_file_one, ewrims_flat_file_party,

@@ -58,17 +58,17 @@ expDemand %>%
 # Outliers are usually identified by being:
 #   (1) More than 2 standard deviations away from the mean
 #   (2) Outside of the range defined by the IQR and first/third quartiles [Q1 - 1.5 IQR, Q3 + 1.5 IQR]
-expDemand %>%
-  mutate(OUTLIER_BOUND_L_MEDIAN = Q1_TOTAL_AF - 1.5 * IQR_TOTAL_AF,
-         OUTLIER_BOUND_R_MEDIAN = Q3_TOTAL_AF + 1.5 * IQR_TOTAL_AF,
-         OUTLIER_BOUND_L_MEAN = AVG_TOTAL_AF - 2 * SD_TOTAL_AF,
-         OUTLIER_BOUND_R_MEAN = AVG_TOTAL_AF + 2 * SD_TOTAL_AF) %>%
-  filter(CALENDAR_YEAR_TOTAL > 0) %>%
-  filter(CALENDAR_YEAR_TOTAL < OUTLIER_BOUND_L_MEDIAN | 
-           CALENDAR_YEAR_TOTAL < OUTLIER_BOUND_L_MEAN |
-           CALENDAR_YEAR_TOTAL > OUTLIER_BOUND_R_MEDIAN | 
-           CALENDAR_YEAR_TOTAL > OUTLIER_BOUND_R_MEAN) %>%
-  write.xlsx("OutputData/Expected_Demand_Units_QAQC_Statistical_Outliers.xlsx", overwrite = TRUE)
-
+# expDemand %>%
+#   mutate(OUTLIER_BOUND_L_MEDIAN = Q1_TOTAL_AF - 1.5 * IQR_TOTAL_AF,
+#          OUTLIER_BOUND_R_MEDIAN = Q3_TOTAL_AF + 1.5 * IQR_TOTAL_AF,
+#          OUTLIER_BOUND_L_MEAN = AVG_TOTAL_AF - 2 * SD_TOTAL_AF,
+#          OUTLIER_BOUND_R_MEAN = AVG_TOTAL_AF + 2 * SD_TOTAL_AF) %>%
+#   filter(CALENDAR_YEAR_TOTAL > 0) %>%
+#   filter(CALENDAR_YEAR_TOTAL < OUTLIER_BOUND_L_MEDIAN | 
+#            CALENDAR_YEAR_TOTAL < OUTLIER_BOUND_L_MEAN |
+#            CALENDAR_YEAR_TOTAL > OUTLIER_BOUND_R_MEDIAN | 
+#            CALENDAR_YEAR_TOTAL > OUTLIER_BOUND_R_MEAN) %>%
+#   write.xlsx("OutputData/Expected_Demand_Units_QAQC_Statistical_Outliers.xlsx", overwrite = TRUE)
+# 
 
 
