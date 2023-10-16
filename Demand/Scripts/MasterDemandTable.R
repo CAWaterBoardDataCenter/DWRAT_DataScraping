@@ -121,19 +121,18 @@ diverDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsU
 
 # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
 diverDF <- diverDF %>%
-  rowwise() %>%
-  mutate(JAN_TOTAL_DIVERSION = sum(JAN_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION, na.rm = TRUE),
-         FEB_TOTAL_DIVERSION = sum(FEB_DIRECT_DIVERSION, FEB_STORAGE_DIVERSION, na.rm = TRUE),
-         MAR_TOTAL_DIVERSION = sum(MAR_DIRECT_DIVERSION, MAR_STORAGE_DIVERSION, na.rm = TRUE),
-         APR_TOTAL_DIVERSION = sum(APR_DIRECT_DIVERSION, APR_STORAGE_DIVERSION, na.rm = TRUE),
-         MAY_TOTAL_DIVERSION = sum(MAY_DIRECT_DIVERSION, MAY_STORAGE_DIVERSION, na.rm = TRUE),
-         JUN_TOTAL_DIVERSION = sum(JUN_DIRECT_DIVERSION, JUN_STORAGE_DIVERSION, na.rm = TRUE),
-         JUL_TOTAL_DIVERSION = sum(JUL_DIRECT_DIVERSION, JUL_STORAGE_DIVERSION, na.rm = TRUE),
-         AUG_TOTAL_DIVERSION = sum(AUG_DIRECT_DIVERSION, AUG_STORAGE_DIVERSION, na.rm = TRUE),
-         SEP_TOTAL_DIVERSION = sum(SEP_DIRECT_DIVERSION, SEP_STORAGE_DIVERSION, na.rm = TRUE),
-         OCT_TOTAL_DIVERSION = sum(OCT_DIRECT_DIVERSION, OCT_STORAGE_DIVERSION, na.rm = TRUE),
-         NOV_TOTAL_DIVERSION = sum(NOV_DIRECT_DIVERSION, NOV_STORAGE_DIVERSION, na.rm = TRUE),
-         DEC_TOTAL_DIVERSION = sum(DEC_DIRECT_DIVERSION, DEC_STORAGE_DIVERSION, na.rm = TRUE),) %>%
+  mutate(JAN_TOTAL_DIVERSION = replace_na(JAN_DIRECT_DIVERSION, 0) + replace_na(JAN_STORAGE_DIVERSION, 0),
+         FEB_TOTAL_DIVERSION = replace_na(FEB_DIRECT_DIVERSION, 0) + replace_na(FEB_STORAGE_DIVERSION, 0),
+         MAR_TOTAL_DIVERSION = replace_na(MAR_DIRECT_DIVERSION, 0) + replace_na(MAR_STORAGE_DIVERSION, 0),
+         APR_TOTAL_DIVERSION = replace_na(APR_DIRECT_DIVERSION, 0) + replace_na(APR_STORAGE_DIVERSION, 0),
+         MAY_TOTAL_DIVERSION = replace_na(MAY_DIRECT_DIVERSION, 0) + replace_na(MAY_STORAGE_DIVERSION, 0),
+         JUN_TOTAL_DIVERSION = replace_na(JUN_DIRECT_DIVERSION, 0) + replace_na(JUN_STORAGE_DIVERSION, 0),
+         JUL_TOTAL_DIVERSION = replace_na(JUL_DIRECT_DIVERSION, 0) + replace_na(JUL_STORAGE_DIVERSION, 0),
+         AUG_TOTAL_DIVERSION = replace_na(AUG_DIRECT_DIVERSION, 0) + replace_na(AUG_STORAGE_DIVERSION, 0),
+         SEP_TOTAL_DIVERSION = replace_na(SEP_DIRECT_DIVERSION, 0) + replace_na(SEP_STORAGE_DIVERSION, 0),
+         OCT_TOTAL_DIVERSION = replace_na(OCT_DIRECT_DIVERSION, 0) + replace_na(OCT_STORAGE_DIVERSION, 0),
+         NOV_TOTAL_DIVERSION = replace_na(NOV_DIRECT_DIVERSION, 0) + replace_na(NOV_STORAGE_DIVERSION, 0),
+         DEC_TOTAL_DIVERSION = replace_na(DEC_DIRECT_DIVERSION, 0) + replace_na(DEC_STORAGE_DIVERSION, 0)) %>%
   ungroup()
 
 
@@ -155,8 +154,6 @@ sumDF <- diverDF %>%
             NOV_MEAN_DIV = mean(NOV_TOTAL_DIVERSION, na.rm = TRUE),
             DEC_MEAN_DIV = mean(DEC_TOTAL_DIVERSION, na.rm = TRUE),
             .groups = "drop") %>%
-  
-  rowwise() %>%
   mutate(TOTAL_ANNUAL_EXPECTED_DIVERSION = JAN_MEAN_DIV + 
            FEB_MEAN_DIV + MAR_MEAN_DIV + 
            APR_MEAN_DIV + MAY_MEAN_DIV + 
@@ -166,8 +163,7 @@ sumDF <- diverDF %>%
            DEC_MEAN_DIV,
          MAY_TO_SEPT_EXPECTED_DIVERSION = MAY_MEAN_DIV + 
            JUN_MEAN_DIV + JUL_MEAN_DIV +
-           AUG_MEAN_DIV + SEP_MEAN_DIV) %>%
-  ungroup()
+           AUG_MEAN_DIV + SEP_MEAN_DIV)
 
 
 # Import the ewrims_flat_file_working_file.csv----
@@ -290,7 +286,7 @@ ewrimsDF <- ewrimsDF %>%
   #basin number. 
 
 ewrimsDF <- ewrimsDF %>%
-  mutate(UPPER_RUSSIAN = ifelse(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
+  mutate(UPPER_RUSSIAN = if_else(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
                                                             "06", "07", "08", "09", "10", "11", 
                                                             "12", "13"), "Y", "N"))
 

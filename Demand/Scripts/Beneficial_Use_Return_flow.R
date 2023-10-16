@@ -316,6 +316,10 @@ mainProcedure <- function () {
   
   
   
+  cat("Done!\n")
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
   
@@ -526,5 +530,11 @@ writeSpreadsheet <- function (inputDF, resDF) {
 
 #### Script Execution ####
 
+
+cat("Starting 'Beneficial_Use_Return_Flow.R'...")
+
 mainProcedure()
-print("The Beneficial_Use_Return_flow.R script is done running!")
+
+
+
+remove(mainProcedure, standardReturnFlow, useRanking, writeSpreadsheet)
