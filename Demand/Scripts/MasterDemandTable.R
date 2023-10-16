@@ -356,12 +356,27 @@ MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
 RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
 
 # Structure of 2023_RRMasterDemandTable
-# structure_MDT = data.frame(
-#   MDT_ColumnName = colnames(MasterDemandTable),
-#   MDT_VariableType = sapply(MasterDemandTable, class),
-# )
+structure_MDT = data.frame(
+  MDT_ColumnName = colnames(MasterDemandTable),
+  MDT_VariableType = sapply(MasterDemandTable, class)
+)
+
 
 # Structure of Russian_River_Database_2022
+structure_RR2022 = data.frame(
+  RR2022_ColumnName = colnames(RussianRiverDatabase2022),
+  RR2022_VariableType = sapply(RussianRiverDatabase2022,class)
+)
+
+library(openxlsx)
+
+MDT_Comparison <-createWorkbook()
+  addWorksheet(MDT_Comparison, "MDT2023")
+  writeDataTable(MDT_Comparison, "MDT2023", structure_MDT)
+  addWorksheet(MDT_Comparison,"RR2022")
+  writeDataTable(MDT_Comparison, "RR2022", structure_RR2022)
+  saveWorkbook(MDT_Comparison, file = paste0("OutputData/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
+
 print("The MasterDemandTable.R script has finished running")
 
 

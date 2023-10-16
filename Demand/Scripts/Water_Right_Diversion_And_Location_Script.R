@@ -48,20 +48,24 @@ Water_Use_Report = read.csv("RawData/water_use_report.csv")
   Water_Use_Report <- Water_Use_Report %>%
     select(YEAR, MONTH, APPL_ID, DIVERSION_TYPE, STORAGE, DIRECT)
   
+  #Filter to a handful of water rights for deeper analysis and spot-checking
+  Sample = Water_Use_Report %>% filter(APPL_ID %in% c("L031422", "L031423", "L031424"))
+  print(Sample)
+  
   # Pivot the data frame to show the total amount of water used for STORAGE and DIRECT for each year and right
-  Water_Use_Report <- Water_Use_Report %>%
-    pivot_wider(names_from = DIVERSION_TYPE, values_from = c(STORAGE, DIRECT))
+  # Water_Use_Report <- Water_Use_Report %>%
+  #   pivot_wider(names_from = DIVERSION_TYPE, values_from = c(STORAGE, DIRECT))
   
   # Select the YEAR, MONTH, RIGHT, STORAGE, and DIRECT columns
-  Water_Use_Report <- Water_Use_Report %>%
-    select(YEAR, APPL_ID, STORAGE, DIRECT)
-  
-  # Print the data frame
-  print(Water_Use_Report)
-  
-  
-  # Print the summary table
-  print(Water_Use_Report_Summary)
+  # Water_Use_Report <- Water_Use_Report %>%
+  #   select(YEAR, APPL_ID, STORAGE, DIRECT)
+  # 
+  # # Print the data frame
+  # print(Water_Use_Report)
+  # 
+  # 
+  # # Print the summary table
+  # print(Water_Use_Report_Summary)
 
 # Save the POD flat file----
   download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_pod.csv", 
