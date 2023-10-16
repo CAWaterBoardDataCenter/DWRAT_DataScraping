@@ -273,10 +273,7 @@ mainProcedure <- function () {
 
 #### Script Execution ####
 
-<<<<<<< Updated upstream
-mainProcedure()
-print("Priority_Date.R has finished running!")
-=======
+
 cat("Starting 'Priority_Date.R'...")
 
 mainProcedure()
@@ -284,4 +281,3 @@ mainProcedure()
 
 # Remove the function from the environment when the procedure is complete
 remove(mainProcedure)
->>>>>>> Stashed changes
