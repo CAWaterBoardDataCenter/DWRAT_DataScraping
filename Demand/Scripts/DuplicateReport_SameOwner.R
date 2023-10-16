@@ -153,6 +153,10 @@ mainProcedure <- function () {
   
   
   
+  cat("Done!\n")
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
 }
@@ -296,4 +300,13 @@ getEWRIMS <- function () {
 
 #### Script Execution ####
 
+
+
+cat("Starting 'DuplicateReport_SameOwner.R'...")
+
+
 mainProcedure()
+
+
+
+remove(mainProcedure, getEWRIMS)

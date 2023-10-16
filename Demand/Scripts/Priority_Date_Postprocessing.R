@@ -7,6 +7,9 @@ library(tidyverse)
 library(readxl)
 library(data.table)
 
+
+cat("Starting 'Priority_Date_Postprocessing.R'...\n")
+
 ######################################################################## Break ####################################################################################
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
@@ -43,7 +46,8 @@ water_use_report_Date <- water_use_report_Date %>%
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
-remove(water_use_report, water_use_report_Combined, water_use_report_Date, unitFixer, chooseUseType, iterateQAQC, useMeasurementData)
+remove(water_use_report, water_use_report_Combined, water_use_report_Date, unitFixer, 
+       chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups)
 
 ######################################################################## Break ####################################################################################
 
@@ -99,38 +103,6 @@ remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
        ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
        ewrims_flat_file_use_season_Combined_USE_STATUS)
 
-###########################################################################Duplicate_Reports_POD(F1)###################################################################
-#################################################################################### Break ############################################################################
-
-
-# Read back in the filtered ewrims flat file
-Duplicate_Reports_POD <- read.csv("IntermediateData/ewrims_flat_file_WITH_FILTERS.csv")
-
-
-# Select a subset of these columns
-Duplicate_Reports_POD_FINAL_List <- Duplicate_Reports_POD %>%
-  select("APPLICATION_NUMBER","POD_ID","LATITUDE","LONGITUDE","SOURCE_NAME","APPLICATION_PRIMARY_OWNER" ,"PRIMARY_OWNER_NAME","CERTIFICATE_ID","PERMIT_ID",	
-         "LICENSE_ID",	"WATER_RIGHT_TYPE",	"WATER_RIGHT_STATUS",	"PRIMARY_OWNER_ENTITY_TYPE","MAX_DD_APPL","MAX_DD_UNITS","MAX_DD_ANN","MAX_STORAGE","MAX_TAKEN_FROM_SOURCE","USE_DIRECT_DIV_ANNUAL_AMOUNT",	
-         "USE_STORAGE_AMOUNT",	"POD_NUMBER",	"POD_STATUS",	"DIRECT_DIVERSION_RATE",	"POD_TYPE")
-
-
-# Write the shortened variable to a new CSV file
-write.csv(Duplicate_Reports_POD_FINAL_List,"IntermediateData/Duplicate_Reports_POD_FINAL_List.csv", row.names = FALSE)
-
-
-
-# At this point in the script, the original file had a procedure that produced 
-# a CSV file called 'Overlapping_Water_Rights.csv'
-
-# It is comparable to the Excel modules for QA/QC
-# It highlights likely duplicated points of diversion in the dataset
-
-# This version of the script does not include that procedure, but the original
-# version can be referenced if that code is ever needed
-
-# The script is "QAQC_Combine_Flat_Files" in "Supply and Demand Assessment - Documents\Onboarding Materials\demandanalysis_040722\Pre Processing Scripts\QAQC_Scripts"
-# The output file is 'Overlapping_Water_Rights.csv' in "Supply and Demand Assessment - Documents\Onboarding Materials\demandanalysis_040722\Pre Processing Scripts\QAQC_Scripts\Output"
-
 
 ################################################################### Beneficial Use and Return Flow ############################################################
 
@@ -151,30 +123,6 @@ Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
 ####Output the variable to a file
 write.csv(Beneficial_Use_and_Return_Flow_FINAL,"IntermediateData/Beneficial_Use_and_Return_Flow_FINAL.csv", row.names = FALSE)
 
-
-###################################################################Duplicate Values - Months and Years############################################################
-
-# Create the input file for the duplicate months and years module
-
-# Read in the CSV 
-Duplicate_Values_Months_and_Years <- read.csv("IntermediateData/water_use_report_DATE.csv")
-
-
-# Keep only necessary columns
-Duplicate_Values_Months_and_Years <- Duplicate_Values_Months_and_Years %>%
-  select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE)
-
-
-# Remove USE from DIVERSION_TYPE
-# unique() will be used to remove duplicated rows
-# This sounds contradictory but the intended purpose of this module is to check for
-# duplicated submissions across a right's submissions, not for duplicates of the same year-month pair
-Duplicate_Values_Months_and_Years_FINAL <- Duplicate_Values_Months_and_Years %>%
-  filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>% 
-  unique()
-
-# Output a CSV
-write.csv(Duplicate_Values_Months_and_Years_FINAL,"IntermediateData/Duplicate_Values_Months_and_Years_FINAL.csv", row.names = FALSE)
 
 
 ###################################################################Statistics############################################################
@@ -280,11 +228,10 @@ write.csv(Duplicate_Reports_Same_Owner_Multiple_WR_FINAL,"IntermediateData/Dupli
 remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
        Diversion_out_of_Season_Part_A, Diversion_out_of_Season_Part_A_FINAL,
        Diversion_out_of_Season_Part_B_N, Diversion_out_of_Season_Part_B,
-       Diversion_out_of_Season_Part_B_FINAL, Duplicate_Reports_POD,
-       Duplicate_Reports_POD_FINAL_List, Duplicate_Reports_Same_Owner_Multiple_WR,
-       Duplicate_Reports_Same_Owner_Multiple_WR_FINAL, Duplicate_Values_Months_and_Years,
-       Duplicate_Values_Months_and_Years_FINAL, 
-       Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,Statistics_FINAL)
+       Diversion_out_of_Season_Part_B_FINAL, Duplicate_Reports_Same_Owner_Multiple_WR,
+       Duplicate_Reports_Same_Owner_Multiple_WR_FINAL, 
+       Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,
+       Statistics_FINAL)
 
 
 ###################################################################Missing RMS Reports############################################################
@@ -404,4 +351,5 @@ remove(ewrims_flat_file, ewrims_flat_file_one, ewrims_flat_file_party,
        Nine, Phone, Priority_Date, Email, Missing_RMS_Reports, Missing_RMS_Reports_FINAL,
        Missing_RMS_Reports_Priority_Date_Combined)
 
-print("Priority_Date_Postprocessing.R has finished running!")
+
+cat("Done!\n")

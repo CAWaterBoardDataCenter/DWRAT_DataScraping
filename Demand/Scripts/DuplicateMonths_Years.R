@@ -159,6 +159,11 @@ mainProcedure <- function () {
   
   
   
+  # Output a message to the console
+  cat("Done!\n")
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
   
@@ -167,4 +172,11 @@ mainProcedure <- function () {
 
 #### Script Execution ####
 
+cat("Starting 'DuplicateMonths_Years.R'...")
+
 mainProcedure()
+
+
+
+# At the end of the script, remove the function generated for this procedure
+remove(mainProcedure)

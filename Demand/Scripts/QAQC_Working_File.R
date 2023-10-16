@@ -293,6 +293,10 @@ mainProcedure <- function () {
   
   
   
+  cat("Done!\n")
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
   
@@ -929,4 +933,11 @@ assignBasinData <- function (ewrimsDF) {
 
 #### Script Execution ####
 
+
+cat("Starting 'QAQC_Working_File.R'...")
+
+
 mainProcedure()
+
+
+remove(assignBasinData, mainProcedure, spreadsheetAdjustment)
