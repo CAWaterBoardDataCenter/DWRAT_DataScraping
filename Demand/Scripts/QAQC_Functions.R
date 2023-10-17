@@ -39,10 +39,12 @@ unitFixer <- function (inputDF) {
   
   # Filter out entries where no action is required
   unitsQAQC <- unitsQAQC %>%
-    filter(!grepl("^[Nn]one", QAQC_Action_Taken))
+    filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
+    filter(YEAR <= max(inputDF$YEAR))
   
   unitsQAQC_Med <- unitsQAQC_Med %>%
-    filter(!grepl("^[Nn]one", QAQC_Action_Taken))
+    filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
+    filter(YEAR <= max(inputDF$YEAR))
   
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
@@ -66,7 +68,8 @@ dupReportingFixer <- function (inputDF) {
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
   # A single spreadsheet will be used for these corrections, "Duplicate_Reports_Manual_Review_20230925.xlsx"
-  qaqcDF <- read_xlsx("InputData/Duplicate_Reports_Manual_Review_20230925.xlsx")
+  qaqcDF <- read_xlsx("InputData/Duplicate_Reports_Manual_Review_20230925.xlsx") %>%
+    filter(YEAR <= max(inputDF$YEAR))
   
   
   # Remove entries in 'qaqcDF' where no actions are required
