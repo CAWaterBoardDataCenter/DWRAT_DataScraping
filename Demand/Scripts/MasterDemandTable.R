@@ -348,36 +348,39 @@ stopifnot(!anyNA(ewrimsDF$COUNTY))
 
 
 #Write the MasterDemandTable to a CSV----
-write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+#dataset that includes 2021 and 2022 curtailment reporting years
+#write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+#just the 2017-2020 reporting years
+write.csv(ewrimsDF, file = "OutputData/2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
-#Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv
-MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
-RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
-
-# Structure of 2023_RRMasterDemandTable
-structure_MDT = data.frame(
-  MDT_ColumnName = colnames(MasterDemandTable),
-  MDT_VariableType = sapply(MasterDemandTable, class)
-)
-
-
-# Structure of Russian_River_Database_2022
-structure_RR2022 = data.frame(
-  RR2022_ColumnName = colnames(RussianRiverDatabase2022),
-  RR2022_VariableType = sapply(RussianRiverDatabase2022,class)
-)
-
-library(openxlsx)
-
-MDT_Comparison <-createWorkbook()
-  addWorksheet(MDT_Comparison, "MDT2023")
-  writeDataTable(MDT_Comparison, "MDT2023", structure_MDT)
-  addWorksheet(MDT_Comparison,"RR2022")
-  writeDataTable(MDT_Comparison, "RR2022", structure_RR2022)
-  saveWorkbook(MDT_Comparison, file = paste0("OutputData/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
-
-print("The MasterDemandTable.R script has finished running")
+#Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
+# MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
+# RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
+# 
+# # Structure of 2023_RRMasterDemandTable
+# structure_MDT = data.frame(
+#   MDT_ColumnName = colnames(MasterDemandTable),
+#   MDT_VariableType = sapply(MasterDemandTable, class)
+# )
+# 
+# 
+# # Structure of Russian_River_Database_2022
+# structure_RR2022 = data.frame(
+#   RR2022_ColumnName = colnames(RussianRiverDatabase2022),
+#   RR2022_VariableType = sapply(RussianRiverDatabase2022,class)
+# )
+# 
+# library(openxlsx)
+# 
+# MDT_Comparison <-createWorkbook()
+#   addWorksheet(MDT_Comparison, "MDT2023")
+#   writeDataTable(MDT_Comparison, "MDT2023", structure_MDT)
+#   addWorksheet(MDT_Comparison,"RR2022")
+#   writeDataTable(MDT_Comparison, "RR2022", structure_RR2022)
+#   saveWorkbook(MDT_Comparison, file = paste0("OutputData/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
+# 
+# print("The MasterDemandTable.R script has finished running")
 
 
 
