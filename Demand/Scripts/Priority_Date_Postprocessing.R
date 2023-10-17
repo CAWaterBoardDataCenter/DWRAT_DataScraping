@@ -28,7 +28,9 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
-  filter(YEAR >= 2017)
+  filter(YEAR >= 2017) %>%
+  filter(YEAR <= 2020) #Added to generate a 2017-2020 dataset on 10/17/2023, 
+                      #2021 and 2022 were heavily curtailed years
 
 
 # Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
@@ -204,8 +206,7 @@ write.csv(Diversion_out_of_Season_Part_B_FINAL,"IntermediateData/Diversion_out_o
 remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
        Diversion_out_of_Season_Part_A, Diversion_out_of_Season_Part_A_FINAL,
        Diversion_out_of_Season_Part_B_N, Diversion_out_of_Season_Part_B,
-       Diversion_out_of_Season_Part_B_FINAL, Duplicate_Reports_Same_Owner_Multiple_WR,
-       Duplicate_Reports_Same_Owner_Multiple_WR_FINAL, 
+       Diversion_out_of_Season_Part_B_FINAL, 
        Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,
        Statistics_FINAL)
 
