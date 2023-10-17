@@ -6,6 +6,10 @@ library(readxl)
 library(openxlsx)
 library(sf)
 
+
+cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
+
+
 # Read in a spreadsheet with coordinate data
 # Convert it into a spatial feature
 # (Also, keep copies of the latitude and longitude coordinates in new columns)
@@ -90,6 +94,9 @@ podTable %>%
 
 #podTable_Buffer %>%
   #write.xlsx("OutputData/POD_Subbasin_Assignment_50m_Buffer.xlsx", overwrite = TRUE)
+
+
+cat("Done!\n")
 
 
 

@@ -69,6 +69,4 @@ expDemand %>%
 #            CALENDAR_YEAR_TOTAL > OUTLIER_BOUND_R_MEDIAN | 
 #            CALENDAR_YEAR_TOTAL > OUTLIER_BOUND_R_MEAN) %>%
 #   write.xlsx("OutputData/Expected_Demand_Units_QAQC_Statistical_Outliers.xlsx", overwrite = TRUE)
-# 
-
 
