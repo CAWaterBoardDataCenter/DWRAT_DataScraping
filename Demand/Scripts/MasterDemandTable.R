@@ -351,7 +351,7 @@ stopifnot(!anyNA(ewrimsDF$COUNTY))
 #dataset that includes 2021 and 2022 curtailment reporting years
 #write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
 #just the 2017-2020 reporting years
-write.csv(ewrimsDF, file = "OutputData/2020_RR_MasterDemandTable.csv", row.names = FALSE)
+write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
