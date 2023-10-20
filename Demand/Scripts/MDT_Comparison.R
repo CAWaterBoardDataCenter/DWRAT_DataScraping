@@ -70,5 +70,18 @@ MDT_Comparison$Annual_Demand_2017_2022 = round(x = MDT_Comparison$Annual_Demand_
 
 write.csv(MDT_Comparison, "MDT_Comparison.csv", row.names= FALSE)
 
+#Count water rights that existed in 2017-2019 MDT, but not in 2017-2022 MDT
+old_rights = anti_join(x = MDT_2017_2019, 
+                        y = MDT_2017_2022,
+                        by = "APPLICATION_NUMBER") %>%
+              select(APPLICATION_NUMBER) %>% unique() %>% arrange() #keep just the application_number field
+old_rights
 
+#Count water rights that existed in 2017-2022 MDT, but not in 2017-2019 MDT
+new_rights = anti_join(x = MDT_2017_2022, 
+                                    y = MDT_2017_2019,
+                                    by = "APPLICATION_NUMBER") %>%
+  select(APPLICATION_NUMBER) %>% unique() %>% arrange()
+
+new_rights
                 
