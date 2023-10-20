@@ -349,9 +349,9 @@ stopifnot(!anyNA(ewrimsDF$COUNTY))
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
-#write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+write.csv(ewrimsDF, file = "OutputData/2017-2022_RR_MasterDemandTable.csv", row.names = FALSE)
 #just the 2017-2020 reporting years
-write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
+#write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
@@ -380,10 +380,9 @@ write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.
 #   writeDataTable(MDT_Comparison, "RR2022", structure_RR2022)
 #   saveWorkbook(MDT_Comparison, file = paste0("OutputData/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
 # 
-# print("The MasterDemandTable.R script has finished running")
+print("The MasterDemandTable.R script has finished running")
 
 
 
 remove(assignBasinData, spreadsheetAdjustment, beneficialUse, diverDF,
-       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,
-       MasterDemandTable, RussianRiverDatabase2022, countyDF, podDF, i)
+       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,countyDF, podDF, i)
