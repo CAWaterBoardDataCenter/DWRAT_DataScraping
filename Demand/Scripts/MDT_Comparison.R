@@ -6,6 +6,11 @@ library(here)
 
 source_folder = here("OutputData")
 
+#Import Datasets----
+Recent_RR_Rights = read.csv("IntermediateData/Recent_RR_Water_Rights.csv")
+GIS_output = read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx")
+Effective_Dates_All_Rights = read.csv("InputData/Effective_Dates_All_Rights.csv")
+
 #Import Demand Datasets
 MDT_2017_2019 = read.csv(file = paste0(source_folder,"/", "2017-2019_RR_MasterDemandTable.csv"))
 MDT_2017_2020 = read.csv(file = paste0(source_folder, "/", "2017-2020_RR_MasterDemandTable.csv"))
@@ -84,4 +89,21 @@ new_rights = anti_join(x = MDT_2017_2022,
   select(APPLICATION_NUMBER) %>% unique() %>% arrange()
 
 new_rights
+
+
+#Compare MDT_2017-2022 to output of GIS pre-processing step
+
+GIS_output_unique_rights = GIS_output %>% select(APPLICATION_NUMBER) %>% unique()
+
+GIS_comparison = anti_join(x = GIS_output_unique_rights, 
+                          y = MDT_2017_2022, 
+                          by = "APPLICATION_NUMBER")
+
+#Compare 124 rights with effective dates in 2021-2023 to MDT_2017-2019
+new_rights_effective_date = anti_join(x = Recent_RR_Rights,
+                                      y = MDT_2017_2019,
+                                      by = "APPLICATION_NUMBER") %>% 
+  select(APPLICATION_NUMBER, EFFECTIVE_FROM_DATE) %>% unique() %>% arrange()
+new_rights_effective_date
                 
+
