@@ -22,5 +22,5 @@ amountDF <- fread("RawData/water_use_report_extended.csv",
 amountDF %>%
   filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE", "Combined (Direct + Storage)")) %>%
   group_by(APPLICATION_NUMBER, YEAR) %>%
-  summarize(CALENDAR_YEAR_TOTAL = sum(AMOUNT, na.rm = TRUE)) %>%
+  summarize(CALENDAR_YEAR_TOTAL = sum(AMOUNT, na.rm = TRUE), .groups = "drop") %>%
   write.xlsx("OutputData/Calendar_Year_Totals_AF.xlsx", overwrite = TRUE)
