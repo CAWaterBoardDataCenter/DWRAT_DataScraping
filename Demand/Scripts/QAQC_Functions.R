@@ -32,17 +32,19 @@ unitFixer <- function (inputDF) {
   
   
   # Read in those two spreadsheets
-  unitsQAQC <- read_xlsx("InputData/Expected_Demand_Units_QAQC_20230921.xlsx", sheet = "Corrected Data")
+  unitsQAQC <- read_xlsx("InputData/Expected_Demand_Units_QAQC_20231020.xlsx", sheet = "Corrected Data")
   unitsQAQC_Med <- read_xlsx("InputData/Expected_Demand_Units_QAQC_Median_Based_20230922.xlsx", sheet = "Filtered Data") %>%
     rename(QAQC_Action_Taken = QAQC_Action)
   
   
   # Filter out entries where no action is required
   unitsQAQC <- unitsQAQC %>%
-    filter(!grepl("^[Nn]one", QAQC_Action_Taken))
+    filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
+    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
   
   unitsQAQC_Med <- unitsQAQC_Med %>%
-    filter(!grepl("^[Nn]one", QAQC_Action_Taken))
+    filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
+    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
   
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
@@ -66,7 +68,8 @@ dupReportingFixer <- function (inputDF) {
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
   # A single spreadsheet will be used for these corrections, "Duplicate_Reports_Manual_Review_20230925.xlsx"
-  qaqcDF <- read_xlsx("InputData/Duplicate_Reports_Manual_Review_20230925.xlsx")
+  qaqcDF <- read_xlsx("InputData/Duplicate_Reports_Manual_Review_20230925.xlsx") %>%
+    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
   
   
   # Remove entries in 'qaqcDF' where no actions are required
@@ -376,11 +379,44 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
       
       
       
+      # If an action has multiple actions specified
+    } else if (grepl("^Multiple Actions\\|", unitsQAQC$QAQC_Action_Taken[i])) {
+      
+      
+      # Get a vector with all of the required actions listed
+      # (Also removed the first part "Multiple Actions")
+      actionVec <- unitsQAQC$QAQC_Action_Taken[i] %>%
+        str_split("\\|") %>% unlist() %>% tail(-1) %>% trimws()
+      
+      
+      # Create a dummy QAQC variable that repeats row 'i' for each action in 'actionVec'
+      for (j in 1:length(actionVec)) {
+        
+        # If this is the first iteration, initialize 'dummyDF'
+        # Otherwise, append row 'i' of 'unitsQAQC' to 'dummyDF'
+        if (j == 1) {
+          dummyDF <- unitsQAQC[i, ]
+        } else {
+          dummyDF <- bind_rows(dummyDF,
+                               unitsQAQC[i, ])
+        }
+        
+        
+        # Change the value of "QAQC_Action_Taken" to the corresponding entry in 'actionVec' 
+        dummyDF$QAQC_Action_Taken[j] <- actionVec[j]
+        
+      }
+      
+      
+      # After that, call iterateQAQC() again with 'dummyDF'
+      inputDF <- iterateQAQC(inputDF, dummyDF)
+      
+    
       # If an action is "None", skip it
     } else if (unitsQAQC$QAQC_Action_Taken[i] == "None") {
       
       next
-    
+      
       # Throw an error for any other action  
     } else {
       

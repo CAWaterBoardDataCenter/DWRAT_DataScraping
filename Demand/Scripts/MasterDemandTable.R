@@ -121,19 +121,18 @@ diverDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsU
 
 # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
 diverDF <- diverDF %>%
-  rowwise() %>%
-  mutate(JAN_TOTAL_DIVERSION = sum(JAN_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION, na.rm = TRUE),
-         FEB_TOTAL_DIVERSION = sum(FEB_DIRECT_DIVERSION, FEB_STORAGE_DIVERSION, na.rm = TRUE),
-         MAR_TOTAL_DIVERSION = sum(MAR_DIRECT_DIVERSION, MAR_STORAGE_DIVERSION, na.rm = TRUE),
-         APR_TOTAL_DIVERSION = sum(APR_DIRECT_DIVERSION, APR_STORAGE_DIVERSION, na.rm = TRUE),
-         MAY_TOTAL_DIVERSION = sum(MAY_DIRECT_DIVERSION, MAY_STORAGE_DIVERSION, na.rm = TRUE),
-         JUN_TOTAL_DIVERSION = sum(JUN_DIRECT_DIVERSION, JUN_STORAGE_DIVERSION, na.rm = TRUE),
-         JUL_TOTAL_DIVERSION = sum(JUL_DIRECT_DIVERSION, JUL_STORAGE_DIVERSION, na.rm = TRUE),
-         AUG_TOTAL_DIVERSION = sum(AUG_DIRECT_DIVERSION, AUG_STORAGE_DIVERSION, na.rm = TRUE),
-         SEP_TOTAL_DIVERSION = sum(SEP_DIRECT_DIVERSION, SEP_STORAGE_DIVERSION, na.rm = TRUE),
-         OCT_TOTAL_DIVERSION = sum(OCT_DIRECT_DIVERSION, OCT_STORAGE_DIVERSION, na.rm = TRUE),
-         NOV_TOTAL_DIVERSION = sum(NOV_DIRECT_DIVERSION, NOV_STORAGE_DIVERSION, na.rm = TRUE),
-         DEC_TOTAL_DIVERSION = sum(DEC_DIRECT_DIVERSION, DEC_STORAGE_DIVERSION, na.rm = TRUE),) %>%
+  mutate(JAN_TOTAL_DIVERSION = replace_na(JAN_DIRECT_DIVERSION, 0) + replace_na(JAN_STORAGE_DIVERSION, 0),
+         FEB_TOTAL_DIVERSION = replace_na(FEB_DIRECT_DIVERSION, 0) + replace_na(FEB_STORAGE_DIVERSION, 0),
+         MAR_TOTAL_DIVERSION = replace_na(MAR_DIRECT_DIVERSION, 0) + replace_na(MAR_STORAGE_DIVERSION, 0),
+         APR_TOTAL_DIVERSION = replace_na(APR_DIRECT_DIVERSION, 0) + replace_na(APR_STORAGE_DIVERSION, 0),
+         MAY_TOTAL_DIVERSION = replace_na(MAY_DIRECT_DIVERSION, 0) + replace_na(MAY_STORAGE_DIVERSION, 0),
+         JUN_TOTAL_DIVERSION = replace_na(JUN_DIRECT_DIVERSION, 0) + replace_na(JUN_STORAGE_DIVERSION, 0),
+         JUL_TOTAL_DIVERSION = replace_na(JUL_DIRECT_DIVERSION, 0) + replace_na(JUL_STORAGE_DIVERSION, 0),
+         AUG_TOTAL_DIVERSION = replace_na(AUG_DIRECT_DIVERSION, 0) + replace_na(AUG_STORAGE_DIVERSION, 0),
+         SEP_TOTAL_DIVERSION = replace_na(SEP_DIRECT_DIVERSION, 0) + replace_na(SEP_STORAGE_DIVERSION, 0),
+         OCT_TOTAL_DIVERSION = replace_na(OCT_DIRECT_DIVERSION, 0) + replace_na(OCT_STORAGE_DIVERSION, 0),
+         NOV_TOTAL_DIVERSION = replace_na(NOV_DIRECT_DIVERSION, 0) + replace_na(NOV_STORAGE_DIVERSION, 0),
+         DEC_TOTAL_DIVERSION = replace_na(DEC_DIRECT_DIVERSION, 0) + replace_na(DEC_STORAGE_DIVERSION, 0)) %>%
   ungroup()
 
 
@@ -155,8 +154,6 @@ sumDF <- diverDF %>%
             NOV_MEAN_DIV = mean(NOV_TOTAL_DIVERSION, na.rm = TRUE),
             DEC_MEAN_DIV = mean(DEC_TOTAL_DIVERSION, na.rm = TRUE),
             .groups = "drop") %>%
-  
-  rowwise() %>%
   mutate(TOTAL_ANNUAL_EXPECTED_DIVERSION = JAN_MEAN_DIV + 
            FEB_MEAN_DIV + MAR_MEAN_DIV + 
            APR_MEAN_DIV + MAY_MEAN_DIV + 
@@ -166,8 +163,7 @@ sumDF <- diverDF %>%
            DEC_MEAN_DIV,
          MAY_TO_SEPT_EXPECTED_DIVERSION = MAY_MEAN_DIV + 
            JUN_MEAN_DIV + JUL_MEAN_DIV +
-           AUG_MEAN_DIV + SEP_MEAN_DIV) %>%
-  ungroup()
+           AUG_MEAN_DIV + SEP_MEAN_DIV)
 
 
 # Import the ewrims_flat_file_working_file.csv----
@@ -290,7 +286,7 @@ ewrimsDF <- ewrimsDF %>%
   #basin number. 
 
 ewrimsDF <- ewrimsDF %>%
-  mutate(UPPER_RUSSIAN = ifelse(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
+  mutate(UPPER_RUSSIAN = if_else(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
                                                             "06", "07", "08", "09", "10", "11", 
                                                             "12", "13"), "Y", "N"))
 
@@ -352,21 +348,39 @@ stopifnot(!anyNA(ewrimsDF$COUNTY))
 
 
 #Write the MasterDemandTable to a CSV----
-write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+#dataset that includes 2021 and 2022 curtailment reporting years
+#write.csv(ewrimsDF, file = "OutputData/2023_RR_MasterDemandTable.csv", row.names = FALSE)
+#just the 2017-2020 reporting years
+write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
-#Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv
-MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
-RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
-
-# Structure of 2023_RRMasterDemandTable
+#Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
+# MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
+# RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
+# 
+# # Structure of 2023_RRMasterDemandTable
 # structure_MDT = data.frame(
 #   MDT_ColumnName = colnames(MasterDemandTable),
-#   MDT_VariableType = sapply(MasterDemandTable, class),
+#   MDT_VariableType = sapply(MasterDemandTable, class)
 # )
-
-# Structure of Russian_River_Database_2022
-print("The MasterDemandTable.R script has finished running")
+# 
+# 
+# # Structure of Russian_River_Database_2022
+# structure_RR2022 = data.frame(
+#   RR2022_ColumnName = colnames(RussianRiverDatabase2022),
+#   RR2022_VariableType = sapply(RussianRiverDatabase2022,class)
+# )
+# 
+# library(openxlsx)
+# 
+# MDT_Comparison <-createWorkbook()
+#   addWorksheet(MDT_Comparison, "MDT2023")
+#   writeDataTable(MDT_Comparison, "MDT2023", structure_MDT)
+#   addWorksheet(MDT_Comparison,"RR2022")
+#   writeDataTable(MDT_Comparison, "RR2022", structure_RR2022)
+#   saveWorkbook(MDT_Comparison, file = paste0("OutputData/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
+# 
+# print("The MasterDemandTable.R script has finished running")
 
 
 

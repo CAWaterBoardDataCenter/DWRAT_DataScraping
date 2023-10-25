@@ -7,6 +7,10 @@ library(readxl)
 library(data.table) #for fread function
 
 
+# Output a message to the console
+cat("Starting 'Priority_Date_Preprocessing.R'...")
+
+
 ######################################################################## List of Application from GIS Step ####################################################################################
 
 # Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023
@@ -52,4 +56,6 @@ write_csv(Priority_Date_FINAL,"IntermediateData/Priority_Date_FINAL.csv")
 # Remove variables that are no longer needed
 remove(Priority_Date, Priority_Date_FINAL, ewrims_flat_file, ewrims_flat_file_Combined)
 
-print("The Priority_Date_Preprocessing.R script has finished running!")
+
+# Output a completion message to the console
+cat("Done!\n")

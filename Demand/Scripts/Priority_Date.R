@@ -259,10 +259,25 @@ mainProcedure <- function () {
   priorityDateCSV %>%
     write.xlsx("OutputData/Priority_Date_Scripted.xlsx", overwrite = TRUE)
   
+  
+  
+  # Send a completion message to the console
+  cat("Done!\n")
+  
+  
+  
+  return(invisible(NULL))
+  
 }
 
 
 #### Script Execution ####
 
+
+cat("Starting 'Priority_Date.R'...")
+
 mainProcedure()
-print("Priority_Date.R has finished running!")
+
+
+# Remove the function from the environment when the procedure is complete
+remove(mainProcedure)

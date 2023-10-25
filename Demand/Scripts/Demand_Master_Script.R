@@ -5,7 +5,7 @@
 #source("Scripts/GIS_POD_Flat_File_Prep.R")
 
 
-# A QA/QC function for unit conversion errors
+# QA/QC functions for correcting unit conversion errors and duplicate reporting
 source("Scripts/QAQC_Functions.R")
 
 # Priority Date Pre-Processing
@@ -28,6 +28,7 @@ source("Scripts/Priority_Date_Postprocessing.R")
   # the manual review has already been performed on the duplicates
 source("Scripts/Multiple_Owner_Analysis.R")
 
+
 # Expected Demand Module
 source("Scripts/Expected_Demand.R")
 
@@ -37,11 +38,11 @@ source("Scripts/Beneficial_Use_Return_Flow.R")
 
 
 # Diversion Out of Season Module (Parts A and B)*
-source("Scripts/Diversion_Out_Of_Season.R")
+#source("Scripts/Diversion_Out_Of_Season.R")
 
 
-# Missing RMS Reports Module*
-source("Scripts/Missing_RMS_Reports.R")
+# Duplicate Report, Same Owner Module*
+#source("Scripts/DuplicateReport_SameOwner.R")
 
 
 # POD Sub-basin Assignment
@@ -51,7 +52,8 @@ source("Scripts/Assign_Subbasin_to_POD.R")
 # QA/QC Working File Module*
   # This script was originally used to develop the QAQC Working File spreadsheet, but has been
   # superseded by the MasterDemandTable script, which produces the 2023_RR_MasterDemandTable CSV directly
-source("Scripts/QAQC_Working_File.R") 
+#source("Scripts/QAQC_Working_File.R") 
+
 
 # MasterDemandTable.CSV for DWRAT
 source("Scripts/MasterDemandTable.R")

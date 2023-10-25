@@ -109,6 +109,10 @@ mainProcedure <- function () {
   
   
   
+  cat("Done!\n")
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
   
@@ -228,4 +232,12 @@ writeExcel <- function (reportDF, reportCounts, reportStartYear, reportEndYear) 
 
 #### Script Execution ####
 
+
+cat("Starting 'Missing_RMS_Reports.R'...")
+
+
 mainProcedure()
+
+
+
+remove(mainProcedure, writeExcel)

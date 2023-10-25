@@ -28,7 +28,9 @@ read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.x
   write_csv("RawData/water_use_report.csv")
 
 # Save the Water Rights Annual Water Use Extended Report file too
-read_csv("")
+fread("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv") %>%
+  fwrite("RawData/water_use_report.csv")
+
 # Save the Water Rights Uses and Seasons flat file as well
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
   write_csv("RawData/ewrims_flat_file_use_season.csv")

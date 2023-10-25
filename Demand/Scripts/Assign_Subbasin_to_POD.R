@@ -1,12 +1,13 @@
 # This script reads in a shapefile of POD points and polygon data of Russian River subbasins
 # Then, it uses the sf package's st_intersection() function to assign 
 
-
 library(tidyverse)
 library(readxl)
 library(openxlsx)
 library(sf)
 
+
+cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
 
 
 # Read in a spreadsheet with coordinate data
@@ -19,15 +20,9 @@ POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>
 
 st_crs(POD) <- "WGS84"
 
-
-
-
-
-# Read in the Russian River subbasins
+# Read in the Russian River sub-basins
 # Note: st_layers() can be used to see all available layers in the geodatabase
 subRR <- st_read("InputData/DWRAT_ForImportIntoPortal.gdb", layer = "RR_Basins_UpprAndLwr")
-
-
 
 # Change the CRS of 'subRR' to match 'POD'
 subRR <- st_transform(subRR, st_crs(POD))
@@ -99,6 +94,9 @@ podTable %>%
 
 #podTable_Buffer %>%
   #write.xlsx("OutputData/POD_Subbasin_Assignment_50m_Buffer.xlsx", overwrite = TRUE)
+
+
+cat("Done!\n")
 
 
 
