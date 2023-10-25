@@ -29,7 +29,7 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
   filter(YEAR >= 2017) %>%
-  filter(YEAR <= 2020) #Added to generate a 2017-2020 dataset on 10/17/2023, 
+  filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
                       #2021 and 2022 were heavily curtailed years
 
 
@@ -42,6 +42,14 @@ water_use_report_Date <- water_use_report_Date %>%
 # After that, apply corrections for duplicate reporting
 water_use_report_Date <- water_use_report_Date %>%
   dupReportingFixer()
+
+
+# Similarly, for relatively new appropriative water rights,
+# if they report no values for a year, replace their data so that
+# the total AMOUNT for that year equals their Face Value
+water_use_report_Date <- water_use_report_Date %>%
+  faceValSub(yearRange = 2021:2023)
+
 
 
 # Output the data to a CSV file
