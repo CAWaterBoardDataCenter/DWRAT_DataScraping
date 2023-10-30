@@ -53,5 +53,8 @@ source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In ev
 source(here("Scripts/DAT_File_Manipulation.R"))
 
 # generate SRP model input ------------------------------------------------
-source(here("Scripts/CNRFC_SRP_Processor.R"))
-source(here("Scripts/PRISM_SRP_Processor.R"))
+source(here("Scripts/CNRFC_SRP_Processor.R")) #Downloads CNRFC forecast data for SRP
+source(here("Scripts/PRISM_SRP_Processor.R")) #Downloads PRISM observed data for SRP
+
+# Download and plot Potter Valley Project Data
+source(here"Scripts/PVP_Processor.R")
