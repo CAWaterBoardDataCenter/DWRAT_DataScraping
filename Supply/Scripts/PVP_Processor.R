@@ -12,159 +12,116 @@
 
 #SCRIPT LAST UPDATED:
 #BY: Payman Alemi
-#ON: 10/25/2023
+#ON: 10/30/2023
 
 # Load packages
 library(tidyverse)
-library(RSelenium)
-library(netstat)
 library(here)
-library(binman)
+library(httr)
+library(ggplot2)
 
-# Set up RSelenium----
-##Set Default download folder----
-eCaps <- list(
-  chromeOptions = list(
-    prefs = list(
-      "profile.default_content_settings.popups" = 0L,
-      "download.prompt_for_download" = FALSE,
-      "download.default_directory" = gsub(pattern = '/', replacement = '\\\\', x = here("WebData")) # download.dir
-    )
-  )
-)
-default_folder <- eCaps$chromeOptions$prefs$download.default_directory
+#Define PVP columns
+pvp_names = c("USGS", "Station ID", "Date", "Time_Zone", "Discharge", "Provisional_Type")
 
-## Download latest Chrome drivers---
-temp <- wdman::chrome()
-temp$stop()
+#Define Timeframe
+start_date <- "2023-10-01"
+end_date <- "2023-10-30"
 
-## Set version of Chrome----
-### Get current version of chrome browser----
-chrome_browser_version <- system2(
-  command = "wmic",
-  args = 'datafile where name="C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
-  stdout = TRUE,
-  stderr = TRUE
-) %>%
-  str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
+#Scrape PVP URL----
+base_url <- "https://waterservices.usgs.gov/nwis/iv/?sites=11461500&parameterCd=00060"
+dynamic_url <- paste0(base_url, "&startDT=", start_date, "&endDT=", end_date, "&siteStatus=all&format=rdb")
+print(dynamic_url)
 
-if (sum(!is.na(chrome_browser_version)) == 0) {
-  chrome_browser_version <- system2(
-    command = "wmic",
-    args = 'datafile where name="C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
-    stdout = TRUE,
-    stderr = TRUE
-  ) %>%
-    str_extract(pattern = "(?<=Version=)(\\d+\\.){3}")
+response <- GET(dynamic_url)
+
+# Check if the request was successful
+if (http_status(response)$category == "Success") {
+  
+  #Extract content from response as plain text 
+  content <- content(response, "text")
+  
+  #Unlist the content and split it by lines
+  lines <- unlist(strsplit(content, "\n"))
+  
+  #Filter to lines containing the string "USGS"
+  desired_lines <- lines[grepl("USGS", lines)]
+} else {
+  
+  #print an error message if the HTTP retrieval function fails
+  print("Failed to retrieve the content")
 }
 
-### List the versions of chromedriver on this PC
-chrome_driver_versions <- list_versions("chromedriver")
+#Clean up PVP Data----
+#Filter out comment lines starting with #
+desired_lines <- desired_lines[!grepl("^#", desired_lines)]
+print(desired_lines[1:5])
 
-### Match drivers to version----
-chrome_driver_current <- chrome_browser_version %>%
-  magrittr::extract(!is.na(.)) %>%
-  str_replace_all(pattern = "\\.", replacement = "\\\\.") %>%
-  paste0("^", .) %>%
-  str_subset(string = last(chrome_driver_versions)) %>%
-  as.numeric_version() %>%
-  max() %>%
-  as.character()
+# Separate desired_lines by tab
+PVP <- strsplit(desired_lines, "\t")
 
+# Convert the list of vectors into a matrix
+PVP_matrix <- do.call(rbind, PVP)
 
-if (length(chrome_driver_current) == 0) {
-  
-  # Query the Chrome for Testing API to find the chrome driver version that must be downloaded
-  versionToDownload <- paste0("https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_",
-                              chrome_browser_version %>% magrittr::extract(!is.na(.)) %>%
-                                str_remove("\\.$")) %>%
-    readLines(warn = FALSE)
-  
-  
-  # A new directory folder will be created in the chromedriver folder (in the user's AppData folder)
-  # Specify that new path in a variable
-  newDir <- paste0(app_dir("chromedriver", check = FALSE), "/win32/", versionToDownload)
-  
-  
-  # Create a folder in the destination directory for the new chromedriver
-  dir.create(newDir)
-  
-  
-  # Download the ZIP file to the chromedriver directory
-  # (Note: By default, download.file() will fail if the download requires more than 60 seconds)
-  paste0("https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/", 
-         versionToDownload, 
-         "/win32/chromedriver-win32.zip") %>%
-    download.file(paste0(newDir, "/chromedriver-win32.zip"),
-                  mode = "wb")
-  
-  
-  # Unzip the new ZIP file 
-  unzip(paste0(newDir, "/chromedriver-win32.zip"),
-        exdir = newDir)
-  
-  
-  
-  # Finally, copy the chromedriver.exe file to the base of this new directory
-  file.copy(paste0(newDir, "/chromedriver-win32/chromedriver.exe"),
-            paste0(newDir, "/chromedriver.exe"), 
-            overwrite = TRUE)
-  
-  
-  # Finally, update 'chrome_driver_current' to this downloaded version
-  chrome_driver_current <- versionToDownload
-  
-  
-}
+# Convert the matrix to a dataframe
+PVP_df <- as.data.frame(PVP_matrix, stringsAsFactors = FALSE)
 
-### Remove the LICENSE.chromedriver file (if it exists)----
-chrome_driver_dir <- paste0(app_dir("chromedriver", FALSE),
-                            '/win32/',
-                            chrome_driver_current)
-if ('LICENSE.chromedriver' %in% list.files(chrome_driver_dir)) {
-  file.remove(
-    paste0(chrome_driver_dir, '/', 'LICENSE.chromedriver')
-  )
-}
+# Set the column names for the dataframe
+colnames(PVP_df) <- pvp_names
 
-### Open a chrome browser session with RSelenium ----
-rs_driver_object <-rsDriver(
-  browser = 'chrome',
-  check = TRUE,
-  chromever = chrome_driver_current, #set to the version on your PC that most closely matches the chrome browser version
-  port = free_port(),
-  extraCapabilities = eCaps
-)
+# Now you can print the dataframe to see if it looks correct
+print(head(PVP_df))
 
-Sys.sleep(1)
-remDr <- rs_driver_object$client
+#Calculate Daily, Weekly, and Monthly Running Averages for Discharge----
 
-#Navigate to USGS Station 11461500
-URL = "https://waterdata.usgs.gov/monitoring-location/11461500"
-remDr$navigate(URL)
-Sys.sleep(3)
+#Convert Discharge column to numeric format
+PVP_df$Discharge <- as.numeric(as.character(PVP_df$Discharge))
 
+# Convert 'Date' from character to POSIXct
+PVP_df$DateTime <- as.POSIXct(x = PVP_df$Date, 
+                              format = "%Y-%m-%d %H:%M",
+                              tz = "PDT")
 
-#Click on Change Time span button----
-ChangeTimeSpan <- remDr$findElement(using = "xpath", "//button[contains(.,'Change') 
-and contains(.,'time span')]")
-ChangeTimeSpan$clickElement()
+# Extract day, week, and month from the date-time
+PVP_df$Day <- as.Date(PVP_df$DateTime)
+PVP_df$Week <- floor_date(x = PVP_df$DateTime, unit = "week") %>% as.Date
+PVP_df$Month <- floor_date(x = PVP_df$DateTime, unit = "month") %>% as.Date
 
-#Update start and end dates as needed 
-PVP_StartDate = "10/01/2023" #site requires MM/DD/YYYY format
-PVP_EndDate = "10/29/2023" #site requires MM/DD/YYYY format
+# Daily running average
+PVP_df <- PVP_df %>%
+  group_by(Day) %>%
+  mutate(Daily_Running_Avg = cummean(Discharge))
 
-PVP_Start = remDr$findElement(using = "id", value = "start-date")
-PVP_Start$sendKeysToElement(list(PVP_StartDate))
+# Weekly running average
+PVP_df <- PVP_df %>%
+  group_by(Week) %>%
+  mutate(Weekly_Running_Avg = cummean(Discharge))
 
-PVP_End = remDr$findElement(using = "id", value = "end-date")
-PVP_End$sendKeysToElement(list(PVP_EndDate))
+# Monthly running average
+PVP_df <- PVP_df %>%
+  group_by(Month) %>%
+  mutate(Monthly_Running_Avg = cummean(Discharge))
 
-#Select Discharge, cubic feet per second
-# Locate the radio button with css selector
-Discharge <- remDr$findElement(using = "css selector", value = "label[for='radio-00060']")
-Discharge$clickElement()
+#Graph Running Averages----
+# Now, you use ggplot2 to plot the data, using DateTime on the x-axis
+ggplot(PVP_df, aes(x = DateTime)) + 
+  geom_line(aes(y = Discharge, color = "Actual Discharge"), size = 1) +
+  geom_line(aes(y = Daily_Running_Avg, color = "Daily Running Avg"), size = 1) +
+  geom_line(aes(y = Weekly_Running_Avg, color = "Weekly Running Avg"), size = 1) +
+  geom_line(aes(y = Monthly_Running_Avg, color = "Monthly Running Avg"), size = 1) +
+  
+  labs(title = "Discharge Running Averages with DateTime",
+       x = "DateTime",
+       y = "Discharge (cfs)",
+       color = "Legend") + 
+  
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c(
+    "Actual Discharge" = "blue", 
+    "Daily Running Avg" = "red", 
+    "Weekly Running Avg" = "green", 
+    "Monthly Running Avg" = "gray"
+  )) +
+  scale_x_datetime(date_labels = "%Y-%m-%d", date_breaks = "7 day")
 
-
-                              
 
