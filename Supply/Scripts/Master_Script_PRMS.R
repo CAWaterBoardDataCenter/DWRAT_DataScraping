@@ -13,7 +13,7 @@ library(KeyboardSimulator)
 
 # set start and end dates -------------------------------------------------
 ## Set start date----
-StartDate <- as.Date("2022-10-01") # 1-2 months before previous end date
+StartDate <- as.Date("2023-10-01") # 1-2 months before previous end date
 #Serves as the start date for the observed data forecast and the DAT_Shell
 
 # Extract Day, Month, and Year from StartDate; functions require lubridate package
@@ -25,7 +25,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- Sys.Date() - 1 # set to yesterday's date; serves as the end date for the observed data range
+EndDate <- Sys.Date() - 5 # set to yesterday's date; serves as the end date for the observed data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -34,10 +34,10 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 print(EndDate)
 
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') #Timeframe is necessary for Downsizer_Processor.R
-End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
+End_Date <- Sys.Date() + 1 # forecast end date for DAT_Shell_Generation.R
 
 # generate PRMS model input -----------------------------------------------
-source(here("Scripts/NOAA_Scraper.R"))
+#source(here("Scripts/NOAA_Scraper.R"))
 source(here("Scripts/PRISM_Scraper.R"))
 source(here("Scripts/PRISM_Processor.R"))
 source(here("Scripts/CNRFC_Scraper.R"))
@@ -53,5 +53,8 @@ source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In ev
 source(here("Scripts/DAT_File_Manipulation.R"))
 
 # generate SRP model input ------------------------------------------------
-source(here("Scripts/CNRFC_SRP_Processor.R"))
-source(here("Scripts/PRISM_SRP_Processor.R"))
+source(here("Scripts/CNRFC_SRP_Processor.R")) #Downloads CNRFC forecast data for SRP
+source(here("Scripts/PRISM_SRP_Processor.R")) #Downloads PRISM observed data for SRP
+
+# Download and plot Potter Valley Project Data
+source(here"Scripts/PVP_Processor.R")
