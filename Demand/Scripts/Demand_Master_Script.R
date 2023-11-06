@@ -8,6 +8,11 @@
 # QA/QC functions for correcting unit conversion errors and duplicate reporting
 source("Scripts/QAQC_Functions.R")
 
+
+# A function to update the reported amounts 
+source("Scripts/Face_Value_Substitution.R")
+
+
 # Priority Date Pre-Processing
 source("Scripts/Priority_Date_Preprocessing.R")
 

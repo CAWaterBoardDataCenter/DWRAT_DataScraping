@@ -40,7 +40,7 @@ End_Date <- Sys.Date() + 1 # forecast end date for DAT_Shell_Generation.R
 #source(here("Scripts/NOAA_Scraper.R"))
 source(here("Scripts/PRISM_Scraper.R"))
 source(here("Scripts/PRISM_Processor.R"))
-source(here("Scripts/CNRFC_Scraper.R"))
+source(here("Scripts/CNRFC_Static_Scraper.R"))
 source(here("Scripts/CNRFC_RR_Processor.R"))
 # change input file name for Downsizer data; you need to run Downsizer and  
 # move the Downsizer file to the WebData folder prior to running Downsizer_Processor.R
