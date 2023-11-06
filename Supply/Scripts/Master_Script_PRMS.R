@@ -13,7 +13,7 @@ library(KeyboardSimulator)
 
 # set start and end dates -------------------------------------------------
 ## Set start date----
-StartDate <- as.Date("2022-10-01") # 1-2 months before previous end date
+StartDate <- as.Date("2023-10-01") # 1-2 months before previous end date
 #Serves as the start date for the observed data forecast and the DAT_Shell
 
 # Extract Day, Month, and Year from StartDate; functions require lubridate package
@@ -40,7 +40,7 @@ End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
 source(here("Scripts/NOAA_Scraper.R"))
 source(here("Scripts/PRISM_Scraper.R"))
 source(here("Scripts/PRISM_Processor.R"))
-source(here("Scripts/CNRFC_Scraper.R"))
+source(here("Scripts/CNRFC_Static_Scraper.R"))
 source(here("Scripts/CNRFC_RR_Processor.R"))
 # change input file name for Downsizer data; you need to run Downsizer and  
 # move the Downsizer file to the WebData folder prior to running Downsizer_Processor.R
