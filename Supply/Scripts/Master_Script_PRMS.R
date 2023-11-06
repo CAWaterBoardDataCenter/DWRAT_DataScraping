@@ -6,7 +6,8 @@ library(netstat)
 library(lubridate)
 library(here)
 library(tinytex)
-library(KeyboardSimulator)
+require(rvest)
+require(httr)
 
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
@@ -37,7 +38,7 @@ TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') #Timeframe
 End_Date <- Sys.Date() + 1 # forecast end date for DAT_Shell_Generation.R
 
 # generate PRMS model input -----------------------------------------------
-#source(here("Scripts/NOAA_Scraper.R"))
+source(here("Scripts/NOAA_API_Scraper.R"))
 source(here("Scripts/PRISM_Scraper.R"))
 source(here("Scripts/PRISM_Processor.R"))
 source(here("Scripts/CNRFC_Static_Scraper.R"))
@@ -57,4 +58,4 @@ source(here("Scripts/CNRFC_SRP_Processor.R")) #Downloads CNRFC forecast data for
 source(here("Scripts/PRISM_SRP_Processor.R")) #Downloads PRISM observed data for SRP
 
 # Download and plot Potter Valley Project Data
-source(here"Scripts/PVP_Processor.R")
+source(here("Scripts/PVP_Processor.R"))
