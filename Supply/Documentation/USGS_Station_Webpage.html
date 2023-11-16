@@ -6,6 +6,11 @@ https://waterdata.usgs.gov/monitoring-location/11461500/#parameterCode=00065&per
 aria-controls="change-time-span-container"><span data-v-927835e1="">Change</span>
 <br data-v-927835e1=""><span data-v-927835e1="">time span</span></button>
 
+'//button' selects all the button nodes
+ChangeTimeSpan <- remDr$findElement(using = "xpath", "//button[contains(.,'Change') 
+and contains(.,'time span')]")
+ChangetimeSpan$clickElement()
+
 <!-- ENTRY FIELDS FOR DATE RANGE -->
 <input id="start-date" class="usa-input usa-date-picker__external-input" 
 name="startDate" aria-label="Start date" aria-describedby="start-date-hint" type="text">
@@ -17,9 +22,7 @@ aria-label="End date" aria-describedby="end-date-hint" type="text">
 <label for="radio-00060" class="usa-radio__label">Discharge, cubic feet per second</label>
 
 <!-- DOWNLOAD DATA BUTTON -->
-<button data-v-927835e1="" type="button" class="active" aria-expanded="true" 
-aria-controls="change-time-span-container"><span data-v-927835e1="">Change</span>
-<br data-v-927835e1=""><span data-v-927835e1="">time span</span></button>
+<span data-v-927835e1="">Download</span>
 
 <!-- PRIMARY TIME SERIES BUTTON -->
 <label for="option-button-download-set-primary-data-download-button" class="usa-radio__label">
@@ -30,3 +33,10 @@ Primary time series</label>
 aria-hidden="true" role="img">
 <use xlink:href="/nwisweb/wsgi/static/img/sprite.8507dc16.svg#file_download"></use></svg> 
 Retrieve </button>
+
+
+<!-- RAW URL for USGS 11461500 station DATA -->
+https://waterservices.usgs.gov/nwis/iv/?sites=11461500&parameterCd=00060&
+startDT=2023-10-01&endDT=2023-10-30&siteStatus=all&format=rdb
+
+startDT and endDT need to be adjusted but the rest of the URL can remain constant
