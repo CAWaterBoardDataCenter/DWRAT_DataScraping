@@ -52,17 +52,17 @@ for (i in 1:length(Dat_Shell_PRMS)){
 write.csv(Dat_Shell_PRMS, here("InputData/Dat_Shell_PRMS.csv"), row.names = FALSE)
 
 #Clean up variables----
-#Add Dat_Shell_PRMS to vars_to_keep
-vars_to_keep = c(vars_to_keep, "Dat_Shell_PRMS")
-
-# List all variables in the global environment
-all_vars <- ls()
-
-# Identify which variables to remove
-vars_to_remove <- setdiff(all_vars, vars_to_keep)
-
-# Remove variables except those in vars_to_keep
-rm(list = vars_to_remove)
+# #Add Dat_Shell_PRMS to vars_to_keep
+# vars_to_keep = c(vars_to_keep, "Dat_Shell_PRMS")
+# 
+# # List all variables in the global environment
+# all_vars <- ls()
+# 
+# # Identify which variables to remove
+# vars_to_remove <- setdiff(all_vars, vars_to_keep)
+# 
+# # Remove variables except those in vars_to_keep
+# rm(list = vars_to_remove)
 
 print("Dat_Shell_Generation.R has finished running")
 
