@@ -115,3 +115,19 @@ Downsizer_Processed <- rbind(Downsizer_Processed,CNRFC_cols)
 
 #Write CSV to ProcessedData Folder----
 write.csv(Downsizer_Processed, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
+
+
+#Clean up global environment----
+#Update vars_to_keep with Downsizer_Processed
+vars_to_keep = c(vars_to_keep, "Downsizer_Processed")
+#List all variables in global environment
+all_vars <- ls()
+#Identify which variables to remove
+vars_to_remove = setdiff(all_vars, vars_to_keep)
+#Remove variables except those in vars_to_keep
+rm(list = vars_to_remove)
+
+#Change working directory back to Supply folder
+setwd(here())
+
+print("Downsizer_RR_Processor.R has finished running")

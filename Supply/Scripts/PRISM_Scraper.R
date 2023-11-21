@@ -267,3 +267,13 @@ for (file_name in file_list) {
     file.rename(file.path(web_data, file_name), file.path(web_data, new_ppt_name))
   }
 }
+#List all variables in the global environment
+all_vars <- ls()
+#Specify the variables you want to keep
+vars_to_keep <- c("StartDate", "EndDate", "End_Date", "vars_to_keep")
+
+#Remove all variables except for those listed in vars_to_keep
+vars_to_remove <- setdiff(x = all_vars, y = vars_to_keep)
+rm(list = vars_to_remove)
+
+print("PRIMS_Scraper has finished running")
