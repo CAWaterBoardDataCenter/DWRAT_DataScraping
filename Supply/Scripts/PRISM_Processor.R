@@ -50,6 +50,23 @@ colnames(PT) = PT_NewNames
 
 #Merge PT and PP dataframes and export to CSV----
 Prism_Processed = merge(x= PT, y = PP, by = "Date")
+
+#Clean up variables----
+#Add Prism_Processed to vars_to_keep
+vars_to_keep = c(vars_to_keep, "Prism_Processed")
+
+# List all variables in the global environment
+all_vars <- ls()
+
+# Identify which variables to remove
+vars_to_remove <- setdiff(all_vars, vars_to_keep)
+
+# Remove variables except those in vars_to_keep
+rm(list = vars_to_remove)
+
+#Write Prism_Processed to a csv 
 write.csv(Prism_Processed, here("ProcessedData/Prism_Processed.csv"), row.names = FALSE)
+
+print("PRISM_Processor.R has finished running")
 
 

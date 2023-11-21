@@ -265,3 +265,18 @@ CIMIS_Processed <- rbind(CIMIS_Processed,CNRFC_cols)
 
 ##Export Dataframes to CSVs----
 write.csv(CIMIS_Processed, here("ProcessedData/CIMIS_Processed.csv"), row.names = FALSE)
+
+#Clean up variables----
+#Add CIMIS_Processed to vars_to_keep
+vars_to_keep = c(vars_to_keep, "CIMIS_Processed")
+
+# List all variables in the global environment
+all_vars <- ls()
+
+# Identify which variables to remove
+vars_to_remove <- setdiff(all_vars, vars_to_keep)
+
+# Remove variables except those in vars_to_keep
+rm(list = vars_to_remove)
+
+print("CIMIS_Scraper.R has finished running")
