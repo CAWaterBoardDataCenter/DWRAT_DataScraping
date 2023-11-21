@@ -48,7 +48,7 @@ param_file
 data_file
 1
 4
-..\PRMS\input\climate_scenarios\data_update_to_2023_10_25_PA
+..\PRMS\input\climate_scenarios\data_update_to_2023_10_25_PA_noheader.dat
 ####
 precip_module
 1
