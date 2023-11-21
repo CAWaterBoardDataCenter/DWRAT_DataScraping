@@ -36,7 +36,7 @@ Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
 #Extract the weather data from Downsizer_Original----
 #Drop the first 42 rows of Downsizer
-Downsizer = tail(Downsizer_Original, nrow(Downsizer_Original)-42) %>%data.frame()
+Downsizer = tail(Downsizer_Original, nrow(Downsizer_Original)-40) %>%data.frame()
 colnames(Downsizer) = "Downsizer"
 
 #Format the Downsizer dataframe to match the PRMS_Update DAT file----
