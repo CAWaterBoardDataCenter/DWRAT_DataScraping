@@ -239,7 +239,7 @@ writeTemperatureCSV <- function (stationData) {
 
 #### Script Execution ####
 
-cat("Starting 'CNRFC_Static_Scraper.R'...")
+cat("Starting 'CNRFC_Static_Scraper.R'...\n")
 
 
 mainProcedure()

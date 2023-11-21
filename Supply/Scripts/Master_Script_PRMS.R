@@ -6,7 +6,8 @@ library(netstat)
 library(lubridate)
 library(here)
 library(tinytex)
-library(KeyboardSimulator)
+require(rvest)
+require(httr)
 
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
@@ -37,8 +38,10 @@ TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') #Timeframe
 End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
 
 # generate PRMS model input -----------------------------------------------
-#source(here("Scripts/NOAA_Scraper.R"))
-source(here("Scripts/PRISM_Scraper.R")) 
+
+source(here("Scripts/NOAA_API_Scraper.R"))
+source(here("Scripts/PRISM_Scraper.R"))
+
 source(here("Scripts/PRISM_Processor.R"))
 print(Prism_Processed)
 source(here("Scripts/CNRFC_Static_Scraper.R"))
@@ -50,10 +53,9 @@ print(CNRFC_Processed)
 source(here("Scripts/Downsizer_Processor.R")) #Ignore the warning message: Expected 252 pieces...
 print(Downsizer_Processed)
 source(here("Scripts/RAWS_Scraper.R"))
-print(RAWS_Processed)
-source(here("Scripts/CIMIS_Scraper.R"))
-print(CIMIS_Processed)
-#source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
+
+source(here("Scripts/CIMIS_Static_Scraper.R"))
+source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
 # change output file name for DAT File
 source(here("Scripts/DAT_File_Manipulation.R"))
 
@@ -61,6 +63,3 @@ source(here("Scripts/DAT_File_Manipulation.R"))
 source(here("Scripts/CNRFC_SRP_Processor.R")) #Downloads CNRFC forecast data for SRP
 source(here("Scripts/PRISM_SRP_Processor.R")) #Downloads PRISM observed data for SRP
 
-#PRMS and SRP Post-Processing Scripts----
-# Download and plot Potter Valley Project Data----
-source(here("Scripts/PVP_Processor.R"))
