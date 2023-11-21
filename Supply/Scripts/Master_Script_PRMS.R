@@ -51,8 +51,7 @@ print(CNRFC_Processed)
 # move the Downsizer file to the WebData folder prior to running Downsizer_Processor.R
 # Downsizer filename should match the filename given by Downsizer_Processor.R
 source(here("Scripts/Downsizer_Processor.R")) #Ignore the warning message: Expected 252 pieces...
-print(Downsizer_Processed)
-source(here("Scripts/RAWS_Scraper.R"))
+source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_Static_Scraper.R"))
 source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
 # change output file name for DAT File
