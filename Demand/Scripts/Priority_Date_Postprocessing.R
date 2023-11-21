@@ -44,6 +44,14 @@ water_use_report_Date <- water_use_report_Date %>%
   dupReportingFixer()
 
 
+# Similarly, for relatively new appropriative water rights,
+# if they report no values for a year, replace their data so that
+# the total AMOUNT for that year equals their Face Value
+water_use_report_Date <- water_use_report_Date %>%
+  faceValSub(yearRange = 2021:2023)
+
+
+
 # Output the data to a CSV file
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 

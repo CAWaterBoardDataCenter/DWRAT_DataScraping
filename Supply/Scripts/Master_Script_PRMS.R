@@ -41,7 +41,7 @@ End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
 source(here("Scripts/PRISM_Scraper.R")) 
 source(here("Scripts/PRISM_Processor.R"))
 print(Prism_Processed)
-source(here("Scripts/CNRFC_Scraper.R"))
+source(here("Scripts/CNRFC_Static_Scraper.R"))
 source(here("Scripts/CNRFC_RR_Processor.R"))
 print(CNRFC_Processed)
 # change input file name for Downsizer data; you need to run Downsizer and  
