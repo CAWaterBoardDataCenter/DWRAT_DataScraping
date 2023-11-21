@@ -178,7 +178,7 @@ df_empty$Date =df$Date
    }
  }
  
-#Create Final CNRFC_Processed.csv
+#Create Final CNRFC_Processed.csv----
 CNRFC_Precip_Final = df_empty
 CNRFC_Temp_Final = CNRFC_Temp
 CNRFC_Temp_Final$Date <- as.Date(CNRFC_Temp_Final$Date, format="%m/%d/%Y")
@@ -186,5 +186,17 @@ CNRFC_Processed = merge(CNRFC_Precip_Final, CNRFC_Temp_Final, by = "Date")
 str(CNRFC_Processed)
 write.csv(CNRFC_Processed, here("ProcessedData/CNRFC_Processed.csv"), row.names = FALSE)
 
+#Clean up global environment----
+#Update vars_to_keep with CNRFC_Processed
+vars_to_keep = c(vars_to_keep, "CNRFC_Processed")
+#List all variables in global environment
+all_vars <- ls()
+#Identify which variables to remove
+vars_to_remove = setdiff(all_vars, vars_to_keep)
+#Remove variables except those in vars_to_keep
+rm(list = vars_to_remove)
+
 #Change working directory back to Supply folder
 setwd(here())
+
+print("CNRFC_RR_Processor.R has finished running")

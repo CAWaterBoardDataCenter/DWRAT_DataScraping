@@ -295,3 +295,18 @@ RAWS_Processed <- rbind(RAWS_Processed,CNRFC_cols)
 
 #Write RAWS_Final to RAWS_Processed.csv----
 write.csv(RAWS_Processed, here("ProcessedData/RAWS_Processed.csv"), row.names = FALSE)
+
+#Clean up variables----
+#Add RAWS_Processed to vars_to_keep
+vars_to_keep = c(vars_to_keep, "RAWS_Processed")
+
+# List all variables in the global environment
+all_vars <- ls()
+
+# Identify which variables to remove
+vars_to_remove <- setdiff(all_vars, vars_to_keep)
+
+# Remove variables except those in vars_to_keep
+rm(list = vars_to_remove)
+
+print("RAWS_Scraper.R has finished running")
