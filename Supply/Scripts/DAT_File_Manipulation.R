@@ -5,8 +5,8 @@ library(data.table) #for fread function
 
 #Import the necessary starter files for the DAT_File----
 #DAT_Shell serves as the shell of the DAT_File, observed data (already pre-filled with PRISM and forecast data) contained in these files:
-    #RAWS_Processed.csv, CIMIS_Processed.csv, Downsizer_Processed.csv 
-  
+#RAWS_Processed.csv, CIMIS_Processed.csv, Downsizer_Processed.csv 
+
 Dat_Shell_PRMS <- read.csv(here("InputData/Dat_Shell_PRMS.csv"))
 RAWS <- read.csv(here("ProcessedData/RAWS_Processed.csv"))
 Downsizer <- read.csv(here("ProcessedData/Downsizer_Processed.csv"))
@@ -63,8 +63,8 @@ Dat_Shell6 = Dat_Shell6[,col_order]
 
 #Convert s and runoff columns in Dat_Shell6 to integers
 Dat_Shell6 = mutate_at(.tbl = Dat_Shell6, 
-                             .vars = c(6,39:60), 
-                             .funs = as.integer)
+                       .vars = c(6,39:60), 
+                       .funs = as.integer)
 
 #Convert s column in Dat_Shell6 to integer
 Dat_PRMS_Body$s = as.integer(Dat_PRMS_Body$s)

@@ -3,7 +3,6 @@ library(tidyverse)
 library(data.table)
 library(dplyr)
 library(here)
-library(readxl)
 
 source_folder = here("OutputData")
 
@@ -108,12 +107,3 @@ new_rights_effective_date = anti_join(x = Recent_RR_Rights,
 new_rights_effective_date
                 
 
-#Find the true effective dates of the "new rights"
-new_rights_effective_date = inner_join(x = Recent_RR_Rights,
-                        y= Effective_Dates_All_Rights,
-                        by = "APPLICATION_NUMBER")
-
-missing_new_rights = anti_join(x = Recent_RR_Rights,
-                                y = Effective_Dates_All_Rights,
-                                by = "APPLICATION_NUMBER")
-#A016671 and A031447 are missing from the comprehensive dataset produced by SQL 

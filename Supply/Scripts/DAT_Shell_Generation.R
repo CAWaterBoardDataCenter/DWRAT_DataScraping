@@ -12,25 +12,25 @@ Dat_Fields_PRMS <- read.csv(here("InputData/Dat_Fields_PRMS.csv"))
 colnames(Dat_File_PRMS) <- colnames(Dat_Fields_PRMS)
 
 #Notes about Dat_File_PRMS fields----
-  #22 Runoff fields, always equal 1
-  #6 date-time fields, pre-filled from 1/1/1990 through 9/30/2024
-  #15 precipitation fields
-  #8 temperature fields
-  #We will replace a subset of the data corresponding to our timeframe of interest
+#22 Runoff fields, always equal 1
+#6 date-time fields, pre-filled from 1/1/1990 through 9/30/2024
+#15 precipitation fields
+#8 temperature fields
+#We will replace a subset of the data corresponding to our timeframe of interest
 
 # Whittle the Dat_File_PRMS to a subset corresponding to our timeframe of interest, "Dat_Shell_PRMS"----
 #Add a Date column
 Dat_File_PRMS$Date <- make_date(year = Dat_File_PRMS$Year, 
-                              month = Dat_File_PRMS$month,
-                              day = Dat_File_PRMS$day)
+                                month = Dat_File_PRMS$month,
+                                day = Dat_File_PRMS$day)
 
 ## Filter to the timeframe of interest----
 # Set the start date by grabbing the first day of the current month
-  # Start_Date <- lubridate::floor_date(Sys.Date(), unit = "month")
-  # Start_Date <- as.Date("2023-01-11")
+# Start_Date <- lubridate::floor_date(Sys.Date(), unit = "month")
+# Start_Date <- as.Date("2023-01-11")
 
 # The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
-  #End_Date <- Sys.Date() + 5
+#End_Date <- Sys.Date() + 5
 Dat_Shell_PRMS <- subset(Dat_File_PRMS, Date >= StartDate$date & Date <= End_Date) #Adjust as needed
 Dat_Shell_PRMS
 
@@ -65,4 +65,3 @@ write.csv(Dat_Shell_PRMS, here("InputData/Dat_Shell_PRMS.csv"), row.names = FALS
 # rm(list = vars_to_remove)
 
 print("Dat_Shell_Generation.R has finished running")
-

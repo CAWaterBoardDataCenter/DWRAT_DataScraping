@@ -5,6 +5,7 @@
 
 
 require(tidyverse)
+require(httr)
 
 
 #### Functions ####
@@ -49,9 +50,9 @@ mainProcedure <- function (StartDate, EndDate) {
     
     
     # Retrieve data from CIMIS
-    # The VPN and 'CalEPA - Employees' network will give a 'SSL connect error'
-    htmlPage <- readLines(cimisURL)
-    
+    htmlPage <- GET(cimisURL) %>%
+      content() %>% as.character() %>%
+      str_split("(\r)?\n") %>% unlist()
     
     
     # Take a subset from 'htmlPage' (just the data table)

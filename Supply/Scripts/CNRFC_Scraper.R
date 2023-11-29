@@ -121,5 +121,3 @@ CSVDownload$clickElement()
 Sys.sleep(2)
 remDr$closeWindow()
 system("taskkill /im java.exe /f")
-
-print("CNRFC_Scraper.R has finished running")
