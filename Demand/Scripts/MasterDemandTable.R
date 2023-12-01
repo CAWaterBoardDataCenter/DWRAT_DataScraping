@@ -136,6 +136,10 @@ diverDF <- diverDF %>%
   ungroup()
 
 
+# diverDF %>%
+#   write_csv("OutputData/DemandDataset_MonthlyValues.csv")
+
+  
 # Create a separate variable with expected total diversion values
 # (There are columns in 'expectedDF' with this name, but they are calculated differently)
 # (Averages of sums vs sums of averages)
