@@ -8,7 +8,7 @@ library(here)
 library(tinytex)
 require(rvest)
 require(httr)
-
+#Adding Test Comment on 12/1/2023 by Payman Alemi
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
 
@@ -39,10 +39,10 @@ End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/NOAA_API_Scraper.R"))
-source(here("Scripts/PRISM_Scraper.R"))
+source(here("Scripts/PRISM_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
 source(here("Scripts/PRISM_Processor.R"))
 print(Prism_Processed)
-source(here("Scripts/CNRFC_Static_Scraper.R"))
+source(here("Scripts/CNRFC_Static_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
 source(here("Scripts/CNRFC_RR_Processor.R"))
 print(CNRFC_Processed)
 # change input file name for Downsizer data; you need to run Downsizer and  
@@ -56,6 +56,6 @@ source(here("Scripts/CIMIS_Static_Scraper.R"))
 source(here("Scripts/DAT_File_Manipulation.R"))
 
 # generate SRP model input ------------------------------------------------
-source(here("Scripts/CNRFC_SRP_Processor.R")) #Downloads CNRFC forecast data for SRP
-source(here("Scripts/PRISM_SRP_Processor.R")) #Downloads PRISM observed data for SRP
+source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
+source(here("Scripts/PRISM_SRP_Processor.R")) #Formats already downloaded PRISM observed data for SRP
 
