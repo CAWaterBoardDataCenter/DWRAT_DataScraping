@@ -34,7 +34,7 @@ date_seq <- seq(from = start_date, length.out = nrow(gag), by = "day")
 gag$Date <- date_seq[1:nrow(gag)]
 
 # create a subset for the timeframe of interest----
-gag <- subset(gag, Date>= "2023-07-01" & Date <= "2023-10-31")
+gag <- subset(gag, Date>= "2023-10-01" & Date <= "2023-10-31")
 date_seq = gag$Date
 
 # gag manipulation----
@@ -121,7 +121,7 @@ colnames(PRMS)[2:23] <- c(1:22)
 Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 
 # write Raw Flows to cvs for DWRAT input
-write.csv(Raw_Flows, here("ProcessedData/Raw_Flows_2023-10.csv"), row.names = FALSE)
+write.csv(Raw_Flows, here("ProcessedData/Raw_Flows.csv"), row.names = FALSE)
 
 # write daily values - if needed - to CSV
 # write.csv(SRP, here("ProcessedData/SRP_daily_AcFt_2023.04.05.csv"), row.names = FALSE)
