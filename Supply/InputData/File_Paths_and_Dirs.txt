@@ -1,0 +1,46 @@
+Please keep the file paths on the same lines as their labels!
+example - Path description:   (Some spaces, at least three)   Your file path!
+
+
+! Important !
+This file will eventually be condensed into a couple of file paths
+	My plan is to first map out all of the filepath dependencies required for running the models
+	Then I'll write a "pre-check" script that would run at the beginning of the master script 
+	It would verify that all of these file paths exist and are valid
+	With that script present, this file would need fewer file paths (mainly "path to RR_PRMS" and "path to Github repository")
+	Some cases like the link to the .jar file and .dat file may still need their paths specified (unless I write some additional functions to handle unusual cases)
+
+
+============= Paths for "Downsizer_Assistant_Noninteractive.R" =============
+
+(1) Path to downsizer client executable (the .jar file):        C:\RR_PRMS\PRMS\input\data_file_prep\downsizer_raw_data\downsizer-client-64bit-3.2.4.jar
+
+
+(2) Path to the downsizer station CSV (downsizer_sta.csv):      C:\RR_PRMS\PRMS\input\data_file_prep\downsizer_raw_data\downsizer_sta.csv
+
+
+(3) Path to the "WebData" folder in your GitHub repository (no specific file for this one):     C:\Users\mpaul\Documents\Github\DWRAT_DataScraping\Supply\WebData
+
+
+============= Paths for "PRMS_Model_Execution.R" =============
+
+(1) Path to the "RR_PRMS" folder:           C:\RR_PRMS
+
+
+(2) Path to your source .dat file:         C:\RR_PRMS\PRMS\input\climate_scenarios\data_update_to_2023-03-28.dat
+		Note: The script will NOT overwrite this file. It will create a copy and append the output data from "DAT_File_Manipulation.R" to it
+
+
+(3) Path to "prms_rr.control" file:     C:\RR_PRMS\windows\prms_rr.control
+
+
+(4) Path to "gsflow.exe":    C:\RR_PRMS\bin\gsflow.exe
+
+
+(5) Path to the PRMS "output" folder:          C:\RR_PRMS\PRMS\output
+
+
+(6) Path to the "run" batch file:       C:\RR_PRMS\windows\run.bat
+
+
+
