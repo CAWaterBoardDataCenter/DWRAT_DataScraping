@@ -5,6 +5,7 @@
 
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
+library(data.table)
 
 
 # Download in advance all flat files that will be used in the procedures of this script and the other demand-related scripts
@@ -23,13 +24,14 @@ download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwr
 
 # Download the Water Rights Annual Water Use Report file next
 # read_csv() and write_csv() are used instead of download.file() because the file is very big (more than 370 MB)
-# download.file() will fail if the required download time is greater than 60 seconds
+# With the default options, download.file() will fail if the required download time is greater than 60 seconds
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report.csv", show_col_types = FALSE) %>%
   write_csv("RawData/water_use_report.csv")
 
 # Save the Water Rights Annual Water Use Extended Report file too
-fread("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv") %>%
-  fwrite("RawData/water_use_report.csv")
+options(timeout = 10^9)
+download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "RawData/water_use_report_extended.csv", mode = "wb")
+
 
 # Save the Water Rights Uses and Seasons flat file as well
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%

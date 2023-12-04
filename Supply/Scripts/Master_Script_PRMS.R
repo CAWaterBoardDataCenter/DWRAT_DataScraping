@@ -39,7 +39,7 @@ End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/NOAA_API_Scraper.R"))
-source(here("Scripts/PRISM_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
+source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
 source(here("Scripts/PRISM_Processor.R"))
 print(Prism_Processed)
 source(here("Scripts/CNRFC_Static_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
