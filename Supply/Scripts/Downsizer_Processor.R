@@ -35,8 +35,10 @@ Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 # TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day')
 
 #Extract the weather data from Downsizer_Original----
-#Drop the first 42 rows of Downsizer
-Downsizer = tail(Downsizer_Original, nrow(Downsizer_Original)-40) %>%data.frame()
+#Drop the first ~40 rows of Downsizer (these are metadata rows)
+# The last line of the metadata is a row of # symbols ("####...")
+Downsizer <- Downsizer_Original[-c(1:grep("^[#]+$", Downsizer_Original[[1]])), ] %>%
+  data.frame()
 colnames(Downsizer) = "Downsizer"
 
 #Format the Downsizer dataframe to match the PRMS_Update DAT file----
