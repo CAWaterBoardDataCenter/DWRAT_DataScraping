@@ -35,10 +35,8 @@ Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 # TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day')
 
 #Extract the weather data from Downsizer_Original----
-#Drop the first ~40 rows of Downsizer (these are metadata rows)
-# The last line of the metadata is a row of # symbols ("####...")
-Downsizer <- Downsizer_Original[-c(1:grep("^[#]+$", Downsizer_Original[[1]])), ] %>%
-  data.frame()
+#Drop the first 42 rows of Downsizer
+Downsizer = tail(Downsizer_Original, nrow(Downsizer_Original)-42) %>%data.frame()
 colnames(Downsizer) = "Downsizer"
 
 #Format the Downsizer dataframe to match the PRMS_Update DAT file----
@@ -117,3 +115,19 @@ Downsizer_Processed <- rbind(Downsizer_Processed,CNRFC_cols)
 
 #Write CSV to ProcessedData Folder----
 write.csv(Downsizer_Processed, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
+
+
+#Clean up global environment----
+#Update vars_to_keep with Downsizer_Processed
+vars_to_keep = c(vars_to_keep, "Downsizer_Processed")
+#List all variables in global environment
+all_vars <- ls()
+#Identify which variables to remove
+vars_to_remove = setdiff(all_vars, vars_to_keep)
+#Remove variables except those in vars_to_keep
+rm(list = vars_to_remove)
+
+#Change working directory back to Supply folder
+setwd(here())
+
+print("Downsizer_RR_Processor.R has finished running")

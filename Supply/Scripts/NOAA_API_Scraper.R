@@ -262,12 +262,199 @@ fileAdjustment <- function (csvPath, EndDate) {
 
 
 
+prismFill <- function (EndDate) {
+  
+  # If the downloaded NOAA file does not have date up to 'EndDate', later scripts will fail
+  # Substitute missing entries with data from PRISM
+  
+  
+  
+  # First, check if the date in 'EndDate' appears in the downloaded data file
+  inputVec <- paste0("WebData/Downsizer_", EndDate$date, ".csv") %>%
+    readLines()
+  
+  
+  
+  # End the function if the end date does appear in the dataset
+  if (grepl(paste(EndDate$year, EndDate$month, EndDate$day, sep = " "), 
+            tail(inputVec, 1))) {
+    return(invisible(NULL))
+  }
+
+  
+  
+  # Otherwise, read in "Prism_Processed.csv"
+  prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
+  
+  
+  
+  # Also, get the column names for Downsizer and linking table to PRISM
+  columnHeaders <- read_csv("InputData/Downsizer_Stations.csv", col_names = FALSE, 
+                            col_types = cols(.default = col_character())) %>%
+    unlist() %>% as.vector()
+  
+  
+  
+  # The headers have numbered IDs for the stations
+  # These values can be found in "RR_PRMS_StationList (2023-09-05).xlsx"
+  stationDF <- read_xlsx("InputData/RR_PRMS_StationList (2023-09-05).xlsx")
+  
+  
+  
+  # The first row of 'stationDF' actually contains the headers
+  stationDF <- stationDF[-1, ] %>% 
+    set_names(stationDF[1, ] %>% unlist() %>% as.vector()) %>%
+    filter(Source == "DOWNSIZER")
+  
+  
+  
+  # After that, get the missing dates
+  missingDates <- seq(from = 1 + tail(inputVec, 1) %>% 
+                        str_extract("^[0-9]+ [0-9]+ [0-9]+") %>%
+                        str_replace_all("\\s+", "-") %>%
+                        as.Date(), 
+                      to = EndDate$date - 1, by = "days")
+  
+  
+  
+  # Repeat the next procedure for each missing entry
+  # (Create a row that will be appended to 'inputVec')
+  for (i in 1:length(missingDates)) {
+    
+    # Initialize the vector that will hold values for all columns
+    rowVec <- c()
+    
+    
+    
+    # Iterate through 'columnHeaders' next
+    for (j in 1:length(columnHeaders)) {
+      
+      # Perform different operations depending on the value of 'columnHeaders'
+      
+      
+      # First, if 'columnHeaders' is NA, add -999 to 'rowVec'
+      if (is.na(columnHeaders[j])) {
+        
+        rowVec <- c(rowVec, -999.0)
+        
+        # The next checks are for the year, month, and day columns
+      } else if (columnHeaders[j] == "Year") {
+        
+        rowVec <- c(rowVec, year(missingDates[i]))
+        
+      } else if (columnHeaders[j] == "Month") {
+        
+        rowVec <- c(rowVec, month(missingDates[i]))
+        
+      } else if (columnHeaders[j] == "Day") {
+        
+        rowVec <- c(rowVec, day(missingDates[i]), 0, 0, 0)
+        
+        # 0s are added after "day" to account for Hours, Minutes, and Seconds columns
+        
+        
+        # The next type of column names is formatted like "DOWNSIZER_[COLTYPE][ID]" 
+        # COLTYPE can be "PRECIP", "TMAX", or "TMIN"
+        # ID is an integer
+      } else if (grepl("^DOWNSIZER", columnHeaders[j])) {
+        
+        
+        # First get the name of the column in 'initialDF' that corresponds to
+        # the desired variable type (PRECIPITATION, MIN TEMPERATURE, or MAX TEMPERATURE)
+        if (grepl("PRECIP", columnHeaders[j])) {
+          
+          colChoice <- "PRCP"
+          
+        } else if (grepl("TMAX", columnHeaders[j])) {
+          
+          colChoice <- "TMAX"
+          
+        } else if (grepl("TMIN", columnHeaders[j])) {
+          
+          colChoice <- "TMIN"
+          
+        } else {
+          
+          stop(paste0("Unknown variable name ", columnHeaders[j]))
+          
+        }
+        
+        
+        
+        # Next, get the "Rank" value that corresponds to the column header name/ID
+        rankVal <- stationDF$Rank[stationDF$`DAT_File Field Name` == columnHeaders[j]]
+        
+        
+        
+        # Find the corresponding entry in 'prismDF'
+        if (grepl("PRECIP", rankVal)) {
+        
+          colStr <- "PP_"
+          
+        } else {
+          
+          colStr <- "PT_"
+          
+        }
+        
+        
+        extractedVal <- prismDF[[paste0(colStr, rankVal)]][prismDF$Date == missingDates[i]]
+        
+        
+        
+        # If no value was found for this iteration, 'extractedVal' should be -999
+        if (length(extractedVal) == 0) {
+          extractedVal <- -999.0
+        }
+        
+        
+        
+        # Save 'extractedVal' to 'rowVec'
+        rowVec <- c(rowVec, extractedVal)
+        
+        
+      } else {
+        
+        stop(paste0("No procedure was written for a column called ", columnHeaders[j]))
+        
+      }
+      
+    } # End of loop through 'columnHeaders'
+    
+    
+    
+    # Once 'rowVec' has been constructed, merge it into a single string
+    # (separated by one space " ")
+    # Then, save it to 'inputVec'
+    inputVec <- c(inputVec,
+                  paste0(rowVec, collapse = " "))
+    
+    
+  } # End of 'i' loop ('missingDates')
+  
+  
+  
+  # Save the updated 'inputVec'
+  inputVec %>%
+    writeLines(paste0("WebData/Downsizer_", EndDate$date, ".csv"))
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
 fileAdjustment(paste0("WebData/NOAA_API_", EndDate$date, ".csv"), EndDate)
+
+prismFill(EndDate)
 
 
 
 # Now that the procedure is complete, remove the variables
-remove(stationList, requestURL, fileAdjustment)
+remove(stationList, requestURL, fileAdjustment, prismFill)
 
 
 cat("'NOAA_API_Scraper.R' is done!\n")
