@@ -1,7 +1,6 @@
 # Run the scripts one chunk at a time to insure that everything is working correctly.
 #Install if you do not have in your current packages or are not up to date.----
 #install.packages("tidyverse")
-#install.packages("dplyr")
 
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
@@ -27,17 +26,17 @@ read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.x
 
 # Save the Water Rights Annual Water Use Extended Report file too
 # (This works, but it takes a long time, and the progress bar might not update)
-options(timeout = 10^9) # With this setting change, download.file() will now stop if the download takes more than a billion seconds (~31.7 years)
+options(timeout = 10^9) # With this setting change, download.file() will now stop if the download takes more than a billion seconds (~31.7 years), about 15.7 GB
 download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "RawData/water_use_report_extended.csv", mode = "wb", quiet = FALSE)
 
 
-# Save the Water Rights Uses and Seasons flat file as well
+# Save the Water Rights Uses and Seasons flat file as well, ~96 MB
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
   write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
-# (It is also a big file that would work better with read_csv() instead of download.file())
+# (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MV
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_party.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
@@ -125,9 +124,9 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   ))
 
 #Add the FFMTRS field----
-#This field serves as the Flat File Mountain Township Range Section field
-#This field concatenates the Meridian, Township Number, Township Direction, Range Number, Range Direction, and Section Number fields
-#This field is used as a basis of comparison with the MTRS field in the PLSS_Sections_Fill shapefile
+  #This field serves as the Flat File Mountain Township Range Section field
+  #This field concatenates the Meridian, Township Number, Township Direction, Range Number, Range Direction, and Section Number fields
+  #This field is used as a basis of comparison with the MTRS field in the PLSS_Sections_Fill shapefile
 
 Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, Flat_File_eWRIMS$TOWNSHIP_NUMBER, 
                                  Flat_File_eWRIMS$TOWNSHIP_DIRECTION, Flat_File_eWRIMS$RANGE_NUMBER, Flat_File_eWRIMS$RANGE_DIRECTION,
@@ -138,4 +137,4 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
-write.csv(Flat_File_eWRIMS,"IntermediateData/Flat_File_eWRIMS_2023-06-16.csv", row.names = FALSE)
+write.csv(Flat_File_eWRIMS,paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date()), row.names = FALSE)
