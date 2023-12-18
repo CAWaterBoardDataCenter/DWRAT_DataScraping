@@ -36,7 +36,7 @@ read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.x
 
 
 # Get the Water Rights Parties flat file after that
-# (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MV
+# (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_party.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
@@ -137,4 +137,4 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
-write.csv(Flat_File_eWRIMS,paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date()), row.names = FALSE)
+write.csv(Flat_File_eWRIMS,paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date(), ".csv"), row.names = FALSE)
