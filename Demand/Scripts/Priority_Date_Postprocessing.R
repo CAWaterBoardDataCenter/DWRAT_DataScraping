@@ -257,7 +257,7 @@ write.csv(Missing_RMS_Reports_FINAL,"IntermediateData/Missing_RMS_Reports_FINAL.
 
 ####################Application Numbers############################
 
-# Use "RR_pod_points_Merge_filtered_PA_[DATE].xlsx", extract two columns
+# Use "RR_pod_points_Merge_filtered_PA_[DATE].xlsx", extract two columns, update the spreadsheet as needed, depends on the result of your GIS pre-processing review for your watershed
 Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
   group_by(APPLICATION_NUMBER, POD_ID) %>%
   summarize(FREQUENCY = n(), .groups = "drop") %>%
