@@ -1,7 +1,7 @@
 # Compare the data in an XLSX module to the results of its script counterpart
 
 
-# In the "Module and Script Comparisons" folder, there is a separate folder for each module
+# In the "ModuleAndScriptComparisons" folder, there is a separate folder for each module
 # Inside each folder, there should be at least three files:
 #   (1) The script output file (Something ending with "_Scripted_[Date].xlsx")
 #   (2) The input CSV file that helped produce that script output file
@@ -44,18 +44,21 @@ mainProcedure <- function () {
     dirCheck(comparisonList[i])
     
     
-    
     # Next, read in the module and the script output file
     # (Read in all columns as text strings)
-    modXLSX <- suppressMessages(read_xlsx(paste0("Module and Script Comparisons/", 
-                                                 comparisonList[i], "/", 
-                                comparisonList[i], ".xlsx"), 
-                         col_types = "text", col_names = FALSE, 
-                         sheet = comparisonList[i] %>% str_remove("_") %>% str_remove(" \\(1\\)$") %>% str_replace("DuplicateMonthsYears", "Duplicate_Months_Years")))
+    modXLSX <- list.files(paste0("ModuleAndScriptComparisons/", comparisonList[i]), full.names = TRUE) %>%
+      str_subset("\\.xlsx$") %>% str_subset("Scripted", negate = TRUE) %>% 
+      str_subset("/~\\$", negate = TRUE) %>% str_subset("Difference_Comparison", negate = TRUE) %>%
+      read_xlsx(col_names = FALSE, col_types = "text", sheet = getSheetNum(comparisonList[i]))
+      
     
-    scriptXLSX <- suppressMessages(paste0("Module and Script Comparisons/", comparisonList[i]) %>%
+    # The module worksheet is usually the first one, 
+    # but there some exceptions, as specified in the if_else() statement)
+    scriptXLSX <- paste0("ModuleAndScriptComparisons/", comparisonList[i]) %>%
       list.files(full.names = TRUE) %>% str_subset("Scripted") %>%
-      read_xlsx(col_types = "text", col_names = FALSE))
+      str_subset("/~\\$", negate = TRUE) %>% str_subset("Difference_Comparison", negate = TRUE) %>%
+      read_xlsx(col_types = "text", col_names = FALSE, 
+                sheet = if_else(comparisonList[i] %in% c("Diversion_Out_Of_Season_Part_B", "QAQC_Working_File"), 2, 1))
     
     
     
@@ -69,7 +72,7 @@ mainProcedure <- function () {
     
     
     # Save 'mismatchDF' as an Excel sheet in the directory
-    paste0("Module and Script Comparisons/", comparisonList[i], "/",
+    paste0("ModuleAndScriptComparisons/", comparisonList[i], "/",
            "Difference_Comparison_", comparisonList[i], ".xlsx") %>%
       write.xlsx(x = mismatchDF, overwrite = TRUE)
     
@@ -92,7 +95,7 @@ getUserChoice <- function () {
   
   
   # First, get a list of modules in the "Module and Script Comparisons" folder
-  optionVec <- list.dirs("Module and Script Comparisons/", recursive = FALSE, full.names = FALSE)
+  optionVec <- list.dirs("ModuleAndScriptComparisons/", recursive = FALSE, full.names = FALSE)
   
   
   # Using the pre-installed utils package, create a Windows dialog box
@@ -123,7 +126,7 @@ dirCheck <- function (folderName) {
   
   
   # Get a list of files in the folder
-  fileList <- list.files(paste0("Module and Script Comparisons/", folderName))
+  fileList <- list.files(paste0("ModuleAndScriptComparisons/", folderName))
   
   
   # Verify that 'fileList' has a length of at least 3
@@ -149,13 +152,70 @@ dirCheck <- function (folderName) {
   
   
   # Finally, check for the presence of the XLSX module file
-  if (!(paste0(folderName, ".xlsx") %in% fileList)) {
-    stop("This module's directory is missing the module XLSX file of the same name")
+  if (fileList %>%
+      str_subset("\\.xlsx$") %>%
+      str_subset("~\\$", negate = TRUE) %>%
+      str_subset("Scripted\\.xlsx", negate = TRUE) %>%
+      length() == 0) {
+    stop("This module's directory may be missing the module XLSX file of the same name")
   }
   
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+getSheetNum <- function (modName) {
+  
+  # The Excel module files have multiple sheets
+  # Depending on the module, the actual module sheet location may vary
+  
+  # Depending the module specified in 'modName', return the corresponding module's sheet name
+  
+  
+  
+  # For several modules, the sheet name matches the module name
+  if (modName %in% c("Beneficial_Use_Return_Flow", "DuplicateReport_SameOwner",
+                     "Missing_RMS_Reports")) {
+    return(modName)
+  }
+  
+  
+  if (modName == "Diversion_Out_Of_Season_Part_A") {
+    return("USE_SEASON_FLATFILE")
+  }
+  
+  
+  if (modName == "Diversion_Out_Of_Season_Part_B") {
+    return("DIVERSION_OUT_OF_SEASON")
+  }
+  
+  
+  if (modName == "DuplicateMonths_Years") {
+    return("Duplicate_Months_Years")
+  }
+  
+  
+  if (modName == "ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics") {
+    return("ReportedDiversionAnalysis")
+  }
+  
+  
+  if (modName == "Priority_Date") {
+    return("PriorityDate")
+  }
+  
+  
+  if (modName == "QAQC_Working_File") {
+    return("MasterDemandTable")
+  }
+  
+  
+  
+  # Throw an error if the script reaches this point
+  stop(paste0("No sheet name was specified for directory ", modName))
   
 }
 
@@ -201,9 +261,9 @@ compareCells <- function (moduleDF, scriptDF) {
   
   
   # NOTE
-  # This function is only designed to work with tables that have a column length below 27
-  # (It can only assign column labels between A and Z)
-  stopifnot(ncol(moduleDF) <= 26)
+  # This function is only designed to work with tables that have a column length below 208
+  # (It can only assign column labels between A and GZ)
+  stopifnot(ncol(moduleDF) <= 208)
   
   
   # If 'moduleDF' is too large, use a parallel processing version of this function
@@ -277,7 +337,7 @@ compareCells <- function (moduleDF, scriptDF) {
       # The column name in the script sheet
       # The value in the script sheet
       mismatchVec <- c(mismatchVec,
-                       paste0(LETTERS[j], i),
+                       paste0(getColumnLabel(j), i),
                        moduleDF[[1, j]], moduleDF[[i, j]],
                        scriptDF[[1, j]], scriptDF[[i, j]])
       
@@ -445,6 +505,45 @@ parallelCellCheck <- function (moduleRow, scriptRow, i) {
   
   # Otherwise, return the vector
   return(mismatchVec)
+  
+}
+
+
+getColumnLabel <- function (j) {
+  
+  # j is the column index
+  # Based on this value, return the proper column label
+  
+  
+  # If j is <= 26, use 'LETTERS' to get the label
+  if (j <= 26) {
+    return(LETTERS[j])
+  }
+  
+  
+  # If j is <= 52, use "A" along with 'LETTERS' to get the correct label
+  if (j <= 26 * 2) {
+    return(paste0("A", rep(LETTERS, 2)[j]))
+  }
+  
+  
+  # Use a generic loop procedure for the remaining checks
+  # Include support for a maximum of 8 * 26 = 208 columns
+  # Greater column sizes can easily be supported with this loop (up to 26 * 26),
+  # but module tables should not be bigger than this
+  for (i in 3:8) {
+    
+    if (j >= 26 * (i - 1) && j <= 26 * i) {
+      return(paste0(LETTERS[i - 1],
+                    rep(LETTERS, i)[j]))
+    }
+    
+  }
+  
+  
+  # If the procedure reaches this point, throw an error
+  stop(paste0("The table's column count exceeds the supported length of this function (max is 182, column count is ", 
+              j, ")"))
   
 }
 

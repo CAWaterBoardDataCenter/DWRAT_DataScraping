@@ -15,7 +15,9 @@ require(KeyboardSimulator)
 
 #### Script Procedure ####
 
-mainProcedure <- function (StartDate = data.frame(year = 2023, month = 4, day = 1, date = as_date("2023-04-01")), EndDate = data.frame(year = 2023, month = 5, day = 29, date = as_date("2023-05-29"))) {
+mainProcedure <- function (StartDate = data.frame(year = 2022, month = 10, day = 1, 
+                                                  date = as_date("2022-10-01")), 
+                           EndDate = data.frame(year = 2023, month = 9, day = 6, date = as_date("2023-09-06"))) {
   
   # This is the main body of the script
   
@@ -188,13 +190,13 @@ automatedDownsizer <- function (path_to_jar, path_to_csv, StartDate, EndDate) {
   
   # Input the Start Month (if it isn't the default value 1)
   if (StartDate$month != 1) {
-    strInput(150, 103, currentScreen, StartDate$month)
+    numInput(150, 103, currentScreen, StartDate$month, 1)
   }
   
   
   # Input the Start Day (if it isn't the default value 1)
   if (StartDate$day != 1) {
-    strInput(205, 103, currentScreen, StartDate$day)
+    numInput(205, 103, currentScreen, StartDate$day, 1)
   }
   
   
@@ -205,19 +207,19 @@ automatedDownsizer <- function (path_to_jar, path_to_csv, StartDate, EndDate) {
   
   # Change the End Year (if it's different)
   if (EndDate$year != year(dateToday)) {
-    strInput(88, 128, currentScreen, EndDate$year)
+    numInput(88, 128, currentScreen, EndDate$year, year(dateToday))
   }
   
   
   # Change the End Month (if it's different)
   if (EndDate$month != month(dateToday)) {
-    strInput(150, 128, currentScreen, EndDate$month)
+    numInput(150, 128, currentScreen, EndDate$month, month(dateToday))
   }
   
   
   # Change the End Day (if it's different)
   if (EndDate$day != day(dateToday)) {
-    strInput(205, 128, currentScreen, EndDate$day)
+    numInput(205, 128, currentScreen, EndDate$day, day(dateToday))
   }
   
   
@@ -415,6 +417,66 @@ strInput <- function (x, y, currentScreen, inputStr) {
   # Type 'inputStr' into the box character-by-character
   # Then press "Enter"
   inputStr %>% as.character() %>% keybd.type_string()
+  keybd.press("enter")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+numInput <- function (x, y, currentScreen, inputVal, initVal) {
+  
+  # In the Downsizer application, select a number in a text box
+  # Determine the number of times "up" or "down" must be used to move to the desired selection
+  
+  
+  # Get the number of times the "up"/"down" key will be pressed
+  numPresses <- initVal - inputVal
+  
+  
+  # To determine whether "up" or "down" will be used,
+  # consider the sign of 'numPresses'
+  
+  
+  # If 'initVal' is greater than 'inputVal', "up" will be used
+  if (numPresses > 0) {
+    
+    inputKey <- "up"
+  
+  # If it is less than 'inputVal', the "down" key will be used
+  } else if (numPresses < 0) {
+    
+    inputKey <- "down"
+    
+  # The two values should not be equal; throw an error in that case
+  } else {
+    
+    stop("Error: The numInput() function was being used for an incompatible case.")
+    
+  }
+  
+  
+  # Click on the text box to open it
+  mouseMove(x, y, currentScreen)
+  mouseClick()
+  
+  
+  # Press the key specified in 'inputKey'
+  # The number of times this will be done is equal to 'numPresses'
+  for (i in 1:abs(numPresses)) {
+    
+    keybd.press(inputKey)
+    
+    
+    # Also include a small pause between each press
+    Sys.sleep(0.02)
+    
+  }
+  
+  
+  # Then press "Enter"
   keybd.press("enter")
   
   

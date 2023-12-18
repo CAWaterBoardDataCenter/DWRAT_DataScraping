@@ -21,6 +21,7 @@ library(netstat)
 library(here)
 library(dplyr)
 library(readr)
+library(binman)
 
 #Set up RSelenium----
 ##Set Default download folder----

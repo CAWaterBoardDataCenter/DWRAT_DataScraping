@@ -24,7 +24,8 @@ mainProcedure <- function () {
   
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv("InputData/Priority_Date_FINAL.csv")
+  priorityDateCSV <- read.csv("IntermediateData/Priority_Date_FINAL.csv") %>%
+    unique()
   
   
   
@@ -258,9 +259,25 @@ mainProcedure <- function () {
   priorityDateCSV %>%
     write.xlsx("OutputData/Priority_Date_Scripted.xlsx", overwrite = TRUE)
   
+  
+  
+  # Send a completion message to the console
+  cat("Done!\n")
+  
+  
+  
+  return(invisible(NULL))
+  
 }
 
 
 #### Script Execution ####
 
+
+cat("Starting 'Priority_Date.R'...")
+
 mainProcedure()
+
+
+# Remove the function from the environment when the procedure is complete
+remove(mainProcedure)

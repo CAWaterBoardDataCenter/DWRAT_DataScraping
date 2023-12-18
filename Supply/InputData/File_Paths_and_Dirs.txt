@@ -19,7 +19,7 @@ This file will eventually be condensed into a couple of file paths
 (2) Path to the downsizer station CSV (downsizer_sta.csv):      C:\RR_PRMS\PRMS\input\data_file_prep\downsizer_raw_data\downsizer_sta.csv
 
 
-(3) Path to the "WebData" folder in your GitHub repository (no specific file for this one):     C:\Users\aprashar\Documents\Github\DWRAT_DataScraping\Supply\WebData
+(3) Path to the "WebData" folder in your GitHub repository (no specific file for this one):     C:\Users\mpaul\Documents\Github\DWRAT_DataScraping\Supply\WebData
 
 
 ============= Paths for "PRMS_Model_Execution.R" =============

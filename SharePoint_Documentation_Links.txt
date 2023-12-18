@@ -1,0 +1,15 @@
+AUTHOR: PAYMAN ALEMI
+LAST UPDATED: 8/28/2023
+
+I created this text file to list all the SharePoint URLs for relevant Office files (DOCX, XLSX, PPTX) 
+pertaining to documentation and workflow for the DWRAT_DataScraping repository. Maintaining Office files
+on GitHub is inefficient, tedious, and mistake-prone, and horrible for sharing on Teams. But I want to maintain 
+a list of the URLS in this text file so that our coders have quick access to relevant context. 
+
+RR_PRMS_Station_List.xlsx
+*Provides detailed information on every weather station used by the RR PRMS and SRP models
+https://cawaterboards.sharepoint.com/:x:/r/DWR/SDA/Shared%20Documents/SOPs%20and%20Documentation/2.%20Hydro%20Model/RR_PRMS_StationList.xlsx?d=w85d48b022398451ca41944a873aaa039&csf=1&web=1&e=unQkSZ
+
+PRMS AND SRP MODEL Workflows.docx
+*Explains how to run RR PRMS and SRP Models 
+https://cawaterboards.sharepoint.com/:w:/r/DWR/SDA/Shared%20Documents/SOPs%20and%20Documentation/2.%20Hydro%20Model/PRMS%20and%20SRP%20Model%20Workflows.docx?d=wcc07ce9e0dd44adabd7f3d9abcb3fbcb&csf=1&web=1&e=RkCzj5

@@ -15,7 +15,8 @@ library(lubridate)
 
 #Import Downsizer Data----
 # Get the file name (it will be the latest CSV file that starts with "Downsizer")
-downsizerCSVname <- list.files() %>% str_subset("^Downsizer.+\\.csv$") %>% tail(1)
+downsizerCSVname <- list.files("WebData", full.names = T) %>% 
+  str_subset("^WebData/Downsizer.+\\.csv$") %>% tail(1)
 
 
 # Error Check
@@ -34,8 +35,10 @@ Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 # TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day')
 
 #Extract the weather data from Downsizer_Original----
-#Drop the first 42 rows of Downsizer
-Downsizer = tail(Downsizer_Original, nrow(Downsizer_Original)-42) %>%data.frame()
+#Drop the first ~40 rows of Downsizer (these are metadata rows)
+# The last line of the metadata is a row of # symbols ("####...")
+Downsizer <- Downsizer_Original[-c(1:grep("^[#]+$", Downsizer_Original[[1]])), ] %>%
+  data.frame()
 colnames(Downsizer) = "Downsizer"
 
 #Format the Downsizer dataframe to match the PRMS_Update DAT file----
@@ -46,7 +49,7 @@ ncols #creates 252 columns, but only the first 36 have content
 colmn <- paste0("Col", 1:ncols) #creates a set of 252 columns named Col1, Col2, ....
 colmn
 
-##Split Downsizer into 253 columns by using spaces as delimiters----
+##Split Downsizer into columns by using spaces as delimiters----
 Downsizer_Processed <-
   tidyr::separate(
     data = Downsizer,
@@ -57,7 +60,7 @@ Downsizer_Processed <-
   )
 
 ##Delete extra columns and apply column names----
-Downsizer_Processed[38:253] = NULL 
+Downsizer_Processed[38:261] = NULL 
 Downsizer_Processed[5:7] = NULL
 Downsizer_Processed[1] = NULL
 

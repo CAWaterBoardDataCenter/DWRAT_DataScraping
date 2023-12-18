@@ -145,9 +145,14 @@ Report$clickElement()
 #Grab the Data
 WeatherData <- remDr$findElement(using = "xpath", "//pre")
 WeatherDataText <-WeatherData$getElementText() %>% unlist() %>% data.frame()
+write.csv(x = WeatherDataText, file = "ProcessedData/CIMIS_WeatherDataText.csv")
 
 #Manipulate CIMIS Data After Download----
-WeatherDataBody <- substring(WeatherDataText, 2551, nchar(WeatherDataText))
+  #Remove the first 2557 characters from WeatherDataText---this is just descriptive text that contains no data;
+  #You should examine WeatherDataText in Notepad++ to dtermine how many characters to remove; 
+  #the descriptive text has changed in size in the past
+
+WeatherDataBody <- substring(WeatherDataText, 2558, nchar(WeatherDataText))
 WeatherDataBody <-gsub("\\\n", " ", WeatherDataBody) #Remove \n from
 WeatherDataBody <-gsub(" ", "", WeatherDataBody) #remove blank spaces
 WeatherDataBody <- strsplit( WeatherDataBody, ",") %>% unlist %>% data.frame() #split by commas
@@ -155,7 +160,7 @@ WeatherDataBody <- strsplit( WeatherDataBody, ",") %>% unlist %>% data.frame() #
 #Force WeatherDataBody into a dataframe with 19 columns
 WeatherDataBody <- split(WeatherDataBody,rep(1:(nrow(WeatherDataBody)/19),each=19)) %>% data.frame %>% t() %>% data.frame()
 
-#Drop the last 12 columns
+#Drop the last 12 columns which don't contain data
 WeatherDataBody <-select(WeatherDataBody, -c(X8:X19))
 
 #Add column headers to WeatherDataBody
