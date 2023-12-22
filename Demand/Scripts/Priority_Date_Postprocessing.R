@@ -28,8 +28,8 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
-  filter(YEAR >= 2017) #%>%
-  #filter(YEAR <= 2020) #Added to generate a 2017-2020 dataset on 10/17/2023, 
+  filter(YEAR >= 2017) %>%
+  filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
                       #2021 and 2022 were heavily curtailed years
 
 
@@ -57,7 +57,8 @@ write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", ro
 
 # Remove variables from the environment that will no longer be used (free up memory)
 remove(water_use_report, water_use_report_Combined, water_use_report_Date, unitFixer, 
-       chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups)
+       chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
+       faceValSub, faceValExtract, faceValAssign)
 
 ######################################################################## Break ####################################################################################
 
