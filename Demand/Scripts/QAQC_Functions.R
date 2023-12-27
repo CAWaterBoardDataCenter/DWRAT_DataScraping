@@ -9,7 +9,7 @@
 require(tidyverse)
 require(readxl)
 require(openxlsx)
-require(data.table)
+require(RSQLite)
 
 
 # Functions
@@ -320,10 +320,22 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
       # If 'actionYear' is outside the data range of 'inputData', "water_use_report_extended.csv" will need to be read in
       if (actionYear < min(inputDF$YEAR)) {
         
-        tempDF <- fread(file = "RawData/water_use_report_extended.csv",
-                        select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
-          filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
-          arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
+        conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+        water_use_report <- dbGetQuery(conn, 
+                                       paste0('SELECT DISTINCT ',
+                                              '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
+                                              'FROM "Table" ',
+                                              'WHERE "APPLICATION_NUMBER" = "', unitsQAQC$APPLICATION_NUMBER[i], '" ',
+                                              'AND "YEAR" = ', actionYear, ' ',
+                                              'ORDER BY "APPLICATION_NUMBER", "YEAR", "MONTH", "DIVERSION_TYPE"')) 
+        dbDisconnect(conn)
+        
+        
+        # Original non-SQL Code
+        # tempDF <- fread(file = "RawData/water_use_report_extended.csv",
+        #                 select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
+        #   filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
+        #   arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
         
       } else {
         
