@@ -13,7 +13,7 @@ cat("Starting 'Priority_Date_Preprocessing.R'...")
 
 ######################################################################## List of Application from GIS Step ####################################################################################
 
-# Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023
+# Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023, #update the filename depending on the result of your GIS manual review process for your watershed
 Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
   group_by(APPLICATION_NUMBER, POD_ID) %>%
   summarize(FREQUENCY = n(), .groups = "drop") #Summarizes records by APPLICATION_NUMBER and POD_ID; 

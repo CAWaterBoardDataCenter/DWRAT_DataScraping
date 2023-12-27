@@ -1,7 +1,6 @@
 #Load Libraries
 library(tidyverse)
 library(data.table)
-library(dplyr)
 library(here)
 
 source_folder = here("OutputData")
@@ -15,6 +14,11 @@ Effective_Dates_All_Rights = read.csv("InputData/Effective_Dates_All_Rights.csv"
 MDT_2017_2019 = read.csv(file = paste0(source_folder,"/", "2017-2019_RR_MasterDemandTable.csv"))
 MDT_2017_2020 = read.csv(file = paste0(source_folder, "/", "2017-2020_RR_MasterDemandTable.csv"))
 MDT_2017_2022 = read.csv(file = paste0(source_folder, "/", "2017-2022_RR_MasterDemandTable.csv"))
+
+#Identify rights that exist in the 2017-2019 dataset that don't exist in the 2017-2020 dataset
+MissingRights = anti_join(x = MDT_2017_2019, 
+                          y = MDT_2017_2020,
+                          by = "APPLICATION_NUMBER")
 
 #Identify useful columns
 MDT_columns = colnames(MDT_2017_2019)
