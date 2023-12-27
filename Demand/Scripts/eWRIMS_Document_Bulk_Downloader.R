@@ -3,11 +3,10 @@ library(here)
 
 # Import eWRIMS PODs as of 12/18/2023----
 #Change the input CSV as needed depending on the watershed whose eWRIMS docs you need
-eWRIMS_List <- read.csv(here("InputData/Navarro_List.csv"))
+eWRIMS_List <- read.csv(here("InputData/Butte_List.csv"))
 eWRIMS_Names = colnames(eWRIMS_List) %>% sort()
 eWRIMS_Names
 eWRIMS_List = eWRIMS_List %>% select(APPLICATION_NUMBER, WATER_RIGHT_TYPE) %>% unique()
-
 
 #Update WR_Types to Match URL Requirements
   #Replace spaces
