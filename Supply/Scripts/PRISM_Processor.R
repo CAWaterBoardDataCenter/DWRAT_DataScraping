@@ -51,5 +51,5 @@ colnames(PT) = PT_NewNames
 #Merge PT and PP dataframes and export to CSV----
 Prism_Processed = merge(x= PT, y = PP, by = "Date")
 write.csv(Prism_Processed, here("ProcessedData/Prism_Processed.csv"), row.names = FALSE)
-
+print("Prism_Processed.R has finished running!")
 
