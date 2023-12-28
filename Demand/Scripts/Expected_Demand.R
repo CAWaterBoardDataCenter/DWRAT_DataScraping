@@ -12,6 +12,7 @@
 
 require(tidyverse)
 require(openxlsx)
+require(readxl)
 
 
 #### Script Procedure ####
@@ -377,7 +378,31 @@ mainProcedure <- function () {
     write.xlsx("OutputData/ExpectedDemand_FV.xlsx", overwrite = TRUE)
   
   
-  # Also save a separate spreadsheet with just columns related to assessing unit conversion errors
+  
+  # A spreadsheet for QAQC review will be produced next
+  # Before that, read in data from the previous manual review
+  # (Exclude entries that were already checked previously)
+  reviewDF1 <- list.files("InputData", pattern = "Units_QAQC_[0-9]", full.names = TRUE) %>%
+    tail(1) %>%
+    read_xlsx(sheet = "Corrected Data") %>%
+    select(APPLICATION_NUMBER, YEAR)
+  
+  
+  reviewDF2 <- list.files("InputData", pattern = "Units_QAQC_Med", full.names = TRUE) %>%
+    tail(1) %>%
+    read_xlsx(sheet = "Filtered Data") %>%
+    select(APPLICATION_NUMBER, YEAR)
+  
+  
+  # Combine the two review datasets
+  # Then make a single column that uniquely identifies each reviewed right's entries
+  reviewDF <- rbind(reviewDF1, reviewDF2) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+  
+  
+  
+  # After that, save a separate spreadsheet with just columns related to assessing unit conversion errors
+  # (Exclude entries that were already reviewed previously)
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR,
            CALENDAR_YEAR_TOTAL,
@@ -393,11 +418,14 @@ mainProcedure <- function () {
              (Diversion_as_Percent_of_FV < 0.1 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
              (Diversion_as_Percent_of_IniDiv > 10 & IniDiv_Converted_to_AF > 0) | 
              (Diversion_as_Percent_of_IniDiv < 0.1 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
+    filter(!(KEY %in% reviewDF$KEY)) %>%
+    select(-KEY) %>%
     write.xlsx("OutputData/Expected_Demand_Units_QAQC.xlsx", overwrite = TRUE)
   
   
   
-  # After that, include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
+  # Then include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
     write.xlsx("OutputData/Calendar_Year_Totals_AF.xlsx", overwrite = TRUE)

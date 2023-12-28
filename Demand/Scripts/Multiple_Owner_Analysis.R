@@ -4,6 +4,8 @@ library(tidyverse) #for read_csv
 library(data.table) #for fread function
 require(janitor) # for get_dupes function
 require(writexl) # for write_xlsx function
+require(RSQLite) # for SQLite queries
+require(readxl) # for read_xlsx function
 
 #Import Raw Data ----
 
@@ -123,6 +125,18 @@ RMS_parties4 = inner_join(x = RMS_parties2,
   #manual review spreadsheet is to catch instances where the same owner reported the same
   #diversions across 2 or more rights; hence "duplicate_reports"
 Duplicate_Reports = get_dupes(RMS_parties4, PK)
+
+
+# Before exporting the table, remove entries that were already manually reviewed
+reviewDF <- list.files("InputData", pattern = "Duplicate_Reports", full.names = TRUE) %>%
+  tail(1) %>%
+  read_xlsx()
+
+
+Duplicate_Reports <- Duplicate_Reports %>%
+  filter(!(PK %in% reviewDF$Primary_Key))
+
+
 writexl::write_xlsx(x= Duplicate_Reports, path = "IntermediateData/Duplicate_Reports_Manual_Review.xlsx", col_names = TRUE)
 
 print("The Multiple_Owner_Analysis.R script is done running!")
@@ -131,4 +145,4 @@ print("The Multiple_Owner_Analysis.R script is done running!")
 
 remove(appYears, conn, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,
        RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
-       RMS_parties4, selected_columns)
+       RMS_parties4, selected_columns, reviewDF)

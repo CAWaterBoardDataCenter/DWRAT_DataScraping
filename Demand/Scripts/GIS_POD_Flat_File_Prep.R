@@ -138,4 +138,5 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
-write.csv(Flat_File_eWRIMS,"IntermediateData/Flat_File_eWRIMS_2023-06-16.csv", row.names = FALSE)
+write_csv(Flat_File_eWRIMS,
+          paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
