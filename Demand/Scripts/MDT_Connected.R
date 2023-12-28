@@ -8,8 +8,8 @@ library(tidyverse)
 library(here)
 
 #Import the original 2017-2019 demand CSVs
-MDT_2017_2020 = read.csv(file = "2017-2020_RR_MasterDemandTable.csv")
-MDT_2017_2022 = read.csv(file = "2017-2022_RR_MasterDemandTable.csv")
+MDT_2017_2020 = read.csv(file = here("OutputData/2017-2020_RR_MasterDemandTable.csv"))
+MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.csv"))
 
 #Rename columns----
   #Rename Application_Number to USER
