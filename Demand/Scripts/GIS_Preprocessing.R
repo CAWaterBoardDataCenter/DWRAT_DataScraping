@@ -77,6 +77,8 @@ mainProcedure <- function (wsName) {
   # (Based on PLSS overlap with watershed polygon)
   
   # (2) Get all PODs within one mile of the boundary
+  # (This action is currently not being performed; the code is there, but it is commented out)
+  # (This can add a lot of extra work for very little gain)
   
   # (3) Get all PODs that intersect with the watershed polygon
   
@@ -134,7 +136,7 @@ mainProcedure <- function (wsName) {
   
   
   
-  #### Task 2 (Watershed Boundary Line Buffer) ####
+  #### (Inactive) Task 2 (Watershed Boundary Line Buffer) ####
   
   # The next task will be to get PODs that are near the boundary of the watershed
   # These will require a manual review
@@ -155,7 +157,7 @@ mainProcedure <- function (wsName) {
   
   
   # Get all PODs that intersect with this buffer
-  wsLine_Buffer_Intersect <- st_intersection(pod_points_statewide_spatial, wsLine_Buffer)
+  #wsLine_Buffer_Intersect <- st_intersection(pod_points_statewide_spatial, wsLine_Buffer)
   
   
   
@@ -208,7 +210,8 @@ mainProcedure <- function (wsName) {
   
   # Output the four variables to a spreadsheet for further analysis
   # ('WS_pod_points_Merge', 'wsLine_Buffer_Intersect', 'wsBound_Inner_Intersect', and 'wsMention')
-  outputResults(wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
+  #outputResults(wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
+  outputResults_NoTask2(wsName, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
   
   
   
@@ -464,6 +467,147 @@ outputResults <- function (wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect,
 
 
 
+outputResults_NoTask2 <- function (wsName, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention) {
+  
+  # Write the four output variables to a spreadsheet
+  # (Create a shapefile as well)
+  
+  
+  
+  # Initialize the workbook
+  wb <- createWorkbook()
+  
+  
+  
+  # Create a combined version of all four variables
+  allDF <- wsBound_Inner_Intersect %>%
+    bind_rows(WS_pod_points_Merge, wsMention) %>%
+    unique() %>%
+    arrange(APPLICATION_NUMBER, POD_ID) %>%
+    deleteIdentical("POD_ID")
+  
+  
+  
+  # Write 'allDF' to a GeoJSON file
+  st_write(allDF, paste0("IntermediateData/PODs_of_Interest_", wsName, ".GeoJSON"))
+  
+  
+  
+  # Drop the coordinate data from 'allDF' (making it just a tibble)
+  # (This is necessary for writing the data in a tabular format)
+  # (This is also why duplicated latitude and longitude columns were used)
+  allDF <- allDF %>%
+    st_drop_geometry()
+  
+  
+  
+  # Add a worksheet for the manual review that contains a portion of the columns in this variable
+  addWorksheet(wb, "Review")
+  
+  writeData(wb, "Review",
+            allDF %>%
+              select(APPLICATION_NUMBER, POD_ID, WATER_RIGHT_TYPE, URL, COUNTY,
+                     FFMTRS, MTRS, MTRS_Match, PARCEL_NUMBER, 
+                     LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD,
+                     SOURCE_NAME, TRIB_DESC) %>%
+              unique() %>%
+              mutate(ERROR_CASE = NA_character_,
+                     ERROR_RESOLVED = NA,
+                     NEW_LATITUDE = NA_real_,
+                     NEW_LONGITUDE = NA_real_,
+                     NEW_MTRS = NA_character_,
+                     NOTES = NA_character_,
+                     REVIEWED_BY = NA_character_))
+  
+  
+  
+  # Add a separate worksheet to hold 'allDF' with all of its columns
+  addWorksheet(wb, "Combined")
+  
+  
+  writeData(wb, "Combined", allDF)
+  
+  
+  
+  # Have separate worksheets for each variable too
+  addWorksheet(wb, "MTRS_and_FFMTRS")
+  
+  writeData(wb, "MTRS_and_FFMTRS", WS_pod_points_Merge %>% st_drop_geometry())
+  
+  
+  
+  addWorksheet(wb, "One_Mile_or_More_Inside_WS")
+  
+  writeData(wb, "One_Mile_or_More_Inside_WS", wsBound_Inner_Intersect %>% st_drop_geometry())
+  
+  
+  
+  addWorksheet(wb, "Mentions_WS")
+  
+  writeData(wb, "Mentions_WS", wsMention %>% st_drop_geometry())
+  
+  
+  
+  # Finally, create a summary table that identifies which task each POD was gathered from
+  task1 <- WS_pod_points_Merge %>%
+    st_drop_geometry() %>%
+    select(APPLICATION_NUMBER, POD_ID) %>%
+    mutate(MATCHING_MTRS_OR_FFMTRS = TRUE)
+  
+  
+  
+  task3 <- wsBound_Inner_Intersect %>%
+    st_drop_geometry() %>%
+    select(APPLICATION_NUMBER, POD_ID) %>%
+    mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = TRUE)
+  
+  
+  
+  task4 <- wsMention %>%
+    st_drop_geometry() %>%
+    select(APPLICATION_NUMBER, POD_ID) %>%
+    mutate(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = TRUE)
+  
+  
+  
+  # Join all four variables together
+  combinedDF <- task1 %>%
+    full_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
+    full_join(task4, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
+    arrange(APPLICATION_NUMBER, POD_ID) %>%
+    mutate(MATCHING_MTRS_OR_FFMTRS = replace_na(MATCHING_MTRS_OR_FFMTRS, FALSE),
+           ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
+           MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = replace_na(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION, FALSE))
+  
+  
+  
+  # Add that variable to the spreadsheet
+  addWorksheet(wb, "POD_Selection_Info")
+  
+  writeData(wb, "POD_Selection_Info", combinedDF)
+  
+  
+  
+  # Also, make it the second sheet in the workbook
+  worksheetOrder(wb) <- c(worksheetOrder(wb)[1],
+                          tail(worksheetOrder(wb), 1),
+                          worksheetOrder(wb)[-c(1, tail(worksheetOrder(wb), 1))])
+  
+  
+  
+  # Save 'wb' to a file
+  saveWorkbook(wb, 
+               paste0("IntermediateData/GIS_Preprocessing_", wsName, ".xlsx"), overwrite = TRUE)
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
 #### Script Execution ####
 
 
@@ -473,4 +617,4 @@ print(paste0("Starting 'GIS_Preprocessing.R' with watershed name ", wsName, "...
 mainProcedure(wsName)
 
 
-remove(mainProcedure, confirmCS, deleteIdentical, outputResults, wsName)
+remove(mainProcedure, confirmCS, deleteIdentical, outputResults, outputResults_NoTask2, wsName)
