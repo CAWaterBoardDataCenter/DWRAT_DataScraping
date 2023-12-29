@@ -14,13 +14,13 @@ require(openxlsx)
 #### Script Procedure ####
 
 
-mainProcedure <- function () {
+mainProcedure <- function (wsID) {
   
   # The main body of the script
   
   
   # Read in the input CSV file for this analysis
-  inputDF <- read.csv("IntermediateData/Beneficial_Use_and_Return_Flow_FINAL.csv")
+  inputDF <- read.csv(paste0("IntermediateData/", wsID, "_Beneficial_Use_and_Return_Flow_FINAL.csv"))
   
   
   
@@ -312,7 +312,7 @@ mainProcedure <- function () {
   
   
   # Finally, prepare a spreadsheet with the output data
-  writeSpreadsheet(inputDF, resDF)
+  writeSpreadsheet(inputDF, resDF, wsID)
   
   
   
@@ -400,7 +400,7 @@ standardReturnFlow <- function () {
 }
 
 
-writeSpreadsheet <- function (inputDF, resDF) {
+writeSpreadsheet <- function (inputDF, resDF, wsID) {
   
   # Create a spreadsheet with similar formatting to the Excel module
   
@@ -518,7 +518,7 @@ writeSpreadsheet <- function (inputDF, resDF) {
   
   
   # Save 'wb' to a file
-  saveWorkbook(wb, "OutputData/Beneficial_Use_Return_Flow_Scripted.xlsx", overwrite = TRUE)
+  saveWorkbook(wb, paste0("OutputData/", wsID, "_Beneficial_Use_Return_Flow_Scripted.xlsx"), overwrite = TRUE)
   
   
   
@@ -533,7 +533,7 @@ writeSpreadsheet <- function (inputDF, resDF) {
 
 cat("Starting 'Beneficial_Use_Return_Flow.R'...")
 
-mainProcedure()
+mainProcedure(ws$ID)
 
 
 

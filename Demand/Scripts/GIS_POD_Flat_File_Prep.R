@@ -139,3 +139,8 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
 ####Check your output file
 write_csv(Flat_File_eWRIMS,
           paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
+
+
+
+remove(Flat_File_eWRIMS, Flat_File_PODs, Flat_File_PODs_Status, 
+       Flat_File_PODs_WR_Type, cols_to_keep)
