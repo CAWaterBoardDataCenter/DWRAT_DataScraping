@@ -73,9 +73,15 @@ MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.
                   lrr_rip_mdt_2017_2020, lrr_rip_mdt_2017_2022,
                   urr_app_mdt_2017_2020, urr_app_mdt_2017_2022,
                   urr_rip_mdt_2017_2020, urr_rip_mdt_2017_2022)
+  *
+  #You have to manually assign the dataframe names to each item in the list, otherwise the export loop will fail because the dataframe names are null; lists wipe out dataframe names by default
+  names(MDT_List) = c("lrr_app_mdt_2017_2020", "lrr_app_mdt_2017_2022",
+                  "lrr_rip_mdt_2017_2020", "lrr_rip_mdt_2017_2022",
+                  "urr_app_mdt_2017_2020", "urr_app_mdt_2017_2022",
+                  "urr_rip_mdt_2017_2020", "urr_rip_mdt_2017_2022")
                   
 #Use a for loop to export each dataframe
   for (i in seq_along(MDT_List)) {
     filename <- names(MDT_List)[i]
-    write.csv(MDT_List[[i]], file = paste0(filename, ".csv"), row.names = FALSE) 
+    write.csv(MDT_List[[i]], file = paste0("OutputData/",filename, ".csv"), row.names = FALSE) 
   }
