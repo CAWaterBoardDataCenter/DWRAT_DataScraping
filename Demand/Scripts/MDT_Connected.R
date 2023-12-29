@@ -8,8 +8,8 @@ library(tidyverse)
 library(here)
 
 #Import the original 2017-2019 demand CSVs
-MDT_2017_2020 = read.csv(file = "2017-2020_RR_MasterDemandTable.csv")
-MDT_2017_2022 = read.csv(file = "2017-2022_RR_MasterDemandTable.csv")
+MDT_2017_2020 = read.csv(file = here("OutputData/2017-2020_RR_MasterDemandTable.csv"))
+MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.csv"))
 
 #Rename columns----
   #Rename Application_Number to USER
@@ -56,15 +56,15 @@ MDT_2017_2022 = read.csv(file = "2017-2022_RR_MasterDemandTable.csv")
   LRR_MDT_2017_2022 = MDT_2017_2022 %>% filter(UPPER_RUSSIAN == 'N')
   
 #Separate MDTs into riparian and appropriative---
-  urr_rip_mdt_2017_2020 = URR_MDT_2017_2020 %>% filter(RIPARIAN == 'N')
-  urr_rip_mdt_2017_2022 = URR_MDT_2017_2022 %>% filter(RIPARIAN == 'N')
-  urr_app_mdt_2017_2020 = URR_MDT_2017_2020 %>% filter(RIPARIAN == 'Y')
-  urr_app_mdt_2017_2022 = URR_MDT_2017_2022 %>% filter(RIPARIAN == 'Y')
+  urr_rip_mdt_2017_2020 = URR_MDT_2017_2020 %>% filter(RIPARIAN == 'Y')
+  urr_rip_mdt_2017_2022 = URR_MDT_2017_2022 %>% filter(RIPARIAN == 'Y')
+  urr_app_mdt_2017_2020 = URR_MDT_2017_2020 %>% filter(RIPARIAN == 'N')
+  urr_app_mdt_2017_2022 = URR_MDT_2017_2022 %>% filter(RIPARIAN == 'N')
   
-  lrr_rip_mdt_2017_2020 = LRR_MDT_2017_2020 %>% filter(RIPARIAN == 'N')
-  lrr_rip_mdt_2017_2022 = LRR_MDT_2017_2022 %>% filter(RIPARIAN == 'N')
-  lrr_app_mdt_2017_2020 = LRR_MDT_2017_2020 %>% filter(RIPARIAN == 'Y')
-  lrr_app_mdt_2017_2022 = LRR_MDT_2017_2022 %>% filter(RIPARIAN == 'Y')
+  lrr_rip_mdt_2017_2020 = LRR_MDT_2017_2020 %>% filter(RIPARIAN == 'Y')
+  lrr_rip_mdt_2017_2022 = LRR_MDT_2017_2022 %>% filter(RIPARIAN == 'Y')
+  lrr_app_mdt_2017_2020 = LRR_MDT_2017_2020 %>% filter(RIPARIAN == 'N')
+  lrr_app_mdt_2017_2022 = LRR_MDT_2017_2022 %>% filter(RIPARIAN == 'N')
   
 
 #Export the MDTs into CSVs----
@@ -73,9 +73,15 @@ MDT_2017_2022 = read.csv(file = "2017-2022_RR_MasterDemandTable.csv")
                   lrr_rip_mdt_2017_2020, lrr_rip_mdt_2017_2022,
                   urr_app_mdt_2017_2020, urr_app_mdt_2017_2022,
                   urr_rip_mdt_2017_2020, urr_rip_mdt_2017_2022)
+  *
+  #You have to manually assign the dataframe names to each item in the list, otherwise the export loop will fail because the dataframe names are null; lists wipe out dataframe names by default
+  names(MDT_List) = c("lrr_app_mdt_2017_2020", "lrr_app_mdt_2017_2022",
+                  "lrr_rip_mdt_2017_2020", "lrr_rip_mdt_2017_2022",
+                  "urr_app_mdt_2017_2020", "urr_app_mdt_2017_2022",
+                  "urr_rip_mdt_2017_2020", "urr_rip_mdt_2017_2022")
                   
 #Use a for loop to export each dataframe
   for (i in seq_along(MDT_List)) {
     filename <- names(MDT_List)[i]
-    write.csv(MDT_List[[i]], file = paste0(filename, ".csv"), row.names = FALSE) 
+    write.csv(MDT_List[[i]], file = paste0("OutputData/",filename, ".csv"), row.names = FALSE) 
   }
