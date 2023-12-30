@@ -4,10 +4,6 @@
 # This script automates the procedure described in "GIS Pre-Processing SDU Manual.docx"
 
 
-# The watershed used in this script is defined here
-wsName <- "Russian"
-
-
 #### Dependencies ####
 
 require(tidyverse)
@@ -16,20 +12,20 @@ require(openxlsx)
 
 #### Functions ####
 
-mainProcedure <- function (wsName) {
+mainProcedure <- function (ws) {
   
-  # Given the watershed name 'wsName', perform the GIS pre-processing steps
+  # Given the watershed in 'ws', perform the GIS pre-processing steps
 
   
   
-  # Based on the value of 'wsName', read in a different boundary layer
+  # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
-  if (grepl("^Navarro", wsName, ignore.case = TRUE)) {
+  if (grepl("^Navarro", ws$NAME, ignore.case = TRUE)) {
     wsBound <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg", "WBD_HU10_Navarro")
-  } else if (grepl("^Russian", wsName, ignore.case = TRUE)) {
+  } else if (grepl("^Russian", ws$NAME, ignore.case = TRUE)) {
     wsBound <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/GIS/Russian River.gdb/", "RR_NHD_1801_HUC8")
   } else {
-    stop(paste0(wsName, " not recognized. A corresponding boundary layer has not been specified for this watershed in the script."))
+    stop(paste0(ws$NAME, " not recognized. A corresponding boundary layer has not been specified for this watershed in the script."))
   }
   
   
@@ -180,7 +176,7 @@ mainProcedure <- function (wsName) {
   #### Task 4 (Watershed Tributary/Source) ####
   
   # Get all PODs that mention the watershed in their source/tributary information
-  if (grepl("^Navarro", wsName, ignore.case = TRUE)) {
+  if (grepl("^Navarro", ws$NAME, ignore.case = TRUE)) {
     
     wsMention <- pod_points_statewide_spatial %>%
       filter(grepl("Navarro", WATERSHED, ignore.case = TRUE) |
@@ -193,7 +189,7 @@ mainProcedure <- function (wsName) {
                #grepl("^(Upper|Lower) Navarro River$", HUC_12_NAME, ignore.case = TRUE) |
                #grepl("^(North|South) Branch North Fork Navarro River$", HUC_12_NAME, ignore.case = TRUE))
     
-  } else if (grepl("^Russian", wsName, ignore.case = TRUE)) {
+  } else if (grepl("^Russian", ws$NAME, ignore.case = TRUE)) {
     
     wsMention <- pod_points_statewide_spatial %>%
       filter(grepl("Russian", WATERSHED, ignore.case = TRUE) |
@@ -202,7 +198,7 @@ mainProcedure <- function (wsName) {
     
   } else {
     
-    stop(paste0(wsName, " not recognized. A corresponding filter has not been specified for this watershed in the script."))
+    stop(paste0(ws$NAME, " not recognized. A corresponding filter has not been specified for this watershed in the script."))
     
   }
   
@@ -210,8 +206,8 @@ mainProcedure <- function (wsName) {
   
   # Output the four variables to a spreadsheet for further analysis
   # ('WS_pod_points_Merge', 'wsLine_Buffer_Intersect', 'wsBound_Inner_Intersect', and 'wsMention')
-  #outputResults(wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
-  outputResults_NoTask2(wsName, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
+  #outputResults(ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
+  outputResults_NoTask2(ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
   
   
   
@@ -311,7 +307,7 @@ deleteIdentical <- function (gisDF, colName) {
 
 
 
-outputResults <- function (wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention) {
+outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention) {
   
   # Write the four output variables to a spreadsheet
   # (Create a shapefile as well)
@@ -333,7 +329,7 @@ outputResults <- function (wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect,
   
   
   # Write 'allDF' to a GeoJSON file
-  st_write(allDF, paste0("IntermediateData/PODs_of_Interest_", wsName, ".GeoJSON"))
+  st_write(allDF, paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
   
   
   
@@ -456,7 +452,7 @@ outputResults <- function (wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect,
   
   # Save 'wb' to a file
   saveWorkbook(wb, 
-               paste0("IntermediateData/GIS_Preprocessing_", wsName, ".xlsx"), overwrite = TRUE)
+               paste0("IntermediateData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
   
   
   
@@ -467,7 +463,7 @@ outputResults <- function (wsName, WS_pod_points_Merge, wsLine_Buffer_Intersect,
 
 
 
-outputResults_NoTask2 <- function (wsName, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention) {
+outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention) {
   
   # Write the four output variables to a spreadsheet
   # (Create a shapefile as well)
@@ -489,7 +485,7 @@ outputResults_NoTask2 <- function (wsName, WS_pod_points_Merge, wsBound_Inner_In
   
   
   # Write 'allDF' to a GeoJSON file
-  st_write(allDF, paste0("IntermediateData/PODs_of_Interest_", wsName, ".GeoJSON"))
+  st_write(allDF, paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
   
   
   
@@ -597,7 +593,7 @@ outputResults_NoTask2 <- function (wsName, WS_pod_points_Merge, wsBound_Inner_In
   
   # Save 'wb' to a file
   saveWorkbook(wb, 
-               paste0("IntermediateData/GIS_Preprocessing_", wsName, ".xlsx"), overwrite = TRUE)
+               paste0("IntermediateData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
   
   
   
@@ -611,10 +607,10 @@ outputResults_NoTask2 <- function (wsName, WS_pod_points_Merge, wsBound_Inner_In
 #### Script Execution ####
 
 
-print(paste0("Starting 'GIS_Preprocessing.R' with watershed name ", wsName, "..."))
+print(paste0("Starting 'GIS_Preprocessing.R' with watershed name ", ws$NAME, "..."))
 
 
-mainProcedure(wsName)
+mainProcedure(ws)
 
 
-remove(mainProcedure, confirmCS, deleteIdentical, outputResults, outputResults_NoTask2, wsName)
+remove(mainProcedure, confirmCS, deleteIdentical, outputResults, outputResults_NoTask2)
