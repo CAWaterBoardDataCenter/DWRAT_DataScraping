@@ -137,4 +137,10 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate_at(.vars = vars(LATITUDE, LONGITUDE), .funs = as.numeric)
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
-write.csv(Flat_File_eWRIMS,paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date(), ".csv"), row.names = FALSE)
+write_csv(Flat_File_eWRIMS,
+          paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
+
+
+
+remove(Flat_File_eWRIMS, Flat_File_PODs, Flat_File_PODs_Status, 
+       Flat_File_PODs_WR_Type, cols_to_keep)
