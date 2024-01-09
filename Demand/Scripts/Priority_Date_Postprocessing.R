@@ -5,7 +5,7 @@
 #Load Packages- This step must be done each time the project is opened. ----
 library(tidyverse)
 library(readxl)
-library(data.table)
+library(RSQLite)
 
 
 cat("Starting 'Priority_Date_Postprocessing.R'...\n")
@@ -14,23 +14,47 @@ cat("Starting 'Priority_Date_Postprocessing.R'...\n")
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
+
 # Read in the (very large) water use report extended flat file
-#Import only the selected_columns of the water_use_report_extended.csv
-water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
-                          select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% unique()
+# Import only certain columns
+# Also, restrict the years included in the dataset
+conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+water_use_report <- dbGetQuery(conn, 
+                               paste0('SELECT DISTINCT ',
+                                      '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
+                                      'FROM "Table" ',
+                                      'WHERE "YEAR" BETWEEN ', 2017, ' AND ', 2020)) 
+                                      # 👆 ADJUST THESE NUMBERS TO CHANGE THE YEARS INCLUDED IN THE DEMAND DATASET
+dbDisconnect(conn)
+
+
+# All data from before 2017 is removed (Decision on 8/2/2023 because of "Combined" use type)
+# (It was formerly 2014 because that was when the data structure changed in the system)
+
+# The dataset can be restricted to 2020 (Added to generate a 2017-2020 dataset on 10/17/2023)
+# 2021 and 2022 were heavily curtailed years
+
+
+
+# Original Non-SQL code
+# water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
+#                           select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% unique()
+# Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
+# (It was formerly 2014 because that was when the data structure changed in the system)
+# Perform an inner join (it is a one-to-many relationship)
+# water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
+#                                         relationship = "one-to-many")
+#water_use_report_Date <- water_use_report_Combined %>%
+#  filter(YEAR >= 2017) %>%
+#  filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
+#2021 and 2022 were heavily curtailed years
+
 
 
 # Perform an inner join (it is a one-to-many relationship)
-water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
-                                        relationship = "one-to-many")
+water_use_report_Date <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
+                                    relationship = "one-to-many")
 
-
-# Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
-# (It was formerly 2014 because that was when the data structure changed in the system)
-water_use_report_Date <- water_use_report_Combined %>%
-  filter(YEAR >= 2017) %>%
-  filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
-                      #2021 and 2022 were heavily curtailed years
 
 
 # Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
@@ -56,9 +80,9 @@ water_use_report_Date <- water_use_report_Date %>%
 write.csv(water_use_report_Date,"IntermediateData/water_use_report_DATE.csv", row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
-remove(water_use_report, water_use_report_Combined, water_use_report_Date, unitFixer, 
+remove(water_use_report, water_use_report_Date, unitFixer, # water_use_report_Combined,
        chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
-       faceValSub, faceValExtract, faceValAssign)
+       faceValSub, faceValExtract, faceValAssign, conn)
 
 ######################################################################## Break ####################################################################################
 
@@ -257,7 +281,7 @@ write.csv(Missing_RMS_Reports_FINAL,"IntermediateData/Missing_RMS_Reports_FINAL.
 
 ####################Application Numbers############################
 
-# Use "RR_pod_points_Merge_filtered_PA_[DATE].xlsx", extract two columns
+# Use "RR_pod_points_Merge_filtered_PA_[DATE].xlsx", extract two columns, update the spreadsheet as needed, depends on the result of your GIS pre-processing review for your watershed
 Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
   group_by(APPLICATION_NUMBER, POD_ID) %>%
   summarize(FREQUENCY = n(), .groups = "drop") %>%
