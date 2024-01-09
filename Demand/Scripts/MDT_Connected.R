@@ -35,6 +35,11 @@ MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.
   MDT_2017_2020 = rename(MDT_2017_2020, MAINSTEM = MAINSTEM_RR)
   MDT_2017_2022 = rename(MDT_2017_2022, MAINSTEM = MAINSTEM_RR)
   
+  #Rename ASSIGNED_PRIORITY_DATE_SUB to PRIORITY
+  MDT_2017_2020 =rename(MDT_2017_2020, PRIORITY = ASSIGNED_PRIORITY_DATE_SUB)
+  MDT_2017_2022 =rename(MDT_2017_2022, PRIORITY = ASSIGNED_PRIORITY_DATE_SUB)
+
+  
 #Remove unnecessary columns----
   #Define the columns to delete
   cols_to_delete <- c(
