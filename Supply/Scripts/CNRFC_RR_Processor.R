@@ -36,7 +36,7 @@ colnames(CNRFC_Temp) <- NewNames
 
 #Convert Date column into MM/dd/YYYY Date format
 CNRFC_Temp$Date <- as.Date(CNRFC_Temp$Date)
-#CNRFC_Temp$Date <- format(CNRFC_Temp$Date, "%m/%d/%Y")
+CNRFC_Temp$Date <- format(CNRFC_Temp$Date, "%m/%d/%Y")
 
 #Consolidate the Temperature columns
 CNRFC_Temp <- CNRFC_Temp %>%
@@ -72,8 +72,8 @@ FinalNames <- c("Date", "TMAX1_HEAC1", "TMAX2_UKAC1", "TMAX3_CDLC1", "TMAX4_LSEC
 colnames(CNRFC_Temp) = FinalNames
 CNRFC_Temp
 
-#Forecast_Range = seq(as.Date(EndDate$date+1), as.Date(End_Date), "days")
-#Forecast_Matrix = as.data.frame(Forecast_Range)
+#Restrict CNRFC_Temp to the 3/23/2023 - 3/28/2023 date range
+CNRFC_Temp <- CNRFC_Temp[6:11,] #this line may have to be manually adjusted depending on the original dataset
 
 #CNRFC Precipitation Data Formatting
 ##Import raw CNRFC precipitation data----
