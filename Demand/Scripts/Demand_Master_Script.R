@@ -5,10 +5,6 @@
 source("Scripts/GIS_POD_Flat_File_Prep.R")
 
 
-# Convert "water_use_report_extended.csv" to a SQLite database
-source("Scripts/Extended_CSV_to_SQLite.R")
-
-
 # QA/QC functions for correcting unit conversion errors and duplicate reporting
 source("Scripts/QAQC_Functions.R")
 
