@@ -32,11 +32,16 @@ unitFixer <- function (inputDF, wsName, wsID) {
   
   
   # Read in those two spreadsheets
-  # (The files to read depends on 'wsName')
+  # (The filenames depend on 'wsName')
   if (grepl("^Russian", wsName)) {
     unitsQAQC <- read_xlsx("InputData/RR_Expected_Demand_Units_QAQC_20231020.xlsx", sheet = "Corrected Data")
     unitsQAQC_Med <- read_xlsx("InputData/RR_Expected_Demand_Units_QAQC_Median_Based_20230922.xlsx", sheet = "Filtered Data") %>%
       rename(QAQC_Action_Taken = QAQC_Action)
+  } else if (grepl("^Navarro", wsName)) {
+    
+    stop()
+    #return(inputDF) # No QAQC review done yet
+    
   } else {
     stop(paste0("Filenames have not been specified for watershed ", wsName))
   }
@@ -78,6 +83,10 @@ dupReportingFixer <- function (inputDF, wsName, wsID) {
   if (grepl("^Russian", wsName)) {
     qaqcDF <- read_xlsx("InputData/RR_Duplicate_Reports_Manual_Review_20230925.xlsx") %>%
       filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+  } else if (grepl("^Navarro", wsName)) {
+    
+    return(inputDF) # No QAQC review done yet
+    
   } else {
     stop(paste0("A filename has not been specified for watershed ", wsName))
   }
