@@ -19,11 +19,8 @@ if (grepl("^Russian", ws$NAME)) {
   
   POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
     mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
-    st_as_sf(coords = c("LONGITUDE", "LATITUDE"))
-  
-  
-  st_crs(POD) <- "NAD83"
-  
+    st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83")
+
   
   # Read in the Russian River sub-basins
   # Note: st_layers() can be used to see all available layers in the geodatabase
@@ -55,7 +52,7 @@ stopifnot(sum(overlapCheck < 1) == 0)
 
 
 # Create an alternate version of 'subWS'
-# This will have a 50 meter buffer added to the 
+# This will have a 50 meter buffer added to the subbasin boundaries
 bufferPoly <- st_buffer(subWS, 50)
 bufferOverlap <- st_intersects(POD, bufferPoly) %>% lengths()
 
