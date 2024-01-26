@@ -7,13 +7,13 @@
 
 #### Dependencies ####
 
-library(tidyverse)
-library(sf)
-library(mapview)
-library(readxl)
-library(httr)
+require(tidyverse)
+require(sf)
+require(mapview)
 require(lwgeom)
-
+require(readxl)
+require(writexl)
+require(httr)
 
 #### Functions ####
 
@@ -68,10 +68,10 @@ mainProcedure <- function (ws) {
   # Then, read in the coordinate records from the GIS Pre-processing spreadsheet
   if (grepl("^Navarro", ws$NAME)) {
     
-    podDF <- read_xlsx("C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx", sheet = "R_Review")
+    podDF <- read_xlsx("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx", sheet = "R_Review")
     podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
                               REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, MULTI_OPTIONS_CHOICE, 
-                              `ANY_VAL?`, NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
+                              NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
     
   } else {
     
@@ -116,6 +116,10 @@ mainProcedure <- function (ws) {
   # Iterate through each row of 'podDF' 
   # Evaluate every non-empty pair of coordinates using StreamStats
   for (i in 1:nrow(podDF)) {
+    
+    cat(paste0("Reviewing Row ", i, " of 'podDF' (", nrow(podDF), " total rows)\n"))
+    
+    
     
     # First check the eWRIMS latitude and longitude coordinates
     if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
@@ -203,21 +207,51 @@ mainProcedure <- function (ws) {
                              c("REPORT_SECTION_MOVE_OVERLAPS_WS", "REPORT_SECTION_MOVE_EXITS_WS"))
       
       
+      
       # Use another function to check StreamStats for the flow path from this point
-      podDF[i, colIndices] <- data.frame(x = podDF$REPORT_LONGITUDE[i], y = podDF$REPORT_LATITUDE[i]) %>%
-        st_as_sf(coords = 1:2, crs = podDF$LAT_LON_CRS[i]) %>%
+      podDF[i, colIndices] <- movePOD %>%
         verifyWatershedOverlap(wsExit, wsBound)
       
     }
     
+  } # End of loop i through 'podDF'
+  
+  
+  
+  # As a final step, add columns to indicate whether at least one of the columns contains "TRUE" 
+  podDF <- podDF %>%
+    mutate(AT_LEAST_ONE_OVERLAP = NA,
+           AT_LEAST_ONE_EXIT = NA)
+  
+  
+  
+  # Iterate through the rows of 'podDF' and check if at least one of the overlap/exit checks is "TRUE"
+  # The new columns will contain "FALSE" otherwise
+  for (i in 1:nrow(podDF)) {
+    
+    podDF$AT_LEAST_ONE_OVERLAP[i] <- TRUE %in% c(podDF$EWRIMS_LATLON_OVERLAPS_WS[i],
+                                                 podDF$REPORT_LATLON_OVERLAPS_WS[i],
+                                                 podDF$REPORT_NOREAS_OVERLAPS_WS[i],
+                                                 podDF$REPORT_SECTION_MOVE_OVERLAPS_WS[i])
     
     
     
+    podDF$AT_LEAST_ONE_EXIT[i] <- TRUE %in% c(podDF$EWRIMS_LATLON_EXITS_WS[i],
+                                              podDF$REPORT_LATLON_EXITS_WS[i],
+                                              podDF$REPORT_NOREAS_EXITS_WS[i],
+                                              podDF$REPORT_SECTION_MOVE_EXITS_WS[i])
     
   }
   
   
   
+  # Save the updated 'podDF' to a file
+  write_xlsx(podDF, paste0("IntermediateData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }
 
@@ -383,7 +417,7 @@ requestFlowPath <- function (pod) {
   
   
   # Wait a bit after sending the request
-  Sys.sleep(runif(1, min = 1, max = 1.50))
+  Sys.sleep(runif(1, min = 1.1, max = 1.5))
   
   
   
@@ -496,7 +530,8 @@ calcMinDistance <- function (refPoint, distPoints) {
   
   
   # Change 'minDist' from a "units" object to a numeric object
-  class(minDist) <- "numeric"
+  minDist <- minDist %>%
+    as.numeric()
   
   
   
@@ -618,18 +653,23 @@ section2point <- function (section, corner) {
              extractCorner(corner))
     
   # Use st_segmentize() for the midpoints to get more points
-  # (The centroid point is also needed for these cases)
   } else if (corner %in% c("N1/4", "E1/4", "S1/4", "W1/4")) {
     
     return(section %>% st_segmentize(dfMaxLength = 0.05) %>%
              st_coordinates() %>% as.data.frame() %>% unique() %>%
              st_as_sf(coords = 1:2, crs = st_crs(section)) %>%
-             extractCorner(corner, st_centroid(section)))
+             extractCorner(corner))
     
-  # For a center point, simply return the centroid using st_centroid()
-  } else if (corner == "CENTER") {
+  # For a center point, return the average of the minimum and maximum lat/long values in 'section'
+  # (Treat "???" as "CENTER" too)
+  } else if (corner == "CENTER" || corner == "???") {
     
-    return(section %>% st_centroid())
+    coordDF <- section %>% st_coordinates() %>% as.data.frame()
+    
+    
+    return(data.frame(X = mean(c(min(coordDF$X), max(coordDF$X))), 
+                      Y = mean(c(min(coordDF$Y), max(coordDF$Y)))) %>%
+             st_as_sf(coords = 1:2, crs = st_crs(section)))
     
   }
   
@@ -639,46 +679,168 @@ section2point <- function (section, corner) {
   stopifnot(grepl(" of ", corner))
   
   
-  # These strings are corners of subsections of 'section'
+  # These strings are mainly corners of subsections of 'section'
   # They will be written like "E1/4 of NW1/4 of NE1/4" (the E1/4 point of the NW quarter of the NE quarter of 'section')
-  # 'section' will be iteratively divided into quarters until the desired subsection is found
+  
+  
+  # A second PLSS data frame will be consulted for quarter-quarter sections
+  # If it lacks the necessary polygon, 'section' will be iteratively divided into quarters until the desired subsection is found
   
   
   
   # First split 'corner' into the component steps
   cornerVec <- corner %>%
     str_split(" of ") %>%
-    unlist()
+    unlist() %>%
+    trimws()
   
   
   
-  # While 'cornerVec' requires further subdivisions of 'section', its length will be greater than 1
-  while (length(cornerVec) > 1) {
+  # If 'cornerVec' has three elements, a quarter-quarter section is needed
+  # The alternative PLSS dataset may already have that subsection
+  # Try to find it using another function
+  if (length(cornerVec) == 3) {
     
-    # Start from the last entry of 'cornerVec'
-    # This corresponds to the first subdivision action to implement
-    
-    subsection <- splitSection(section)
-    
+    subsection <- getSubPLSS(section$Section, section$Township, section$Range, section$Meridian)
     
     
+    
+    # Try to filter 'subsection' down to the required quarter-quarter section
+    # The second division level ("SECDIVNO") should contain the two quarter codes as a single string
+    # (For example, the SW quarter of the NE quarter of the PLSS section would be "SWNE")
+    
+    
+    
+    # Make the quarter-quarter string first
+    qqStr <- cornerVec[2:3] %>%
+      str_remove("1/4") %>%
+      paste0(collapse = "")
+    
+    
+    
+    # Filter 'subsection'
+    subsection <- subsection %>%
+      filter(SECDIVNO == qqStr)
+    
+    
+    
+    # Ideally, 'subsection' should only contain one polygon now
+    # In rare instances, it may have two rows containing identical polygons
+    # (This is the case for Section 25, T05S R04E MDM)
+    # If the polygons are identical, either one is sufficient for this procedure
+    if (nrow(subsection) == 2 && NA %in% st_bbox(st_difference(subsection[1, ], subsection[2, ]))) {
+      subsection <- subsection[1, ]
+    }
+    
+    
+    
+    # If 'subsection' contains only one feature, the operation was successful
+    # Then, this function can be rerun with 'subsection' and the first element of 'cornerVec' as inputs
+    if (nrow(subsection) == 1) {
+      return(section2point(subsection, cornerVec[1]))
+    }
+    
+    
+    
+    # If 'subsection' contains multiple features, this is an unexpected occurrence that should be studied
+    if (nrow(subsection) > 1) {
+      stop(paste0("Interesting case to study: ", corner, " and ", section$MTRS))
+    }
+    
+    
+    
+    # The final case is when 'subsection' contains zero rows
+    # In that situation, the alternative PLSS dataset did not have a proper quarter-quarter section
+    # Make a note of that and use the manual subdivision methodology to find the quarter-quarter section
+    message(paste0("The BLM PLSS dataset did not have a quarter-quarter section for corner ", corner, " and section ", section$MTRS))
     
   }
   
   
   
-  #### CONTINUE HERE ####
+  # If 'cornerVec' contains two elements, with the second value being "Lot ##",
+  # the alternative PLSS dataset will again be useful
+  # Instead of quarter sections, lot subdivisions are needed
+  # The alternative PLSS dataset from the BLM contains that information too
+  if (grepl(" of Lot ", corner, ignore.case = TRUE)) {
+    
+    
+    # Right now, this script only handles cases where a corner/midpoint of a lot is needed
+    # Subdivision of lots is not currently supported
+    stopifnot(length(cornerVec) == 2)
+    stopifnot(grepl("^[NSEW][NSEW]?(1/4)? of Lot [0-9]+$", corner, ignore.case = TRUE))
+    
+    
+    
+    # Use another function to extract the lot from the alternative PLSS dataset
+    lot <- findLot(section,
+                   cornerVec[2] %>% str_extract("[Ll]ot [0-9]+") %>% str_extract("[0-9]+") %>% as.numeric())
+    
+    
+    
+    # Then, rerun this function from the beginning with the new lot polygon
+    return(section2point(lot, cornerVec[1]))
+    
+  }
   
   
+  
+  # For all other cases, manually split 'section' into four quarters iteratively
+  # (and select the quarter polygon that matches the directional element in 'cornerVec')
+  # While 'cornerVec' requires further subdivisions of 'section', its length will be greater than 1
+  while (length(cornerVec) > 1) {
+    
+    # First, split 'section' into four quadrants using the midpoint
+    section <- splitSection(section)
+    
+    
+    
+    # Choose the subsection that matches the direction stated within the last element of 'cornerVec'
+    # The last element corresponds to the first subdivision action to implement
+    
+    
+    
+    # Before that, identify the proper "SUBDIVISION_CODE_" column to check
+    # (It will be the one with the largest integer at the end)
+    # (That one will correspond to the most recent subdivision)
+    varName <- names(section) %>%
+      str_subset("SUBDIVISION_CODE_") %>%
+      str_extract("[0-9]+$") %>%
+      as.numeric() %>% max() %>%
+      paste0("SUBDIVISION_CODE_", .)
+    
+    
+    
+    # Filter the subdivision code column (identified in 'varName') using the last value in 'cornerVec'
+    # 'cornerVec' has the subsection with "1/4" attached at the end, but that portion is unnecessary
+    # (For example, from "SW1/4", only "SW" is needed)
+    section <- section[section[[varName]] == cornerVec %>% tail(1) %>% str_remove("1/4"), ]
+    
+    
+    
+    # Double-check that only one polygon remains in 'section'
+    stopifnot(nrow(section) == 1)
+    
+    
+    
+    # Then, remove the last element from 'cornerVec'
+    cornerVec <- cornerVec[-length(cornerVec)]
+    
+  }
+  
+  
+  
+  # After the manual subdivision process, 'section' contains the required polygon
+  # Rerun this function using 'section' and the remaining element in 'cornerVec'
+  return(section2point(section, cornerVec[1]))
   
 }
 
 
 
-extractCorner <- function (sectionPoints, corner, centroid = NULL) {
+extractCorner <- function (sectionPoints, corner) {
   
   # Extract from 'sectionPoints' the point that matches 'corner' 
-  # (For identifying midpoints in the section, the centroid point is needed as well)
   
   
   # Create a data frame containing the coordinate data
@@ -701,7 +863,7 @@ extractCorner <- function (sectionPoints, corner, centroid = NULL) {
     
   } else if (corner %in% c("N1/4", "S1/4")) {
     
-    targetLon <- st_coordinates(centroid)[1, 1]
+    targetLon <- mean(c(min(latLon$X), max(latlon$X)))
     
   } else if (corner %in% c("NE", "E1/4", "SE")) {
     
@@ -722,7 +884,7 @@ extractCorner <- function (sectionPoints, corner, centroid = NULL) {
     
   } else if (corner %in% c("W1/4", "E1/4")) {
     
-    targetLat <- st_coordinates(centroid)[1, 2]
+    targetLat <- mean(c(min(latLon$Y), max(latLon$Y)))
     
   } else if (corner %in% c("SW", "S1/4", "SE")) {
     
@@ -787,63 +949,419 @@ extractCorner <- function (sectionPoints, corner, centroid = NULL) {
 
 
 
+findLot <- function (section, lotNumber) {
+  
+  # Read in the BLM PLSS dataset and try to find the government lot with an ID matching 'lotNumber'
+  
+  
+  
+  # First get the subdivisions of this PLSS section ('section')
+  subsections <- getSubPLSS(section$Section, section$Township, section$Range, section$Meridian)
+  
+  
+  
+  # Filter 'subsections' to just lots ("SECDIVTYP" should be "L")
+  # Then, filter "SECDIVNO" to equal 'lotNumber'
+  subsections <- subsections %>%
+    filter(SECDIVTYP == "L") %>%
+    filter(SECDIVNO == lotNumber)
+  
+  
+  
+  # Check that the operations were successful
+  stopifnot(nrow(subsections) == 1)
+  
+  
+  
+  # Return the filtered lot
+  return(subsections)
+  
+}
+
+
+
+getSubPLSS <- function (section, township, range, meridian) {
+  
+  # Given:
+  # 'section': The PLSS section number (as an integer)
+  # 'township': The PLSS township (as 'T##N' or 'T##S')
+  # 'range': The PLSS range (as 'R##E' or 'R##W')
+  # 'meridian': Expecting 'MDM'
+  
+  
+  # Find the corresponding polygons from the BLM's PLSS subdivision dataset
+  
+  
+  
+  # First read in that dataset
+  # (It will appear as a variable called 'plssSub')
+  load("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData")
+  
+  
+  
+  # Filter 'plssSub' based on the given conditions
+  # Start with the meridian
+  if (meridian == "MDM") {
+    plssSub <- plssSub %>%
+      filter(PRINMER == "Mount Diablo Meridian")
+  } else {
+    stop(paste0("Unknown meridian ", meridian))
+  }
+  
+  
+  
+  # Then proceed with the township
+  # In 'plssSub', the direction is stored separately from the township value
+  # 'TWNSHPNO' contains the township number (as a three-digit value)
+  # 'TWNSHPDIR' has the direction (either 'N' or 'S')
+  
+  
+  # Split 'township' into these two values
+  townshipDir <- township %>%
+    str_extract("[NS]$")
+  
+  
+  townshipNum <- township %>%
+    str_extract("[0-9]+") %>% as.numeric()
+  
+  
+  
+  # For 'townshipNum', add zeroes to the value to make it a three-digit string
+  townshipNum <- rep(0, 3 - str_count(townshipNum, "[0-9]")) %>%
+    paste0(collapse = "") %>%
+    paste0(townshipNum)
+  
+  
+  
+  # Apply these filters to 'plssSub'
+  plssSub <- plssSub %>%
+    filter(TWNSHPNO == townshipNum & TWNSHPDIR == townshipDir)
+  
+  
+  
+  # Handle the range after that
+  # Its number and direction are separated just like the township
+  # "RANGENO" contains a three-digit string and "RANGEDIR" contains either "E" or "W"
+  
+  
+  # Split 'range' into these two values
+  rangeDir <- range %>%
+    str_extract("[EW]$")
+  
+  
+  rangeNum <- range %>%
+    str_extract("[0-9]+") %>% as.numeric()
+  
+  
+  
+  # For 'rangeNum', add zeroes to the value to make it a three-digit string
+  rangeNum <- rep(0, 3 - str_count(rangeNum, "[0-9]")) %>%
+    paste0(collapse = "") %>%
+    paste0(rangeNum)
+  
+  
+  
+  # Apply these filters to 'plssSub'
+  plssSub <- plssSub %>%
+    filter(RANGENO == rangeNum & RANGEDIR == rangeDir)
+  
+  
+  
+  # Filter the section next
+  # The section is stored under both "FRSTDIVNO" and "FRSTDIVLAB" as a two-digit string, but only if 'FRSTDIVTXT' is "SECTION"
+  # This function assumes that the first division is indeed a PLSS section
+  stopifnot(length(unique(plssSub$FRSTDIVTXT)) == 1 && unique(plssSub$FRSTDIVTXT) == "Section")
+  
+  
+  
+  # Convert 'section' into a two-digit string
+  sectionStr <- paste0(rep(0, 2 - str_count(section, "[0-9]")),
+                       section)
+  
+  
+  
+  # Apply that filter
+  plssSub <- plssSub %>%
+    filter(FRSTDIVNO == sectionStr)
+  
+  
+  
+  # Finally, return the filtered 'plssSub' variable
+  return(plssSub)
+  
+}
+
+
+
 splitSection <- function (section) {
   
   # Divide a section into four subsections
-  
-  # Along the centroid vs along the center
-  # Or equal area pieces
-  
-  
-  # Or use the divisions done by BLM?
+  # The split is based on the *midpoint* between the bounding lat/long values 
   
   
   
+  # Extract the coordinates from 'section'
   sectionCoord <- section %>%
     st_coordinates() %>%
     as.data.frame()
   
   
+  
+  # Use the minimum and maximum values in 'sectionCoord' to get the midpoint
   midPoint <- data.frame(X = mean(c(min(sectionCoord$X), max(sectionCoord$X))),
                          Y = mean(c(min(sectionCoord$Y), max(sectionCoord$Y))))
   
   
   
-  vertSplit <- c(midPoint$X, min(sectionCoord$Y) - 1,
-                 midPoint$X, max(sectionCoord$Y) + 1) %>%
+  # Define a linestring that will split the section vertically at the midpoint
+  # (This will create eastern and western halves of the section)
+  vertSplit <- c(midPoint$X, min(sectionCoord$Y),
+                 midPoint$X, max(sectionCoord$Y)) %>%
     matrix(ncol = 2, byrow = TRUE) %>%
     st_linestring() %>%
     st_sfc(crs = st_crs(section))
   
   
-  newSection <- st_split(section, vertSplit) %>%
+  
+  # Split 'section' and save the intermediate result to 'subSections'
+  # (st_split() will save it as a GEOMETRY_COLLECTION, but convert the result into POLYGONs instead)
+  subSections <- st_split(section, vertSplit) %>%
+    st_collection_extract("POLYGON", warn = TRUE)
+
+  
+  
+  # Next, define the linestring to split the two polygons horizontally
+  # This will create northern and southern halves of each polygon
+  horiSplit <- c(min(sectionCoord$X), midPoint$Y,
+                 max(sectionCoord$X), midPoint$Y) %>%
+    matrix(ncol = 2, byrow = TRUE) %>%
+    st_linestring() %>%
+    st_sfc(crs = st_crs(section))
+  
+  
+  
+  # Perform the split (and again convert the result into separate polygons)
+  subSections <- st_split(subSections, horiSplit) %>%
     st_collection_extract("POLYGON", warn = TRUE)
   
-  mapview(newSection, col.regions = "green") + mapview(section)
   
   
-  load("combinedSF.RData")
+  # The next step will be to label each new polygon
+  # "NE", "NW", "SE", and "SW" will be the labels
+  # (Northeast, Northwest, Southeast, and Southwest)
   
   
-  subTest <- combinedSF %>% filter(PRINMER == "Mount Diablo Meridian" &
-                               grepl(section$Township %>% str_extract("[0-9]+"), TWNSHPNO) &
-                               TWNSHPDIR == section$Township %>% str_extract(".$") &
-                               FRSTDIVNO == if_else(section$Section < 10, paste0("0", section$Section), as.character(section$Section)) &
-                               grepl(section$Range %>% str_extract("[0-9]+"), RANGENO) &
-                               RANGEDIR == section$Range %>% str_extract(".$"))
+  # If this is the first time splitting the section, a new variable called
+  # "SUBDIVISION_CODE_1" will be added to 'subSections'
   
-  
-  mapview(subTest) + mapview(section, col.regions = "red")
+  # If this is NOT the first time a polygon was split, that variable already exists
+  # Therefore, the column will be named "SUBDIVISION_CODE_#" instead (with the number being the next highest integer)
   
   
   
-  mapview(test %>% filter(PRINMER == "Mount Diablo Meridian" &
-                            TWNSHPDIR == section$Township %>% str_extract(".$") &
-                            FRSTDIVNO == section$Section &
-                            grepl(section$Range %>% str_extract("[0-9]+"), RANGENO) &
-                            RANGEDIR == section$Range %>% str_extract(".$"))) + mapview(section, col.regions = "red")
+  # Decide which column name to use
+  if (sum(grepl("SUBDIVISION_CODE", names(subSections))) > 0) {
+    
+    varName <- paste0("SUBDIVISION_CODE_",
+                      names(subSections) %>% str_subset("SUBDIVISION_CODE") %>%
+                        str_extract("[0-9]+$") %>% as.numeric() %>% `+`(1))
+    
+  } else {
+    
+    varName <- "SUBDIVISION_CODE_1"
+    
+  }
   
   
+  
+  # Add this column to 'subSections'
+  # For now, all values in this column will be NA
+  subSections <- subSections %>%
+    mutate(!! varName := NA_character_)
+  
+  
+  
+  
+  # To figure out which polygon corresponds to which quadrant, use the boundary boxes
+  
+  
+  
+  # Get the bboxes of each subsection
+  # "POLY_ID" will help relate these values to their original polygons
+  # "NS_ZONE" and "EW_ZONE" will be updated later to contain labels for north/south and east/west
+  bboxes <- c(st_bbox(subSections[1, ]),
+              st_bbox(subSections[2, ]),
+              st_bbox(subSections[3, ]),
+              st_bbox(subSections[4, ])) %>%
+    matrix(ncol = 4, byrow = TRUE) %>%
+    data.frame() %>%
+    set_names(c("xmin", "ymin", "xmax", "ymax")) %>%
+    relocate(xmax, .before = ymin) %>%
+    mutate(POLY_ID = 1:nrow(subSections),
+           NS_ZONE = NA_character_,
+           EW_ZONE = NA_character_)
+  
+  
+  
+  # Sort the data frame by 'xmin'
+  bboxes <- bboxes %>%
+    arrange(xmin)
+  
+  
+  
+  # The first two rows will have the smallest longitude values
+  # The next two rows will have larger values
+  # Therefore, "EW_ZONE" should be "W" for the first two rows and "E" for the next two
+  bboxes$EW_ZONE <- c("W", "W", "E", "E")
+  
+  
+  
+  # Next, sort the data frame by 'ymin'
+  bboxes <- bboxes %>%
+    arrange(ymin)
+  
+  
+  
+  # The first two rows will have the smallest latitude values
+  # The next two rows will have larger values
+  # Therefore, "NS_ZONE" should be "S" for the first two rows and "N" for the next two
+  bboxes$NS_ZONE <- c("S", "S", "N", "N")
+  
+  
+  
+  # Based on "POLY_ID", assign a quadrant tag to the corresponding rows in 'subSections'
+  for (j in 1:nrow(bboxes)) {
+    
+    subSections[[varName]][bboxes$POLY_ID[j]] <- paste0(bboxes$NS_ZONE[j], bboxes$EW_ZONE[j])
+    
+  }
+  
+  
+  
+  # Return 'subSections' after these changes
+  return(subSections)
+  
+  
+  
+    
+  # mapview(subSections, col.regions = "green") + mapview(section)
+  # 
+  # 
+  # load("combinedSF.RData")
+  # 
+  # 
+  # subTest <- combinedSF %>% filter(PRINMER == "Mount Diablo Meridian" &
+  #                              grepl(section$Township %>% str_extract("[0-9]+"), TWNSHPNO) &
+  #                              TWNSHPDIR == section$Township %>% str_extract(".$") &
+  #                              FRSTDIVNO == if_else(section$Section < 10, paste0("0", section$Section), as.character(section$Section)) &
+  #                              grepl(section$Range %>% str_extract("[0-9]+"), RANGENO) &
+  #                              RANGEDIR == section$Range %>% str_extract(".$"))
+  # 
+  # 
+  # mapview(subTest) + mapview(section, col.regions = "red")
+  # 
+  # 
+  # 
+  # mapview(test %>% filter(PRINMER == "Mount Diablo Meridian" &
+  #                           TWNSHPDIR == section$Township %>% str_extract(".$") &
+  #                           FRSTDIVNO == section$Section &
+  #                           grepl(section$Range %>% str_extract("[0-9]+"), RANGENO) &
+  #                           RANGEDIR == section$Range %>% str_extract(".$"))) + mapview(section, col.regions = "red")
+  
+}
+
+
+
+translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
+  
+  # Move the coordinates in 'pod' by a certain distance north/south and another distance east/west
+  # 'nsMove' and 'ewMove' have units of feet (assumed to be US Survey Feet)
+  # Whether these values are north/south or east/west is given by 'nsDirection' and 'ewDirection'
+  
+  
+  
+  # First, check the movement magnitude and direction variables to ensure that they are not NA
+  stopifnot(!anyNA(c(nsMove, nsDirection, ewMove, ewDirection)))
+  
+  
+  
+  # If 'nsMove' and 'ewMove' are both 0, return 'pod' without any changes
+  if (nsMove == 0 && ewMove == 0) {
+    return(pod)
+  }
+  
+  
+  
+  # Otherwise, define movement values based on the input variables
+  # The vertical movement magnitude is based on 'nsMove'
+  # Horizontal movement is specified by 'ewMove'
+  # North and East are treated as positive values
+  # South and West are treated as negative values
+  if (nsDirection == "North") {
+    
+    vertMove <- abs(nsMove)
+    
+  } else if (nsDirection == "South") {
+    
+    vertMove <- -abs(nsMove)
+    
+  } else {
+    
+    stop("Unknown input value for 'nsDirection'")
+    
+  }
+  
+  
+  
+  if (ewDirection == "East") {
+    
+    horiMove <- abs(ewMove)
+    
+  } else if (ewDirection == "West") {
+    
+    horiMove <- -abs(ewMove)
+    
+  } else {
+    
+    stop("Unknown input value for 'ewDirection'")
+    
+  }
+  
+  
+  
+  # Change the coordinate reference system of 'pod' to a projection that uses U.S. survey feet
+  # epsg:2226 (NAD83 / California zone 2 (ftUS))
+  newPOD <- st_transform(pod, "epsg:2226")
+  
+  
+  
+  # Apply 'vertMove' and 'horiMove' to the coordinates of 'newPOD'
+  newPOD <- newPOD %>%
+    st_coordinates() %>% as.data.frame() %>%
+    mutate(X = X + horiMove, Y = Y + vertMove) %>%
+    st_as_sf(coords = 1:2, crs = st_crs(newPOD))
+  
+  
+  
+  # Convert 'newPOD' back to the original CRS
+  newPOD <- newPOD %>%
+    st_transform(st_crs(pod))
+  
+  
+  
+  # Actual Translation Distance (m)
+  # st_distance(newPOD, pod)
+  
+  # Expected Translation Distance (m)
+  # sqrt(vertMove^2 + horiMove^2) * 1200/3937
+  print(paste0("Difference between expected and actual translation distance (m): ",
+               (sqrt(vertMove^2 + horiMove^2) * 1200/3937) - as.numeric(st_distance(newPOD, pod)), "\n",
+               "Error is ", 100 * ((sqrt(vertMove^2 + horiMove^2) * 1200/3937) - as.numeric(st_distance(newPOD, pod))) / as.numeric(st_distance(newPOD, pod)), "%"))
+  
+  
+  
+  # Finally, return 'newPOD'
+  return(newPOD)
   
 }
 
@@ -851,5 +1369,13 @@ splitSection <- function (section) {
 
 #### Script Execution ####
 
-# mainProcedure(ws)
 
+print("Starting 'POD_StreamStats_Analysis.R'")
+# mainProcedure(ws)
+print("The script has finished running!")
+
+
+# remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
+#        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
+#        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
+#        splitSection, translatePoint)
