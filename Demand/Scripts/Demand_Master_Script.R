@@ -2,6 +2,12 @@
 
 
 require(tidyverse)
+require(sf)
+require(openxlsx)
+require(data.table)
+require(RSQLite)
+require(readxl)
+require(janitor)
 
 
 # Watershed Names and Identifiers
