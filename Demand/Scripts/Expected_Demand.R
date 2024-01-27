@@ -430,10 +430,10 @@ mainProcedure <- function (wsID) {
            Annual_Diversion_if_reported_in_GPD, GPD_as_percent_of_FV, GPD_as_percent_of_IniDiv,
            Annual_Diversion_if_reported_in_CFS, CFS_as_percent_of_FV, CFS_as_percent_of_IniDiv,
            QAQC_Action_Taken, QAQC_Reason) %>%
-    filter((Diversion_as_Percent_of_FV > 10 & FACE_VALUE_AMOUNT > 0) | 
-             (Diversion_as_Percent_of_FV < 0.1 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
-             (Diversion_as_Percent_of_IniDiv > 10 & IniDiv_Converted_to_AF > 0) | 
-             (Diversion_as_Percent_of_IniDiv < 0.1 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
+    filter((Diversion_as_Percent_of_FV > 100 & FACE_VALUE_AMOUNT > 0) | 
+             (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
+             (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
+             (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
     write.xlsx(paste0("OutputData/", wsID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
   
   
