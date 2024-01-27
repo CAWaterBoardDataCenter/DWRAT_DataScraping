@@ -218,15 +218,15 @@ mainProcedure <- function (ws) {
   
   
   
-  # As a final step, add columns to indicate whether at least one of the columns contains "TRUE" 
+  # As a final step, add columns to indicate whether at least one of the columns contains TRUE 
   podDF <- podDF %>%
     mutate(AT_LEAST_ONE_OVERLAP = NA,
            AT_LEAST_ONE_EXIT = NA)
   
   
   
-  # Iterate through the rows of 'podDF' and check if at least one of the overlap/exit checks is "TRUE"
-  # The new columns will contain "FALSE" otherwise
+  # Iterate through the rows of 'podDF' and check if at least one of the overlap/exit checks is TRUE
+  # The new columns will contain FALSE otherwise
   for (i in 1:nrow(podDF)) {
     
     podDF$AT_LEAST_ONE_OVERLAP[i] <- TRUE %in% c(podDF$EWRIMS_LATLON_OVERLAPS_WS[i],
