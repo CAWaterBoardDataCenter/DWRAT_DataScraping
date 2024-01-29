@@ -30,7 +30,7 @@ spreadsheetAdjustment <- function (sheetDF) {
 
 
 # Assign Basin Data Function----
-assignBasinData <- function (ewrimsDF) {
+assignBasinData_RR <- function (ewrimsDF) {
   
   # 'ewrimsDF' will be updated to contain columns related to the right's subbasin and lat/long coordinates:
       # BASIN, MAINSTEM, LATITUDE, LONGITUDE
@@ -59,7 +59,7 @@ assignBasinData <- function (ewrimsDF) {
   
   
   # Also consult a manual review spreadsheet
-  manualDF <- read_xlsx("InputData/Missing_MainStem_GIS_Manual_Assignment.xlsx") %>%
+  manualDF <- read_xlsx("InputData/RR_Missing_MainStem_GIS_Manual_Assignment.xlsx") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   
@@ -74,7 +74,7 @@ assignBasinData <- function (ewrimsDF) {
   
   
   # Finally, rely on the output of "Assign_Subbasin_to_POD.R"
-  podDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx") %>%
+  podDF <- read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   # This procedure will not work if the remaining rights have multiple PODs
@@ -116,7 +116,9 @@ assignBasinData <- function (ewrimsDF) {
           #                grep("^[A-Z]{3}_DIRECT_DIVERSION$", names(expectedDF)),
            #               grep("^[A-Z]{3}_STORAGE_DIVERSION$", names(expectedDF)))] %>%
   #mutate(across(ends_with("DIVERSION"), as.numeric))
-diverDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx")
+
+diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))
+
 
 
 # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
@@ -134,6 +136,7 @@ diverDF <- diverDF %>%
          NOV_TOTAL_DIVERSION = replace_na(NOV_DIRECT_DIVERSION, 0) + replace_na(NOV_STORAGE_DIVERSION, 0),
          DEC_TOTAL_DIVERSION = replace_na(DEC_DIRECT_DIVERSION, 0) + replace_na(DEC_STORAGE_DIVERSION, 0)) %>%
   ungroup()
+
 
 
 # diverDF %>%
@@ -170,14 +173,15 @@ sumDF <- diverDF %>%
            AUG_MEAN_DIV + SEP_MEAN_DIV)
 
 
+
 # Import the ewrims_flat_file_working_file.csv----
   # Will be the basis of the Master Demand Table
   # (In the master table, "PRIMARY_OWNER_ENTITY_TYPE" is called "PRIMARY_OWNER_TYPE")
-ewrimsDF <- read.csv("IntermediateData/ewrims_flat_file_Working_File.csv") %>%
+ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_Working_File.csv")) %>%
   rename(PRIMARY_OWNER_TYPE = PRIMARY_OWNER_ENTITY_TYPE)
 
 # Add in columns from the beneficial use module
-beneficialUse <- read_xlsx("OutputData/Beneficial_Use_Return_Flow_Scripted.xlsx") %>%
+beneficialUse <- read_xlsx(paste0("OutputData/", ws$ID, "_Beneficial_Use_Return_Flow_Scripted.xlsx")) %>%
   spreadsheetAdjustment()
 
 
@@ -192,15 +196,18 @@ beneficialUse <- beneficialUse[, c(which(names(beneficialUse) == "APPLICATION_NU
 ewrimsDF <- ewrimsDF %>%
   left_join(beneficialUse, by = "APPLICATION_NUMBER", relationship = "one-to-one")
 
+
+
 #Join Priority Date Module data to ewrimsDF----
-priorityDF <- read_xlsx("OutputData/Priority_Date_Scripted.xlsx", col_types = "text") %>%
+priorityDF <- read_xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
   rename(ASSIGNED_PRIORITY_DATE_SOURCE = APPROPRIATIVE_DATE_SOURCE) %>%
   select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE, ASSIGNED_PRIORITY_DATE_SOURCE, 
          PRE_1914, RIPARIAN, APPROPRIATIVE) %>%
   unique()
 
+
 #Change RIPARIAN values in RIPARIAN column to Y or N values
-priorityDF$RIPARIAN <- ifelse(test =priorityDF$RIPARIAN == "RIPARIAN", 
+priorityDF$RIPARIAN <- ifelse(test = priorityDF$RIPARIAN == "RIPARIAN", 
                               yes = "Y", 
                               no = "N")
 
@@ -217,7 +224,7 @@ ewrimsDF <- ewrimsDF %>%
 #expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
 #                        col_types = "text") %>%
 #  spreadsheetAdjustment()
-expectedDF <- read_xlsx("OutputData/ExpectedDemand_FV.xlsx", col_types = "text")
+expectedDF <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx"), col_types = "text")
 
 # Get two sub-tables from the main dataset
 # (Rename some columns too)
@@ -280,19 +287,33 @@ ewrimsDF <- ewrimsDF %>%
 
 
 # Assign basin information to 'ewrimsDF' using information output by "Assign_Subbasin_to_POD.R"----
-ewrimsDF <- ewrimsDF %>%
-  assignBasinData()
+if (grepl("^Russian", ws$NAME)) {
+  ewrimsDF <- ewrimsDF %>%
+    assignBasinData_RR()
+}
 
-# Add UPPER_RUSSIAN Field
+
+
+# Error Check
+stopifnot(!anyNA(ewrimsDF$BASIN))
+stopifnot(!anyNA(ewrimsDF$MAINSTEM))
+stopifnot(!anyNA(ewrimsDF$LONGITUDE))
+stopifnot(!anyNA(ewrimsDF$LATITUDE))
+
+
+
+# Add UPPER_RUSSIAN Field (Russian River only)
   #For basins 01 to 13, UPPER_RUSSIAN should be "Y". This includes basins with an "_M" 
   #suffix for "main stem". For the remaining basins, 14 to 28, the UPPER_RUSSIAN field should be "N."
   #the str_sub looks at the 3rd and 4th characters of the Basin column which contain the 2-digit 
   #basin number. 
+if (grepl("^Russian", ws$NAME)) {
+  ewrimsDF <- ewrimsDF %>%
+    mutate(UPPER_RUSSIAN = if_else(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
+                                                               "06", "07", "08", "09", "10", "11", 
+                                                               "12", "13"), "Y", "N"))
+}
 
-ewrimsDF <- ewrimsDF %>%
-  mutate(UPPER_RUSSIAN = if_else(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
-                                                            "06", "07", "08", "09", "10", "11", 
-                                                            "12", "13"), "Y", "N"))
 
 # Convert columns to appropriate data types
   # convert from character to integer
@@ -300,60 +321,72 @@ ewrimsDF$ASSIGNED_PRIORITY_DATE = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE)
 
 # Rename a few more columns----
 ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE)
-ewrimsDF = rename(ewrimsDF, MAINSTEM_RR = MAINSTEM)
+
+if ("MAINSTEM" %in% names(ewrimsDF) && grepl("^Russian", ws$NAME)) {
+  ewrimsDF = rename(ewrimsDF, MAINSTEM_RR = MAINSTEM)
+}
+
 
 
 
 # Append COUNTY to 'ewrimsDF'
 
-# Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
-podDF <- read_xlsx("OutputData/POD_Subbasin_Assignment.xlsx")
-
-
-# Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
-countyDF <- podDF %>%
-  select(APPLICATION_NUMBER, COUNTY) %>% unique() %>%
-  group_by(APPLICATION_NUMBER) %>%
-  filter(n() == 1)
-
-
-# Join this data to 'ewrimsDF'
-ewrimsDF <- ewrimsDF %>%
-  left_join(countyDF, by = "APPLICATION_NUMBER")
-
-
-
-# If there are still NA values in "COUNTY", try to use the "LATITUDE" and "LONGITUDE" to help
-if (anyNA(ewrimsDF$COUNTY)) {
+if (grepl("^Russian", ws$NAME)) {
   
-  # Iterate through 'ewrimsDF'
-  for (i in 1:nrow(ewrimsDF)) {
+  # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
+  podDF <- read_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
+  
+  
+  # Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
+  countyDF <- podDF %>%
+    select(APPLICATION_NUMBER, COUNTY) %>% unique() %>%
+    group_by(APPLICATION_NUMBER) %>%
+    filter(n() == 1)
+  
+  
+  # Join this data to 'ewrimsDF'
+  ewrimsDF <- ewrimsDF %>%
+    left_join(countyDF, by = "APPLICATION_NUMBER")
+  
+  
+  
+  # If there are still NA values in "COUNTY", try to use the "LATITUDE" and "LONGITUDE" to help
+  if (anyNA(ewrimsDF$COUNTY)) {
     
-    # Skip rows with a non-NA "COUNTY"
-    if (!is.na(ewrimsDF$COUNTY[i])) {
-      next
+    # Iterate through 'ewrimsDF'
+    for (i in 1:nrow(ewrimsDF)) {
+      
+      # Skip rows with a non-NA "COUNTY"
+      if (!is.na(ewrimsDF$COUNTY[i])) {
+        next
+      }
+      
+      # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
+      ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
+                                    round(podDF$LONGITUDE2, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
+        unique()
+      
     }
     
-    # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
-    ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
-                                  round(podDF$LONGITUDE2, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
-      unique()
     
   }
   
   
+  # Error Check
+  # Every entry should have a non-NA "COUNTY" value
+  stopifnot(!anyNA(ewrimsDF$COUNTY))
+  
 }
-
-
-# Error Check
-# Every entry should have a non-NA "COUNTY" value
-stopifnot(!anyNA(ewrimsDF$COUNTY))
 
 
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
-write.csv(ewrimsDF, file = "OutputData/2017-2022_RR_MasterDemandTable.csv", row.names = FALSE)
+write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
+                                  min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+                                  "-",
+                                  max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+                                  "_MasterDemandTable.csv"), row.names = FALSE)
 #just the 2017-2020 reporting years
 #write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
@@ -388,5 +421,6 @@ print("The MasterDemandTable.R script has finished running")
 
 
 
-remove(assignBasinData, spreadsheetAdjustment, beneficialUse, diverDF,
-       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,countyDF, podDF, i)
+remove(assignBasinData_RR, spreadsheetAdjustment, beneficialUse, diverDF,
+       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,countyDF, podDF, i,
+       ws)

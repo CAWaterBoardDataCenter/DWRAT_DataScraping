@@ -2,11 +2,10 @@
 # replace their values such that the year's total is the face value amount
 
 
-library(tidyverse)
-library(readxl)
-library(data.table)
-library(openxlsx)
-
+require(tidyverse)
+require(readxl)
+require(openxlsx)
+require(RSQLite)
 
 
 faceValSub <- function (inputDF, yearRange = 2021:2023) {

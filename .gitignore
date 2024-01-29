@@ -11,6 +11,8 @@ Supply/ProcessedData/*.dat
 Demand/RawData/*.csv
 Demand/IntermediateData/*.csv
 Demand/IntermediateData/*.xlsx
+Demand/IntermediateData/*.geoJSON
+Demand/IntermediateData/*.ini
 Demand/ModuleAndScriptComparisons/*.csv
 Demand/ModuleAndScriptComparisons/*.xlsx
 Demand/OutputData/*.csv

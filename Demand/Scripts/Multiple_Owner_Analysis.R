@@ -1,17 +1,19 @@
 #Load libraries----
-library(dplyr) #for numerous functions
-library(tidyverse) #for read_csv
-library(data.table) #for fread function
-library(janitor) # for get_dupes function
+require(dplyr) #for numerous functions
+require(tidyverse) #for read_csv
+require(data.table) #for fread function
+require(janitor) # for get_dupes function
+require(writexl) # for write_xlsx function
+require(RSQLite) # for SQLite queries
+require(readxl) # for read_xlsx function
 
 #Import Raw Data ----
 
 #Import Statistics_FINAL.csv. This is one of the output files of the Priority_Date_Preprocessing.R 
 #script; but we just want the unique APPLICATION_NUMBERS; these are just water rights
 #in the Russian River.
-appYears <- read_csv("IntermediateData/Statistics_FINAL.csv", show_col_types = FALSE) %>%
+appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"), show_col_types = FALSE) %>%
   select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>% unique() %>%
-
   #Add a YEAR_ID column that concatenates the year and application number
   mutate(YEAR_ID = paste(YEAR, APPLICATION_NUMBER, sep = "_"))
 
@@ -115,9 +117,29 @@ RMS_parties4 = inner_join(x = RMS_parties2,
   #manual review spreadsheet is to catch instances where the same owner reported the same
   #diversions across 2 or more rights; hence "duplicate_reports"
 Duplicate_Reports = get_dupes(RMS_parties4, PK)
-writexl::write_xlsx(x= Duplicate_Reports, path = "IntermediateData/Duplicate_Reports_Manual_Review.xlsx", col_names = TRUE)
+
+
+# Before exporting the table, remove entries that were already manually reviewed
+if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"))) > 0) {
+  
+  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"), full.names = TRUE) %>%
+    tail(1) %>%
+    read_xlsx()
+  
+  
+  Duplicate_Reports <- Duplicate_Reports %>%
+    filter(!(PK %in% reviewDF$Primary_Key))
+  
+}
+
+
+
+writexl::write_xlsx(x= Duplicate_Reports, path = paste0("IntermediateData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
 
 print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 
+remove(appYears, conn, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,
+       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
+       RMS_parties4, selected_columns, reviewDF)

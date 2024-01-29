@@ -12,12 +12,13 @@
 
 require(tidyverse)
 require(openxlsx)
+require(readxl)
 
 
 #### Script Procedure ####
 
 
-mainProcedure <- function () {
+mainProcedure <- function (wsID) {
   
   # The main body of the script
   
@@ -25,8 +26,8 @@ mainProcedure <- function () {
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv("IntermediateData/Statistics_FINAL.csv")
-  fvDF <- read.csv("IntermediateData/Statistics_FaceValue_IniDiv_Final.csv") %>% unique()
+  statDF <- read.csv(paste0("IntermediateData/", wsID, "_Statistics_FINAL.csv"))
+  fvDF <- read.csv(paste0("IntermediateData/", wsID, "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
   
   
   # Create and append two new columns to 'statDF'
@@ -366,7 +367,7 @@ mainProcedure <- function () {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+    write.xlsx(paste0("OutputData/", wsID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
                overwrite = TRUE)
   
   
@@ -374,10 +375,50 @@ mainProcedure <- function () {
   monthlyDF %>%
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
-    write.xlsx("OutputData/ExpectedDemand_FV.xlsx", overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", wsID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
   
   
-  # Also save a separate spreadsheet with just columns related to assessing unit conversion errors
+  
+  # A spreadsheet for QAQC review will be produced next
+  # Before that, read in data from a previous manual review (if it exists)
+  # Exclude entries that were already checked previously
+  if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
+    
+    reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
+      tail(1) %>%
+      read_xlsx(sheet = "Corrected Data") %>%
+      select(APPLICATION_NUMBER, YEAR)
+    
+    
+    # If the second manual review was also performed, add that spreadsheet here too
+    if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"))) > 0) {
+      
+      reviewDF2 <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"), full.names = TRUE) %>%
+        tail(1) %>%
+        read_xlsx(sheet = "Filtered Data") %>%
+        select(APPLICATION_NUMBER, YEAR)
+      
+      
+      # Combine the two review datasets
+      # Then make a single column that uniquely identifies each reviewed right's entries
+      reviewDF <- rbind(reviewDF, reviewDF2) %>%
+        mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+      
+    }
+    
+    
+    
+    # Remove those already-reviewed rows from 'monthlyDF'
+    monthlyDF <- monthlyDF %>%
+      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
+      filter(!(KEY %in% reviewDF$KEY)) %>%
+      select(-KEY)
+    
+  }
+  
+  
+  
+  # After that, save another spreadsheet with just columns related to assessing unit conversion errors
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR,
            CALENDAR_YEAR_TOTAL,
@@ -389,18 +430,18 @@ mainProcedure <- function () {
            Annual_Diversion_if_reported_in_GPD, GPD_as_percent_of_FV, GPD_as_percent_of_IniDiv,
            Annual_Diversion_if_reported_in_CFS, CFS_as_percent_of_FV, CFS_as_percent_of_IniDiv,
            QAQC_Action_Taken, QAQC_Reason) %>%
-    filter((Diversion_as_Percent_of_FV > 10 & FACE_VALUE_AMOUNT > 0) | 
-             (Diversion_as_Percent_of_FV < 0.1 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
-             (Diversion_as_Percent_of_IniDiv > 10 & IniDiv_Converted_to_AF > 0) | 
-             (Diversion_as_Percent_of_IniDiv < 0.1 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
-    write.xlsx("OutputData/Expected_Demand_Units_QAQC.xlsx", overwrite = TRUE)
+    filter((Diversion_as_Percent_of_FV > 100 & FACE_VALUE_AMOUNT > 0) | 
+             (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
+             (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
+             (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
+    write.xlsx(paste0("OutputData/", wsID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
   
   
   
-  # After that, include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
+  # Then include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
-    write.xlsx("OutputData/Calendar_Year_Totals_AF.xlsx", overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", wsID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
   
@@ -1068,7 +1109,7 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 
 cat("Starting 'Expected_Demand.R'...")
 
-mainProcedure()
+mainProcedure(ws$ID)
 
 
 print("The Expected_Demand.R script is done running!")
