@@ -95,6 +95,16 @@ PRISM_cols <- Prism_Processed[,c('Date', 'PP_PRECIP1', 'PP_PRECIP2',
                                  'PP_PRECIP11', 'PP_PRECIP13','PP_PRECIP14', 'PP_PRECIP15',
                                  'PT_TMAX1', 'PT_TMAX2', 'PT_TMAX6', 'PT_TMIN1', 'PT_TMIN2', 
                                  'PT_TMIN6')]
+
+#Add missing data from NOAA into Downsizer_Processed
+Prism_replacement <- PRISM_cols[26,]
+col_order2 <- c('Date', 'DOWNSIZER_PRECIP1', 'DOWNSIZER_PRECIP2',
+                'DOWNSIZER_PRECIP3', 'DOWNSIZER_PRECIP5', 'DOWNSIZER_PRECIP8', 'DOWNSIZER_PRECIP10',
+                'DOWNSIZER_PRECIP11', 'DOWNSIZER_PRECIP13','DOWNSIZER_PRECIP14', 'DOWNSIZER_PRECIP15',
+                'DOWNSIZER_TMAX1', 'DOWNSIZER_TMAX2', 'DOWNSIZER_TMAX6', 'DOWNSIZER_TMIN1', 'DOWNSIZER_TMIN2', 
+                'DOWNSIZER_TMIN6')
+colnames(Prism_replacement) <- col_order2
+Downsizer_Processed <- rbind(Downsizer_Processed, Prism_replacement)
 #Change -999.0 values to -999
 for (i in 2:17) {
   Downsizer_Processed[, i] <- gsub("-999.0", "-999", Downsizer_Processed[, i])

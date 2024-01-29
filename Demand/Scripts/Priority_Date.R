@@ -17,14 +17,14 @@ require(openxlsx)
 #### Script Procedure ####
 
 
-mainProcedure <- function () {
+mainProcedure <- function (wsID) {
   
   # The main body of the script
   
   
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv("IntermediateData/Priority_Date_FINAL.csv") %>%
+  priorityDateCSV <- read.csv(paste0("IntermediateData/", wsID, "_Priority_Date_FINAL.csv")) %>%
     unique()
   
   
@@ -257,7 +257,7 @@ mainProcedure <- function () {
   # Output 'priorityDateCSV' as a new XLSX file
   # (in the "OutputData" folder)
   priorityDateCSV %>%
-    write.xlsx("OutputData/Priority_Date_Scripted.xlsx", overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", wsID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
   
   
   
@@ -276,7 +276,7 @@ mainProcedure <- function () {
 
 cat("Starting 'Priority_Date.R'...")
 
-mainProcedure()
+mainProcedure(ws$ID)
 
 
 # Remove the function from the environment when the procedure is complete

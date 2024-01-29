@@ -2,11 +2,10 @@
 # replace their values such that the year's total is the face value amount
 
 
-library(tidyverse)
-library(readxl)
-library(data.table)
-library(openxlsx)
-
+require(tidyverse)
+require(readxl)
+require(openxlsx)
+require(RSQLite)
 
 
 faceValSub <- function (inputDF, yearRange = 2021:2023) {
@@ -25,18 +24,35 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
   
   # Read in data from "water_use_report_extended.csv"
   # Filter it to APPLICATION_NUMBER values in 'inputDF'
-  extendedDF <- fread("RawData/water_use_report_extended.csv",
-                      select = c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
-                                 "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", "EFFECTIVE_DATE",
-                                 "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",
-                                 "STORAGE_SEASON_START", "DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END")) %>%
-    filter(APPLICATION_NUMBER %in% inputDF$APPLICATION_NUMBER)
+  # Also, keep only data for "Appropriative" rights
+  conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+  extendedDF <- dbGetQuery(conn, 
+                           paste0('SELECT DISTINCT "APPLICATION_NUMBER", "YEAR", ',
+                           '"MONTH", "AMOUNT", "DIVERSION_TYPE", "FACE_VALUE_AMOUNT", ',
+                           '"FACE_VALUE_UNITS", "EFFECTIVE_DATE", "WATER_RIGHT_TYPE", ',
+                           '"DIRECT_DIV_SEASON_START", "STORAGE_SEASON_START", ',
+                           '"DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END" FROM "Table" ',
+                           'WHERE "APPLICATION_NUMBER" in (', 
+                           inputDF$APPLICATION_NUMBER %>% unique() %>% paste0('"', ., '"', collapse = ", "), 
+                           ') AND ',
+                           'WATER_RIGHT_TYPE = "Appropriative"'))
+  dbDisconnect(conn)
+  
+  
+  
+  # Original Non-SQL code
+  # extendedDF <- fread("RawData/water_use_report_extended.csv",
+  #                     select = c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
+  #                                "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", "EFFECTIVE_DATE",
+  #                                "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",
+  #                                "STORAGE_SEASON_START", "DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END")) %>%
+  #   filter(APPLICATION_NUMBER %in% inputDF$APPLICATION_NUMBER)
 
   
   
   # Filter 'extendedDF' to appropriative rights that have an "EFFECTIVE_DATE" within 'yearRange'
   extendedDF <- extendedDF %>%
-    filter(grepl("^Appro", WATER_RIGHT_TYPE)) %>%
+    #filter(grepl("^Appro", WATER_RIGHT_TYPE)) %>%
     mutate(YEAR = as.numeric(str_extract(EFFECTIVE_DATE, "[0-9]{4}$"))) %>%
     filter(YEAR %in% yearRange) %>%
     filter(DIVERSION_TYPE != "USE")

@@ -1,17 +1,19 @@
 #Load libraries----
-library(dplyr) #for numerous functions
-library(tidyverse) #for read_csv
-library(data.table) #for fread function
-library(janitor) # for get_dupes function
+require(dplyr) #for numerous functions
+require(tidyverse) #for read_csv
+require(data.table) #for fread function
+require(janitor) # for get_dupes function
+require(writexl) # for write_xlsx function
+require(RSQLite) # for SQLite queries
+require(readxl) # for read_xlsx function
 
 #Import Raw Data ----
 
 #Import Statistics_FINAL.csv. This is one of the output files of the Priority_Date_Preprocessing.R 
 #script; but we just want the unique APPLICATION_NUMBERS; these are just water rights
 #in the Russian River.
-appYears <- read_csv("IntermediateData/Statistics_FINAL.csv", show_col_types = FALSE) %>%
+appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"), show_col_types = FALSE) %>%
   select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>% unique() %>%
-
   #Add a YEAR_ID column that concatenates the year and application number
   mutate(YEAR_ID = paste(YEAR, APPLICATION_NUMBER, sep = "_"))
 
@@ -41,12 +43,19 @@ appYears <- read_csv("IntermediateData/Statistics_FINAL.csv", show_col_types = F
   #APPLICATION_PRIMARY_OWNER is the primary owner in the reporting year
   #PARTY_ID is the Party ID tied to the primary owner in the reporting year
 
-file_path <- "RawData/water_use_report_extended.csv"
-selected_columns <- c("APPL_ID", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
+#file_path <- "RawData/water_use_report_extended.csv"
+selected_columns <- c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
                       "APPLICATION_PRIMARY_OWNER", "PARTY_ID")
 
 #Import only the selected_columns of the water_use_report_extended.csv
-RMS_parties <- fread(file = file_path, select = selected_columns)
+# RMS_parties <- fread(file = file_path, select = selected_columns)
+conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+RMS_parties <- dbGetQuery(conn, 
+                          paste0('SELECT DISTINCT ',
+                                 selected_columns %>% paste0('"', ., '"', collapse = ", "),
+                                 ' FROM "Table"',
+                                 ' WHERE "YEAR" > 2016')) 
+dbDisconnect(conn)
 
 #Prepare the RMS_parties dataset for manual review----
 
@@ -59,12 +68,12 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
 
   #Filter RMS_parties to just the Russian River
   RMS_parties <- RMS_parties %>%
-    filter(APPL_ID %in% appYears$APPLICATION_NUMBER)
+    filter(APPLICATION_NUMBER %in% appYears$APPLICATION_NUMBER)
   
 ##Look for duplicate party IDs ----
   #Add a Year_Right column to RMS_parties
     RMS_parties <- RMS_parties %>%
-    mutate(YEAR_ID = paste(YEAR, APPL_ID, sep = "_"))
+    mutate(YEAR_ID = paste(YEAR, APPLICATION_NUMBER, sep = "_"))
 
 #Group RMS_parties by YEAR_ID
   #the purpose is to catch any instances where more than 1 party ID was
@@ -89,16 +98,16 @@ RMS_parties2 <- RMS_parties %>%
 
 #Calculate annual direct diversion and annual diversion to storage amounts per right per year
 RMS_parties3 = RMS_parties2 %>% 
-  group_by(APPL_ID, YEAR, DIVERSION_TYPE) %>%
+  group_by(APPLICATION_NUMBER, YEAR, DIVERSION_TYPE) %>%
   summarise(AnnualTotal = sum(AMOUNT), .groups = "keep")
 
 #Inner Join RMS_parties3 to RMS_parties2 to bring back PARTY_ID field
   #We need to inner join by multiple columns: #APPL_ID, YEAR, DIVERSION TYPE
 RMS_parties4 = inner_join(x = RMS_parties2,
                           y = RMS_parties3, #Includes Annual Totals
-                          by = c("APPL_ID", "YEAR", "DIVERSION_TYPE")) %>%
+                          by = c("APPLICATION_NUMBER", "YEAR", "DIVERSION_TYPE")) %>%
   #Add PK_WR column to allow us to remove monthly data
-  mutate(PK_WR = paste(YEAR, APPL_ID, DIVERSION_TYPE, AnnualTotal, sep = "_")) %>%
+  mutate(PK_WR = paste(YEAR, APPLICATION_NUMBER, DIVERSION_TYPE, AnnualTotal, sep = "_")) %>%
   select(-c("MONTH", "AMOUNT")) %>% #Remove month and Amount columns
   unique() %>%
   
@@ -115,9 +124,29 @@ RMS_parties4 = inner_join(x = RMS_parties2,
   #manual review spreadsheet is to catch instances where the same owner reported the same
   #diversions across 2 or more rights; hence "duplicate_reports"
 Duplicate_Reports = get_dupes(RMS_parties4, PK)
-writexl::write_xlsx(x= Duplicate_Reports, path = "IntermediateData/Duplicate_Reports_Manual_Review.xlsx", col_names = TRUE)
+
+
+# Before exporting the table, remove entries that were already manually reviewed
+if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"))) > 0) {
+  
+  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"), full.names = TRUE) %>%
+    tail(1) %>%
+    read_xlsx()
+  
+  
+  Duplicate_Reports <- Duplicate_Reports %>%
+    filter(!(PK %in% reviewDF$Primary_Key))
+  
+}
+
+
+
+writexl::write_xlsx(x= Duplicate_Reports, path = paste0("IntermediateData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
 
 print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 
+remove(appYears, conn, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,
+       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
+       RMS_parties4, selected_columns, reviewDF)
