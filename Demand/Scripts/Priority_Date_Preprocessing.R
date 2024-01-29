@@ -16,20 +16,24 @@ cat("Starting 'Priority_Date_Preprocessing.R'...")
 if (grepl("^Russian", ws$NAME)) {
   
   # Import GIS data reviewed by SDU on 7/17/2023 and Payman on 9/19/2023
-  Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
-    group_by(APPLICATION_NUMBER, POD_ID) %>%
-    summarize(FREQUENCY = n(), .groups = "drop") 
-  #Summarizes records by APPLICATION_NUMBER and POD_ID; 
-  #adds a FREQUENCY column and drops the other columns
+  Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx")
+
+} else if (grepl("Navarro", ws$NAME)) { 
+  
+  Application_Number <- system("whoami", intern = TRUE) %>%
+    str_split("\\\\") %>% unlist() %>% tail(1) %>%
+    paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_POD_StreamStats_Review.xlsx") %>%
+    read_xlsx(sheet = "Final_List")
+  
 } else {
   stop(paste0("A filename has not been specified for watershed ", ws$NAME))
 }
 
 
 
-# Keep only the "APPLICATION_NUMBER" and "FREQUENCY" columns
+# Keep only the "APPLICATION_NUMBER" column
 Application_Number <- Application_Number %>%
-  select(APPLICATION_NUMBER, FREQUENCY) %>%
+  select(APPLICATION_NUMBER) %>%
   unique()
 
 
