@@ -31,6 +31,10 @@ stopifnot(nrow(ws) == 1)
 cat(paste0("Running scripts for ", ws$NAME))
 
 
+# Generic functions that are used in multiple scripts
+source("Scripts/Shared_Functions.R")
+
+
 # GIS Pre-Processing Initial Steps
 source("Scripts/GIS_POD_Flat_File_Prep.R")
 

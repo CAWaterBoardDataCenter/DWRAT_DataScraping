@@ -39,8 +39,7 @@ unitFixer <- function (inputDF, wsName, wsID) {
       rename(QAQC_Action_Taken = QAQC_Action)
   } else if (grepl("^Navarro", wsName)) {
     
-    stop()
-    #return(inputDF) # No QAQC review done yet
+    return(inputDF) # No QAQC review done yet
     
   } else {
     stop(paste0("Filenames have not been specified for watershed ", wsName))

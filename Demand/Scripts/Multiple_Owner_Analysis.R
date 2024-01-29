@@ -141,7 +141,7 @@ if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports")
 
 
 
-writexl::write_xlsx(x= Duplicate_Reports, path = paste0("IntermediateData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
+writexl::write_xlsx(x= Duplicate_Reports, path = paste0("OutputData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
 
 print("The Multiple_Owner_Analysis.R script is done running!")
 

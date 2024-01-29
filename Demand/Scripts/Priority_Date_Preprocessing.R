@@ -20,9 +20,7 @@ if (grepl("^Russian", ws$NAME)) {
 
 } else if (grepl("Navarro", ws$NAME)) { 
   
-  Application_Number <- system("whoami", intern = TRUE) %>%
-    str_split("\\\\") %>% unlist() %>% tail(1) %>%
-    paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_POD_StreamStats_Review.xlsx") %>%
+  Application_Number <- makeSharePointPath("Watershed Folders/Navarro/Data/GIS Preprocessing/NV_POD_StreamStats_Review.xlsx") %>%
     read_xlsx(sheet = "Final_List")
   
 } else {
