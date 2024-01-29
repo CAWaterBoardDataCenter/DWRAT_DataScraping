@@ -52,10 +52,8 @@ mainProcedure <- function (ws) {
   
   
   
-  # From the Russian River geodatabase, import the layer "PLSS_Sections_Fill"
-  # (PLSS Sections for the entire state)
-  PLSS_Sections_Fill <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/GIS/Russian River.gdb/", 
-                                layer = "PLSS_Sections_Fill")
+  # Import PLSS Sections for the entire state
+  PLSS_Sections_Fill <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson")
   
   
   
