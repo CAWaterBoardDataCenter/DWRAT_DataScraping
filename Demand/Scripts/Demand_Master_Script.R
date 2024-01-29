@@ -1,6 +1,15 @@
 # Run scripts to produce a master demand table
 
 
+require(tidyverse)
+require(sf)
+require(openxlsx)
+require(data.table)
+require(RSQLite)
+require(readxl)
+require(janitor)
+
+
 # Watershed Names and Identifiers
 ws <- c("Russian River",  "RR",
         "Navarro River",  "NV") %>%
@@ -11,7 +20,7 @@ ws <- c("Russian River",  "RR",
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[1, ] # Change the row index to your desired watershed
+ws <- ws[2, ] # Change the row index to your desired watershed
 
 
 

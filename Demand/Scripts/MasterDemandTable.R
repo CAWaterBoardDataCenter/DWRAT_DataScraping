@@ -331,48 +331,52 @@ if ("MAINSTEM" %in% names(ewrimsDF) && grepl("^Russian", ws$NAME)) {
 
 # Append COUNTY to 'ewrimsDF'
 
-# Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
-podDF <- read_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
-
-
-# Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
-countyDF <- podDF %>%
-  select(APPLICATION_NUMBER, COUNTY) %>% unique() %>%
-  group_by(APPLICATION_NUMBER) %>%
-  filter(n() == 1)
-
-
-# Join this data to 'ewrimsDF'
-ewrimsDF <- ewrimsDF %>%
-  left_join(countyDF, by = "APPLICATION_NUMBER")
-
-
-
-# If there are still NA values in "COUNTY", try to use the "LATITUDE" and "LONGITUDE" to help
-if (anyNA(ewrimsDF$COUNTY)) {
+if (grepl("^Russian", ws$NAME)) {
   
-  # Iterate through 'ewrimsDF'
-  for (i in 1:nrow(ewrimsDF)) {
+  # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
+  podDF <- read_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
+  
+  
+  # Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
+  countyDF <- podDF %>%
+    select(APPLICATION_NUMBER, COUNTY) %>% unique() %>%
+    group_by(APPLICATION_NUMBER) %>%
+    filter(n() == 1)
+  
+  
+  # Join this data to 'ewrimsDF'
+  ewrimsDF <- ewrimsDF %>%
+    left_join(countyDF, by = "APPLICATION_NUMBER")
+  
+  
+  
+  # If there are still NA values in "COUNTY", try to use the "LATITUDE" and "LONGITUDE" to help
+  if (anyNA(ewrimsDF$COUNTY)) {
     
-    # Skip rows with a non-NA "COUNTY"
-    if (!is.na(ewrimsDF$COUNTY[i])) {
-      next
+    # Iterate through 'ewrimsDF'
+    for (i in 1:nrow(ewrimsDF)) {
+      
+      # Skip rows with a non-NA "COUNTY"
+      if (!is.na(ewrimsDF$COUNTY[i])) {
+        next
+      }
+      
+      # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
+      ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
+                                    round(podDF$LONGITUDE2, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
+        unique()
+      
     }
     
-    # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
-    ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
-                                  round(podDF$LONGITUDE2, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
-      unique()
     
   }
   
   
+  # Error Check
+  # Every entry should have a non-NA "COUNTY" value
+  stopifnot(!anyNA(ewrimsDF$COUNTY))
+  
 }
-
-
-# Error Check
-# Every entry should have a non-NA "COUNTY" value
-stopifnot(!anyNA(ewrimsDF$COUNTY))
 
 
 

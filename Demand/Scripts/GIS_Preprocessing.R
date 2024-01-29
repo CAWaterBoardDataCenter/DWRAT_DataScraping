@@ -52,10 +52,8 @@ mainProcedure <- function (ws) {
   
   
   
-  # From the Russian River geodatabase, import the layer "PLSS_Sections_Fill"
-  # (PLSS Sections for the entire state)
-  PLSS_Sections_Fill <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/GIS/Russian River.gdb/", 
-                                layer = "PLSS_Sections_Fill")
+  # Import PLSS Sections for the entire state
+  PLSS_Sections_Fill <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson")
   
   
   
@@ -475,7 +473,7 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   
   
   
-  # Create a combined version of all four variables
+  # Create a combined version of all three variables
   allDF <- wsBound_Inner_Intersect %>%
     bind_rows(WS_pod_points_Merge, wsMention) %>%
     unique() %>%
@@ -485,6 +483,12 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   
   
   # Write 'allDF' to a GeoJSON file
+  # (But first remove the older version, if it exists in the directory)
+  if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("IntermediateData")) {
+    unlink(paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+  }
+  
+  
   st_write(allDF, paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
   
   
@@ -544,7 +548,7 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   
   
   
-  # Finally, create a summary table that identifies which task each POD was gathered from
+  # After that, create a summary table that identifies which task each POD was gathered from
   task1 <- WS_pod_points_Merge %>%
     st_drop_geometry() %>%
     select(APPLICATION_NUMBER, POD_ID) %>%
@@ -588,6 +592,22 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   worksheetOrder(wb) <- c(worksheetOrder(wb)[1],
                           tail(worksheetOrder(wb), 1),
                           worksheetOrder(wb)[-c(1, tail(worksheetOrder(wb), 1))])
+  
+  
+  
+  # As a final step, add a second review sheet focused on plotting points via Stream Stats ('POD_StreamStats_Analysis.R')
+  addWorksheet(wb, "R_Review")
+  
+  writeData(wb, "R_Review",
+            allDF %>%
+              left_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
+              select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
+              mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
+                     REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
+                     REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
+                     REPORT_SECTION = NA, REPORT_TOWNSHIP = NA, REPORT_RANGE = NA, REPORT_DATUM = NA, MULTI_OPTIONS_CHOICE = NA_integer_, `ANY_VAL?` = FALSE, NOTES2 = "--") %>%
+              mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE)) %>%
+              unique())
   
   
   
