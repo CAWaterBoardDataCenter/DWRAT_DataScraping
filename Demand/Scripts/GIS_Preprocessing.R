@@ -22,16 +22,12 @@ mainProcedure <- function (ws) {
   # (The assigned variable name should always be 'wsBound')
   if (grepl("^Navarro", ws$NAME, ignore.case = TRUE)) {
     
-    wsBound <- system("whoami", intern = TRUE) %>%
-      str_split("\\\\") %>% unlist() %>% tail(1) %>%
-      paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg") %>%
+    wsBound <- makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg") %>%
       st_read(layer = "WBD_HU10_Navarro")
     
   } else if (grepl("^Russian", ws$NAME, ignore.case = TRUE)) {
     
-    wsBound <- system("whoami", intern = TRUE) %>%
-      str_split("\\\\") %>% unlist() %>% tail(1) %>%
-      paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/GIS/Russian River.gdb/") %>%
+    wsBound <- makeSharePointPath("GIS/Russian River.gdb/") %>%
       st_read(layer = "RR_NHD_1801_HUC8")
     
   } else {
@@ -204,6 +200,14 @@ mainProcedure <- function (ws) {
                grepl("Russian", SOURCE_NAME, ignore.case = TRUE) |
                grepl("Russian", TRIB_DESC, ignore.case = TRUE))
     
+  } else if (grepl("^Butte", ws$NAME, ignore.case = TRUE)) {
+    
+    wsMention <- pod_points_statewide_spatial %>%
+      filter(grepl("Butte( Creek)?", WATERSHED, ignore.case = TRUE) |
+               grepl("Butte Creek", WATERSHED, ignore.case = TRUE) |
+               grepl("Butte", SOURCE_NAME, ignore.case = TRUE) |
+               grepl("Butte", TRIB_DESC, ignore.case = TRUE))
+    
   } else {
     
     stop(paste0(ws$NAME, " not recognized. A corresponding filter has not been specified for this watershed in the script."))
@@ -337,7 +341,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   
   # Write 'allDF' to a GeoJSON file
-  st_write(allDF, paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
   
   
   
@@ -460,7 +464,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   # Save 'wb' to a file
   saveWorkbook(wb, 
-               paste0("IntermediateData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
+               paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
   
   
   
@@ -494,12 +498,12 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   
   # Write 'allDF' to a GeoJSON file
   # (But first remove the older version, if it exists in the directory)
-  if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("IntermediateData")) {
-    unlink(paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+  if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("OutputData")) {
+    unlink(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
   }
   
   
-  st_write(allDF, paste0("IntermediateData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
   
   
   
@@ -623,7 +627,7 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   
   # Save 'wb' to a file
   saveWorkbook(wb, 
-               paste0("IntermediateData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
+               paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
   
   
   
