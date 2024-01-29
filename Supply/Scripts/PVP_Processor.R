@@ -12,7 +12,7 @@
 
 #SCRIPT LAST UPDATED:
 #BY: Payman Alemi
-#ON: 12/7/2023
+#ON: 10/30/2023
 
 # Load packages
 library(tidyverse)
@@ -24,8 +24,8 @@ library(ggplot2)
 pvp_names = c("USGS", "Station ID", "Date", "Time_Zone", "Discharge", "Provisional_Type")
 
 #Define Timeframe
-start_date <- "2023-11-01"
-end_date <- "2023-11-30"
+start_date <- "2023-10-01"
+end_date <- "2023-10-30"
 
 #Scrape PVP URL----
 base_url <- "https://waterservices.usgs.gov/nwis/iv/?sites=11461500&parameterCd=00060"
