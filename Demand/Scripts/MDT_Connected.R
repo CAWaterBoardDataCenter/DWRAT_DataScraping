@@ -103,12 +103,5 @@ MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.
 #Use a for loop to export each dataframe
   for (i in seq_along(MDT_List)) {
     filename <- names(MDT_List)[i]
-    
-    if (grepl("^lrr", filename)) {
-      write.csv(MDT_List[[i]], file = paste0("../../SDU_DWRAT/Connected_DWRAT/LRR_DWRAT/input/",filename, ".csv"), row.names = FALSE) 
-      
-    } else {
-       write.csv(MDT_List[[i]], file = paste0("../../SDU_DWRAT/Connected_DWRAT/URR_DWRAT/input/",filename, ".csv"), row.names = FALSE) 
-    }
-     
+    write.csv(MDT_List[[i]], file = paste0("OutputData/",filename, ".csv"), row.names = FALSE) 
   }
