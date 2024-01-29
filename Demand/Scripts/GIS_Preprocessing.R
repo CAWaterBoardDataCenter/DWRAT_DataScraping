@@ -21,9 +21,19 @@ mainProcedure <- function (ws) {
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
   if (grepl("^Navarro", ws$NAME, ignore.case = TRUE)) {
-    wsBound <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg", "WBD_HU10_Navarro")
+    
+    wsBound <- system("whoami", intern = TRUE) %>%
+      str_split("\\\\") %>% unlist() %>% tail(1) %>%
+      paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg") %>%
+      st_read(layer = "WBD_HU10_Navarro")
+    
   } else if (grepl("^Russian", ws$NAME, ignore.case = TRUE)) {
-    wsBound <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/GIS/Russian River.gdb/", "RR_NHD_1801_HUC8")
+    
+    wsBound <- system("whoami", intern = TRUE) %>%
+      str_split("\\\\") %>% unlist() %>% tail(1) %>%
+      paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/GIS/Russian River.gdb/") %>%
+      st_read(layer = "RR_NHD_1801_HUC8")
+    
   } else {
     stop(paste0(ws$NAME, " not recognized. A corresponding boundary layer has not been specified for this watershed in the script."))
   }
