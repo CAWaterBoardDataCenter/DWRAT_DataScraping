@@ -10,25 +10,38 @@ library(sf)
 cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
 
 
-# Read in a spreadsheet with coordinate data
-# Convert it into a spatial feature
-# (Also, keep copies of the latitude and longitude coordinates in new columns)
-# (When the geometry is dropped, the coordinate data could be removed)
-POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
-  mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
-  st_as_sf(coords = c("LONGITUDE", "LATITUDE"))
+# Read in a spreadsheet with coordinate data and convert it into a spatial feature
+#   (Also, keep copies of the latitude and longitude coordinates in new columns)
+#   (Otherwise, when the geometry is dropped, the coordinate data is removed)
+# After that, assign a coordinate system to the PODs (assumed to be "NAD83")
+# Then, also read in a layer containing the subbasins of the watershed
+if (grepl("^Russian", ws$NAME)) {
+  
+  POD <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
+    mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
+    st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83")
 
-st_crs(POD) <- "WGS84"
+  
+  # Read in the Russian River sub-basins
+  # Note: st_layers() can be used to see all available layers in the geodatabase
+  subWS <- st_read("InputData/DWRAT_ForImportIntoPortal.gdb", layer = "RR_Basins_UpprAndLwr")
+  
+} else {
+  
+  stop("No POD and subbasin data was specified for this watershed")
+  
+}
 
-# Read in the Russian River sub-basins
-# Note: st_layers() can be used to see all available layers in the geodatabase
-subRR <- st_read("InputData/DWRAT_ForImportIntoPortal.gdb", layer = "RR_Basins_UpprAndLwr")
 
-# Change the CRS of 'subRR' to match 'POD'
-subRR <- st_transform(subRR, st_crs(POD))
+
+# Change the CRS of 'subWS' to match 'POD'
+subWS <- st_transform(subWS, st_crs(POD))
+
+
 
 # Check that each 'POD' intersects with a subbasin
-overlapCheck <- st_intersects(POD, subRR) %>% lengths()
+overlapCheck <- st_intersects(POD, subWS) %>% lengths()
+
 
 
 # Stop if there are any lengths greater than or less than 1 (points present in more than one subbasin)
@@ -38,16 +51,16 @@ stopifnot(sum(overlapCheck < 1) == 0)
 
 
 
-# Create an alternate version of 'subRR'
-# This will have a 50 meter buffer added to the 
-bufferPoly <- st_buffer(subRR, 50)
+# Create an alternate version of 'subWS'
+# This will have a 50 meter buffer added to the subbasin boundaries
+bufferPoly <- st_buffer(subWS, 50)
 bufferOverlap <- st_intersects(POD, bufferPoly) %>% lengths()
 
 
 
-# Perform the intersections for 'POD' with both 'subRR' and 'bufferPoly'
+# Perform the intersections for 'POD' with both 'subWS' and 'bufferPoly'
 subbasinPOD <- st_intersection(POD,
-                               subRR %>% select(Basin_ID, Basin_Num, Grouping))
+                               subWS %>% select(Basin_ID, Basin_Num, Grouping))
 
 
 subbasinPOD_Buffer <- st_intersection(POD,
@@ -88,7 +101,7 @@ podTable_Buffer <- podTable_Buffer %>%
 
 # Output the results to spreadsheets
 podTable %>%
-  write.xlsx("OutputData/POD_Subbasin_Assignment.xlsx", overwrite = TRUE)
+  write.xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"), overwrite = TRUE)
 
 
 
@@ -102,12 +115,12 @@ cat("Done!\n")
 
 # Remove the variables from the workspace
 remove(podTable, podTable_Buffer, subbasinPOD, subbasinPOD_Buffer, bufferPoly, 
-       POD, subRR, uniqueCounts, uniqueCounts_Buffer, bufferOverlap, overlapCheck)
+       POD, subWS, uniqueCounts, uniqueCounts_Buffer, bufferOverlap, overlapCheck)
 
-print("The Assign_Subbasin_to_POD.R script is done running!")
-# 
-# test <- st_intersects(POD, subRR)
+print("The 'Assign_Subbasin_to_POD.R' script is done running!")
+ 
+# test <- st_intersects(POD, subWS)
 # 
 # 
 # test <- st_intersection(POD, 
-#                         subRR %>% select(Basin_ID, Basin_Num, Grouping))
+#                         subWS %>% select(Basin_ID, Basin_Num, Grouping))

@@ -13,7 +13,7 @@ require(RSQLite)
 
 
 # Functions
-unitFixer <- function (inputDF) {
+unitFixer <- function (inputDF, wsName, wsID) {
   
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
@@ -32,9 +32,20 @@ unitFixer <- function (inputDF) {
   
   
   # Read in those two spreadsheets
-  unitsQAQC <- read_xlsx("InputData/Expected_Demand_Units_QAQC_20231020.xlsx", sheet = "Corrected Data")
-  unitsQAQC_Med <- read_xlsx("InputData/Expected_Demand_Units_QAQC_Median_Based_20230922.xlsx", sheet = "Filtered Data") %>%
-    rename(QAQC_Action_Taken = QAQC_Action)
+  # (The filenames depend on 'wsName')
+  if (grepl("^Russian", wsName)) {
+    unitsQAQC <- read_xlsx("InputData/RR_Expected_Demand_Units_QAQC_20231020.xlsx", sheet = "Corrected Data")
+    unitsQAQC_Med <- read_xlsx("InputData/RR_Expected_Demand_Units_QAQC_Median_Based_20230922.xlsx", sheet = "Filtered Data") %>%
+      rename(QAQC_Action_Taken = QAQC_Action)
+  } else if (grepl("^Navarro", wsName)) {
+    
+    stop()
+    #return(inputDF) # No QAQC review done yet
+    
+  } else {
+    stop(paste0("Filenames have not been specified for watershed ", wsName))
+  }
+  
   
   
   # Filter out entries where no action is required
@@ -49,10 +60,10 @@ unitFixer <- function (inputDF) {
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
   # Then make changes to 'inputDF'
-  inputDF <- iterateQAQC(inputDF, unitsQAQC)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC, wsID)
   
   
-  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, wsID)
   
   
   
@@ -63,13 +74,23 @@ unitFixer <- function (inputDF) {
 
 
 
-dupReportingFixer <- function (inputDF) {
+dupReportingFixer <- function (inputDF, wsName, wsID) {
   
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
-  # A single spreadsheet will be used for these corrections, "Duplicate_Reports_Manual_Review_20230925.xlsx"
-  qaqcDF <- read_xlsx("InputData/Duplicate_Reports_Manual_Review_20230925.xlsx") %>%
-    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+  # A single spreadsheet will be used for these corrections
+  # For the Russian River, it is"Duplicate_Reports_Manual_Review_20230925.xlsx"
+  if (grepl("^Russian", wsName)) {
+    qaqcDF <- read_xlsx("InputData/RR_Duplicate_Reports_Manual_Review_20230925.xlsx") %>%
+      filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+  } else if (grepl("^Navarro", wsName)) {
+    
+    return(inputDF) # No QAQC review done yet
+    
+  } else {
+    stop(paste0("A filename has not been specified for watershed ", wsName))
+  }
+  
   
   
   # Remove entries in 'qaqcDF' where no actions are required
@@ -81,7 +102,7 @@ dupReportingFixer <- function (inputDF) {
   
   # Rely on iterateQAQC() to apply changes to 'inputDF'
   inputDF <- inputDF %>% 
-    iterateQAQC(qaqcDF)
+    iterateQAQC(qaqcDF, wsID)
   
   
   # Return 'inputDF' after these changes
@@ -91,7 +112,7 @@ dupReportingFixer <- function (inputDF) {
 
 
 
-iterateQAQC <- function (inputDF, unitsQAQC) {
+iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   # Given a source dataset and data frame of corrections, apply changes based on the "QAQC_Action_Taken" column
   
@@ -372,7 +393,7 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
       
       
       # Use a separate function for this step
-      inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ])
+      inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ], wsID)
       
       
     # Another type of issue is needing to select one right's entries among two or more options
@@ -383,7 +404,7 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
       
       # Apply these changes in a separate function
       inputDF <- inputDF %>%
-        removeDups(unitsQAQC, i)
+        removeDups(unitsQAQC, i, wsID)
       
       
       # As a final step, set "QAQC_Action_Taken" to "None" for all entries with this "PARTY_ID"
@@ -421,7 +442,7 @@ iterateQAQC <- function (inputDF, unitsQAQC) {
       
       
       # After that, call iterateQAQC() again with 'dummyDF'
-      inputDF <- iterateQAQC(inputDF, dummyDF)
+      inputDF <- iterateQAQC(inputDF, dummyDF, wsID)
       
     
       # If an action is "None", skip it
@@ -475,7 +496,7 @@ chooseUseType <- function (action) {
 
 
 
-useMeasurementData <- function (inputDF, qaqcInfo) {
+useMeasurementData <- function (inputDF, qaqcInfo, wsID) {
   
   # Using the information specified in 'qaqcInfo' (a single row DF), 
   # access a measurement spreadsheet ("Expected_Demand_Units_QAQC_Measurement_Values.xlsx") 
@@ -485,7 +506,7 @@ useMeasurementData <- function (inputDF, qaqcInfo) {
   
   # Read in the spreadsheet containing volumes compiled from measurement spreadsheets
   # Filter the data to this iteration's "APPLICATION_NUMBER"
-  measuredData <- read_xlsx("InputData/Expected_Demand_Units_QAQC_Measurement_Values.xlsx", sheet = "Data") %>%
+  measuredData <- read_xlsx(paste0("InputData/", wsID, "_Expected_Demand_Units_QAQC_Measurement_Values.xlsx"), sheet = "Data") %>%
     filter(APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] & YEAR == qaqcInfo$YEAR[1])
   
   
@@ -519,7 +540,7 @@ useMeasurementData <- function (inputDF, qaqcInfo) {
 
 
 
-removeDups <- function (inputDF, unitsQAQC, i) {
+removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   
   # Excluding the right with the earliest priority date (lowest value),
   # set the values for a given year and diversion type to zero for all other rights
@@ -544,7 +565,7 @@ removeDups <- function (inputDF, unitsQAQC, i) {
   
   
   # Get the priority dates for these application numbers next
-  priorityDF <- read_xlsx("OutputData/Priority_Date_Scripted.xlsx", col_types = "text") %>%
+  priorityDF <- read_xlsx(paste0("OutputData/", wsID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
     select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE) %>%
     filter(APPLICATION_NUMBER %in% appVec)
   

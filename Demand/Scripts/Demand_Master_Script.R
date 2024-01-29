@@ -1,8 +1,42 @@
 # Run scripts to produce a master demand table
 
 
-# GIS Pre-Processing
+require(tidyverse)
+require(sf)
+require(openxlsx)
+require(data.table)
+require(RSQLite)
+require(readxl)
+require(janitor)
+
+
+# Watershed Names and Identifiers
+ws <- c("Russian River",  "RR",
+        "Navarro River",  "NV") %>%
+  matrix(ncol = 2, byrow = TRUE) %>%
+  data.frame() %>%
+  set_names(c("NAME", "ID"))
+
+
+
+# IMPORTANT!! CHOOSE A WATERSHED
+ws <- ws[2, ] # Change the row index to your desired watershed
+
+
+
+stopifnot(nrow(ws) == 1)
+
+
+
+cat(paste0("Running scripts for ", ws$NAME))
+
+
+# GIS Pre-Processing Initial Steps
 source("Scripts/GIS_POD_Flat_File_Prep.R")
+
+
+# GIS Pre-Processing
+source("Scripts/GIS_Preprocessing.R")
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
@@ -13,7 +47,7 @@ source("Scripts/Extended_CSV_to_SQLite.R")
 source("Scripts/QAQC_Functions.R")
 
 
-# A function to update the reported amounts 
+# A function to update reported amounts for new rights
 source("Scripts/Face_Value_Substitution.R")
 
 
@@ -40,6 +74,10 @@ source("Scripts/Multiple_Owner_Analysis.R")
 
 # Expected Demand Module
 source("Scripts/Expected_Demand.R")
+
+
+# Supplemental Expected Demand Module
+source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
 
 
 # Beneficial Use, Return Flow Module
