@@ -1,6 +1,6 @@
 # Analyze the POD coordinates specified in a GIS Preprocessing spreadsheet
 # Use USGS StreamStats to see the water drainage path from each set of coordinates
-# Make notes in the dataset about whether the coordinates drain out of the watershed's main river
+# Make notes in the dataset about whether the path from the coordinates drains out of the watershed's main river
 
 # http://www.merebrookllc.com/reading-descriptions.html
 
@@ -26,7 +26,13 @@ mainProcedure <- function (ws) {
   # Get the watershed boundaries first
   if (grepl("^Navarro", ws$NAME)) {
     
-    wsBound <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg", "WBD_HU10_Navarro")
+    wsBound <- makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg") %>%
+      st_read("WBD_HU10_Navarro")
+    
+  } else if (grepl("^Russian", ws$NAME)) {
+    
+    # This script is not used for the Russian River watershed
+    return(invisible(NULL))
     
   } else {
     
@@ -69,7 +75,7 @@ mainProcedure <- function (ws) {
   if (grepl("^Navarro", ws$NAME)) {
     
     podDF <- read_xlsx("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx", sheet = "R_Review")
-    podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
+    podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
                               REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, MULTI_OPTIONS_CHOICE, 
                               NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
     
@@ -87,6 +93,12 @@ mainProcedure <- function (ws) {
   
   
   # For now, focus on PODs that are not one mile or more within the watershed boundary
+  # (Save the original tibble to another variable)
+  origDF <- podDF
+  
+  
+  
+  # Then, filter 'podDF' down
   podDF <- podDF %>%
     filter(is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
   
@@ -169,12 +181,12 @@ mainProcedure <- function (ws) {
       
       
       # Find the CRS used next
-      if (podDF$NOR_EAS_CRS[i] == "NAD83 Zone 2") {
+      if (grepl("NAD83", podDF$NOR_EAS_CRS[i]) || grepl("1983", podDF$NOR_EAS_CRS[i])) {
         
         # epsg:2226 (NAD83 / California zone 2 (ftUS))
         iterCRS <- "epsg:2226"
         
-      } else if (podDF$NOR_EAS_CRS[i] == "Zone 2, 1927") {
+      } else if (grepl("NAD27", podDF$NOR_EAS_CRS[i]) || grepl("1927", podDF$NOR_EAS_CRS[i])) {
         
         # epsg:26742 (NAD27 Zone II)
         iterCRS <- "epsg:26742"
@@ -246,7 +258,9 @@ mainProcedure <- function (ws) {
   
   
   # Save the updated 'podDF' to a file
-  write_xlsx(podDF, paste0("IntermediateData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
+  write_xlsx(list("StreamStats_Res" = podDF, 
+                  "Final_List" = bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER) & !(origDF$POD_ID %in% podDF$POD_ID), ])), 
+             paste0("OutputData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
   
   
   
