@@ -9,7 +9,6 @@ Supply/ProcessedData/*.dat
 #IGNORE DEMAND DATA FILES 
 # Ignore all CSVs and xlsx files in IntermediateData, RawData and ProcessedData folders
 Demand/RawData/*.csv
-Demand/RawData/*.sqlite
 Demand/IntermediateData/*.csv
 Demand/IntermediateData/*.xlsx
 Demand/IntermediateData/*.ini
