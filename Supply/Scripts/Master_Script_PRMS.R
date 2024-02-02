@@ -42,7 +42,7 @@ source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for b
 source(here("Scripts/PRISM_Processor.R"))
 print(Prism_Processed)
 source(here("Scripts/NOAA_API_Scraper.R"))
-source(here("Scripts/CNRFC_Static_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
+source(here("Scripts/CNRFC_API_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
 source(here("Scripts/CNRFC_RR_Processor.R"))
 print(CNRFC_Processed)
 # change input file name for Downsizer data; you need to run Downsizer and  
@@ -50,7 +50,7 @@ print(CNRFC_Processed)
 # Downsizer filename should match the filename given by Downsizer_Processor.R
 source(here("Scripts/Downsizer_Processor.R")) #Ignore the warning message: Expected 252 pieces...
 source(here("Scripts/RAWS_API_Scraper.R"))
-source(here("Scripts/CIMIS_Static_Scraper.R"))
+source(here("Scripts/CIMIS_API_Scraper.R"))
 #source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
 # change output file name for DAT File
 source(here("Scripts/DAT_File_Manipulation.R"))
