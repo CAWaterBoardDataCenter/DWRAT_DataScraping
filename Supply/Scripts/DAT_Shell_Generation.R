@@ -4,8 +4,9 @@ library(tidyverse)
 library(here)
 library(lubridate) #for make_date function
 
-#Import PRMS Dat stuff
-Dat_File_PRMS <- read.delim(here("InputData/PRMS_2023-10-25_PA.txt"), sep = "\t")
+#Import the PRMS DAT file used for the last model run
+Dat_File_PRMS_Path <- list.files("InputData", pattern = "\\.dat$", full.names = TRUE) %>% sort() %>% tail(1)
+Dat_File_PRMS <- read.delim(file = Dat_File_PRMS_Path, sep = "\t", skip = 6, header = FALSE)
 Dat_Fields_PRMS <- read.csv(here("InputData/Dat_Fields_PRMS.csv"))
 
 #Set Dat_File column names
