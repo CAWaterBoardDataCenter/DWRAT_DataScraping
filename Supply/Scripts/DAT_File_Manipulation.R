@@ -20,6 +20,7 @@ Dat_Shell_PRMS <- read.csv(here("InputData/Dat_Shell_PRMS.csv"))
 Dat_Fields_PRMS <- read.csv(here("InputData/Dat_Fields_PRMS.csv"))
 Dat_File_PRMS_Path <- list.files("InputData", pattern = "\\.dat$", full.names = TRUE) %>% sort() %>% tail(1)
 Dat_PRMS_Body = fread(input = Dat_File_PRMS_Path,
+
                       skip = 6,
                       header = FALSE)
 Dat_PRMS_Header = read.csv(here("InputData/Dat_PRMS_header.csv"), header = FALSE)
