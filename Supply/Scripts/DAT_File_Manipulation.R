@@ -97,9 +97,6 @@ Dat_Final_PRMS = rbind(Dat_PRMS_Header, Dat_Final_PRMS)
 #Write to tab-delimited text file in the climate scenarios folder of RR PRMS----
   # Unless your RR PRMS folder is not saved to C:/RR_PRMS, this step eliminates the need 
   # to copy and paste the PRMS DAT file from GitHub to the local version of your RR PRMS model
-write.table(Dat_Final_PRMS, 
-            here(paste0("ProcessedData/Dat_Final_PRMS","_Forecast_End_Date_", End_Date, ".dat")), 
-            sep="\t", row.names=F, quote = F, col.names = FALSE)
 
 Climate_Scenarios_Path = "C:\\RR_PRMS\\PRMS\\input\\climate_scenarios\\"
 write.table(x = Dat_Final_PRMS, file = paste0(Climate_Scenarios_Path, "DAT_Final_PRMS_Forecast_End_Date_", End_Date, ".dat"),
