@@ -8,6 +8,7 @@ require(data.table)
 require(RSQLite)
 require(readxl)
 require(janitor)
+require(writexl)
 
 
 # Watershed Names and Identifiers
@@ -29,7 +30,11 @@ stopifnot(nrow(ws) == 1)
 
 
 
-cat(paste0("Running scripts for ", ws$NAME))
+cat(paste0("Running scripts for ", ws$NAME, "\n"))
+
+
+# Generic functions that are used in multiple scripts
+source("Scripts/Shared_Functions.R")
 
 
 # GIS Pre-Processing Initial Steps
