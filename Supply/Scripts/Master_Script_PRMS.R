@@ -50,8 +50,10 @@ print(CNRFC_Processed)
 # Downsizer filename should match the filename given by Downsizer_Processor.R
 source(here("Scripts/Downsizer_Processor.R")) #Ignore the warning message: Expected 252 pieces...
 source(here("Scripts/RAWS_API_Scraper.R"))
-source(here("Scripts/CIMIS_API_Scraper.R"))
-#source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
+
+source(here("Scripts/CIMIS_Static_Scraper.R"))
+source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
+
 # change output file name for DAT File
 source(here("Scripts/DAT_File_Manipulation.R"))
 

@@ -13,7 +13,8 @@ require(writexl)
 
 # Watershed Names and Identifiers
 ws <- c("Russian River",  "RR",
-        "Navarro River",  "NV") %>%
+        "Navarro River",  "NV", 
+        "Butte", "BC") %>%
   matrix(ncol = 2, byrow = TRUE) %>%
   data.frame() %>%
   set_names(c("NAME", "ID"))
@@ -21,7 +22,7 @@ ws <- c("Russian River",  "RR",
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[2, ] # Change the row index to your desired watershed
+ws <- ws[1, ] # Change the row index to your desired watershed
 
 
 
