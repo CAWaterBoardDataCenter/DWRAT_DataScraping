@@ -18,10 +18,7 @@ colnames(RR) <- RR_Headers
 ##Whittle to Timeframe of Interest----
 #Convert Date column to date format
 RR$Date <- as.Date(RR$Date)
-RR_Subset <- subset(RR, Date>= StartDate, Date <= End_Date)
-
-#Write RR_Subset to ProcessedData Folder
-# write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
+RR_Subset <- subset(RR, Date>= StartDate$date, Date <= End_Date)
 
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
