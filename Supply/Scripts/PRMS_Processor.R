@@ -30,7 +30,7 @@ RR_Subset_Summed <- RR_Subset %>%
   pivot_longer(cols = 2:23, names_to = "basin", values_to = "value") %>% 
   mutate(Date = as.Date(Date, format = "%Y-%m-%d") %>% format("%m")) %>% 
   group_by(basin, Date) %>%
-  summarise(total = sum(value)) %>% 
+  summarise(total = sum(value), .groups = "drop") %>% 
   pivot_wider(names_from = "basin", values_from = "total")
 
 #Reset original column order

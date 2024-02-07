@@ -5,14 +5,14 @@ library(data.table) #for fread function
 
 # Import the necessary starter files for the  PRMS DAT File----
 # DAT_Shell_PRMS serves as the shell of the PRMS DAT File, observed data (already pre-filled with PRISM and forecast data) contained in these files:
-# RAWS_Processed.csv, CIMIS_Processed.csv, Downsizer_Processed.csv 
+# RAWS_Processed.csv, CIMIS_Processed.csv, NOAA_Processed_[DATE].csv 
 
 ## Observed Data Sources ----
 RAWS <- read.csv(here("ProcessedData/RAWS_Processed.csv"))
 
-# This really just uses NOAA data but has retained the Downsizer name due to the use of the Downsizer_Processor.R script;
-# Once the NOAA_Processor.R is written, then we will remove all references to Downsizer
-Downsizer <- read.csv(here("ProcessedData/Downsizer_Processed.csv")) #now uses NOAA data
+NOAA <- list.files("ProcessedData", pattern = "NOAA_API_Processed_", full.names = TRUE) %>%
+  sort() %>% tail(1) %>% read.csv() # Formerly Downsizer
+
 CIMIS <- read.csv(here("ProcessedData/CIMIS_Processed.csv"))
 
 ## PRMS DAT Stuff----
@@ -45,11 +45,11 @@ Dat_PRMS_Header = cbind(Dat_PRMS_Header, empty_cols)
 colnames(Dat_PRMS_Header) = colnames(Dat_Fields_PRMS)
 
 # Merge observed data sources into one dataframe
-Observed <- merge(Downsizer,merge(RAWS, CIMIS, by = "Date"))
+Observed <- full_join(NOAA, merge(RAWS, CIMIS, by = "Date"), by = "Date")
 
 # Merge Dat_Shell_PRMS with Observed data----
 # Whittle down Dat_Shell_PRMS to the timeframe of interest
-Dat_Shell_PRMS2 <-filter(Dat_Shell_PRMS, Date>= StartDate$date, Date <= End_Date)
+Dat_Shell_PRMS2 <- filter(Dat_Shell_PRMS, Date >= StartDate$date, Date <= End_Date)
 
 # Remove columns 1-6 of DAT_Shell_PRMS (individual datetime fields: year, month, etc) along with columns 39-60 (runoff columns)
 Dat_Shell_PRMS3 <- Dat_Shell_PRMS2[,-c(1:6, 39:60)]
@@ -67,11 +67,12 @@ Dat_Shell_PRMS6 <-cbind(Dat_Shell_PRMS5, cbind(Dat_Shell_PRMS2[,39:60]))
 Dat_Shell_PRMS6$Date = as.Date(Dat_Shell_PRMS6$Date)
 
 col_order <- colnames(Dat_Shell_PRMS) #grab the column names from Dat_Shell_PRMS except for Date
-Dat_Shell_PRMS6 = Dat_Shell_PRMS6[,col_order]
+# Dat_Shell_PRMS6 = Dat_Shell_PRMS6 %>% # Note: Don't do this if you're going to anti_join by "Date" later
+#   select(-Date)
 
 #Convert s and runoff columns in Dat_Shell_PRMS6 to integers
 Dat_Shell_PRMS6 = mutate_at(.tbl = Dat_Shell_PRMS6, 
-                       .vars = c(6,39:60), 
+                       .vars = c("s", paste0("Runoff", 1:22)), 
                        .funs = as.integer)
 
 #Convert s column in Dat_Shell_PRMS6 to integer
