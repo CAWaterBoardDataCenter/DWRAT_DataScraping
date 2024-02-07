@@ -49,7 +49,7 @@ print(CNRFC_Processed)
 # change input file name for Downsizer data; you need to run Downsizer and  
 # move the Downsizer file to the WebData folder prior to running Downsizer_Processor.R
 # Downsizer filename should match the filename given by Downsizer_Processor.R
-source(here("Scripts/Downsizer_Processor.R")) #Ignore the warning message: Expected 252 pieces...
+source(here("Scripts/NOAA_Processor.R")) #Ignore the warning message: Expected 252 pieces...
 source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_API_Scraper.R"))
 

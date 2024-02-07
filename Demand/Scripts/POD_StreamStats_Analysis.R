@@ -74,16 +74,22 @@ mainProcedure <- function (ws) {
   # Then, read in the coordinate records from the GIS Pre-processing spreadsheet
   if (grepl("^Navarro", ws$NAME)) {
     
-    podDF <- read_xlsx("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx", sheet = "R_Review")
-    podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
-                              REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, MULTI_OPTIONS_CHOICE, 
-                              NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
+    podDF <- read_xlsx("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx", 
+                       sheet = "R_Review")
+
     
   } else {
     
     stop(paste0("No POD review spreadsheet was specified for watershed ", ws$NAME))
     
   }
+  
+  
+  
+  # Narrow the selection of columns in 'podDF'
+  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
+                            REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, MULTI_OPTIONS_CHOICE, 
+                            NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
   
   
   

@@ -1,133 +1,355 @@
-#Install libraries----
-#Uncomment the lines below if you haven't installed these packages yet
-# install.packages("dplyr")
-# install.packages("tidyverse")
-# install.packages("tidyr")
-# install.packages("here")
-# install.packages("lubridate")
+# This script adjusts the data downloaded by 'NOAA_API_Scraper.R' to be compatible with the DAT format
+# 
 
-#Load libraries----
-library(dplyr)
-library(tidyverse)
-library(tidyr)
-library(here)
-library(lubridate)
-
-#Import Downsizer Data----
-# Get the file name (it will be the latest CSV file that starts with "Downsizer")
-downsizerCSVname <- list.files("WebData", full.names = T) %>% 
-  str_subset("^WebData/Downsizer.+\\.csv$") %>% tail(1)
+require(tidyverse)
+require(readxl)
 
 
-# Error Check
-stopifnot(length(downsizerCSVname) == 1)
+cat("Starting 'NOAA_API_Scraper.R'...\n")
 
-Downsizer_Original = read.csv(file = downsizerCSVname)
-Headers = read.csv(file = here("InputData/Downsizer_Stations.csv"))
 
-#Account for timeframe of interest----
-# StartDate = data.frame("April", "1", "2023", as.Date("2023-04-01"))
-# EndDate = data.frame("May", "23", "2023", as.Date("2023-05-23"))
-# colnames(StartDate) = c("month", "day", "year", "date")
-# colnames(EndDate) = c("month", "day", "year", "date")
-# ndays = seq(from = StartDate$date, to = EndDate$date, by = 'day') %>% length()
-# ndays
-# TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day')
-
-#Extract the weather data from Downsizer_Original----
-#Drop the first 42 rows of Downsizer
-Downsizer = tail(Downsizer_Original, nrow(Downsizer_Original)-42) %>%data.frame()
-colnames(Downsizer) = "Downsizer"
-
-#Format the Downsizer dataframe to match the PRMS_Update DAT file----
-##Calculate the number of columns after splitting the 1st column by the space delimiter----
-ncols <- max(stringr::str_count(Downsizer$Downsizer))
-ncols #creates 252 columns, but only the first 36 have content
-
-colmn <- paste0("Col", 1:ncols) #creates a set of 252 columns named Col1, Col2, ....
-colmn
-
-##Split Downsizer into columns by using spaces as delimiters----
-Downsizer_Processed <-
-  tidyr::separate(
-    data = Downsizer,
-    col = Downsizer,
-    sep = " ",
-    into = colmn,
-    remove = FALSE
-  )
-
-##Delete extra columns and apply column names----
-Downsizer_Processed[38:261] = NULL 
-Downsizer_Processed[5:7] = NULL
-Downsizer_Processed[1] = NULL
-
-#Fill in the column names of Downsizer_Processed
-colnames(Downsizer_Processed) = colnames(Headers)
-colnames(Downsizer_Processed)
-
-#Remove all NA columns from Downsizer_Processed 
-Downsizer_Processed <- select(Downsizer_Processed, -c(starts_with("NA")))
-colnames(Downsizer_Processed)
-
-##Rearrange Downsizer_Processed columns in proper order----
-col_order <- c('Year', 'Month', 'Day', 'DOWNSIZER_PRECIP1', 'DOWNSIZER_PRECIP2',
-               'DOWNSIZER_PRECIP3', 'DOWNSIZER_PRECIP5', 'DOWNSIZER_PRECIP8', 'DOWNSIZER_PRECIP10',
-               'DOWNSIZER_PRECIP11', 'DOWNSIZER_PRECIP13','DOWNSIZER_PRECIP14', 'DOWNSIZER_PRECIP15',
-               'DOWNSIZER_TMAX1', 'DOWNSIZER_TMAX2', 'DOWNSIZER_TMAX6', 'DOWNSIZER_TMIN1', 'DOWNSIZER_TMIN2', 
-               'DOWNSIZER_TMIN6')
-Downsizer_Processed <- Downsizer_Processed[,col_order]
-
-#BEFORE THIS STEP: Run PRISM_Processor.R, CNRFC_Scraper.R, & CNRFC_Processor.R----
-#Replace missing values with PRISM data
-#Works only if columns are same in number and order; column names don't need to match
-Prism_Processed = read.csv(here("ProcessedData/Prism_Processed.csv"))
-#Change date format of Downsizer data to match PRISM
-Downsizer_Processed <- Downsizer_Processed %>% 
-  unite(col = "Date", Year, Month, Day, sep = "-") %>% 
-  mutate(Date = as.Date(Date))
-
-#Create PRISM df to replace missing values
-PRISM_cols <- Prism_Processed[,c('Date', 'PP_PRECIP1', 'PP_PRECIP2',
-                                 'PP_PRECIP3', 'PP_PRECIP5', 'PP_PRECIP8', 'PP_PRECIP10',
-                                 'PP_PRECIP11', 'PP_PRECIP13','PP_PRECIP14', 'PP_PRECIP15',
-                                 'PT_TMAX1', 'PT_TMAX2', 'PT_TMAX6', 'PT_TMIN1', 'PT_TMIN2', 
-                                 'PT_TMIN6')]
-#Change -999.0 values to -999
-for (i in 2:17) {
-  Downsizer_Processed[, i] <- gsub("-999.0", "-999", Downsizer_Processed[, i])
+mainProcedure <- function (StartDate, EndDate) {
+  
+  # There are two mains steps to perform in this script:
+  # (1) Adjust the formatting of the NOAA CSV to mimic other DAT-related data tables
+  # (2) Fill in missing entries with PRISM data
+  
+  
+  
+  # Step 1
+  fileAdjustment()
+  
+  
+  
+  # Step 2
+  prismFill(StartDate, EndDate)
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
 }
-#Replace -999 values with PRISM data
-Downsizer_Processed[Downsizer_Processed == -999] <- PRISM_cols[Downsizer_Processed == -999]
-
-#Combining Downsizer data with CNRFC data
-CNRFC_Processed <- read.csv(here("ProcessedData/CNRFC_Processed.csv"))
-CNRFC_cols <- CNRFC_Processed[,c("Date","PRECIP1_UKAC1","PRECIP2_LAMC1","PRECIP3_UKAC1","PRECIP5_UKAC1",
-                                 "PRECIP8_CDLC1","PRECIP10_HEAC1","PRECIP11_RMKC1","PRECIP13_GUEC1",
-                                 "PRECIP14_LSEC1","PRECIP15_GUEC1","TMAX1_HEAC1","TMAX2_UKAC1",
-                                 "TMAX6_LAMC1","TMIN1_HEAC1","TMIN2_UKAC1","TMIN6_LAMC1")]
-#Rename CNRFC Columns to match Downsizer names to bind the datasets 
-col_order <- colnames(Downsizer_Processed)
-colnames(CNRFC_cols) = col_order
-
-#rbind() put scraped data first, CNRFC data second
-Downsizer_Processed <- rbind(Downsizer_Processed,CNRFC_cols)
-
-#Write CSV to ProcessedData Folder----
-write.csv(Downsizer_Processed, here("ProcessedData/Downsizer_Processed.csv"), row.names = FALSE)
 
 
-#Clean up global environment----
-#Update vars_to_keep with Downsizer_Processed
-vars_to_keep = c(vars_to_keep, "Downsizer_Processed")
-#List all variables in global environment
-all_vars <- ls()
-#Identify which variables to remove
-vars_to_remove = setdiff(all_vars, vars_to_keep)
-#Remove variables except those in vars_to_keep
-rm(list = vars_to_remove)
 
-#Change working directory back to Supply folder
-setwd(here())
+fileAdjustment <- function () {
+  
+  # Adjust the format of the output NOAA API CSV to match that of 
+  # "RAWS_Processed.csv" and other files used in the DAT process
+  
+  
+  
+  # First, get the filename for the NOAA CSV (downloaded by "NOAA_API_Scraper.R")
+  noaaPath <- list.files("WebData", pattern = "^NOAA_API.+\\.csv$", full.names = TRUE) %>%
+    sort() %>% tail(1)
+  
+  
+  
+  # First read in the NOAA CSV
+  noaaDF <- read_csv(noaaPath, show_col_types = FALSE)
+  
+  
+  
+  # In the RAWS format, stations would have distinct columns
+  # (with separate columns for temperature/precipitation)
+  # There is only one row per date in that format
+  
+  # Currently, 'noaaDF' contains distinct rows for different pairs of stations and dates
+  # Stations' precipitation and temperature data are stored in separate columns 
+  
+  
+  
+  # In the RAWS format, different stations' columns are identified with a DAT field name
+  # The corresponding names for each station are located in "RR_PRMS_StationList (2023-09-05).xlsx"
+  stationDF <- read_xlsx("InputData/RR_PRMS_StationList (2023-09-05).xlsx")
+  
+  
+  
+  # The first row of 'stationDF' actually contains the headers
+  stationDF <- stationDF[-1, ] %>% 
+    set_names(stationDF[1, ] %>% unlist() %>% as.vector()) %>%
+    filter(Source == "NOAA")
+  
+  
+  
+  # Define a data frame for the alternative format
+  # The number of columns is equal to the number of rows in 'stationDF' (plus one for the "Date" column)
+  # The number of rows is equal to the number of unique dates in 'noaaDF'
+  newDF <- matrix(NA_real_, ncol = nrow(stationDF) + 1, nrow = length(unique(noaaDF$DATE))) %>%
+    as.data.frame() %>%
+    set_names(c("Date", stationDF$`DAT_File Field Name`))
+  
+  
+  
+  # Assign the dates in 'noaaDF' to 'newDF'
+  newDF$Date <- noaaDF$DATE %>%
+    unique() %>% sort()
+  
+  
+  
+  # Iterate through 'noaaDF' and input its values into 'newDF'
+  for (i in 1:nrow(noaaDF)) {
+    
+    # Each row contains precipitation, minimum temperature, and maximum temperature data
+    # Assign each of the values in this row of 'noaaDF' to the corresponding column
+    
+    
+    
+    # Create a temporary variable containing rows in 'stationDF' whose Station ID
+    # match the ID contained in this row of 'noaaDF'
+    stationSubset <- stationDF %>%
+      filter(`Full Station ID` == noaaDF$STATION[i])
+    
+    
+    # Error Check
+    stopifnot(nrow(stationSubset) > 0)
+    
+    
+    
+    # Then, get the row index
+    # The row index will be the value in 'newDF' that corresponds to this row's date
+    rowIndex <- which(newDF$Date == noaaDF$DATE[i])
+    
+    
+    
+    # Check if 'stationSubset' contains a precipitation column
+    # (That means that precipitation data will be extracted from 'noaaDF')
+    if (sum(grepl("PRECIP", stationSubset$Rank)) > 0) {
+      
+      # Find the location of this station's precipitation column in 'newDF'
+      colIndex <- findIndex("PRECIP", noaaDF$STATION[i], stationDF, newDF)
+      
+      
+      
+      # Update 'newDF' with this iteration's precipitation value
+      newDF[rowIndex, colIndex] <- noaaDF$PRCP[i]
+      
+    }
+    
+    
+    
+    # Following similar steps, check if 'stationSubset' contains a max temp column
+    # (That means that tmax data will be extracted from 'noaaDF')
+    if (sum(grepl("TMAX", stationSubset$Rank)) > 0) {
+      
+      # Find the location of this station's max temp column in 'newDF'
+      colIndex <- findIndex("TMAX", noaaDF$STATION[i], stationDF, newDF)
+      
+      
+      
+      # Update 'newDF' with this iteration's maximum temperature value
+      newDF[rowIndex, colIndex] <- noaaDF$TMAX[i]
+      
+    }
+    
+    
+    
+    # Finally, check if 'stationSubset' contains a min temp column
+    # (That means that tmin data will be extracted from 'noaaDF')
+    if (sum(grepl("TMIN", stationSubset$Rank)) > 0) {
+      
+      # Find the location of this station's min temp column in 'newDF'
+      colIndex <- findIndex("TMIN", noaaDF$STATION[i], stationDF, newDF)
+      
+      
+      
+      # Update 'newDF' with this iteration's minimum temperature value
+      newDF[rowIndex, colIndex] <- noaaDF$TMIN[i]
+      
+    }
+    
+  } # End of for loop through 'noaaDF'
+  
+  
+  
+  # As a penultimate step, sort the columns in 'newDF' 
+  # (but with "Date" as the first column)
+  newDF <- newDF %>%
+    select(sort(colnames(newDF))) %>%
+    relocate(Date)
+  
+  
+  
+  # Finally, replace "NA" entries in 'newDF' with -999
+  newDF[, 2:ncol(newDF)] <- newDF[, 2:ncol(newDF)] %>%
+    map_dfc(~ replace_na(., -999))
+  
+  
+  
+  # Save this updated CSV to the "ProcessedData" folder
+  # (Use 'noaaPath' as a base for the output file string)
+  noaaPath %>%
+    str_extract("NOAA_API.+") %>%
+    str_replace("API_", "API_Processed_") %>%
+    paste0("ProcessedData/", .) %>%
+    write_csv(x = newDF, file = .)
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
 
-print("Downsizer_RR_Processor.R has finished running")
+
+
+findIndex <- function (colType, stationID, stationDF, newDF) {
+  
+  # This function returns a column index from 'newDF'
+  # Using 'colType' and 'stationID' a partial column name is extracted from 'stationDF'
+  # This partial name is turned into a full NOAA column name
+  # After that, the column names of 'stationDF' are checked for that full name string
+  
+  
+  # 'colType' should be either "PRECIP", "TMAX", or "TMIN"
+  
+  
+  # Create the target column name using the extracted string from 'stationDF'
+  # ('stationID' and 'colType' help located this string)
+  colStr <- stationDF %>%
+    filter(`Full Station ID` == stationID) %>%
+    filter(grepl(colType, Rank)) %>%
+    select(Rank) %>% unlist() %>% as.vector() %>%
+    paste0("NOAA_", .)
+  
+  
+  
+  # Find the index of this column in 'newDF'
+  colIndex <- which(names(newDF) == colStr)
+  
+  
+  
+  # Check that exactly one match was found
+  stopifnot(length(colIndex) == 1)
+  
+  
+  
+  # Return this index
+  return(colIndex)
+  
+}
+
+
+
+prismFill <- function (StartDate, EndDate) {
+  
+  # If the downloaded NOAA dataset does not have date up to 'EndDate', later scripts will fail
+  # Substitute missing entries with data from PRISM
+  
+  
+  
+  # Using 'StartDate' and 'EndDate', create a vector of dates
+  # Each date in this vector is expected to appear in the NOAA CSV file
+  dateVec <- seq(from = StartDate$date, to = EndDate$date, by = "day")
+  
+  
+  
+  # Read in the processed NOAA CSV next
+  noaaDF <- list.files("ProcessedData", pattern = "NOAA_API_Processed.+\\.csv", full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    read_csv(show_col_types = FALSE)
+  
+  
+  
+  # Create a vector of missing dates in 'noaaDF'
+  missingDates <- dateVec[!(dateVec %in% noaaDF$Date)]
+  
+  
+  
+  # If there are missing dates, add empty rows to 'noaaDF' for each date
+  if (length(missingDates) > 0) {
+    
+    # Convert 'missingDates' into a data frame with column name "Date"
+    # Bind it to 'noaaDF' (and then sort the data frame by date)
+    noaaDF <- bind_rows(noaaDF,
+                        data.frame(Date = missingDates)) %>%
+      arrange(Date)
+    
+  }
+  
+  
+  
+  # The next step is to fill in missing values with PRISM data
+  
+  
+  
+  # Read in "Prism_Processed.csv"
+  prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
+  
+  
+  
+  # Use a nested loop to check every entry in 'noaaDF'
+  for (i in 1:nrow(noaaDF)) {
+    
+    for (j in 2:ncol(noaaDF)) {
+      
+      
+      # Skip entries where 'noaaDF' is not NA and it's not -999
+      if (!is.na(noaaDF[i, j]) && noaaDF[i, j] != -999) {
+        next
+      }
+      
+      
+      
+      # Find the corresponding column and row in 'prismDF'
+      # Then, assign that value to 'noaaDF'
+      
+      
+      
+      # Extract from the column name of 'noaaDF' the variable identifier
+      # (e.g., "TMIN1" or "PRECIP15")
+      # Then, add a "$" to the end of that string
+      # (In regexes, that means that a matching string ends there)
+      varStr <- names(noaaDF)[j] %>% str_extract("_.+$") %>%
+        paste0(., "$")
+      
+      
+      
+      # Find the matching column index in 'prismDF' using 'varStr'
+      colIndex <- grep(varStr, names(prismDF))
+      
+      
+      
+      # The matching row index in 'prismDF' will be the one with 
+      # the same date as row 'i' of 'noaaDF'
+      rowIndex <- which(prismDF$Date == noaaDF$Date[i])
+      
+      
+      
+      # Check for issues before proceeding
+      stopifnot(length(colIndex) == 1)
+      stopifnot(length(rowIndex) == 1)
+      
+      
+      
+      # Update entry i, j of 'noaaDF' using 'prismDF'
+      noaaDF[i, j] <- prismDF[rowIndex, colIndex]
+      
+    } # End of 'j' loop
+    
+  } # End of 'i' loop
+  
+  
+  
+  # Save the updated 'noaaDF'
+  list.files("ProcessedData", pattern = "NOAA_API_Processed.+\\.csv", full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    write_csv(noaaDF, file = .)
+    
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+mainProcedure(StartDate, EndDate)
+
+
+cat("Done!\n")
+
+
+remove(mainProcedure, fileAdjustment, findIndex, prismFill)
