@@ -1,33 +1,25 @@
 library(tidyverse)
 library(here)
 
-# Import eWRIMS PODs as of 12/18/2023----
-#Change the input CSV as needed depending on the watershed whose eWRIMS docs you need
-eWRIMS_List <- read.csv(here("InputData/Butte_List.csv"))
-eWRIMS_Names = colnames(eWRIMS_List) %>% sort()
-eWRIMS_Names
-eWRIMS_List = eWRIMS_List %>% select(APPLICATION_NUMBER, WATER_RIGHT_TYPE) %>% unique()
+# Import CSVs
+eWRIMS_List <- read.csv(here("InputData/RR_POD_Review_List.csv"))
+Master_List <- read.csv(here("OutputData/Flat_File_eWRIMS_2023-06-16.csv"))
 
-#Update WR_Types to Match URL Requirements
-  #Replace spaces
-eWRIMS_List$WATER_RIGHT_TYPE = gsub(x = eWRIMS_List$WATER_RIGHT_TYPE, pattern = " ", replacement = "%20")
+# Add Water_Right_Type column to eWRIMS_List
+eWRIMS_List <- left_join(x = eWRIMS_List, y = Master_List, by = c("APPL_ID", "POD_ID"))
+eWRIMS_List <- select(eWRIMS_List, APPL_ID, WATER_RIGHT_TYPE)
 
-#Set Download Timeout to 300 seconds
-options(timeout = 300)
+# Grab Documents from eWRIMS in bulk
+AppNum <- eWRIMS_List$APPL_ID
+WR_Type <- eWRIMS_List$WATER_RIGHT_TYPE
 
-#Prevent the re-downloading of PDFs that have already been downloaded----
-
-#Generate list of files, remove .pdf extension, of already downloaded PDFs
-File_List = list.files(here("OutputData/eWRIMS_Docs")) %>%str_remove(pattern = "\\.pdf$")
-eWRIMS_List = eWRIMS_List%>%filter(!(APPLICATION_NUMBER %in% File_List)) #Remove Application_Numbers of already downloaded PDFs
-
-#for (i in 1:nrow(eWRIMS_List)) {
-  for (i in 1:nrow(eWRIMS_List)) {
+for (i in 1:nrow(eWRIMS_List)) {
+  #for (i in 1:10) {
   tryCatch({
     # Download the document (permit, license, statement, registration, etc.)
     download.file(url = paste0("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/DocumentRetriever.jsp?appNum=",
-                               eWRIMS_List$APPLICATION_NUMBER[i], "&wrType=",eWRIMS_List$WATER_RIGHT_TYPE[i], "&docType=DOCS"),
-                  destfile = paste0("OutputData/eWRIMS_Docs/", eWRIMS_List$APPLICATION_NUMBER[i], ".pdf"),
+                               AppNum[i], "&wrType=", WR_Type[i], "&docType=DOCS"),
+                  destfile = paste0("OutputData/", AppNum[i], ".pdf"),
                   mode = "wb") # Resolves download issues on Windows
   }, error = function(e) {
     # Handle the error or simply ignore it

@@ -1,15 +1,15 @@
 #Last Updated By: Payman Alemi
-#Last Updated On: 3/28/2023
+#Last Updated On: 2/6/2024
 
 #Load libraries----
-library(here)
-library(dplyr) #required for %>% operator
-library(tidyr)
+require(tidyverse) #required for %>% operator
 
 #RR_PRMS_Processor----
 #Process the output CSV of the Russian River PRMS model
 ##Import RR PRMS CSV----
-RR <- read.csv(here("InputData/PRMS_MK_2023-10-01_sub_inq.csv"))
+PRMS_Output_Folder = "C:\\RR_PRMS\\PRMS\\output"
+PRMS_Output_File_Path = list.files(PRMS_Output_Folder, pattern = "inq.csv$", full.names = TRUE) %>% sort() %>% tail(1)
+RR <- read.csv(PRMS_Output_File_Path)
 
 #Add RR Headers
 RR_Headers <- c("Date", seq(1:22)) %>% as.character()
@@ -18,10 +18,7 @@ colnames(RR) <- RR_Headers
 ##Whittle to Timeframe of Interest----
 #Convert Date column to date format
 RR$Date <- as.Date(RR$Date)
-RR_Subset <- subset(RR, Date>= as.Date("2023-07-01") & Date <= as.Date("2023-10-31"))
-
-#Write RR_Subset to ProcessedData Folder
-# write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
+RR_Subset <- subset(RR, Date>= StartDate$date, Date <= End_Date)
 
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
@@ -33,7 +30,7 @@ RR_Subset_Summed <- RR_Subset %>%
   pivot_longer(cols = 2:23, names_to = "basin", values_to = "value") %>% 
   mutate(Date = as.Date(Date, format = "%Y-%m-%d") %>% format("%m")) %>% 
   group_by(basin, Date) %>%
-  summarise(total = sum(value)) %>% 
+  summarise(total = sum(value), .groups = "drop") %>% 
   pivot_wider(names_from = "basin", values_from = "total")
 
 #Reset original column order
