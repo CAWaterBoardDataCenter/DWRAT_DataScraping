@@ -11,7 +11,7 @@ require(rvest)
 
 #### Functions ####
 
-mainProcedure <- function (StartDate, EndDate) {
+mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   # Get a list of RAWS stations
   stationDF <- read_csv("InputData/Raws_Stations.csv", show_col_types = FALSE)
@@ -76,28 +76,18 @@ mainProcedure <- function (StartDate, EndDate) {
   
   
   # Next, combine the RAWS data in 'combinedTable' with CNRFC data
-  # For these next operations, make sure that the "Date" column in 'combinedTable' is recognized as a Date
-  combinedTable <- combinedTable %>%
-    mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+  # (If 'includeForecast' is TRUE)
+  if (includeForecast) {
+    
+    combinedTable <- combinedTable %>%
+      addCNRFC()
+    
+  }
   
   
   
-  # Read in the CNRFC data and take a subset of its columns
-  # This data will be appended to 'combinedTable', so the column names need to match
-  CNRFC_Processed <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE) %>%
-    select(Date,
-           PRECIP4_HOPC1, PRECIP7_HOPC1, PRECIP9_KCVC1,
-           TMAX5_BSCC1, TMAX7_SKPC1, TMAX8_SSAC1, 
-           TMIN5_BSCC1, TMIN7_SKPC1, TMIN8_SSAC1) %>%
-    rename(RAWS_PRECIP4 = PRECIP4_HOPC1, RAWS_PRECIP7 = PRECIP7_HOPC1, RAWS_PRECIP9 = PRECIP9_KCVC1,
-           RAWS_TMAX5 = TMAX5_BSCC1, RAWS_TMAX7 = TMAX7_SKPC1, RAWS_TMAX8 = TMAX8_SSAC1,
-           RAWS_TMIN5 = TMIN5_BSCC1, RAWS_TMIN7 = TMIN7_SKPC1, RAWS_TMIN8 = TMIN8_SSAC1)
-  
-  
-  
-  # Bind the two tables together
-  # Then, write the result to a new CSV file
-  rbind(combinedTable, CNRFC_Processed) %>%
+  # Write 'combinedTable' to a CSV file
+  combinedTable %>%
     write_csv("ProcessedData/RAWS_Processed.csv")
   
   
@@ -303,13 +293,45 @@ prismSub <- function (rawsTable) {
 
 
 
+addCNRFC <- function (combinedTable) {
+  
+  
+  # For these next operations, make sure that the "Date" column in 'combinedTable' is recognized as a Date
+  combinedTable <- combinedTable %>%
+    mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+  
+  
+  
+  # Read in the CNRFC data and take a subset of its columns
+  # This data will be appended to 'combinedTable', so the column names need to match
+  CNRFC_Processed <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE) %>%
+    select(Date,
+           PRECIP4_HOPC1, PRECIP7_HOPC1, PRECIP9_KCVC1,
+           TMAX5_BSCC1, TMAX7_SKPC1, TMAX8_SSAC1, 
+           TMIN5_BSCC1, TMIN7_SKPC1, TMIN8_SSAC1) %>%
+    rename(RAWS_PRECIP4 = PRECIP4_HOPC1, RAWS_PRECIP7 = PRECIP7_HOPC1, RAWS_PRECIP9 = PRECIP9_KCVC1,
+           RAWS_TMAX5 = TMAX5_BSCC1, RAWS_TMAX7 = TMAX7_SKPC1, RAWS_TMAX8 = TMAX8_SSAC1,
+           RAWS_TMIN5 = TMIN5_BSCC1, RAWS_TMIN7 = TMIN7_SKPC1, RAWS_TMIN8 = TMIN8_SSAC1)
+  
+  
+  
+  # Bind the two tables together
+  combinedTable <- rbind(combinedTable, CNRFC_Processed)
+  
+  
+  
+  # Then return the result
+  return(combinedTable)
+  
+}
+
 
 #### Script Execution ####
 
 cat("Starting 'RAWS_API_Scraper.R'...\n")
 
 
-mainProcedure(StartDate, EndDate)
+mainProcedure(StartDate, EndDate, includeForecast)
 
 
-remove(mainProcedure, requestTable, columnRemoval, columnRename, prismSub)
+remove(mainProcedure, requestTable, columnRemoval, columnRename, prismSub, addCNRFC)

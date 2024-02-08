@@ -12,6 +12,12 @@ require(httr)
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 # BEFORE running, download Downsizer data
 
+
+# Include forecasted data from CNRFC in the datasets? ----
+# (This should be either "TRUE" or "FALSE")
+includeForecast <- TRUE
+
+
 # set start and end dates -------------------------------------------------
 ## Set start date----
 StartDate <- as.Date("2024-01-01") # 1-2 months before previous end date
