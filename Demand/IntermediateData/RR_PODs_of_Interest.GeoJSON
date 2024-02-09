@@ -1,0 +1,5 @@
+{
+"type": "FeatureCollection",
+"name": "RR_PODs_of_Interest",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3488" } },
+"features": [
