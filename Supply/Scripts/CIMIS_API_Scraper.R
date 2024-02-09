@@ -10,7 +10,7 @@ require(httr)
 
 #### Functions ####
 
-mainProcedure <- function (StartDate, EndDate) {
+mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   
   # Read in the list of stations
@@ -217,24 +217,26 @@ mainProcedure <- function (StartDate, EndDate) {
   
   
   # The next step is to append CNRFC data to 'combinedDF'
-  
-  
-  
-  # Read in "CNRFC_Processed.csv", take a subset of the columns,
-  # and rename them to match the column names in 'combinedDF'
-  cnrfcDF <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE) %>%
-    select(Date, 
-           PRECIP6_HOPC1, PRECIP12_MWEC1,
-           TMAX3_CDLC1, TMIN3_CDLC1, TMAX4_LSEC1, TMIN4_LSEC1) %>%
-    rename(CIMIS_PRECIP6 = PRECIP6_HOPC1, CIMIS_PRECIP12 = PRECIP12_MWEC1,
-           CIMIS_TMAX3 = TMAX3_CDLC1, CIMIS_TMIN3 = TMIN3_CDLC1, 
-           CIMIS_TMAX4 = TMAX4_LSEC1, CIMIS_TMIN4 = TMIN4_LSEC1)
-  
-  
-  
-  # Bind 'cnrfcDF' to 'combinedDF'
-  combinedDF <- combinedDF %>%
-    rbind(cnrfcDF)
+  # (If 'includeForecast' is TRUE)
+  if (includeForecast) {
+    
+    # Read in "CNRFC_Processed.csv", take a subset of the columns,
+    # and rename them to match the column names in 'combinedDF'
+    cnrfcDF <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE) %>%
+      select(Date, 
+             PRECIP6_HOPC1, PRECIP12_MWEC1,
+             TMAX3_CDLC1, TMIN3_CDLC1, TMAX4_LSEC1, TMIN4_LSEC1) %>%
+      rename(CIMIS_PRECIP6 = PRECIP6_HOPC1, CIMIS_PRECIP12 = PRECIP12_MWEC1,
+             CIMIS_TMAX3 = TMAX3_CDLC1, CIMIS_TMIN3 = TMIN3_CDLC1, 
+             CIMIS_TMAX4 = TMAX4_LSEC1, CIMIS_TMIN4 = TMIN4_LSEC1)
+    
+    
+    
+    # Bind 'cnrfcDF' to 'combinedDF'
+    combinedDF <- combinedDF %>%
+      rbind(cnrfcDF)
+    
+  }
   
   
   
@@ -260,7 +262,7 @@ mainProcedure <- function (StartDate, EndDate) {
 cat("Starting 'CIMIS_Static_Scraper.R'...")
 
 
-mainProcedure(StartDate, EndDate)
+mainProcedure(StartDate, EndDate, includeForecast)
 
 
 remove(mainProcedure)

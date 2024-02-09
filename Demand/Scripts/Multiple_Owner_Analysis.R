@@ -43,12 +43,19 @@ appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv")
   #APPLICATION_PRIMARY_OWNER is the primary owner in the reporting year
   #PARTY_ID is the Party ID tied to the primary owner in the reporting year
 
-file_path <- "RawData/water_use_report_extended.csv"
-selected_columns <- c("APPL_ID", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
+#file_path <- "RawData/water_use_report_extended.csv"
+selected_columns <- c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
                       "APPLICATION_PRIMARY_OWNER", "PARTY_ID")
 
 #Import only the selected_columns of the water_use_report_extended.csv
-RMS_parties <- fread(file = file_path, select = selected_columns)
+# RMS_parties <- fread(file = file_path, select = selected_columns)
+conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+RMS_parties <- dbGetQuery(conn, 
+                          paste0('SELECT DISTINCT ',
+                                 selected_columns %>% paste0('"', ., '"', collapse = ", "),
+                                 ' FROM "Table"',
+                                 ' WHERE "YEAR" > 2016')) 
+dbDisconnect(conn)
 
 #Prepare the RMS_parties dataset for manual review----
 
@@ -61,12 +68,12 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
 
   #Filter RMS_parties to just the Russian River
   RMS_parties <- RMS_parties %>%
-    filter(APPL_ID %in% appYears$APPLICATION_NUMBER)
+    filter(APPLICATION_NUMBER %in% appYears$APPLICATION_NUMBER)
   
 ##Look for duplicate party IDs ----
   #Add a Year_Right column to RMS_parties
     RMS_parties <- RMS_parties %>%
-    mutate(YEAR_ID = paste(YEAR, APPL_ID, sep = "_"))
+    mutate(YEAR_ID = paste(YEAR, APPLICATION_NUMBER, sep = "_"))
 
 #Group RMS_parties by YEAR_ID
   #the purpose is to catch any instances where more than 1 party ID was
@@ -91,16 +98,16 @@ RMS_parties2 <- RMS_parties %>%
 
 #Calculate annual direct diversion and annual diversion to storage amounts per right per year
 RMS_parties3 = RMS_parties2 %>% 
-  group_by(APPL_ID, YEAR, DIVERSION_TYPE) %>%
+  group_by(APPLICATION_NUMBER, YEAR, DIVERSION_TYPE) %>%
   summarise(AnnualTotal = sum(AMOUNT), .groups = "keep")
 
 #Inner Join RMS_parties3 to RMS_parties2 to bring back PARTY_ID field
   #We need to inner join by multiple columns: #APPL_ID, YEAR, DIVERSION TYPE
 RMS_parties4 = inner_join(x = RMS_parties2,
                           y = RMS_parties3, #Includes Annual Totals
-                          by = c("APPL_ID", "YEAR", "DIVERSION_TYPE")) %>%
+                          by = c("APPLICATION_NUMBER", "YEAR", "DIVERSION_TYPE")) %>%
   #Add PK_WR column to allow us to remove monthly data
-  mutate(PK_WR = paste(YEAR, APPL_ID, DIVERSION_TYPE, AnnualTotal, sep = "_")) %>%
+  mutate(PK_WR = paste(YEAR, APPLICATION_NUMBER, DIVERSION_TYPE, AnnualTotal, sep = "_")) %>%
   select(-c("MONTH", "AMOUNT")) %>% #Remove month and Amount columns
   unique() %>%
   

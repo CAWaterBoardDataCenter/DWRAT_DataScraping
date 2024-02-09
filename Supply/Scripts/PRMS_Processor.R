@@ -18,7 +18,7 @@ colnames(RR) <- RR_Headers
 ##Whittle to Timeframe of Interest----
 #Convert Date column to date format
 RR$Date <- as.Date(RR$Date)
-RR_Subset <- subset(RR, Date>= StartDate$date, Date <= End_Date)
+RR_Subset <- subset(RR, Date>= StartDate$date & Date <= End_Date)
 
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
@@ -40,10 +40,10 @@ RR_Subset_Summed <- RR_Subset_Summed[, RR_Order]
 # create a vector of month values
 Date <- RR_Subset_Summed$Date
 # convert the month values to date objects
-RR_Subset_Summed$Date <- as.Date(paste0(Date, "/01/2023"), format = "%m/%d/%Y")
+RR_Subset_Summed$Date <- as.Date(paste0(Date, "/01/2024"), format = "%m/%d/%Y")
 
 #Write a csv for SRP_Post_Processing.R to combine the 2 model outputs for DWRAT
-write.csv(RR_Subset_Summed, here("ProcessedData/PRMS_2023-10.csv"), row.names = FALSE)
+write.csv(RR_Subset_Summed, here("ProcessedData/PRMS_2024-01.csv"), row.names = FALSE)
 
 #SRP Processor----
 #This code modifies the outputs of the Santa Rosa Plains model into the format required by the flows spreadsheet
