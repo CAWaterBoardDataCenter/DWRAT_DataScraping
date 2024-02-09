@@ -50,7 +50,8 @@ source(here("Scripts/PRISM_Processor.R"))
 print(Prism_Processed)
 source(here("Scripts/NOAA_API_Scraper.R"))
 source(here("Scripts/CNRFC_API_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
-source(here("Scripts/CNRFC_RR_Processor.R"))
+source(here("Scripts/CNRFC_PRMS_Processor.R")) #Formats CRNFC station data that are used by the PRMS model so 
+  # they can be appended to the raw observed datasets from RAWS, CIMIS, and NOAA
 print(CNRFC_Processed)
 # change input file name for Downsizer data; you need to run Downsizer and  
 # move the Downsizer file to the WebData folder prior to running Downsizer_Processor.R

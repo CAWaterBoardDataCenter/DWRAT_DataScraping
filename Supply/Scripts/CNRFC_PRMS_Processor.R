@@ -24,7 +24,7 @@ for (i in filenames){
   assign(partial_filename, CNRFC_Precip)
 }
 
-#Reformat CNRFC Temp data to match DAT File format----
+#Reformat CNRFC Temp data to match PRMS DAT File format----
 #Combine all the CNRFC Temp dataframes for RR_PRMS
 CNRFC_Temp <- rbind(BSCC1, CDLC1, HEAC1, LAMC1, LSEC1, SKPC1, SSAC1, UKAC1)
 rm(BSCC1, CDLC1, HEAC1, LAMC1, LSEC1, SKPC1, SSAC1, UKAC1)
