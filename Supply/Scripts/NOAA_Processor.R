@@ -8,12 +8,12 @@ require(readxl)
 cat("Starting 'NOAA_API_Scraper.R'...\n")
 
 
-mainProcedure <- function (StartDate, EndDate) {
+mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   # There are three mains steps to perform in this script:
   # (1) Adjust the formatting of the NOAA CSV to mimic other DAT-related data tables
   # (2) Fill in missing entries with PRISM data
-  # (3) Add forecasted data from CNRFC
+  # (3) Add forecasted data from CNRFC (depending on the value of 'includeForecast')
   
   
   
@@ -28,7 +28,9 @@ mainProcedure <- function (StartDate, EndDate) {
   
   
   # Step 3
-  cnrfcAdd()
+  if (includeForecast == TRUE) {
+    cnrfcAdd()
+  }
   
   
   
@@ -449,7 +451,7 @@ cnrfcAdd <- function () {
 
 
 
-mainProcedure(StartDate, EndDate)
+mainProcedure(StartDate, EndDate, includeForecast)
 
 
 cat("Done!\n")
