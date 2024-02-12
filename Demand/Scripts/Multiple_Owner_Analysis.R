@@ -137,6 +137,9 @@ if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports")
   Duplicate_Reports <- Duplicate_Reports %>%
     filter(!(PK %in% reviewDF$Primary_Key))
   
+  
+  remove(reviewDF)
+  
 }
 
 
@@ -149,4 +152,4 @@ print("The Multiple_Owner_Analysis.R script is done running!")
 
 remove(appYears, conn, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,
        RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
-       RMS_parties4, selected_columns, reviewDF)
+       RMS_parties4, selected_columns)
