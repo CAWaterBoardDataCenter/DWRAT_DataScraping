@@ -126,7 +126,19 @@ RMS_parties4 = inner_join(x = RMS_parties2,
 Duplicate_Reports = get_dupes(RMS_parties4, PK)
 
 
-# Before exporting the table, remove entries that were already manually reviewed
+# Before exporting the table, remove entries that were already manually reviewed by SDA in Fall 2022; duplicate
+# primary keys will be removed and this saves SDA from reviewing the same records over and over again;
+# primary key is a concatenation of
+      # Reporting Year ("YEAR"), 
+      # PARTY_ID (unique ID assigned to owners in eWRIMS)
+      # DIVERSION_TYPE (Direct Diversion or Diversion to Storage),
+      # AnnualTotal (sum of direct diversion and diversion to storage in a given reporting year for a given right)
+
+# Newer reporting data will not be removed because even if all the other fields are identical, the YEAR will 
+#be the new reporting year, 2023, 2024, and so on.
+
+#A similar protection
+
 if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"))) > 0) {
   
   reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"), full.names = TRUE) %>%
