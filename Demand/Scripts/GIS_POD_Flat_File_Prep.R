@@ -3,46 +3,82 @@
 #install.packages("tidyverse")
 
 #Load Packages- This step must be done each time the project is opened. ----
-library(tidyverse)
+require(tidyverse)
+require(odbc)
+require(DBI)
+
 
 
 # Download in advance all flat files that will be used in the procedures of this script and the other demand-related scripts
-# They will be collected from *Internal URLs* that are updated daily; a Cal EPA network connection or VPN connection is required for this step
+# They will be downloaded directly from the ReportManager, 1542 SQL Server, Database ReportDB, which hosts all eWRIMS flat files. 
+# This database is accessible to all Division staff. 
+ReportManager = dbConnect(odbc(),
+                          Driver = "SQL Server",
+                          Server = "reportmanager,1542",
+                          Trusted_Connection = "Yes",
+                          Database = "ReportDB"
+)
+
+# Save the POD flat file, ~73 MB as of 2/13/2024
+Flat_File_PODs <- dbGetQuery(ReportManager,
+                                             "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod") %>% data.frame()
+
+write_csv(ewrims_flat_file_pod, "RawData/ewrims_flat_file_pod.csv")
 
 
-# Save the POD flat file
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_pod.csv", 
-              "RawData/ewrims_flat_file_pod.csv", mode = "wb", quiet = TRUE)
+# Get the master flat file as well, ~69 MB as of 2/13/2024
+ewrims_flat_file <- dbGetQuery(conn = ReportManager,
+                               statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file") %>% 
+  data.frame() %>%
+  write_csv("RawData/ewrims_flat_file.csv")
 
-
-# Get the master flat file as well
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file.csv",
-              "RawData/ewrims_flat_file.csv", mode = "wb", quiet = TRUE)
-
-
-# Download the Water Rights Annual Water Use Report file next
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report.csv", show_col_types = FALSE) %>%
+# Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
+water_use_report <- dbGetQuery(conn = ReportManager,
+                               statement = "Select * from ReportDB.FLAT_FILE.ewrims_water_use_report") %>% 
+  data.frame() %>%
   write_csv("RawData/water_use_report.csv")
 
-# Save the Water Rights Annual Water Use Extended Report file too
+# Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
 # (This works, but it takes a long time, and the progress bar might not update)
-options(timeout = 10^9) # With this setting change, download.file() will now stop if the download takes more than a billion seconds (~31.7 years), about 15.7 GB
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "RawData/water_use_report_extended.csv", mode = "wb", quiet = FALSE)
 
+water_use_report_extended <- dbGetQuery(conn = ReportManager,
+                                                  statement = "Select
+                                                  APPLICATION_NUMBER,YEAR,MONTH,
+                                                  AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
+                                                  FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
+                                                  EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
+                                                  WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
+                                                  STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
+                                                  STORAGE_SEASON_END,
+                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER
+                                                  
+                                                  FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
+                                                  ") %>%
+  data.frame() %>%
+  write_csv(water_use_report_extended,"RawData/water_use_reported_extended.csv")
 
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
+                                          statement = "Select * from 
+                                          ReportDB.FLAT_FILE.ewrims_flat_file_use_season") %>% 
+  data.frame() %>%
   write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_party.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+
+ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
+                                     statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+  data.frame() %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
 
 # Read the POD flat file
 Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
+
+# Disconnect from ReportDB Database
+dbDisconnect(conn = ReportManager)
 
 #Apply the proper filters----
 
