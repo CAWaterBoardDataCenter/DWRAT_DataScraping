@@ -3,9 +3,9 @@
 # install.packages("tidyverse")
 # install.packages("readxl")
 #Load Packages- This step must be done each time the project is opened. ----
-library(tidyverse)
-library(readxl)
-library(RSQLite)
+require(tidyverse)
+require(readxl)
+require(data.table)
 
 
 cat("Starting 'Priority_Date_Postprocessing.R'...\n")
@@ -18,14 +18,36 @@ cat("Starting 'Priority_Date_Postprocessing.R'...\n")
 # Read in the (very large) water use report extended flat file
 # Import only certain columns
 # Also, restrict the years included in the dataset
-conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
-water_use_report <- dbGetQuery(conn, 
-                               paste0('SELECT DISTINCT ',
-                                      '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
-                                      'FROM "Table" ',
-                                      'WHERE "YEAR" BETWEEN ', 2017, ' AND ', 2020)) 
-                                      # 👆 ADJUST THESE NUMBERS TO CHANGE THE YEARS INCLUDED IN THE DEMAND DATASET
-dbDisconnect(conn)
+water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
+                         select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% 
+  unique()
+
+
+
+# Perform an inner join (it is a one-to-many relationship)
+water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
+                                       relationship = "one-to-many")
+
+
+
+# Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
+# (It was formerly 2014 because that was when the data structure changed in the system)
+water_use_report_Date <- water_use_report_Combined %>%
+filter(YEAR >= 2017) %>%
+filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
+#2021 and 2022 were heavily curtailed years
+
+
+
+# SQLite Approach
+# conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+# water_use_report <- dbGetQuery(conn, 
+#                                paste0('SELECT DISTINCT ',
+#                                       '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
+#                                       'FROM "Table" ',
+#                                       'WHERE "YEAR" BETWEEN ', 2017, ' AND ', 2022)) 
+#                                       # ADJUST THESE NUMBERS TO CHANGE THE YEARS INCLUDED IN THE DEMAND DATASET
+# dbDisconnect(conn)
 
 
 # All data from before 2017 is removed (Decision on 8/2/2023 because of "Combined" use type)
@@ -34,26 +56,10 @@ dbDisconnect(conn)
 # The dataset can be restricted to 2020 (Added to generate a 2017-2020 dataset on 10/17/2023)
 # 2021 and 2022 were heavily curtailed years
 
-
-
-# Original Non-SQL code
-# water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
-#                           select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% unique()
-# Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
-# (It was formerly 2014 because that was when the data structure changed in the system)
 # Perform an inner join (it is a one-to-many relationship)
-# water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
-#                                         relationship = "one-to-many")
-#water_use_report_Date <- water_use_report_Combined %>%
-#  filter(YEAR >= 2017) %>%
-#  filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
-#2021 and 2022 were heavily curtailed years
-
-
-
-# Perform an inner join (it is a one-to-many relationship)
-water_use_report_Date <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
-                                    relationship = "one-to-many")
+# (This is only used alongside the SQLite approach)
+# water_use_report_Date <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
+#                                     relationship = "one-to-many")
 
 
 
@@ -63,9 +69,11 @@ water_use_report_Date <- water_use_report_Date %>%
   unitFixer(ws$NAME, ws$ID)
 
 
+
 # After that, apply corrections for duplicate reporting
 water_use_report_Date <- water_use_report_Date %>%
   dupReportingFixer(ws$NAME, ws$ID)
+
 
 
 # Similarly, for relatively new appropriative water rights,
