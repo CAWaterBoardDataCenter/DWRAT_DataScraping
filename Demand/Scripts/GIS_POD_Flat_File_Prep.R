@@ -177,4 +177,4 @@ write_csv(Flat_File_eWRIMS,
 
 
 remove(Flat_File_eWRIMS, Flat_File_PODs, Flat_File_PODs_Status, 
-       Flat_File_PODs_WR_Type, cols_to_keep)
+       Flat_File_PODs_WR_Type, cols_to_keep, ReportManager)

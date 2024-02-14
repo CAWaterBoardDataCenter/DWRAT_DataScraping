@@ -121,6 +121,14 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   for (i in 1:nrow(unitsQAQC)) {
     
     
+    # If this row's "APPLICATION_NUMBER" value does not appear in 'inputDF', skip this row
+    if (!(unitsQAQC$APPLICATION_NUMBER[i] %in% inputDF$APPLICATION_NUMBER)) {
+      # S022856 for Russian River
+      next
+    }
+    
+    
+    
     # For this first issue, values for this right and year will be set to 0
     if (grepl("^Change monthly (Direct )?(Storage )?values to 0$", unitsQAQC$QAQC_Action_Taken[i])) {
     
@@ -341,7 +349,8 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       if (actionYear < min(inputDF$YEAR)) {
         
         tempDF <- fread(file = "RawData/water_use_report_extended.csv",
-                        select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
+                        select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE"),
+                        fill = TRUE) %>%
           filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
           arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
         
