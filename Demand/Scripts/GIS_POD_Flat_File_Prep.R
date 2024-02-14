@@ -52,7 +52,7 @@ dbGetQuery(conn = ReportManager,
                                                   
                                                   FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
                                                   ") %>%
-  write_csv("RawData/water_use_reported_extended.csv")
+  write_csv("RawData/water_use_report_extended.csv")
 
 
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
