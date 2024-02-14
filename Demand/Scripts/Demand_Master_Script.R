@@ -5,7 +5,8 @@ require(tidyverse)
 require(sf)
 require(openxlsx)
 require(data.table)
-require(RSQLite)
+require(odbc)
+require(DBI)
 require(readxl)
 require(janitor)
 require(writexl)
@@ -22,7 +23,7 @@ ws <- c("Russian River",  "RR",
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[2, ] # Change the row index to your desired watershed
+ws <- ws[1, ] # Change the row index to your desired watershed
 
 
 

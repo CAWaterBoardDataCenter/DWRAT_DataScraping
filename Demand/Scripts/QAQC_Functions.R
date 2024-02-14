@@ -9,7 +9,7 @@
 require(tidyverse)
 require(readxl)
 require(openxlsx)
-require(RSQLite)
+require(data.table)
 
 
 # Functions
@@ -340,22 +340,21 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # If 'actionYear' is outside the data range of 'inputData', "water_use_report_extended.csv" will need to be read in
       if (actionYear < min(inputDF$YEAR)) {
         
-        conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
-        water_use_report <- dbGetQuery(conn, 
-                                       paste0('SELECT DISTINCT ',
-                                              '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
-                                              'FROM "Table" ',
-                                              'WHERE "APPLICATION_NUMBER" = "', unitsQAQC$APPLICATION_NUMBER[i], '" ',
-                                              'AND "YEAR" = ', actionYear, ' ',
-                                              'ORDER BY "APPLICATION_NUMBER", "YEAR", "MONTH", "DIVERSION_TYPE"')) 
-        dbDisconnect(conn)
+        tempDF <- fread(file = "RawData/water_use_report_extended.csv",
+                        select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
+          filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
+          arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
         
-        
-        # Original non-SQL Code
-        # tempDF <- fread(file = "RawData/water_use_report_extended.csv",
-        #                 select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
-        #   filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
-        #   arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
+        # RSQLite code
+        # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+        # water_use_report <- dbGetQuery(conn, 
+        #                                paste0('SELECT DISTINCT ',
+        #                                       '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
+        #                                       'FROM "Table" ',
+        #                                       'WHERE "APPLICATION_NUMBER" = "', unitsQAQC$APPLICATION_NUMBER[i], '" ',
+        #                                       'AND "YEAR" = ', actionYear, ' ',
+        #                                       'ORDER BY "APPLICATION_NUMBER", "YEAR", "MONTH", "DIVERSION_TYPE"')) 
+        # dbDisconnect(conn)
         
       } else {
         

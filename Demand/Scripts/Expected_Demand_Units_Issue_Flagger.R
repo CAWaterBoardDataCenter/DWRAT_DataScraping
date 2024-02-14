@@ -1,6 +1,6 @@
-library(tidyverse)
-library(readxl)
-library(openxlsx)
+require(tidyverse)
+require(readxl)
+require(openxlsx)
 
 
 print("Starting 'Expected_Demand_Units_Issue_Flagger.R'...")
@@ -82,6 +82,30 @@ expDemand <- expDemand %>%
   filter(!(APP_YEAR_KEY %in% mainSheet$APP_YEAR_KEY)) %>%
   select(-APP_YEAR_KEY)
   
+
+
+# Similarly, remove the rows from a previous version of this review sheet, if it exists
+if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
+  
+  reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    read_xlsx() %>%
+    select(APPLICATION_NUMBER, YEAR) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+
+  
+  
+  # Remove those already-reviewed rows from 'expDemand'
+  expDemand <- expDemand %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
+    filter(!(KEY %in% reviewDF$KEY)) %>%
+    select(-KEY)
+  
+  
+  
+  remove(reviewDF)
+  
+}
 
 
 
