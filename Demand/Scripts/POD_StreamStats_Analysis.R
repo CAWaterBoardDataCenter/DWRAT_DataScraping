@@ -1374,9 +1374,9 @@ translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
   
   # Expected Translation Distance (m)
   # sqrt(vertMove^2 + horiMove^2) * 1200/3937
-  print(paste0("Difference between expected and actual translation distance (m): ",
-               (sqrt(vertMove^2 + horiMove^2) * 1200/3937) - as.numeric(st_distance(newPOD, pod)), "\n",
-               "Error is ", 100 * ((sqrt(vertMove^2 + horiMove^2) * 1200/3937) - as.numeric(st_distance(newPOD, pod))) / as.numeric(st_distance(newPOD, pod)), "%"))
+  print(c(paste0("Difference between expected and actual translation distance (m): ",
+               (sqrt(vertMove^2 + horiMove^2) * 1200/3937) - as.numeric(st_distance(newPOD, pod))),
+          paste0("Error is ", 100 * ((sqrt(vertMove^2 + horiMove^2) * 1200/3937) - as.numeric(st_distance(newPOD, pod))) / as.numeric(st_distance(newPOD, pod)), "%")))
   
   
   
@@ -1391,11 +1391,11 @@ translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
 
 
 print("Starting 'POD_StreamStats_Analysis.R'")
-# mainProcedure(ws)
+mainProcedure(ws)
 print("The script has finished running!")
 
 
-# remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
-#        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
-#        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-#        splitSection, translatePoint)
+remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
+       requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
+       chooseSection, section2point, extractCorner, findLot, getSubPLSS,
+       splitSection, translatePoint)
