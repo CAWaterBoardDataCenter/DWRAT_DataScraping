@@ -23,12 +23,12 @@ mainProcedure <- function () {
                    "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", "EFFECTIVE_DATE", "EFFECTIVE_FROM_DATE",
                    "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",
                    "STORAGE_SEASON_START", "DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END",
-                   "PARTY_ID", "APPLICATION_PRIMARY_OWNER", "MAX_STORAGE")
+                   "PARTY_ID", "APPLICATION_PRIMARY_OWNER")
   
   
   
   # Read in those columns
-  tableDF <- fread("RawData/water_use_report_extended.csv", select = columnNames, fill = TRUE)
+  tableDF <- fread("RawData/water_use_report_extended.csv", select = columnNames)
   
   
   

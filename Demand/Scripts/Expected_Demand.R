@@ -385,7 +385,7 @@ mainProcedure <- function (wsID) {
   if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
     
     reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
-      sort() %>% tail(1) %>%
+      tail(1) %>%
       read_xlsx(sheet = "Corrected Data") %>%
       select(APPLICATION_NUMBER, YEAR)
     
@@ -394,7 +394,7 @@ mainProcedure <- function (wsID) {
     if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"))) > 0) {
       
       reviewDF2 <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"), full.names = TRUE) %>%
-        sort() %>% tail(1) %>%
+        tail(1) %>%
         read_xlsx(sheet = "Filtered Data") %>%
         select(APPLICATION_NUMBER, YEAR)
       

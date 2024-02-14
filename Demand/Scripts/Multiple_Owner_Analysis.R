@@ -4,6 +4,7 @@ require(tidyverse) #for read_csv
 require(data.table) #for fread function
 require(janitor) # for get_dupes function
 require(writexl) # for write_xlsx function
+require(RSQLite) # for SQLite queries
 require(readxl) # for read_xlsx function
 
 #Import Raw Data ----
@@ -42,12 +43,19 @@ appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv")
   #APPLICATION_PRIMARY_OWNER is the primary owner in the reporting year
   #PARTY_ID is the Party ID tied to the primary owner in the reporting year
 
-file_path <- "RawData/water_use_report_extended.csv"
+#file_path <- "RawData/water_use_report_extended.csv"
 selected_columns <- c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
                       "APPLICATION_PRIMARY_OWNER", "PARTY_ID")
 
 #Import only the selected_columns of the water_use_report_extended.csv
 RMS_parties <- fread(file = file_path, select = selected_columns)
+# conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+# RMS_parties <- dbGetQuery(conn, 
+#                           paste0('SELECT DISTINCT ',
+#                                  selected_columns %>% paste0('"', ., '"', collapse = ", "),
+#                                  ' FROM "Table"',
+#                                  ' WHERE "YEAR" > 2016')) 
+# dbDisconnect(conn)
 
 #Prepare the RMS_parties dataset for manual review----
 
@@ -134,15 +142,12 @@ Duplicate_Reports = get_dupes(RMS_parties4, PK)
 if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"))) > 0) {
   
   reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"), full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
+    tail(1) %>%
     read_xlsx()
   
   
   Duplicate_Reports <- Duplicate_Reports %>%
     filter(!(PK %in% reviewDF$Primary_Key))
-  
-  
-  remove(reviewDF)
   
 }
 
@@ -154,6 +159,6 @@ print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 
-remove(appYears, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,# conn,
+remove(appYears, conn, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,
        RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
-       RMS_parties4, selected_columns)
+       RMS_parties4, selected_columns, reviewDF)

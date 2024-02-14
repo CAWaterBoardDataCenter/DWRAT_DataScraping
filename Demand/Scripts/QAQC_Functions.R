@@ -9,7 +9,7 @@
 require(tidyverse)
 require(readxl)
 require(openxlsx)
-require(data.table)
+require(RSQLite)
 
 
 # Functions
@@ -119,14 +119,6 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   # Iterate through the different actions specified in 'unitsQAQC'
   for (i in 1:nrow(unitsQAQC)) {
-    
-    
-    # If this row's "APPLICATION_NUMBER" value does not appear in 'inputDF', skip this row
-    if (!(unitsQAQC$APPLICATION_NUMBER[i] %in% inputDF$APPLICATION_NUMBER)) {
-      # S022856 for Russian River
-      next
-    }
-    
     
     
     # For this first issue, values for this right and year will be set to 0
@@ -348,22 +340,22 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # If 'actionYear' is outside the data range of 'inputData', "water_use_report_extended.csv" will need to be read in
       if (actionYear < min(inputDF$YEAR)) {
         
-        tempDF <- fread(file = "RawData/water_use_report_extended.csv",
-                        select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE"),
-                        fill = TRUE) %>%
-          filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
-          arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
+        conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+        water_use_report <- dbGetQuery(conn, 
+                                       paste0('SELECT DISTINCT ',
+                                              '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
+                                              'FROM "Table" ',
+                                              'WHERE "APPLICATION_NUMBER" = "', unitsQAQC$APPLICATION_NUMBER[i], '" ',
+                                              'AND "YEAR" = ', actionYear, ' ',
+                                              'ORDER BY "APPLICATION_NUMBER", "YEAR", "MONTH", "DIVERSION_TYPE"')) 
+        dbDisconnect(conn)
         
-        # RSQLite code
-        # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
-        # water_use_report <- dbGetQuery(conn, 
-        #                                paste0('SELECT DISTINCT ',
-        #                                       '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
-        #                                       'FROM "Table" ',
-        #                                       'WHERE "APPLICATION_NUMBER" = "', unitsQAQC$APPLICATION_NUMBER[i], '" ',
-        #                                       'AND "YEAR" = ', actionYear, ' ',
-        #                                       'ORDER BY "APPLICATION_NUMBER", "YEAR", "MONTH", "DIVERSION_TYPE"')) 
-        # dbDisconnect(conn)
+        
+        # Original non-SQL Code
+        # tempDF <- fread(file = "RawData/water_use_report_extended.csv",
+        #                 select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
+        #   filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
+        #   arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
         
       } else {
         

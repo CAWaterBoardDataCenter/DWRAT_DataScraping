@@ -11,36 +11,38 @@ require(DBI)
 
 # Download in advance all flat files that will be used in the procedures of this script and the other demand-related scripts
 # They will be downloaded directly from the ReportManager, 1542 SQL Server, Database ReportDB, which hosts all eWRIMS flat files. 
-# This database is accessible to all Division staff. (VPN Required)
-ReportManager <- dbConnect(odbc(),
-                           Driver = "SQL Server",
-                           Server = "reportmanager,1542",
-                           Trusted_Connection = "Yes",
-                           Database = "ReportDB")
-
+# This database is accessible to all Division staff. 
+ReportManager = dbConnect(odbc(),
+                          Driver = "SQL Server",
+                          Server = "reportmanager,1542",
+                          Trusted_Connection = "Yes",
+                          Database = "ReportDB"
+)
 
 # Save the POD flat file, ~73 MB as of 2/13/2024
 Flat_File_PODs <- dbGetQuery(ReportManager,
-                             "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod") %>%
-  write_csv("RawData/ewrims_flat_file_pod.csv")
+                                             "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod") %>% data.frame()
+
+write_csv(ewrims_flat_file_pod, "RawData/ewrims_flat_file_pod.csv")
 
 
 # Get the master flat file as well, ~69 MB as of 2/13/2024
-dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file") %>% 
+ewrims_flat_file <- dbGetQuery(conn = ReportManager,
+                               statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file") %>% 
+  data.frame() %>%
   write_csv("RawData/ewrims_flat_file.csv")
 
-
 # Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
-dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_water_use_report") %>% 
+water_use_report <- dbGetQuery(conn = ReportManager,
+                               statement = "Select * from ReportDB.FLAT_FILE.ewrims_water_use_report") %>% 
+  data.frame() %>%
   write_csv("RawData/water_use_report.csv")
-
 
 # Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
 # (This works, but it takes a long time, and the progress bar might not update)
-dbGetQuery(conn = ReportManager,
-           statement = "Select
+
+water_use_report_extended <- dbGetQuery(conn = ReportManager,
+                                                  statement = "Select
                                                   APPLICATION_NUMBER,YEAR,MONTH,
                                                   AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
                                                   FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
@@ -52,31 +54,31 @@ dbGetQuery(conn = ReportManager,
                                                   
                                                   FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
                                                   ") %>%
-  write_csv("RawData/water_use_reported_extended.csv")
-
+  data.frame() %>%
+  write_csv(water_use_report_extended,"RawData/water_use_reported_extended.csv")
 
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
-dbGetQuery(conn = ReportManager, 
-           statement = "Select * from 
+ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
+                                          statement = "Select * from 
                                           ReportDB.FLAT_FILE.ewrims_flat_file_use_season") %>% 
+  data.frame() %>%
   write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
-dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+
+ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
+                                     statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+  data.frame() %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
 
 # Read the POD flat file
-# (This is already assigned earlier at the SQL query step)
-#Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
-
+Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
 
 # Disconnect from ReportDB Database
 dbDisconnect(conn = ReportManager)
-
 
 #Apply the proper filters----
 
@@ -177,4 +179,4 @@ write_csv(Flat_File_eWRIMS,
 
 
 remove(Flat_File_eWRIMS, Flat_File_PODs, Flat_File_PODs_Status, 
-       Flat_File_PODs_WR_Type, cols_to_keep, ReportManager)
+       Flat_File_PODs_WR_Type, cols_to_keep)
