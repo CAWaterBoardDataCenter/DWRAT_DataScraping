@@ -79,7 +79,7 @@ flat_file <- dbGetQuery(conn = ReportManager,
 # Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
 water_use_report <- dbGetQuery(conn = ReportManager,
            statement = "SELECT * from ReportDB.FLAT_FILE.ewrims_water_use_report
-           WHERE YEAR >= 2017 ")
+           WHERE YEAR >= 2016 ")
 
   # Convert the YEAR  column to numeric
   water_use_report$YEAR = as.numeric(water_use_report$YEAR)
@@ -103,7 +103,7 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                   PARTY_ID, APPLICATION_PRIMARY_OWNER
                                                   
                                                   FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
-                                                  WHERE YEAR >= 2017
+                                                  WHERE YEAR >= 2016
                                                   ")
 
   # Rename APPLICATION_NUMBER to APPL_ID so that it's compatible with the fixData function
@@ -248,7 +248,7 @@ write_csv(Flat_File_eWRIMS,
   all_vars = ls()
   
   # Keep ws variable
-  vars_to_keep = ws
+  vars_to_keep = c("ws")
 
   # Specify all other variables for removal
   vars_to_remove = setdiff(all_vars, vars_to_keep)
