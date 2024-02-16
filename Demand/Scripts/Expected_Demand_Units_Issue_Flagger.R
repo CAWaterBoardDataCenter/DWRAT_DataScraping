@@ -1,6 +1,6 @@
-library(tidyverse)
-library(readxl)
-library(openxlsx)
+require(tidyverse)
+require(readxl)
+require(openxlsx)
 
 
 print("Starting 'Expected_Demand_Units_Issue_Flagger.R'...")
@@ -63,11 +63,54 @@ expDemand <- expDemand %>%
 
 # Calculate ratios between "CALENDAR_YEAR_TOTAL" and "MEDIAN_TOTAL_AF"
 # Keep records that are more than two orders of magnitude away from the median (in either direction)
-expDemand %>%
+expDemand <- expDemand %>%
   filter((MEDIAN_TOTAL_AF > 0 & CALENDAR_YEAR_TOTAL / MEDIAN_TOTAL_AF > 100) |
            (MEDIAN_TOTAL_AF > 0 & CALENDAR_YEAR_TOTAL > 0 & CALENDAR_YEAR_TOTAL / MEDIAN_TOTAL_AF < 1/100)) %>%
-  select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, MEDIAN_TOTAL_AF) %>%
-  write.xlsx(paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
+  select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, MEDIAN_TOTAL_AF) 
+
+
+
+# Read in the other Units QA/QC spreadsheet and remove rows that are already present in that spreadsheet
+mainSheet <- read_xlsx(paste0("OutputData/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx")) %>%
+  mutate(APP_YEAR_KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
+
+
+
+# Remove the rows present in 'mainSheet' from 'expDemand'
+expDemand <- expDemand %>%
+  mutate(APP_YEAR_KEY = paste0(APPLICATION_NUMBER, "|", YEAR)) %>%
+  filter(!(APP_YEAR_KEY %in% mainSheet$APP_YEAR_KEY)) %>%
+  select(-APP_YEAR_KEY)
+  
+
+
+# Similarly, remove the rows from a previous version of this review sheet, if it exists
+if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
+  
+  reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    read_xlsx() %>%
+    select(APPLICATION_NUMBER, YEAR) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+
+  
+  
+  # Remove those already-reviewed rows from 'expDemand'
+  expDemand <- expDemand %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
+    filter(!(KEY %in% reviewDF$KEY)) %>%
+    select(-KEY)
+  
+  
+  
+  remove(reviewDF)
+  
+}
+
+
+
+write.xlsx(expDemand,
+           paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 
 
 
@@ -91,4 +134,4 @@ expDemand %>%
 
 cat("Done!\n")
 
-remove(expDemand, medVals)
+remove(expDemand, medVals, mainSheet)

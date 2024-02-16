@@ -1,5 +1,5 @@
 # This script adjusts the data downloaded by 'NOAA_API_Scraper.R' to be compatible with the DAT format
-# 
+# It also adds missing and forecasted data to the dataset
 
 require(tidyverse)
 require(readxl)
@@ -8,11 +8,12 @@ require(readxl)
 cat("Starting 'NOAA_API_Scraper.R'...\n")
 
 
-mainProcedure <- function (StartDate, EndDate) {
+mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
-  # There are two mains steps to perform in this script:
+  # There are three mains steps to perform in this script:
   # (1) Adjust the formatting of the NOAA CSV to mimic other DAT-related data tables
   # (2) Fill in missing entries with PRISM data
+  # (3) Add forecasted data from CNRFC (depending on the value of 'includeForecast')
   
   
   
@@ -23,6 +24,13 @@ mainProcedure <- function (StartDate, EndDate) {
   
   # Step 2
   prismFill(StartDate, EndDate)
+  
+  
+  
+  # Step 3
+  if (includeForecast == TRUE) {
+    cnrfcAdd()
+  }
   
   
   
@@ -346,10 +354,107 @@ prismFill <- function (StartDate, EndDate) {
 
 
 
-mainProcedure(StartDate, EndDate)
+cnrfcAdd <- function () {
+  
+  # Add forecast data from "CNRFC_Processed.csv" to the processed NOAA CSV
+  
+  
+  # Read in both files
+  noaaDF <- list.files("ProcessedData", pattern = "NOAA_API_Processed_", full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    read_csv(show_col_types = FALSE)
+  
+  
+  
+  cnrfcDF <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE)
+  
+  
+  
+  # Get a vector of dates in 'cnrfcDF' that are not in 'noaaDF'
+  # These should be all forecasted (i.e., future) dates
+  newDates <- cnrfcDF$Date[!(cnrfcDF$Date %in% noaaDF$Date)]
+  
+  
+  
+  # Add rows to 'noaaDF' for these future dates
+  noaaDF <- bind_rows(noaaDF,
+            data.frame(Date = newDates)) %>%
+    arrange(Date)
+  
+  
+  
+  # Use a nested loop to check every entry in 'noaaDF'
+  for (i in 1:nrow(noaaDF)) {
+    
+    for (j in 2:ncol(noaaDF)) {
+      
+      
+      # Skip entries where 'noaaDF' is not NA
+      if (!is.na(noaaDF[i, j])) {
+        next
+      }
+      
+      
+      
+      # Find the corresponding column and row in 'cnrfcDF'
+      # Then, assign that value to 'noaaDF'
+      
+      
+      
+      # Extract from the column name of 'noaaDF' the variable identifier
+      # (e.g., "TMIN1" or "PRECIP15")
+      # Then, add a "_" to the end of that string and remove the initial "_"
+      # (In 'cnrfcDF' this string without the underscore is at the start of the column name)
+      varStr <- names(noaaDF)[j] %>% str_extract("_.+$") %>%
+        paste0(., "_") %>%
+        str_remove("^_")
+      
+      
+      
+      # Find the matching column index in 'cnrfcDF' using 'varStr'
+      colIndex <- grep(varStr, names(cnrfcDF))
+      
+      
+      
+      # The matching row index in 'cnrfcDF' will be the one with 
+      # the same date as row 'i' of 'noaaDF'
+      rowIndex <- which(cnrfcDF$Date == noaaDF$Date[i])
+      
+      
+      
+      # Check for issues before proceeding
+      stopifnot(length(colIndex) == 1)
+      stopifnot(length(rowIndex) == 1)
+      
+      
+      
+      # Update entry i, j of 'noaaDF' using 'cnrfcDF'
+      noaaDF[i, j] <- cnrfcDF[rowIndex, colIndex]
+      
+    } # End of 'j' loop
+    
+  } # End of 'i' loop
+  
+  
+  
+  # Save the updated 'noaaDF'
+  list.files("ProcessedData", pattern = "NOAA_API_Processed.+\\.csv", full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    write_csv(noaaDF, file = .)
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+mainProcedure(StartDate, EndDate, includeForecast)
 
 
 cat("Done!\n")
 
 
-remove(mainProcedure, fileAdjustment, findIndex, prismFill)
+remove(mainProcedure, fileAdjustment, findIndex, prismFill, cnrfcAdd)
