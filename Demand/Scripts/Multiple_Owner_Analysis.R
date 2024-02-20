@@ -168,5 +168,5 @@ print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 remove(appYears, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,# conn,
-       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
+       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3, file_path,
        RMS_parties4, selected_columns)
