@@ -1389,7 +1389,7 @@ mainProcedure(ws$ID)
 print("The Expected_Demand.R script is done running!")
 
 
-remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues)
+remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues, CY2WY)
 
 
 
