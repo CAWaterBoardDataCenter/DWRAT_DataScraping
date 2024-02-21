@@ -59,7 +59,7 @@ mainProcedure <- function (ws) {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson")
+  PLSS_Sections_Fill <- st_read(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   

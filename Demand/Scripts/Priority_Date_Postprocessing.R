@@ -19,8 +19,7 @@ cat("Starting 'Priority_Date_Postprocessing.R'...\n")
 # Import only certain columns
 # Also, restrict the years included in the dataset
 water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
-                         select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE"),
-                         fill = TRUE) %>% 
+                         select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% 
   unique()
 
 
@@ -90,7 +89,7 @@ write.csv(water_use_report_Date,
           paste0("IntermediateData/", ws$ID, "_water_use_report_DATE.csv"), row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
-remove(water_use_report, water_use_report_Date, unitFixer, # water_use_report_Combined,
+remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Combined,
        chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
        faceValSub, faceValExtract, faceValAssign)#, conn)
 

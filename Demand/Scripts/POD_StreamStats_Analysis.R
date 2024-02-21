@@ -74,7 +74,7 @@ mainProcedure <- function (ws) {
   # Then, read in the coordinate records from the GIS Pre-processing spreadsheet
   if (grepl("^Navarro", ws$NAME)) {
     
-    podDF <- read_xlsx("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx", 
+    podDF <- read_xlsx(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx"), 
                        sheet = "R_Review")
 
     
@@ -94,7 +94,7 @@ mainProcedure <- function (ws) {
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson")
+  plssDF <- st_read(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -1015,7 +1015,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   # First read in that dataset
   # (It will appear as a variable called 'plssSub')
-  load("../../../../Water Boards/Supply and Demand Assessment - Documents/Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData")
+  load(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
   
   
   

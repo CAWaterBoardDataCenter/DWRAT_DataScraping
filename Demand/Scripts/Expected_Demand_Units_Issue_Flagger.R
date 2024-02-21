@@ -85,9 +85,9 @@ expDemand <- expDemand %>%
 
 
 # Similarly, remove the rows from a previous version of this review sheet, if it exists
-if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
+if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
   
-  reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
+  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
     sort() %>% tail(1) %>%
     read_xlsx() %>%
     select(APPLICATION_NUMBER, YEAR) %>%
