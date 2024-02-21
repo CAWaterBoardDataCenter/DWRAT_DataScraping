@@ -86,7 +86,7 @@ water_use_report$YEAR = as.numeric(water_use_report$YEAR)
   
   
 if (water_use_report %>% 
-    filter(YEAR == max(water_use_report$YEAR) & MONTH > 9) %>%
+    filter(YEAR == max(water_use_report$YEAR) & as.numeric(MONTH) > 9) %>%
     nrow() > 0) {
   
   # Apply the fixData function to water_use_report
@@ -119,7 +119,7 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                   ")
 
 if (water_use_report_extended %>% 
-    filter(YEAR == max(water_use_report_extended$YEAR) & MONTH > 9) %>%
+    filter(YEAR == max(as.numeric(water_use_report_extended$YEAR)) & as.numeric(MONTH) > 9) %>%
     nrow() > 0) {
   
   
@@ -128,7 +128,7 @@ if (water_use_report_extended %>%
     rename(APPL_ID = APPLICATION_NUMBER)
   
   # Change YEAR to numeric data type
-  water_use_report_extended$YEAR = as.numeric(water_use_report_extended$YEAR )
+  water_use_report_extended$YEAR = as.numeric(water_use_report_extended$YEAR)
   
   # Apply the fixData function to water_use_report_extended
   water_use_report_extended_repaired = fixData(water_use_report_extended)
@@ -270,16 +270,17 @@ write_csv(Flat_File_eWRIMS,
 
 # Clear the environment----
   # Get the name of all variables in the environment
-  all_vars = ls()
+all_vars = ls()
   
   # Keep ws variable
-  vars_to_keep = ws
+vars_to_keep = ws
 
   # Specify all other variables for removal
-  vars_to_remove = setdiff(all_vars, vars_to_keep)
+vars_to_remove = setdiff(all_vars, vars_to_keep)
   
   # Remove variables
-  rm(list = vars_to_remove)
+rm(list = vars_to_remove)
   
   
-  remove(all_vars, vars_to_keep, vars_to_remove)
+remove(all_vars, vars_to_keep, vars_to_remove)
+  
