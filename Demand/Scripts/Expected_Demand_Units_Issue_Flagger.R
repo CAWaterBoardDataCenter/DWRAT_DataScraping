@@ -109,6 +109,31 @@ if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Uni
 
 
 
+# Check the other review sheet too, if it exists
+if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
+  
+  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    read_xlsx() %>%
+    select(APPLICATION_NUMBER, YEAR) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+  
+  
+  
+  # Remove those already-reviewed rows from 'expDemand'
+  expDemand <- expDemand %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
+    filter(!(KEY %in% reviewDF$KEY)) %>%
+    select(-KEY)
+  
+  
+  
+  remove(reviewDF)
+  
+}
+
+
+
 write.xlsx(expDemand,
            paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 
