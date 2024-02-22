@@ -23,9 +23,9 @@ start_time
 end_time
 6
 1
-2022
-10
-31
+2024
+09
+30
 0
 0
 0
@@ -48,7 +48,7 @@ param_file
 data_file
 1
 4
-..\PRMS\input\climate_scenarios\data_update_to_6.21.2022_ZEROprecip_to_Oct.dat
+..\PRMS\input\climate_scenarios\Dat_Final_PRMS_Forecast_End_Date_2024-02-11.dat
 ####
 precip_module
 1
@@ -316,7 +316,7 @@ sub_inq
 nsubOutBaseFileName
 1
 4
-..\PRMS\output\nsubout.update6.21.22_ZEROPRECP_June22_to_Oct
+..\PRMS\output\PRMS_Output_RunDate_2024-02-06_
 ####
 mapOutON_OFF
 1

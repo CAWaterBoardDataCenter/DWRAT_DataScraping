@@ -1,15 +1,15 @@
 #Last Updated By: Payman Alemi
-#Last Updated On: 3/28/2023
+#Last Updated On: 2/6/2024
 
 #Load libraries----
-library(here)
-library(dplyr) #required for %>% operator
-library(tidyr)
+require(tidyverse) #required for %>% operator
 
 #RR_PRMS_Processor----
 #Process the output CSV of the Russian River PRMS model
 ##Import RR PRMS CSV----
-RR <- read.csv(here("InputData/PRMS_MK_2023-10-01_sub_inq.csv"))
+PRMS_Output_Folder = "C:\\RR_PRMS\\PRMS\\output"
+PRMS_Output_File_Path = list.files(PRMS_Output_Folder, pattern = "inq.csv$", full.names = TRUE) %>% sort() %>% tail(1)
+RR <- read.csv(PRMS_Output_File_Path)
 
 #Add RR Headers
 RR_Headers <- c("Date", seq(1:22)) %>% as.character()
@@ -18,10 +18,7 @@ colnames(RR) <- RR_Headers
 ##Whittle to Timeframe of Interest----
 #Convert Date column to date format
 RR$Date <- as.Date(RR$Date)
-RR_Subset <- subset(RR, Date>= as.Date("2023-07-01") & Date <= as.Date("2023-10-31"))
-
-#Write RR_Subset to ProcessedData Folder
-# write.csv(RR_Subset, here("ProcessedData/RR_PRMS_2023-04.csv"), row.names = FALSE)
+RR_Subset <- subset(RR, Date>= StartDate$date & Date <= End_Date)
 
 ##Unit Conversions----
 #Convert Cubic Feet/Second (CFS) to Acre-Feet/Day
@@ -33,7 +30,7 @@ RR_Subset_Summed <- RR_Subset %>%
   pivot_longer(cols = 2:23, names_to = "basin", values_to = "value") %>% 
   mutate(Date = as.Date(Date, format = "%Y-%m-%d") %>% format("%m")) %>% 
   group_by(basin, Date) %>%
-  summarise(total = sum(value)) %>% 
+  summarise(total = sum(value), .groups = "drop") %>% 
   pivot_wider(names_from = "basin", values_from = "total")
 
 #Reset original column order
@@ -43,10 +40,10 @@ RR_Subset_Summed <- RR_Subset_Summed[, RR_Order]
 # create a vector of month values
 Date <- RR_Subset_Summed$Date
 # convert the month values to date objects
-RR_Subset_Summed$Date <- as.Date(paste0(Date, "/01/2023"), format = "%m/%d/%Y")
+RR_Subset_Summed$Date <- as.Date(paste0(Date, "/01/2024"), format = "%m/%d/%Y")
 
 #Write a csv for SRP_Post_Processing.R to combine the 2 model outputs for DWRAT
-write.csv(RR_Subset_Summed, here("ProcessedData/PRMS_2023-10.csv"), row.names = FALSE)
+write.csv(RR_Subset_Summed, here("ProcessedData/PRMS_2024-01.csv"), row.names = FALSE)
 
 #SRP Processor----
 #This code modifies the outputs of the Santa Rosa Plains model into the format required by the flows spreadsheet
