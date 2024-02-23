@@ -134,6 +134,30 @@ if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Uni
 
 
 
+# As a final step, if an APPLICATION_NUMBER value is flagged in both 'expDemand' and 'mainSheet',
+# move all rows of that right into 'expDemand'
+if (sum(expDemand$APPLICATION_NUMBER %in% mainSheet$APPLICATION_NUMBER) > 0) {
+  
+  # Extract rows from 'mainSheet' (by filtering to rows whose APPLICATION_NUMBER values appear in 'expDemand')
+  # Append them to 'expDemand' and then sort the tibble
+  expDemand <- mainSheet %>%
+    filter(APPLICATION_NUMBER %in% expDemand$APPLICATION_NUMBER) %>%
+    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
+    bind_rows(expDemand) %>%
+    arrange(APPLICATION_NUMBER, YEAR)
+  
+  
+  # Filter down 'mainSheet' (removing those rows)
+  # Then, overwrite the review spreadsheet for it
+  mainSheet %>%
+    filter(!(APPLICATION_NUMBER %in% expDemand$APPLICATION_NUMBER)) %>%
+    write.xlsx(paste0("OutputData/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx"))
+  
+}
+
+
+
+# Write 'expDemand' to a spreadsheet
 write.xlsx(expDemand,
            paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 

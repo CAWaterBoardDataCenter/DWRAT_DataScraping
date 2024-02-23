@@ -88,6 +88,14 @@ mainProcedure <- function (wsID) {
     filter(YEAR >= 2022)
   
   
+  
+  # The last three months of 2021 in 'monthlyDF' should be set to NA
+  # (They already appear in the water year dataset as part of WY2022)
+  if (2021 %in% monthlyDF$YEAR && 2022 %in% monthlyDF_WY$YEAR) {
+    monthlyDF$AMOUNT[monthlyDF$YEAR == 2021 & monthlyDF$MONTH > 9] <- NA_real_
+  }
+  
+  
   # Get the annual direct diversion for each application and year
   # Add that column to 'monthlyDF' with the name "ANNUAL_DIRECT"
   monthlyDF <- monthlyDF %>%
