@@ -138,9 +138,10 @@ diverDF <- diverDF %>%
   ungroup()
 
 
-
-# diverDF %>%
-#   write_csv("OutputData/DemandDataset_MonthlyValues.csv")
+# Generate Monthly Demand Dataset for every year in your timeframe; uncomment these lines for the PowerBI 
+# Demand Analysis
+diverDF %>%
+  write_csv("OutputData/DemandDataset_MonthlyValues.csv")
 
   
 # Create a separate variable with expected total diversion values

@@ -5,16 +5,16 @@
 require(tidyverse)
 require(readxl)
 require(openxlsx)
-require(RSQLite)
+require(data.table)
 
 
 faceValSub <- function (inputDF, yearRange = 2021:2023) {
-  
   
   # If 'yearRange' is outside of the range of 'inputDF', make no changes
   if (sum(yearRange %in% inputDF$YEAR) == 0) {
     return(inputDF)
   }
+  
   
   
   # Remove years from 'yearRange' that do not already appear in 'inputDF'
@@ -24,35 +24,35 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
   
   # Read in data from "water_use_report_extended.csv"
   # Filter it to APPLICATION_NUMBER values in 'inputDF'
+  extendedDF <- fread("RawData/water_use_report_extended.csv",
+                      select = c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
+                                 "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", "EFFECTIVE_DATE",
+                                 "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",
+                                 "STORAGE_SEASON_START", "DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END")) %>%
+    filter(APPLICATION_NUMBER %in% inputDF$APPLICATION_NUMBER)
+  
+  
+  
+  # R SQLite code
   # Also, keep only data for "Appropriative" rights
-  conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
-  extendedDF <- dbGetQuery(conn, 
-                           paste0('SELECT DISTINCT "APPLICATION_NUMBER", "YEAR", ',
-                           '"MONTH", "AMOUNT", "DIVERSION_TYPE", "FACE_VALUE_AMOUNT", ',
-                           '"FACE_VALUE_UNITS", "EFFECTIVE_DATE", "WATER_RIGHT_TYPE", ',
-                           '"DIRECT_DIV_SEASON_START", "STORAGE_SEASON_START", ',
-                           '"DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END" FROM "Table" ',
-                           'WHERE "APPLICATION_NUMBER" in (', 
-                           inputDF$APPLICATION_NUMBER %>% unique() %>% paste0('"', ., '"', collapse = ", "), 
-                           ') AND ',
-                           'WATER_RIGHT_TYPE = "Appropriative"'))
-  dbDisconnect(conn)
+  # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+  # extendedDF <- dbGetQuery(conn, 
+  #                          paste0('SELECT DISTINCT "APPLICATION_NUMBER", "YEAR", ',
+  #                          '"MONTH", "AMOUNT", "DIVERSION_TYPE", "FACE_VALUE_AMOUNT", ',
+  #                          '"FACE_VALUE_UNITS", "EFFECTIVE_DATE", "WATER_RIGHT_TYPE", ',
+  #                          '"DIRECT_DIV_SEASON_START", "STORAGE_SEASON_START", ',
+  #                          '"DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END" FROM "Table" ',
+  #                          'WHERE "APPLICATION_NUMBER" in (', 
+  #                          inputDF$APPLICATION_NUMBER %>% unique() %>% paste0('"', ., '"', collapse = ", "), 
+  #                          ') AND ',
+  #                          'WATER_RIGHT_TYPE = "Appropriative"'))
+  # dbDisconnect(conn)
   
-  
-  
-  # Original Non-SQL code
-  # extendedDF <- fread("RawData/water_use_report_extended.csv",
-  #                     select = c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
-  #                                "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", "EFFECTIVE_DATE",
-  #                                "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",
-  #                                "STORAGE_SEASON_START", "DIRECT_DIV_SEASON_END", "STORAGE_SEASON_END")) %>%
-  #   filter(APPLICATION_NUMBER %in% inputDF$APPLICATION_NUMBER)
-
   
   
   # Filter 'extendedDF' to appropriative rights that have an "EFFECTIVE_DATE" within 'yearRange'
   extendedDF <- extendedDF %>%
-    #filter(grepl("^Appro", WATER_RIGHT_TYPE)) %>%
+    filter(grepl("^Appro", WATER_RIGHT_TYPE)) %>%
     mutate(YEAR = as.numeric(str_extract(EFFECTIVE_DATE, "[0-9]{4}$"))) %>%
     filter(YEAR %in% yearRange) %>%
     filter(DIVERSION_TYPE != "USE")
@@ -77,27 +77,48 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
   # Then, create a column of lists that contain months within each right's diversion seasons
   extendedDF <- extendedDF %>%
     rowwise() %>%
-    mutate(DD_START = DIRECT_DIV_SEASON_START %>%
-             str_split("/") %>% unlist() %>% pluck(1) %>% 
-             str_replace("^$", "0") %>% as.numeric(),
+    mutate(DD_START = if_else(is.na(DIRECT_DIV_SEASON_START),
+                              NA_real_,
+                              DIRECT_DIV_SEASON_START %>%
+                                str_split("/") %>% unlist() %>% pluck(1) %>% 
+                                str_replace("^$", "0") %>% as.numeric()),
            DD_END = DIRECT_DIV_SEASON_END %>%
              str_split("/") %>% unlist() %>% pluck(1) %>% 
              str_replace("^$", "0") %>% as.numeric(),
-           DD_RANGE = if_else(DD_START == 0,
-                              list(""),
-                              list(seq(from = DD_START,
-                                         to = DD_END))),
            STOR_START = STORAGE_SEASON_START %>%
              str_split("/") %>% unlist() %>% pluck(1) %>% 
              str_replace("^$", "0") %>% as.numeric(),
            STOR_END = STORAGE_SEASON_END %>%
              str_split("/") %>% unlist() %>% pluck(1) %>% 
-             str_replace("^$", "0") %>% as.numeric(),
-           STOR_RANGE = if_else(STOR_START == 0,
-                              list(""),
-                              list(seq(from = STOR_START,
-                                       to = STOR_END)))) %>%
+             str_replace("^$", "0") %>% as.numeric()) %>%
     ungroup()
+  
+  
+  
+  # Create "DD_RANGE" and "STOR_RANGE" columns based on the values in 
+  # "DD_START"/"STOR_START" and "DD_END"/"STOR_END"
+  for (i in 1:nrow(extendedDF)) {
+    
+    # If the direct diversion columns are NA, give them empty list inputs
+    # Otherwise, define a numeric sequence based on the start and end months
+    if (is.na(extendedDF$DD_START[i]) || is.na(extendedDF$DD_END[i])) {
+      extendedDF[["DD_RANGE"]][i] <- list(numeric(0))
+    } else {
+      extendedDF[["DD_RANGE"]][i] <- list(seq(from = extendedDF$DD_START[i],
+                                              to = extendedDF$DD_END[i]))
+    }
+    
+    
+    # Perform similar operations for the storage season
+    if (is.na(extendedDF$STOR_START[i]) || is.na(extendedDF$STOR_END[i])) {
+      extendedDF[["STOR_RANGE"]][i] <- list(numeric(0))
+    } else {
+      extendedDF[["STOR_RANGE"]][i] <- list(seq(from = extendedDF$STOR_START[i],
+                                              to = extendedDF$STOR_END[i]))
+    }
+    
+    
+  }
   
   
   
@@ -137,7 +158,6 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
           # Prepare a set of new rows to add to 'inputDF'
           # The columns should match those of 'inputDF'
           newRows <- c(rep(appVec[i], 12 * length(diverType)),    # APPLICATION_NUMBER
-                       rep(1, 12 * length(diverType)),            # FREQUENCY
                        rep(yearRange[j], 12 * length(diverType)), # YEAR
                        rep(1:12, 1 * length(diverType)),          # MONTH
                        rep(0, 12 * length(diverType)),            # AMOUNT (all 0 for now)
@@ -145,8 +165,7 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
             matrix(ncol = ncol(inputDF), byrow = FALSE) %>%
             data.frame() %>% tibble() %>%                         # Convert the vector into a tibble
             set_names(names(inputDF)) %>%                         # Use the same column names as 'inputDF'
-            mutate(FREQUENCY = as.integer(FREQUENCY),             # Make the numeric columns have the same type as in 'inputDF'
-                   YEAR = as.numeric(YEAR),
+            mutate(YEAR = as.numeric(YEAR),
                    MONTH = as.integer(MONTH),
                    AMOUNT = as.numeric(AMOUNT))
           

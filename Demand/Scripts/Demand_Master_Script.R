@@ -5,7 +5,8 @@ require(tidyverse)
 require(sf)
 require(openxlsx)
 require(data.table)
-require(RSQLite)
+require(odbc)
+require(DBI)
 require(readxl)
 require(janitor)
 require(writexl)
@@ -45,8 +46,13 @@ source("Scripts/GIS_POD_Flat_File_Prep.R")
 source("Scripts/GIS_Preprocessing.R")
 
 
+# Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
+# to identify which PODs flow into the watershed (via USGS StreamStats)
+source("Scripts/POD_StreamStats_Analysis.R")
+
+
 # Convert "water_use_report_extended.csv" to a SQLite database
-source("Scripts/Extended_CSV_to_SQLite.R")
+#source("Scripts/Extended_CSV_to_SQLite.R")
 
 
 # QA/QC functions for correcting unit conversion errors and duplicate reporting
