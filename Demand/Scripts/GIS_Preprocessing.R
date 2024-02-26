@@ -20,19 +20,7 @@ mainProcedure <- function (ws) {
   
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
-  if (grepl("^Navarro", ws$NAME, ignore.case = TRUE)) {
-    
-    wsBound <- makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg") %>%
-      st_read(layer = "WBD_HU10_Navarro")
-    
-  } else if (grepl("^Russian", ws$NAME, ignore.case = TRUE)) {
-    
-    wsBound <- makeSharePointPath("GIS/Russian River.gdb/") %>%
-      st_read(layer = "RR_NHD_1801_HUC8")
-    
-  } else {
-    stop(paste0(ws$NAME, " not recognized. A corresponding boundary layer has not been specified for this watershed in the script."))
-  }
+  wsBound <- getWatershedBoundaries(ws)
   
   
   
@@ -179,40 +167,24 @@ mainProcedure <- function (ws) {
   
   #### Task 4 (Watershed Tributary/Source) ####
   
+  
   # Get all PODs that mention the watershed in their source/tributary information
-  if (grepl("^Navarro", ws$NAME, ignore.case = TRUE)) {
-    
-    wsMention <- pod_points_statewide_spatial %>%
-      filter(grepl("Navarro", WATERSHED, ignore.case = TRUE) |
-               grepl("Navarro", SOURCE_NAME, ignore.case = TRUE) |
-               grepl("Navarro", TRIB_DESC, ignore.case = TRUE)) #|
-               #grepl("^Anderson Creek$", HUC_12_NAME, ignore.case = TRUE) |
-               #grepl("^Indian Creek$", HUC_12_NAME, ignore.case = TRUE) |
-               #grepl("^North Fork Navarro River$", HUC_12_NAME, ignore.case = TRUE) |
-               #grepl("^(Upper|Lower) Rancheria Creek$", HUC_12_NAME, ignore.case = TRUE) |
-               #grepl("^(Upper|Lower) Navarro River$", HUC_12_NAME, ignore.case = TRUE) |
-               #grepl("^(North|South) Branch North Fork Navarro River$", HUC_12_NAME, ignore.case = TRUE))
-    
-  } else if (grepl("^Russian", ws$NAME, ignore.case = TRUE)) {
-    
-    wsMention <- pod_points_statewide_spatial %>%
-      filter(grepl("Russian", WATERSHED, ignore.case = TRUE) |
-               grepl("Russian", SOURCE_NAME, ignore.case = TRUE) |
-               grepl("Russian", TRIB_DESC, ignore.case = TRUE))
-    
-  } else if (grepl("^Butte", ws$NAME, ignore.case = TRUE)) {
-    
-    wsMention <- pod_points_statewide_spatial %>%
-      filter(grepl("Butte( Creek)?", WATERSHED, ignore.case = TRUE) |
-               grepl("Butte Creek", WATERSHED, ignore.case = TRUE) |
-               grepl("Butte", SOURCE_NAME, ignore.case = TRUE) |
-               grepl("Butte", TRIB_DESC, ignore.case = TRUE))
-    
-  } else {
-    
-    stop(paste0(ws$NAME, " not recognized. A corresponding filter has not been specified for this watershed in the script."))
-    
-  }
+  # (Case-Insensitive Regex searching)
+  wsMention <- pod_points_statewide_spatial %>%
+    filter(grepl(ws$WATERSHED_COLUMN_SEARCH_STRING, WATERSHED, ignore.case = TRUE) |
+             grepl(ws$SOURCE_NAME_COLUMN_SEARCH_STRING, SOURCE_NAME, ignore.case = TRUE) |
+             grepl(ws$TRIB_DESC_COLUMN_SEARCH_STRING, TRIB_DESC, ignore.case = TRUE))
+
+  
+  
+  # Additional watershed-specific searches can be added here as needed
+  # For example:
+  # if (ws$ID == "NV") {
+  #   wsMention <- bind_rows(wsMention,
+  #                          pod_points_statewide_spatial %>%
+  #                            filter(grepl(???, WATERSHED, ignore.case = TRUE))) %>%
+  #    unique()
+  # }
   
   
   
@@ -499,11 +471,43 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
   # Write 'allDF' to a GeoJSON file
   # (But first remove the older version, if it exists in the directory)
   if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("OutputData")) {
-    unlink(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+    
+    #system("rm OutputData/NV_PODS_of_Interest.GeoJSON", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON")))
+    
   }
   
   
-  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+  
+  # Check for fields with identical names (they create errors when writing the dataset)
+  if (length(names(allDF)) != length(unique(toupper(names(allDF))))) {
+    
+    # Get a list of names that appear more than once
+    multiNames <- names(table(toupper(names(allDF)))[table(toupper(names(allDF))) > 1])
+    
+    
+    
+    # Iterate through the names in 'multiNames'
+    for (i in 1:length(multiNames)) {
+      
+      # Get the indices where these duplicate names occur
+      multiIndex <- which(toupper(names(allDF)) == multiNames[i])
+      
+      
+      # Append a number to these names (from the second instance onwards)
+      for (j in 2:length(multiIndex)) {
+        
+        names(allDF)[multiIndex[j]] <- paste0(names(allDF)[multiIndex[j]], "_", j)
+        
+      }
+      
+    }
+    
+  }
+  
+  
+  
+  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
   
   
   
