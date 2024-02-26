@@ -49,6 +49,19 @@ selected_columns <- c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSIO
 #Import only the selected_columns of the water_use_report_extended.csv
 RMS_parties <- fread(file = file_path, select = selected_columns)
 
+
+
+# SQLite approach
+# conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+# RMS_parties <- dbGetQuery(conn, 
+#                           paste0('SELECT DISTINCT ',
+#                                  selected_columns %>% paste0('"', ., '"', collapse = ", "),
+#                                  ' FROM "Table"',
+#                                  ' WHERE "YEAR" > 2016')) 
+# dbDisconnect(conn)
+
+
+
 #Prepare the RMS_parties dataset for manual review----
 
   #Filter to 2017-present records
@@ -155,5 +168,5 @@ print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 remove(appYears, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,# conn,
-       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3,
+       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3, file_path,
        RMS_parties4, selected_columns)

@@ -85,9 +85,9 @@ expDemand <- expDemand %>%
 
 
 # Similarly, remove the rows from a previous version of this review sheet, if it exists
-if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
+if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
   
-  reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
+  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
     sort() %>% tail(1) %>%
     read_xlsx() %>%
     select(APPLICATION_NUMBER, YEAR) %>%
@@ -109,6 +109,55 @@ if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Unit
 
 
 
+# Check the other review sheet too, if it exists
+if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
+  
+  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
+    sort() %>% tail(1) %>%
+    read_xlsx() %>%
+    select(APPLICATION_NUMBER, YEAR) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+  
+  
+  
+  # Remove those already-reviewed rows from 'expDemand'
+  expDemand <- expDemand %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
+    filter(!(KEY %in% reviewDF$KEY)) %>%
+    select(-KEY)
+  
+  
+  
+  remove(reviewDF)
+  
+}
+
+
+
+# As a final step, if an APPLICATION_NUMBER value is flagged in both 'expDemand' and 'mainSheet',
+# move all rows of that right into 'expDemand'
+if (sum(expDemand$APPLICATION_NUMBER %in% mainSheet$APPLICATION_NUMBER) > 0) {
+  
+  # Extract rows from 'mainSheet' (by filtering to rows whose APPLICATION_NUMBER values appear in 'expDemand')
+  # Append them to 'expDemand' and then sort the tibble
+  expDemand <- mainSheet %>%
+    filter(APPLICATION_NUMBER %in% expDemand$APPLICATION_NUMBER) %>%
+    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
+    bind_rows(expDemand) %>%
+    arrange(APPLICATION_NUMBER, YEAR)
+  
+  
+  # Filter down 'mainSheet' (removing those rows)
+  # Then, overwrite the review spreadsheet for it
+  mainSheet %>%
+    filter(!(APPLICATION_NUMBER %in% expDemand$APPLICATION_NUMBER)) %>%
+    write.xlsx(paste0("OutputData/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx"))
+  
+}
+
+
+
+# Write 'expDemand' to a spreadsheet
 write.xlsx(expDemand,
            paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 
