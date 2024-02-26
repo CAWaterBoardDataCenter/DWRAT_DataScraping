@@ -1,16 +1,17 @@
-SELECT DISTINCT
-    c.name 'Column Name',
-    t.Name 'Data type',
-    c.max_length 'Max Length',
-    c.is_nullable,
-    ISNULL(i.is_primary_key, 0) 'Primary Key'
-FROM    
-    sys.columns c
-INNER JOIN 
-    sys.types t ON c.user_type_id = t.user_type_id
-LEFT OUTER JOIN 
-    sys.index_columns ic ON ic.object_id = c.object_id AND ic.column_id = c.column_id
-LEFT OUTER JOIN 
-    sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id
-WHERE
-  c.object_id = OBJECT_ID('TMGJOB')
+--Water Use Report Extended Flat File
+Select
+APPLICATION_NUMBER,
+YEAR,
+MONTH,
+AMOUNT,
+DIVERSION_TYPE,
+MAX_STORAGE
+FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
+
+
+Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod
+Select top 100 * from ReportDB.FLAT_FILE.ewrims_flat_file_pod
+Select top 100 * from ReportDB.FLAT_FILE.ewrims_water_use_report
+Select top 10 *  from ReportDb.FLAT_FILE.ewrims_flat_file_use_season
+Select top 10 * from ReportDB.FLAT_FILE.ewrims_flat_file_party
+

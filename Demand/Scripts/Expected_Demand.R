@@ -3,7 +3,7 @@
 
 
 
-# This script is a recreation of the Excel module called:
+# This script is based on the Excel module called:
 # "ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics.xlsx"
 
 
@@ -72,6 +72,30 @@ mainProcedure <- function (wsID) {
   
   
   
+  # Create an alternative version of 'monthlyDF' that uses water years instead of calendar years
+  # (This is important for reports submitted for 2022 and later)
+  monthlyDF_WY <- monthlyDF %>% CY2WY()
+  
+  
+  
+  # Filter 'monthlyDF' to before 2022 (when reports used calendar years)
+  monthlyDF <- monthlyDF %>%
+    filter(YEAR < 2022)
+  
+  
+  # Filter 'monthlyDF_WY' to 2022 and later (where reports use water years)
+  monthlyDF_WY <- monthlyDF_WY %>%
+    filter(YEAR >= 2022)
+  
+  
+  
+  # The last three months of 2021 in 'monthlyDF' should be set to NA
+  # (They already appear in the water year dataset as part of WY2022)
+  if (2021 %in% monthlyDF$YEAR && 2022 %in% monthlyDF_WY$YEAR) {
+    monthlyDF$AMOUNT[monthlyDF$YEAR == 2021 & monthlyDF$MONTH > 9] <- NA_real_
+  }
+  
+  
   # Get the annual direct diversion for each application and year
   # Add that column to 'monthlyDF' with the name "ANNUAL_DIRECT"
   monthlyDF <- monthlyDF %>%
@@ -82,6 +106,18 @@ mainProcedure <- function (wsID) {
              SEP_DIRECT_DIVERSION, OCT_DIRECT_DIVERSION, NOV_DIRECT_DIVERSION, 
              DEC_DIRECT_DIVERSION, na.rm = TRUE)) %>%
     ungroup()
+  
+  
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
+    rowwise() %>%
+    mutate(ANNUAL_DIRECT = sum(JAN_DIRECT_DIVERSION, FEB_DIRECT_DIVERSION, 
+                               MAR_DIRECT_DIVERSION, APR_DIRECT_DIVERSION, MAY_DIRECT_DIVERSION, 
+                               JUN_DIRECT_DIVERSION, JUL_DIRECT_DIVERSION, AUG_DIRECT_DIVERSION, 
+                               SEP_DIRECT_DIVERSION, OCT_DIRECT_DIVERSION, NOV_DIRECT_DIVERSION, 
+                               DEC_DIRECT_DIVERSION, na.rm = TRUE)) %>%
+    ungroup()
+  
   
   
   # Do the same for the storage values (call the column "ANNUAL_STORAGE")
@@ -95,6 +131,18 @@ mainProcedure <- function (wsID) {
     ungroup()
   
   
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
+    rowwise() %>%
+    mutate(ANNUAL_STORAGE = sum(JAN_STORAGE_DIVERSION, FEB_STORAGE_DIVERSION, 
+                                MAR_STORAGE_DIVERSION, APR_STORAGE_DIVERSION, MAY_STORAGE_DIVERSION, 
+                                JUN_STORAGE_DIVERSION, JUL_STORAGE_DIVERSION, AUG_STORAGE_DIVERSION, 
+                                SEP_STORAGE_DIVERSION, OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION, 
+                                DEC_STORAGE_DIVERSION, na.rm = TRUE)) %>%
+    ungroup()
+  
+  
+  
   # Although it appears later in the module, define "ANNUAL_USE" now
   monthlyDF <- monthlyDF %>%
     rowwise() %>%
@@ -104,6 +152,18 @@ mainProcedure <- function (wsID) {
              SEP_REPORTED_USE, OCT_REPORTED_USE, NOV_REPORTED_USE, 
              DEC_REPORTED_USE, na.rm = TRUE)) %>%
     ungroup()
+  
+  
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
+    rowwise() %>%
+    mutate(ANNUAL_USE = sum(JAN_REPORTED_USE, FEB_REPORTED_USE, 
+                            MAR_REPORTED_USE, APR_REPORTED_USE, MAY_REPORTED_USE, 
+                            JUN_REPORTED_USE, JUL_REPORTED_USE, AUG_REPORTED_USE, 
+                            SEP_REPORTED_USE, OCT_REPORTED_USE, NOV_REPORTED_USE, 
+                            DEC_REPORTED_USE, na.rm = TRUE)) %>%
+    ungroup()
+  
   
   
   # Create two flag columns:
@@ -135,11 +195,26 @@ mainProcedure <- function (wsID) {
   
   
   
+  # Perform similar steps for the water year dataset
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(WATER_YEAR_TOTAL = ANNUAL_DIRECT + ANNUAL_STORAGE,
+           MAY_TO_SEP_TOTAL_DIVERSION = MAY_DIRECT_DIVERSION + JUN_DIRECT_DIVERSION + 
+             JUL_DIRECT_DIVERSION + AUG_DIRECT_DIVERSION + SEP_DIRECT_DIVERSION + 
+             MAY_STORAGE_DIVERSION + JUN_STORAGE_DIVERSION + JUL_STORAGE_DIVERSION + 
+             AUG_STORAGE_DIVERSION + SEP_STORAGE_DIVERSION)
+  
+  
+  
   # After that, link the data in 'fvDF' to 'monthlyDF'
   # The join will be based on "APPLICATION_NUMBER" 
   # Each application number should appear only once in 'fvDF' 
   # (and 'monthlyDF' will have multiple rows per number)
   monthlyDF <- monthlyDF %>%
+    left_join(fvDF, by = "APPLICATION_NUMBER", relationship = "many-to-one")
+  
+  
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
     left_join(fvDF, by = "APPLICATION_NUMBER", relationship = "many-to-one")
   
   
@@ -154,11 +229,23 @@ mainProcedure <- function (wsID) {
   
   
   
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(IniDiv_Converted_to_AF = if_else(INI_REPORTED_DIV_UNIT == "Gallons",
+                                            INI_REPORTED_DIV_AMOUNT / 325851,
+                                            INI_REPORTED_DIV_AMOUNT))
+  
+  
+  
   # Next calculate "Diversion_as_Percent_of_FV"
   # This is "CALENDAR_YEAR_TOTAL" divided by "FACE_VALUE_AMOUNT"
   # (If "FACE_VALUE_AMOUNT" is NA, this calculation will produce NA too)
   monthlyDF <- monthlyDF %>%
     mutate(Diversion_as_Percent_of_FV = CALENDAR_YEAR_TOTAL / FACE_VALUE_AMOUNT)
+  
+  
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(Diversion_as_Percent_of_FV = WATER_YEAR_TOTAL / FACE_VALUE_AMOUNT)
   
   
   
@@ -177,12 +264,31 @@ mainProcedure <- function (wsID) {
   
   
   
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(Amount_over_FV = if_else(!is.na(FACE_VALUE_AMOUNT) & FACE_VALUE_AMOUNT > 0,
+                                    if_else(Diversion_as_Percent_of_FV > 1,
+                                            WATER_YEAR_TOTAL - FACE_VALUE_AMOUNT,
+                                            0),
+                                    NA_real_))
+  
+  
+  
   # Repeat the above two steps with "IniDiv_Converted_to_AF" instead of "FACE_VALUE_AMOUNT"
   monthlyDF <- monthlyDF %>%
     mutate(Diversion_as_Percent_of_IniDiv = CALENDAR_YEAR_TOTAL / IniDiv_Converted_to_AF,
            Amount_over_IniDiv = if_else(!is.na(IniDiv_Converted_to_AF) & IniDiv_Converted_to_AF > 0,
                                         if_else(Diversion_as_Percent_of_IniDiv > 1,
                                                 CALENDAR_YEAR_TOTAL - IniDiv_Converted_to_AF,
+                                                0),
+                                        NA_real_))
+  
+  
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(Diversion_as_Percent_of_IniDiv = WATER_YEAR_TOTAL / IniDiv_Converted_to_AF,
+           Amount_over_IniDiv = if_else(!is.na(IniDiv_Converted_to_AF) & IniDiv_Converted_to_AF > 0,
+                                        if_else(Diversion_as_Percent_of_IniDiv > 1,
+                                                WATER_YEAR_TOTAL - IniDiv_Converted_to_AF,
                                                 0),
                                         NA_real_))
   
@@ -203,6 +309,14 @@ mainProcedure <- function (wsID) {
   
   
   
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(Annual_Diversion_if_reported_in_Gallons = WATER_YEAR_TOTAL / 325851,
+           Annual_Diversion_if_reported_in_GPM = WATER_YEAR_TOTAL / 325851 * 525600,
+           Annual_Diversion_if_reported_in_GPD = WATER_YEAR_TOTAL / 325851 * 365,
+           Annual_Diversion_if_reported_in_CFS = WATER_YEAR_TOTAL / 43559.9 * 31536000)
+  
+  
+  
   # Add counterparts to the 'Diversion_as_Percent_of_FV' column
   # These use the alternative unit columns in place of "CALENDAR_YEAR_TOTAL"
   monthlyDF <- monthlyDF %>%
@@ -218,6 +332,21 @@ mainProcedure <- function (wsID) {
            QAQC_Reason = NA_character_)
   
   
+  
+  monthlyDF_WY <- monthlyDF_WY %>%
+    mutate(Gallons_as_percent_of_FV = Annual_Diversion_if_reported_in_Gallons / FACE_VALUE_AMOUNT,
+           GPM_as_percent_of_FV = Annual_Diversion_if_reported_in_GPM / FACE_VALUE_AMOUNT,
+           GPD_as_percent_of_FV = Annual_Diversion_if_reported_in_GPD / FACE_VALUE_AMOUNT,
+           CFS_as_percent_of_FV = Annual_Diversion_if_reported_in_CFS / FACE_VALUE_AMOUNT,
+           Gallons_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_Gallons / IniDiv_Converted_to_AF,
+           GPM_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_GPM / IniDiv_Converted_to_AF,
+           GPD_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_GPD / IniDiv_Converted_to_AF,
+           CFS_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_CFS / IniDiv_Converted_to_AF,
+           QAQC_Action_Taken = NA_character_,
+           QAQC_Reason = NA_character_)
+  
+  
+  
   # A new data frame is needed for the next group of columns
   
   # Each row will be for one unique application number
@@ -231,39 +360,82 @@ mainProcedure <- function (wsID) {
   
   
   
+  avgDF_WY <- monthlyAvg(monthlyDF_WY)
+  
+  
+  
   # Next, for each month, define a variable with the total expected diversion
   # (The sum of "[MONTH]_AVERAGE_DIRECT_DIVERSION" and "[MONTH]_AVERAGE_STORAGE_DIVERSION")
   avgDF <- avgDF %>%
     mutate(JAN_EXPECTED_TOTAL_DIVERSION = 
-             JAN_AVERAGE_DIRECT_DIVERSION + JAN_AVERAGE_STORAGE_DIVERSION,
+             replace_na(JAN_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(JAN_AVERAGE_STORAGE_DIVERSION, 0),
            FEB_EXPECTED_TOTAL_DIVERSION = 
-             FEB_AVERAGE_DIRECT_DIVERSION + FEB_AVERAGE_STORAGE_DIVERSION,
+             replace_na(FEB_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(FEB_AVERAGE_STORAGE_DIVERSION, 0),
            MAR_EXPECTED_TOTAL_DIVERSION = 
-             MAR_AVERAGE_DIRECT_DIVERSION + MAR_AVERAGE_STORAGE_DIVERSION,
+             replace_na(MAR_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(MAR_AVERAGE_STORAGE_DIVERSION, 0),
            APR_EXPECTED_TOTAL_DIVERSION = 
-             APR_AVERAGE_DIRECT_DIVERSION + APR_AVERAGE_STORAGE_DIVERSION,
+             replace_na(APR_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(APR_AVERAGE_STORAGE_DIVERSION, 0),
            MAY_EXPECTED_TOTAL_DIVERSION = 
-             MAY_AVERAGE_DIRECT_DIVERSION + MAY_AVERAGE_STORAGE_DIVERSION,
+             replace_na(MAY_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(MAY_AVERAGE_STORAGE_DIVERSION, 0),
            JUN_EXPECTED_TOTAL_DIVERSION = 
-             JUN_AVERAGE_DIRECT_DIVERSION + JUN_AVERAGE_STORAGE_DIVERSION,
+             replace_na(JUN_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(JUN_AVERAGE_STORAGE_DIVERSION, 0),
            JUL_EXPECTED_TOTAL_DIVERSION = 
-             JUL_AVERAGE_DIRECT_DIVERSION + JUL_AVERAGE_STORAGE_DIVERSION,
+             replace_na(JUL_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(JUL_AVERAGE_STORAGE_DIVERSION, 0),
            AUG_EXPECTED_TOTAL_DIVERSION = 
-             AUG_AVERAGE_DIRECT_DIVERSION + AUG_AVERAGE_STORAGE_DIVERSION,
+             replace_na(AUG_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(AUG_AVERAGE_STORAGE_DIVERSION, 0),
            SEP_EXPECTED_TOTAL_DIVERSION = 
-             SEP_AVERAGE_DIRECT_DIVERSION + SEP_AVERAGE_STORAGE_DIVERSION,
+             replace_na(SEP_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(SEP_AVERAGE_STORAGE_DIVERSION, 0),
            OCT_EXPECTED_TOTAL_DIVERSION = 
-             OCT_AVERAGE_DIRECT_DIVERSION + OCT_AVERAGE_STORAGE_DIVERSION,
+             replace_na(OCT_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(OCT_AVERAGE_STORAGE_DIVERSION, 0),
            NOV_EXPECTED_TOTAL_DIVERSION = 
-             NOV_AVERAGE_DIRECT_DIVERSION + NOV_AVERAGE_STORAGE_DIVERSION,
+             replace_na(NOV_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(NOV_AVERAGE_STORAGE_DIVERSION, 0),
            DEC_EXPECTED_TOTAL_DIVERSION = 
-             DEC_AVERAGE_DIRECT_DIVERSION + DEC_AVERAGE_STORAGE_DIVERSION)
+             replace_na(DEC_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(DEC_AVERAGE_STORAGE_DIVERSION, 0))
+  
+  
+  
+  avgDF_WY <- avgDF_WY %>%
+    mutate(JAN_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(JAN_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(JAN_AVERAGE_STORAGE_DIVERSION, 0),
+           FEB_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(FEB_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(FEB_AVERAGE_STORAGE_DIVERSION, 0),
+           MAR_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(MAR_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(MAR_AVERAGE_STORAGE_DIVERSION, 0),
+           APR_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(APR_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(APR_AVERAGE_STORAGE_DIVERSION, 0),
+           MAY_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(MAY_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(MAY_AVERAGE_STORAGE_DIVERSION, 0),
+           JUN_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(JUN_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(JUN_AVERAGE_STORAGE_DIVERSION, 0),
+           JUL_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(JUL_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(JUL_AVERAGE_STORAGE_DIVERSION, 0),
+           AUG_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(AUG_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(AUG_AVERAGE_STORAGE_DIVERSION, 0),
+           SEP_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(SEP_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(SEP_AVERAGE_STORAGE_DIVERSION, 0),
+           OCT_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(OCT_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(OCT_AVERAGE_STORAGE_DIVERSION, 0),
+           NOV_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(NOV_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(NOV_AVERAGE_STORAGE_DIVERSION, 0),
+           DEC_EXPECTED_TOTAL_DIVERSION = 
+             replace_na(DEC_AVERAGE_DIRECT_DIVERSION, 0) + replace_na(DEC_AVERAGE_STORAGE_DIVERSION, 0))
   
   
   
   # After that, define a variable for the average annual 
   # It will be the sum of the average monthly diversions for "DIRECT" and "STORAGE"
   avgDF <- avgDF %>%
+    mutate(ANNUAL_TOTAL_DIVERSION = 
+             JAN_EXPECTED_TOTAL_DIVERSION + FEB_EXPECTED_TOTAL_DIVERSION + 
+             MAR_EXPECTED_TOTAL_DIVERSION + APR_EXPECTED_TOTAL_DIVERSION + 
+             MAY_EXPECTED_TOTAL_DIVERSION + JUN_EXPECTED_TOTAL_DIVERSION + 
+             JUL_EXPECTED_TOTAL_DIVERSION + AUG_EXPECTED_TOTAL_DIVERSION + 
+             SEP_EXPECTED_TOTAL_DIVERSION + OCT_EXPECTED_TOTAL_DIVERSION + 
+             NOV_EXPECTED_TOTAL_DIVERSION + DEC_EXPECTED_TOTAL_DIVERSION)
+  
+  
+  
+  avgDF_WY <- avgDF_WY %>%
     mutate(ANNUAL_TOTAL_DIVERSION = 
              JAN_EXPECTED_TOTAL_DIVERSION + FEB_EXPECTED_TOTAL_DIVERSION + 
              MAR_EXPECTED_TOTAL_DIVERSION + APR_EXPECTED_TOTAL_DIVERSION + 
@@ -284,6 +456,14 @@ mainProcedure <- function (wsID) {
   
   
   
+  avgDF_WY <- avgDF_WY %>%
+    mutate(MAY_TO_SEP_TOTAL_DIVERSION = 
+             MAY_EXPECTED_TOTAL_DIVERSION + JUN_EXPECTED_TOTAL_DIVERSION + 
+             JUL_EXPECTED_TOTAL_DIVERSION + AUG_EXPECTED_TOTAL_DIVERSION + 
+             SEP_EXPECTED_TOTAL_DIVERSION)
+  
+  
+  
   # Next, add to 'avgDF' the average of "ANNUAL_USE" for each application number
   # ("ANNUAL_USE" is a column in 'monthlyDF')
   avgDF <- avgDF %>%
@@ -296,10 +476,31 @@ mainProcedure <- function (wsID) {
   
   
   
+  avgDF_WY <- avgDF_WY %>%
+    full_join(monthlyDF_WY %>%
+                ungroup() %>%
+                select(APPLICATION_NUMBER, ANNUAL_USE) %>%
+                group_by(APPLICATION_NUMBER) %>%
+                summarize(TOTAL_ANNUAL_USE = mean(ANNUAL_USE)),
+              by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  
   # Then, create a column that is the average of the standard deviations
   # for the "DIRECT" use types
   # (NA rows are ignored in these calculations)
   avgDF <- avgDF %>%
+    rowwise() %>%
+    mutate(AVERAGE_STDEV = mean(JAN_STDEV, FEB_STDEV, MAR_STDEV,
+                                APR_STDEV, MAY_STDEV, JUN_STDEV,
+                                JUL_STDEV, AUG_STDEV, SEP_STDEV,
+                                OCT_STDEV, NOV_STDEV, DEC_STDEV,
+                                na.rm = TRUE)) %>%
+    ungroup()
+  
+  
+  
+  avgDF_WY <- avgDF_WY %>%
     rowwise() %>%
     mutate(AVERAGE_STDEV = mean(JAN_STDEV, FEB_STDEV, MAR_STDEV,
                                 APR_STDEV, MAY_STDEV, JUN_STDEV,
@@ -326,8 +527,27 @@ mainProcedure <- function (wsID) {
               by = "APPLICATION_NUMBER", relationship = "one-to-one")
   
   
+  
+  avgDF_WY <- avgDF_WY %>%
+    left_join(statDF %>%
+                filter(DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>%
+                select(APPLICATION_NUMBER, AMOUNT) %>%
+                group_by(APPLICATION_NUMBER) %>%
+                summarize(Total_Cumulative_Diverted = sum(AMOUNT, na.rm = TRUE)),
+              by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
   # Add "Total_Cumulative_Use" after that 
   avgDF <- avgDF %>%
+    left_join(statDF %>%
+                filter(DIVERSION_TYPE == "USE") %>%
+                select(APPLICATION_NUMBER, AMOUNT) %>%
+                group_by(APPLICATION_NUMBER) %>%
+                summarize(Total_Cumulative_Use = sum(AMOUNT, na.rm = TRUE)),
+              by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  avgDF_WY <- avgDF_WY %>%
     left_join(statDF %>%
                 filter(DIVERSION_TYPE == "USE") %>%
                 select(APPLICATION_NUMBER, AMOUNT) %>%
@@ -346,6 +566,25 @@ mainProcedure <- function (wsID) {
                      Total_Cumulative_Use / Total_Cumulative_Diverted,
                      NA_real_))
   
+  
+  
+  avgDF_WY <- avgDF_WY %>%
+    mutate(Total_Use_as_a_Percent_of_Total_Diverted = 
+             if_else(!is.na(Total_Cumulative_Diverted) & Total_Cumulative_Diverted > 0,
+                     Total_Cumulative_Use / Total_Cumulative_Diverted,
+                     NA_real_))
+  
+  
+  
+  # Merge the two 'monthlyDF' tibbles together
+  # NOTE: The data from October - December 2021 will be present twice in the dataset
+  # (both the CY2021 and the WY2022 datasets)
+  monthlyDF <- monthlyDF %>%
+    bind_rows(monthlyDF_WY)
+  
+  
+  # avgDF <- avgDF %>%
+  #   bind_rows(avgDF_WY)
   
   
   # The final step of this script is to output a spreadsheet 
@@ -385,7 +624,7 @@ mainProcedure <- function (wsID) {
   if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
     
     reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
-      tail(1) %>%
+      sort() %>% tail(1) %>%
       read_xlsx(sheet = "Corrected Data") %>%
       select(APPLICATION_NUMBER, YEAR)
     
@@ -394,7 +633,7 @@ mainProcedure <- function (wsID) {
     if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"))) > 0) {
       
       reviewDF2 <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"), full.names = TRUE) %>%
-        tail(1) %>%
+        sort() %>% tail(1) %>%
         read_xlsx(sheet = "Filtered Data") %>%
         select(APPLICATION_NUMBER, YEAR)
       
@@ -421,7 +660,7 @@ mainProcedure <- function (wsID) {
   # After that, save another spreadsheet with just columns related to assessing unit conversion errors
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR,
-           CALENDAR_YEAR_TOTAL,
+           CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL, 
            FACE_VALUE_AMOUNT, IniDiv_Converted_to_AF,
            Diversion_as_Percent_of_FV, Diversion_as_Percent_of_IniDiv,
            Annual_Diversion_if_reported_in_Gallons, Gallons_as_percent_of_FV,
@@ -438,9 +677,9 @@ mainProcedure <- function (wsID) {
   
   
   
-  # Then include a spreadsheet focused on CALENDAR_YEAR_TOTAL for all rights in 'monthlyDF'
+  # Then include a spreadsheet focused on "CALENDAR_YEAR_TOTAL"/"WATER_YEAR_TOTAL" for all rights in 'monthlyDF'
   monthlyDF %>%
-    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL) %>%
+    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
     write.xlsx(paste0("OutputData/", wsID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
@@ -517,6 +756,49 @@ monthlyUseValues <- function (statDF) {
   
   # Return 'useDF'
   return(useDF)
+  
+}
+
+
+CY2WY <- function (monthlyDF) {
+  
+  # Given a data frame of monthly diversion volumes for each calendar year ('monthlyDF'),
+  # create an alternative data frame that displays data by water year instead
+  
+  
+  
+  # Create two subsets of 'monthlyDF'
+  # One data frame will have the data for the JAN - SEP months in that year
+  # The other data frame will have OCT - DEC data
+  mainDF <- monthlyDF %>%
+    ungroup() %>%
+    select(APPLICATION_NUMBER, YEAR,
+           matches("^(JAN)|(FEB)|(MAR)|(APR)|(MAY)|(JUN)|(JUL)|(AUG)|(SEP)"))
+  
+  
+  
+  secondDF <- monthlyDF %>%
+    ungroup() %>%
+    select(APPLICATION_NUMBER, YEAR,
+           matches("^(OCT)|(NOV)|(DEC)"))
+  
+  
+  
+  # In each row of 'secondDF', increase the value of "YEAR" by 1
+  # In a water year, the last three months of the previous year are part of the current water year
+  secondDF <- secondDF %>%
+    mutate(YEAR = YEAR + 1)
+  
+  
+  
+  # Join 'secondDF' to 'mainDF'
+  wyDF <- mainDF %>%
+    left_join(secondDF, by = c("APPLICATION_NUMBER", "YEAR"))
+  
+  
+  
+  # Return 'wyDF'
+  return(wyDF)
   
 }
 
@@ -1115,7 +1397,7 @@ mainProcedure(ws$ID)
 print("The Expected_Demand.R script is done running!")
 
 
-remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues)
+remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues, CY2WY)
 
 
 

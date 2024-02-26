@@ -3,46 +3,172 @@
 #install.packages("tidyverse")
 
 #Load Packages- This step must be done each time the project is opened. ----
-library(tidyverse)
+require(tidyverse)
+require(odbc)
+require(DBI)
 
+# Repair function for corrupted flat files----
+
+# Jeff Yeazell and Damon Hess discovered in February 2024 that the flat files had been corrupted;
+# The October, November, and December 2021 reported values are being assigned to their respective 
+# months in 2022, and the 'missing ' 2021 values are then imputed as zeros. If diverters reported 
+# for water year 2023, the October, November, and December 2022 reported values are being assigned 
+# to their respective months in 2023. It looks like some sort of joining error where the year 
+# is not included with the month. It affects every water right and possibly every analysis 
+# performed on Water Year 2022 data or later where the error went unnoticed.
+
+fixData <- function(x) {
+  
+  # WY 2022 data:
+  # Extract Oct, Nov, and Dec 2022 rows and rewind to 2021.
+  t1 <- x %>% 
+    filter(YEAR == 2022,
+           MONTH %in% c(10:12)) %>% 
+    mutate(YEAR = 2021)
+  
+  # Cut offending Oct, Nov, Dec rows for 2021 and 2022.
+  x <- x %>% 
+    filter(!(YEAR %in% c(2021, 2022) & MONTH %in% c(10:12)))
+  
+  # Bind corrected Oct, Nov, Dec 2021 rows.
+  x <- bind_rows(x, t1)
+  
+  # WY 2023 data:
+  # Extract Oct, Nov, and Dec 2023 rows and rewind to 2022.
+  t2 <- x %>% 
+    filter(YEAR == 2023,
+           MONTH %in% c(10:12)) %>% 
+    mutate(YEAR = 2022)
+  
+  # Cut offending Oct, Nov, Dec rows for 2022 and 2023.  
+  x <- x %>% 
+    filter(!(YEAR %in% c(2022, 2023) & MONTH %in% c(10:12)))
+  
+  # Bind corrected Oct, Nov, Dec 2022 rows.
+  x <- bind_rows(x, t2) %>% 
+    arrange(APPL_ID, YEAR, MONTH)
+  
+  # Return result.
+  return(x)
+}
+
+# Downloading Flat Files Required by QAQC Process----
 
 # Download in advance all flat files that will be used in the procedures of this script and the other demand-related scripts
-# They will be collected from *Internal URLs* that are updated daily; a Cal EPA network connection or VPN connection is required for this step
+# They will be downloaded directly from the ReportManager, 1542 SQL Server, Database ReportDB, which hosts all eWRIMS flat files. 
+# This database is accessible to all Division staff. (VPN Required)
+ReportManager <- dbConnect(odbc(),
+                           Driver = "SQL Server",
+                           Server = "reportmanager,1542",
+                           Trusted_Connection = "Yes",
+                           Database = "ReportDB")
 
 
-# Save the POD flat file
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_pod.csv", 
-              "RawData/ewrims_flat_file_pod.csv", mode = "wb", quiet = TRUE)
+# Save the POD flat file, ~73 MB as of 2/13/2024
+Flat_File_PODs <- dbGetQuery(ReportManager,
+                             "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod") %>%
+  write_csv("RawData/ewrims_flat_file_pod.csv")
 
 
-# Get the master flat file as well
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file.csv",
-              "RawData/ewrims_flat_file.csv", mode = "wb", quiet = TRUE)
+# Get the master flat file as well, ~69 MB as of 2/13/2024
+flat_file <- dbGetQuery(conn = ReportManager,
+           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file") %>% 
+  write_csv("RawData/ewrims_flat_file.csv")
 
 
-# Download the Water Rights Annual Water Use Report file next
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report.csv", show_col_types = FALSE) %>%
-  write_csv("RawData/water_use_report.csv")
+# Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
+water_use_report <- dbGetQuery(conn = ReportManager,
+           statement = "SELECT * from ReportDB.FLAT_FILE.ewrims_water_use_report
+           WHERE YEAR >= 2016 ")
 
-# Save the Water Rights Annual Water Use Extended Report file too
+# Convert the YEAR  column to numeric
+water_use_report$YEAR = as.numeric(water_use_report$YEAR)
+  
+  
+if (water_use_report %>% 
+    filter(YEAR == max(water_use_report$YEAR) & as.numeric(MONTH) > 9) %>%
+    nrow() > 0) {
+  
+  # Apply the fixData function to water_use_report
+  water_use_report_repaired <- fixData(water_use_report)
+  
+  write_csv(water_use_report_repaired,"RawData/water_use_report.csv")
+  
+} else {
+  
+  write_csv(water_use_report,"RawData/water_use_report.csv")
+  
+}
+
+
+# Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
 # (This works, but it takes a long time, and the progress bar might not update)
-options(timeout = 10^9) # With this setting change, download.file() will now stop if the download takes more than a billion seconds (~31.7 years), about 15.7 GB
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "RawData/water_use_report_extended.csv", mode = "wb", quiet = FALSE)
+water_use_report_extended = dbGetQuery(conn = ReportManager,
+           statement = "Select
+                                                  APPLICATION_NUMBER,YEAR,MONTH,
+                                                  AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
+                                                  FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
+                                                  EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
+                                                  WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
+                                                  STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
+                                                  STORAGE_SEASON_END,
+                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER
+                                                  
+                                                  FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
+                                                  WHERE YEAR >= 2016
+                                                  ")
 
+if (water_use_report_extended %>% 
+    filter(YEAR == max(as.numeric(water_use_report_extended$YEAR)) & as.numeric(MONTH) > 9) %>%
+    nrow() > 0) {
+  
+  
+  # Rename APPLICATION_NUMBER to APPL_ID so that it's compatible with the fixData function
+  water_use_report_extended <- water_use_report_extended %>% 
+    rename(APPL_ID = APPLICATION_NUMBER)
+  
+  # Change YEAR to numeric data type
+  water_use_report_extended$YEAR = as.numeric(water_use_report_extended$YEAR)
+  
+  # Apply the fixData function to water_use_report_extended
+  water_use_report_extended_repaired = fixData(water_use_report_extended)
+  
+  # Revert APPL_ID to APPLICATION_NUMBER
+  water_use_report_extended_repaired <- water_use_report_extended_repaired %>% 
+    rename(APPLICATION_NUMBER = APPL_ID)
+  
+  #Export water_use_report_extended_repaired to CSV
+  write_csv(x = water_use_report_extended_repaired, file = "RawData/water_use_report_extended.csv")
+  
+} else {
+  
+  write_csv(x = water_use_report_extended, file = "RawData/water_use_report_extended.csv")
+  
+}
 
+  
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
+           statement = "Select * from 
+                                          ReportDB.FLAT_FILE.ewrims_flat_file_use_season") %>% 
   write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
-read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_party.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
+           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
 
 # Read the POD flat file
-Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
+# (This is already assigned earlier at the SQL query step)
+#Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
+
+
+# Disconnect from ReportDB Database
+dbDisconnect(conn = ReportManager)
+
 
 #Apply the proper filters----
 
@@ -142,5 +268,19 @@ write_csv(Flat_File_eWRIMS,
 
 
 
-remove(Flat_File_eWRIMS, Flat_File_PODs, Flat_File_PODs_Status, 
-       Flat_File_PODs_WR_Type, cols_to_keep)
+# Clear the environment----
+  # Get the name of all variables in the environment
+all_vars = ls()
+  
+  # Keep ws variable
+vars_to_keep = ws
+
+  # Specify all other variables for removal
+vars_to_remove = setdiff(all_vars, vars_to_keep)
+  
+  # Remove variables
+rm(list = vars_to_remove)
+  
+  
+remove(all_vars, vars_to_keep, vars_to_remove)
+  
