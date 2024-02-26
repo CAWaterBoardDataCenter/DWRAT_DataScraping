@@ -47,20 +47,41 @@ unitFixer <- function (inputDF, ws) {
   # The procedure will be slightly different depending on whether the paths are SharePoint paths
   if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == TRUE) {
     
-    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME %>%
+    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
       makeSharePointPath() %>%
       read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
     
   # Do not use makeSharePointPath() if "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET" is FALSE
   } else if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == FALSE) {
     
-    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME %>%
+    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
       read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
     
   # Error Check
   } else {
     
     stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
+    
+  }
+  
+  
+  
+  if (ws$IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET == TRUE) {
+    
+    unitsQAQC_Med <- ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
+      makeSharePointPath() %>%
+      read_xlsx(sheet = ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
+    
+    # Do not use makeSharePointPath() if "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET" is FALSE
+  } else if (ws$IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET == FALSE) {
+    
+    unitsQAQC_Med <- ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
+      read_xlsx(sheet = ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
+    
+    # Error Check
+  } else {
+    
+    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
     
   }
   
