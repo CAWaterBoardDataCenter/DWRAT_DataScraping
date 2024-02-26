@@ -81,13 +81,25 @@ water_use_report <- dbGetQuery(conn = ReportManager,
            statement = "SELECT * from ReportDB.FLAT_FILE.ewrims_water_use_report
            WHERE YEAR >= 2016 ")
 
-  # Convert the YEAR  column to numeric
-  water_use_report$YEAR = as.numeric(water_use_report$YEAR)
+# Convert the YEAR  column to numeric
+water_use_report$YEAR = as.numeric(water_use_report$YEAR)
+  
+  
+if (water_use_report %>% 
+    filter(YEAR == max(water_use_report$YEAR) & as.numeric(MONTH) > 9) %>%
+    nrow() > 0) {
   
   # Apply the fixData function to water_use_report
   water_use_report_repaired <- fixData(water_use_report)
-
+  
   write_csv(water_use_report_repaired,"RawData/water_use_report.csv")
+  
+} else {
+  
+  write_csv(water_use_report,"RawData/water_use_report.csv")
+  
+}
+
 
 # Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
 # (This works, but it takes a long time, and the progress bar might not update)
@@ -106,12 +118,17 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                   WHERE YEAR >= 2016
                                                   ")
 
+if (water_use_report_extended %>% 
+    filter(YEAR == max(as.numeric(water_use_report_extended$YEAR)) & as.numeric(MONTH) > 9) %>%
+    nrow() > 0) {
+  
+  
   # Rename APPLICATION_NUMBER to APPL_ID so that it's compatible with the fixData function
   water_use_report_extended <- water_use_report_extended %>% 
     rename(APPL_ID = APPLICATION_NUMBER)
   
   # Change YEAR to numeric data type
-  water_use_report_extended$YEAR = as.numeric(water_use_report_extended$YEAR )
+  water_use_report_extended$YEAR = as.numeric(water_use_report_extended$YEAR)
   
   # Apply the fixData function to water_use_report_extended
   water_use_report_extended_repaired = fixData(water_use_report_extended)
@@ -123,11 +140,19 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
   #Export water_use_report_extended_repaired to CSV
   write_csv(x = water_use_report_extended_repaired, file = "RawData/water_use_report_extended.csv")
   
-  # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
-  ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
+} else {
+  
+  write_csv(x = water_use_report_extended, file = "RawData/water_use_report_extended.csv")
+  
+}
+
+  
+# Save the Water Rights Uses and Seasons flat file as well, ~96 MB
+ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
            statement = "Select * from 
                                           ReportDB.FLAT_FILE.ewrims_flat_file_use_season") %>% 
   write_csv("RawData/ewrims_flat_file_use_season.csv")
+
 
 # Get the Water Rights Parties flat file after that
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
@@ -245,13 +270,18 @@ write_csv(Flat_File_eWRIMS,
 
 # Clear the environment----
   # Get the name of all variables in the environment
-  all_vars = ls()
+all_vars = ls()
   
   # Keep ws variable
-  vars_to_keep = c("ws")
+
+vars_to_keep = c("ws", "makeSharePointPath", "getWatershedBoundaries")
 
   # Specify all other variables for removal
-  vars_to_remove = setdiff(all_vars, vars_to_keep)
+vars_to_remove = setdiff(all_vars, vars_to_keep)
   
   # Remove variables
-  rm(list = vars_to_remove)
+rm(list = vars_to_remove)
+  
+  
+remove(all_vars, vars_to_keep, vars_to_remove)
+  
