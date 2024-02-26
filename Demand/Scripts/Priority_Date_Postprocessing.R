@@ -66,13 +66,13 @@ filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023,
 # Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
 # correct entries in 'water_use_report_Date' for unit conversion errors
 water_use_report_Date <- water_use_report_Date %>%
-  unitFixer(ws$NAME, ws$ID)
+  unitFixer(ws)
 
 
 
 # After that, apply corrections for duplicate reporting
 water_use_report_Date <- water_use_report_Date %>%
-  dupReportingFixer(ws$NAME, ws$ID)
+  dupReportingFixer(ws)
 
 
 

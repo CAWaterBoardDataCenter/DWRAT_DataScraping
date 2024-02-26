@@ -92,7 +92,19 @@ mainProcedure <- function (wsID) {
   # The last three months of 2021 in 'monthlyDF' should be set to NA
   # (They already appear in the water year dataset as part of WY2022)
   if (2021 %in% monthlyDF$YEAR && 2022 %in% monthlyDF_WY$YEAR) {
-    monthlyDF$AMOUNT[monthlyDF$YEAR == 2021 & monthlyDF$MONTH > 9] <- NA_real_
+    
+    monthlyDF$OCT_DIRECT_DIVERSION[monthlyDF$YEAR == 2021] <- NA_real_
+    monthlyDF$NOV_DIRECT_DIVERSION[monthlyDF$YEAR == 2021] <- NA_real_
+    monthlyDF$DEC_DIRECT_DIVERSION[monthlyDF$YEAR == 2021] <- NA_real_
+    
+    monthlyDF$OCT_STORAGE_DIVERSION[monthlyDF$YEAR == 2021] <- NA_real_
+    monthlyDF$NOV_STORAGE_DIVERSION[monthlyDF$YEAR == 2021] <- NA_real_
+    monthlyDF$DEC_STORAGE_DIVERSION[monthlyDF$YEAR == 2021] <- NA_real_
+    
+    monthlyDF$OCT_REPORTED_USE[monthlyDF$YEAR == 2021] <- NA_real_
+    monthlyDF$NOV_REPORTED_USE[monthlyDF$YEAR == 2021] <- NA_real_
+    monthlyDF$DEC_REPORTED_USE[monthlyDF$YEAR == 2021] <- NA_real_
+    
   }
   
   
