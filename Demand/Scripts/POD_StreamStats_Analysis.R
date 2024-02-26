@@ -18,27 +18,13 @@ require(httr)
 #### Functions ####
 
 mainProcedure <- function (ws) {
-  
+
   # Start with gathering datasets related to the watershed
   
   
   
   # Get the watershed boundaries first
-  if (grepl("^Navarro", ws$NAME)) {
-    
-    wsBound <- makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Navarro_River_Watershed_GIS/Navarro_River_Watershed.gpkg") %>%
-      st_read("WBD_HU10_Navarro")
-    
-  } else if (grepl("^Russian", ws$NAME)) {
-    
-    # This script is not used for the Russian River watershed
-    return(invisible(NULL))
-    
-  } else {
-    
-    stop(paste0("No boundary filepath was specified for watershed ", ws$NAME))
-    
-  }
+  wsBound <- getWatershedBoundaries(ws)
   
   
   
@@ -51,36 +37,64 @@ mainProcedure <- function (ws) {
   
   
   # After that, choose a point around the exit of the watershed
-  # Look for the point ID closest to the middle of the watershed exit using this code:
-  # wsPoints %>% mapview()
-  if (grepl("^Navarro", ws$NAME)) {
+  # The point's index should have been specified in "WATERSHED_EXIT_POINT_INDEX"
+  # If that is not the case, throw an error
+  if (!is.numeric(ws$WATERSHED_EXIT_POINT_INDEX)) {
     
-    wsExit <- wsPoints[525, ]
-    
-  } else {
-    
-    stop(paste0("No exit point was chosen for watershed ", ws$NAME, ". Please use the code 'mapview(wsPoints)' to view the points in 'wsPoints'. Then, choose the point (using its ID/row number) that best represents the watershed's exit area."))
+    stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\nPlease use the code 'mapview(wsPoints)' to view the points in 'wsPoints'. Then, choose the point (using its ID/row number) that best represents the watershed's exit area."))
     
   }
   
   
   
+  # Look for the point ID closest to the middle of the watershed exit using this code:
+  # wsPoints %>% mapview()
+  
+  
+  
+  # Select the exit point
+  wsExit <- wsPoints[ws$WATERSHED_EXIT_POINT_INDEX, ]
+  
+  
+  
+  # Exit Point with a one-mile buffer
   # wsExit %>%
   #   st_buffer(1 * 5280 / 3.28084) %>%
   #   mapview()
   
   
   
+  # Exit Point with a 200-meter buffer
+  # wsExit %>%
+  #   st_buffer(200) %>%
+  #   mapview()
+  
+  
+  
   # Then, read in the coordinate records from the GIS Pre-processing spreadsheet
-  if (grepl("^Navarro", ws$NAME)) {
+  # (Make sure that it exists first)
+  if (is.na(ws$GIS_PREPROCESSING_SPREADSHEET_PATH)) {
     
-    podDF <- read_xlsx(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Preprocessing/NV_GIS_Preprocessing.xlsx"), 
-                       sheet = "R_Review")
-
+    stop(paste0("No POD review spreadsheet was specified for watershed ", ws$NAME))
+    
+  }
+  
+  
+  
+  # Then, based on whether or not that path is a SharePoint path, read it in as 'podDF'
+  if (ws$IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET == TRUE) {
+    
+    podDF <- makeSharePointPath(ws$GIS_PREPROCESSING_SPREADSHEET_PATH) %>%
+      read_xlsx(sheet = ws$GIS_PREPROCESSING_WORKSHEET_NAME)
+    
+  } else if (ws$IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET == FALSE) {
+    
+    podDF <- ws$GIS_PREPROCESSING_SPREADSHEET_PATH %>%
+      read_xlsx(sheet = ws$GIS_PREPROCESSING_WORKSHEET_NAME)
     
   } else {
     
-    stop(paste0("No POD review spreadsheet was specified for watershed ", ws$NAME))
+    stop("Invalid value for 'IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
     
   }
   
@@ -1398,4 +1412,4 @@ print("The script has finished running!")
 remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-       splitSection, translatePoint)
+       splitSection, translatePoint, getWatershedBoundaries)
