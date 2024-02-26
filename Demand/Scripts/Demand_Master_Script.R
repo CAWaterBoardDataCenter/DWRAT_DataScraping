@@ -4,6 +4,7 @@
 require(tidyverse)
 require(sf)
 require(openxlsx)
+require(mapview)
 require(data.table)
 require(odbc)
 require(DBI)
@@ -12,18 +13,19 @@ require(janitor)
 require(writexl)
 
 
-# Watershed Names and Identifiers
-ws <- c("Russian River",  "RR",
-        "Navarro River",  "NV", 
-        "Butte", "BC") %>%
-  matrix(ncol = 2, byrow = TRUE) %>%
-  data.frame() %>%
-  set_names(c("NAME", "ID"))
+# Generic functions that are used in multiple scripts
+source("Scripts/Shared_Functions.R")
+
+
+
+# Get watershed names and identifiers
+ws <- makeSharePointPath("Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
+  read_xlsx(sheet = "Main_Sheet", skip = 1)
 
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[1, ] # Change the row index to your desired watershed
+ws <- ws[2, ] # Change the row index to your desired watershed
 
 
 
@@ -33,9 +35,6 @@ stopifnot(nrow(ws) == 1)
 
 cat(paste0("Running scripts for ", ws$NAME, "\n"))
 
-
-# Generic functions that are used in multiple scripts
-source("Scripts/Shared_Functions.R")
 
 
 # GIS Pre-Processing Initial Steps

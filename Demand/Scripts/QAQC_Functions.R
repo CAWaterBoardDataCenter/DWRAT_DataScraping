@@ -13,7 +13,7 @@ require(data.table)
 
 
 # Functions
-unitFixer <- function (inputDF, wsName, wsID) {
+unitFixer <- function (inputDF, ws) {
   
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
@@ -31,23 +31,43 @@ unitFixer <- function (inputDF, wsName, wsID) {
   
   
   
-  # Read in those two spreadsheets
-  # (The filenames depend on 'wsName')
-  if (grepl("^Russian", wsName)) {
-    unitsQAQC <- read_xlsx("InputData/RR_Expected_Demand_Units_QAQC_20231020.xlsx", sheet = "Corrected Data")
-    unitsQAQC_Med <- read_xlsx("InputData/RR_Expected_Demand_Units_QAQC_Median_Based_20230922.xlsx", sheet = "Filtered Data") %>%
-      rename(QAQC_Action_Taken = QAQC_Action)
-  } else if (grepl("^Navarro", wsName)) {
+  # Read in both QA/QC spreadsheets (if file paths were specified)
+  # If they were NOT specified, return 'inputDF' without changes and notify the user
+  if (is.na(ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH) || is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
     
-    return(inputDF) # No QAQC review done yet
+    cat("Both filepaths for the Unit Conversion Errors manual review were not specified for this watershed.\nThe QA/QC implementation procedure will be skipped.\n")
     
+    return(inputDF)
+    
+  }
+  
+  
+  
+  # Otherwise, read in those two spreadsheets
+  # The procedure will be slightly different depending on whether the paths are SharePoint paths
+  if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == TRUE) {
+    
+    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME %>%
+      makeSharePointPath() %>%
+      read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
+    
+  # Do not use makeSharePointPath() if "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET" is FALSE
+  } else if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == FALSE) {
+    
+    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME %>%
+      read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
+    
+  # Error Check
   } else {
-    stop(paste0("Filenames have not been specified for watershed ", wsName))
+    
+    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
+    
   }
   
   
   
   # Filter out entries where no action is required
+  # Also, only keep records that relevant to the years in 'inputDF'
   unitsQAQC <- unitsQAQC %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
     filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
@@ -59,10 +79,10 @@ unitFixer <- function (inputDF, wsName, wsID) {
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
   # Then make changes to 'inputDF'
-  inputDF <- iterateQAQC(inputDF, unitsQAQC, wsID)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC, ws$ID)
   
   
-  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, wsID)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, ws$ID)
   
   
   
@@ -73,22 +93,45 @@ unitFixer <- function (inputDF, wsName, wsID) {
 
 
 
-dupReportingFixer <- function (inputDF, wsName, wsID) {
+dupReportingFixer <- function (inputDF, ws) {
   
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
   # A single spreadsheet will be used for these corrections
-  # For the Russian River, it is"Duplicate_Reports_Manual_Review_20230925.xlsx"
-  if (grepl("^Russian", wsName)) {
-    qaqcDF <- read_xlsx("InputData/RR_Duplicate_Reports_Manual_Review_20230925.xlsx") %>%
-      filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
-  } else if (grepl("^Navarro", wsName)) {
+  # Check to make sure that the path to this spreadsheet was specified
+  if (is.na(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH)) {
     
-    return(inputDF) # No QAQC review done yet
+    cat("The filepath for the Duplicate Reporting manual review spreadsheet was not specified for this watershed.\nThe QA/QC implementation procedure will be skipped.\n")
+    
+    return(inputDF)
+    
+  }
+  
+  
+  
+  # Otherwise, read in the spreadsheet
+  # (with a slightly different procedure depending on whether a SharePoint is used)
+  if (ws$IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET == TRUE) {
+    
+    qaqcDF <- makeSharePointPath(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH) %>%
+      read_xlsx(sheet = ws$QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME)
+    
+  } else if (ws$IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET == FALSE) {
+    
+    qaqcDF <- read_xlsx(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH, 
+                        sheet = ws$QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME)
     
   } else {
-    stop(paste0("A filename has not been specified for watershed ", wsName))
+    
+    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
+    
   }
+  
+  
+  
+  # Keep only entries in 'qaqcDF' that are relevant to the years in 'inputDF'
+  qaqcDF <- qaqcDF %>%
+    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
   
   
   
@@ -99,9 +142,11 @@ dupReportingFixer <- function (inputDF, wsName, wsID) {
     rename(APPLICATION_NUMBER = APPL_ID)
   
   
+  
   # Rely on iterateQAQC() to apply changes to 'inputDF'
   inputDF <- inputDF %>% 
-    iterateQAQC(qaqcDF, wsID)
+    iterateQAQC(qaqcDF, ws$ID)
+  
   
   
   # Return 'inputDF' after these changes
