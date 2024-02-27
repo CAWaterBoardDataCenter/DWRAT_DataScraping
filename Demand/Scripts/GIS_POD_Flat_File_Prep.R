@@ -273,6 +273,7 @@ write_csv(Flat_File_eWRIMS,
 all_vars = ls()
   
   # Keep ws variable
+
 vars_to_keep = c("ws", "makeSharePointPath", "getWatershedBoundaries")
 
   # Specify all other variables for removal
