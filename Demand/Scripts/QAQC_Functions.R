@@ -183,6 +183,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   
   
+  # Make sure that the "YEAR" column is numeric in 'unitsQAQC'
+  unitsQAQC$YEAR <- as.numeric(unitsQAQC$YEAR)
+  
+  
+  
   # Iterate through the different actions specified in 'unitsQAQC'
   for (i in 1:nrow(unitsQAQC)) {
     
@@ -230,7 +235,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         # (e.g., WY2022 is from October 2021 to September 2022)
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                   ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% useChoice &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- 0
         
@@ -260,15 +265,15 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851
         
       } else {
-        
+
         # Apply the conversion to the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                   ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% toConvert &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                                                             ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$DIVERSION_TYPE %in% toConvert &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851
         
@@ -300,11 +305,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         # Apply this conversion over the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                   ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% toConvert &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                                                             ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$DIVERSION_TYPE %in% toConvert &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 365
         
@@ -341,11 +346,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         # Apply these changes to the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                   ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% toConvert &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                                                             ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$DIVERSION_TYPE %in% toConvert &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 60 * 24 * 365
         
@@ -380,10 +385,10 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         # Perform this operation over the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                   ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                                                             ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / divNum
         
       }
