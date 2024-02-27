@@ -545,12 +545,16 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # whether the reporting year 'actionYear' had calendar years or water years
       if (actionYear < 2022) {
         
+        # "TEMP_YEAR" is used to ensure that the if_else statement's 
+        # TRUE/FALSE condition is evaluated for each row
         newRows <- tempDF %>%
           filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                    YEAR == actionYear &
                    DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>%
-          mutate(YEAR = if_else(unitsQAQC$YEAR[i] < 2022, unitsQAQC$YEAR[i],
-                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1)))
+          mutate(TEMP_YEAR = unitsQAQC$YEAR[i]) %>%
+          mutate(YEAR = if_else(TEMP_YEAR < 2022, unitsQAQC$YEAR[i],
+                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1))) %>%
+          select(-TEMP_YEAR)
         
       } else {
         
@@ -559,8 +563,10 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
                    ((YEAR == actionYear & MONTH %in% 1:9) | 
                       (YEAR == actionYear - 1 & MONTH %in% 10:12)) &
                    DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>%
-          mutate(YEAR = if_else(unitsQAQC$YEAR[i] < 2022, unitsQAQC$YEAR[i],
-                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1)))
+          mutate(TEMP_YEAR = unitsQAQC$YEAR[i]) %>%
+          mutate(YEAR = if_else(TEMP_YEAR < 2022, unitsQAQC$YEAR[i],
+                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1))) %>%
+          select(-TEMP_YEAR)
         
       }
       
