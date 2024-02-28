@@ -60,7 +60,8 @@ source(here("Scripts/NOAA_Processor.R")) #Ignore the warning message: Expected 2
 source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_API_Scraper.R"))
 
-# change output file name for DAT File
+# Generate PRMS Dat File
+source(here("Scripts/Dat_PRMS.R"))
 
 # generate SRP model input ------------------------------------------------
 source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
