@@ -67,3 +67,5 @@ source(here("Scripts/Dat_PRMS.R"))
 source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
 source(here("Scripts/PRISM_SRP_Processor.R")) #Formats already downloaded PRISM observed data for SRP
 
+# generate SRP Dat File
+# source(here("Scripts/Dat_SRP.R"))
