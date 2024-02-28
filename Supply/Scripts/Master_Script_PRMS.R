@@ -15,12 +15,12 @@ require(httr)
 
 # Include forecasted data from CNRFC in the datasets? ----
 # (This should be either "TRUE" or "FALSE")
-includeForecast <- TRUE
+includeForecast <- FALSE
 
 
 # set start and end dates -------------------------------------------------
 ## Set start date----
-StartDate <- as.Date("2024-01-01") # 1-2 months before previous end date
+StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date
 
 #Serves as the start date for the observed data forecast and the DAT_Shell
 
@@ -33,7 +33,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- Sys.Date() - 1 # set to yesterday's date; serves as the end date for the observed data range
+EndDate <- as.Date("2024-01-31")# set to desired end date for observed data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -60,10 +60,8 @@ source(here("Scripts/NOAA_Processor.R")) #Ignore the warning message: Expected 2
 source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_API_Scraper.R"))
 
-source(here("Scripts/DAT_Shell_Generation.R")) #Ignore the warning message:In eval(e, x, parent.frame()) :...
-
-# change output file name for DAT File
-source(here("Scripts/DAT_File_Manipulation.R"))
+# Generate PRMS Dat File
+source(here("Scripts/Dat_PRMS.R"))
 
 # generate SRP model input ------------------------------------------------
 source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
