@@ -103,5 +103,5 @@ Dat_SRP_Final = rbind(Dat_SRP_header, Dat_SRP_Final)
 
 #Export Dat_SRP_Final to ProcessedData folder
 write.table(x = Dat_SRP_Final, 
-            file = paste0("ProcessedData/Dat_SRP_observed_2023-04-01_2024-01-31", ".dat"),
+            file = paste0("ProcessedData/Dat_SRP_Forecast", End_Date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
