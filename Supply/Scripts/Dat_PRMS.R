@@ -76,7 +76,9 @@ Dat_Shell_PRMS2 <- Dat_Shell_PRMS[,-c(1:6, 39:60)]
 head(Dat_Shell_PRMS2)
 
 #Inner Join the Meteorological dataframe to Dat_Shell_PRMS2 by the Date field
-Dat_Shell_PRMS3 <- inner_join(Meteorological, select(Dat_Shell_PRMS2, Date), by = "Date")
+Dat_Shell_PRMS3 <- inner_join(x = Meteorological, 
+                              y =select(Dat_Shell_PRMS2, Date), 
+                              by = "Date")
 head(Dat_Shell_PRMS3)
 
 # Import the individual datetime fields (year, month, etc) from Dat_Shell_PRMS

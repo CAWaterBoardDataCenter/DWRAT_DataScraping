@@ -1,17 +1,17 @@
 'Main Formula on Climate_stresses_update_2024 sheet
 =CONCATENATE(
-Updater!A28094," ", '1 space
-Updater!B28094," ", '1 space
-Updater!C28094," ", '1 space
-Updater!D28094," ", '1 space
-Updater!E28094," ", '1 space
-Updater!F28094,"     ", '5 spaces
-TEXT(Updater!G28094,"0.0000"),"     ", '5 spaces
-TEXT(Updater!H28094,"0.0000"),"    ", '4 spaces
-TEXT(Updater!I28094,"0.0000"),"    ", '4 spaces
-TEXT(Updater!J28094,"0.0000"),"    ", '4 spaces
-TEXT(Updater!K28094,"0.0000"),"    ", '4 spaces
-TEXT(Updater!L28094,"0.0000")
+Updater!A28094," ", '4 spaces wide
+Updater!B28094," ", '2 spaces wide
+Updater!C28094," ", '2 spaces wide
+Updater!D28094," ", '1 space widfe
+Updater!E28094," ", '1 space wide
+Updater!F28094,"     ", '1 space wide
+TEXT(Updater!G28094,"0.0000"),"     ", '5 spaces, formats precip01 with 4 decimal places
+TEXT(Updater!H28094,"0.0000"),"    ", '5 spaces, formats precip02 with 4 decimal places
+TEXT(Updater!I28094,"0.0000"),"    ", '6 spaces, formats tmax01 with 4 decimal places
+TEXT(Updater!J28094,"0.0000"),"    ", '6 spaces, formats tmax02 with 4 decimal places
+TEXT(Updater!K28094,"0.0000"),"    ", '6 spaces, formats tmin01 with 4 decimal places
+TEXT(Updater!L28094,"0.0000"), '6 spaces, formats tmin02 with 4 decimal places
 )
 
 'DATA DICTIONARY FOR FORMULA ABOVE
@@ -19,8 +19,8 @@ TEXT(Updater!L28094,"0.0000")
 ' Updater!B28094 is the 2-digit Month
 ' Updater!C28094 is the calendar day from 1 to 31
 ' Updater!D28094 indicates hour but is always 0
-' Updater!E28094 indicates day but is always 0
-' Updater!F28094 indicates hour but is always 0
+' Updater!E28094 indicates minutes but is always 0
+' Updater!F28094 indicates seconds but is always 0
 ' Updater!G28094 indicates precip01, fed by PRISM_CIMIS_083_Interp ppt column for observed data range; rest of range comes from pre-existing SRP dat file
 ' Updater!H28094 indicates precip02  fed by PRISM_CIMIS_103_Interp ppt column for observed data range; rest of range comes from pre-existing SRP dat file
 ' Updater!I28094 indicates tmax01, comes from PRISM_CIMIS_083_Interp tmax column for observed data range; rest of the range is in the pre-existing SRP Dat file
@@ -38,9 +38,12 @@ TEXT(Updater!L28094,"0.0000")
 [Climate_stresses_update_2024.xlsx]Updater!$L$27627 'fed by CIMIS_103 tmin
 
 
-'Save SRP Dat headers as a separate file, SRP_Dat_header.csv in the InputData Folder.Copy
+'Save SRP Dat headers as a separate file, Dat_SRP_header.csv in the InputData Folder
+	* Import into R script as Dat_SRP_header
 
 'Import Pre-existing SRP DAT file into R
+'Determine SRP Dat file column widths
+	year foll
 
 'Converting the Concatenation formula to R
 * Assign variable names to all the columns
