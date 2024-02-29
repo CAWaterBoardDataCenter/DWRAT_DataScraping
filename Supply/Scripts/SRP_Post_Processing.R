@@ -14,8 +14,7 @@ col_widths <- (c(20,16,16,16,16,16,16,16,16,16,16,16,16))
 source_folder <- "C:/SRPHM_update_ag"
 
 # Now import the files directly from the source folder
-gag_list <- list()  # create an empty list to store the imported datasets
-col_widths <- c(20, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16)  # replace with your actual column widths
+gag_list <- list()  # create an empty list to store the imported dataframes
 
 # For Loop imports the gag files 1 at a time into a list and applies the column widths 
 for (i in 1:6) {
@@ -55,11 +54,8 @@ gag$Date <- date_seq[1:nrow(gag)]
 
 ## create a subset for the timeframe of interest----
 #Define the SRP timeframe--changes with each run
-SRP_StartDate = as.Date("2013-04-01")
-SRP_EndDate = as.Date("2014-01-31")
-SRP_Timeframe = data.frame(Date = seq(from = SRP_StartDate, to = SRP_EndDate, by = "days"))
 
-gag <- subset(gag, Date>= SRP_StartDate & Date <= SRP_EndDate)
+gag <- subset(gag, Date>= Hydro_StartDate & Date <= Hydro_EndDate)
 
 # gag manipulation----
 # read in percent reduction factors CSV
@@ -108,7 +104,7 @@ sub28 <- gag %>% select(Date, gag3) %>%
 
 # Merge dataframes SRP_Timeframe and sub23 - sub28
 SRP <- Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE), 
-                    list(SRP_Timeframe, sub23, sub24, sub25, sub26, sub27, sub28))
+                    list(sub23, sub24, sub25, sub26, sub27, sub28))
 
 # remove intermediaries from environment
 rm(sub23,sub24,sub25,sub26,sub27,sub28)
@@ -139,10 +135,15 @@ DataRange = "Observed_Data_2023-04_to_2024-01"
 # write subset data to CSV----
 write.csv(SRP_monthly, file = paste0("ProcessedData/SRP_",DataRange, ".csv"), row.names = FALSE)
 
-# merge data to include the rest of LRR subbasins
-PRMS <- read.csv(here("ProcessedData/PRMS_2023-10.csv"))
-PRMS$Date <- as.Date(PRMS$Date)
+# Merge SRP and PRMS data to create Raw Flows CSV for DWRAT----
+
+#Import PRMS data
+PRMS <- read.csv("ProcessedData/PRMS_Observed_Data_2023-04-01_2024-01-31.csv") #needs to be manually updated with each run
+PRMS$Date <- as.Date(x = PRMS$Date, format = "%Y-%m-%d")
 colnames(PRMS)[2:23] <- c(1:22)
+
+# Convert SRP_monthly$Date to adate format
+SRP_monthly$Date = as.Date(x = SRP_monthly$Date, format = "%Y-%m-%d")
 Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 
 # write Raw Flows to cvs for DWRAT input
