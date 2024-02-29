@@ -8,10 +8,8 @@ library(here)
 library(tinytex)
 require(rvest)
 require(httr)
-#jjkljldsdkl
+#
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
-# BEFORE running, download Downsizer data
-
 
 # Include forecasted data from CNRFC in the datasets? ----
 # (This should be either "TRUE" or "FALSE")
@@ -41,8 +39,8 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 
 print(EndDate)
 
-TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') #Timeframe is necessary for Downsizer_Processor.R
-End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
+TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
+End_Date <- Sys.Date() + 5 # forecast end date
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
