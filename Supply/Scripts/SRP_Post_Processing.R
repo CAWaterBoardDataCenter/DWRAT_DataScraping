@@ -135,10 +135,15 @@ DataRange = "Observed_Data_2023-04_to_2024-01"
 # write subset data to CSV----
 write.csv(SRP_monthly, file = paste0("ProcessedData/SRP_",DataRange, ".csv"), row.names = FALSE)
 
-# merge data to include the rest of LRR subbasins
-PRMS <- read.csv(here("ProcessedData/PRMS_2023-10.csv"))
-PRMS$Date <- as.Date(PRMS$Date)
+# Merge SRP and PRMS data to create Raw Flows CSV for DWRAT----
+
+#Import PRMS data
+PRMS <- read.csv("ProcessedData/PRMS_Observed_Data_2023-04-01_2024-01-31.csv") #needs to be manually updated with each run
+PRMS$Date <- as.Date(x = PRMS$Date, format = "%Y-%m-%d")
 colnames(PRMS)[2:23] <- c(1:22)
+
+# Convert SRP_monthly$Date to adate format
+SRP_monthly$Date = as.Date(x = SRP_monthly$Date, format = "%Y-%m-%d")
 Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 
 # write Raw Flows to cvs for DWRAT input
