@@ -3,9 +3,12 @@ library(dplyr)
 library(tidyverse)
 library(here)
 library(lubridate) #for make_date function
+library(data.table) #for fread function
+
 
 #Import the PRMS DAT file used for the last model run
-Dat_PRMS_Path <- list.files("InputData", pattern = "\\.dat$", full.names = TRUE) %>% sort() %>% tail(1)
+Dat_PRMS_Path <- list.files("InputData", pattern = "PRMS.*\\.dat$", full.names = TRUE) %>% sort() %>% tail(1)
+print(Dat_PRMS_Path)
 Dat_PRMS_Original <- read.delim(file = Dat_PRMS_Path, sep = "\t", skip = 6, header = FALSE)
 Dat_Fields_PRMS <- read.csv(here("InputData/Dat_Fields_PRMS.csv"))
 
@@ -25,13 +28,6 @@ Dat_PRMS_Original$Date <- make_date(year = Dat_PRMS_Original$Year,
                                 month = Dat_PRMS_Original$month,
                                 day = Dat_PRMS_Original$day)
 
-## Filter to the timeframe of interest----
-# Set the start date by grabbing the first day of the current month
-# Start_Date <- lubridate::floor_date(Sys.Date(), unit = "month")
-# Start_Date <- as.Date("2023-01-11")
-
-# The end date is the current date + 5 days in the future; we grab 6 days of forecast data from CNRFC
-#End_Date <- Sys.Date() + 5
 Dat_Shell_PRMS <- subset(Dat_PRMS_Original, Date >= StartDate$date & Date <= EndDate$date)
 #Dat_Shell_PRMS <- subset(Dat_PRMS_Original, Date >= StartDate$date & Date <= End_Date) #Adjust as needed
 Dat_Shell_PRMS
@@ -39,17 +35,11 @@ Dat_Shell_PRMS
 #Set Date as the 7th column in Dat_Shell_PRMS
 Dat_Shell_PRMS <- Dat_Shell_PRMS %>% relocate(Date, .after = s)
 
-
-# Load Libraries----
-library(here)
-library(dplyr)
-library(data.table) #for fread function
-
 # Import the necessary starter files for the  PRMS DAT File----
 # DAT_Shell_PRMS serves as the shell of the PRMS DAT File, meteorological data (already pre-filled with PRISM and forecast data) contained in these files:
 # RAWS_Processed.csv, CIMIS_Processed.csv, NOAA_Processed_[DATE].csv 
 
-## Metereological Data Sources ----
+## Meteorological Data Sources ----
 RAWS <- read.csv(here("ProcessedData/RAWS_Processed.csv"))
 
 NOAA <- list.files("ProcessedData", pattern = "NOAA_API_Processed_", full.names = TRUE) %>%
@@ -57,12 +47,16 @@ NOAA <- list.files("ProcessedData", pattern = "NOAA_API_Processed_", full.names 
 
 CIMIS <- read.csv(here("ProcessedData/CIMIS_Processed.csv"))
 
+#Convert dates in all 3 data sources to date type in YYYY-MM-DD format
+RAWS$Date = as.Date(x = RAWS$Date, format = "%m/%d/%Y")
+CIMIS$Date = as.Date(x = CIMIS$Date, format = "%Y-%m-%d")
+NOAA$Date = as.Date(x = NOAA$Date, format = "%Y-%m-%d")
 
 # Create Dat_Final_PRMS----
 
 # Merge meteorological data sources into one dataframe
-Meteorological <- full_join(NOAA, merge(RAWS, CIMIS, by = "Date"), by = "Date")
-Meteorological$Date = as.Date(Meteorological$Date)
+Meteorological <- Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE), 
+              list(RAWS, NOAA, CIMIS))
 
 #Write the full Meteorological dataset to a CSV
 write.csv(x = Meteorological, 
@@ -128,12 +122,12 @@ Dat_PRMS_Final = rbind(Dat_PRMS_Header, Dat_PRMS_Final)
 
 #Write the Dat_Final_PRMS file to the ProcessedData folder
 write.table(x = Dat_PRMS_Final, 
-            file = paste0("ProcessedData/DAT_PRMS_Final_Forecast_End_Date", End_Date, ".dat"),
+            file = paste0("ProcessedData/Dat_PRMS_Final_Forecast_End_Date", End_Date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
 
   #This is one-time code used to generate the Dat PRMS file for the observed meteorological data
   #from 4/1/2023 - 1/31/2024
-# write.table(x = Dat_PRMS_Final, 
+# write.table(x = Dat_PRMS_Final,
 #             file =  "ProcessedData/Dat_PRMS_Final_Observed_2023-04-01_2024-01-31.dat",
 #             sep = "\t", row.names = F, quote = F, col.names = F)
 

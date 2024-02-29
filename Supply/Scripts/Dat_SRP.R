@@ -101,7 +101,14 @@ names(Dat_SRP_header) = "SRP"
 #Combine Dat_SRP_Final with Dat_SRP_Header
 Dat_SRP_Final = rbind(Dat_SRP_header, Dat_SRP_Final)
 
-#Export Dat_SRP_Final to ProcessedData folder
+# Export Dat_SRP_Final----
+# Export Dat_SRP_Final to ProcessedData folder
 write.table(x = Dat_SRP_Final, 
-            file = paste0("ProcessedData/Dat_SRP_Forecast", End_Date, ".dat"),
+            file = paste0("ProcessedData/Dat_SRP_Final_Forecast_", End_Date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
+
+# Export Dat_SRP_Final to SRP Model folder
+# SRP_Path = "C:\\SRPHM_update_ag\\"
+# write.table(x = Dat_SRP_Final, file = paste0(SRP_Path, "Dat_SRP_Final_Forecast_End_Date_", End_Date, ".dat"),
+#             sep = "\t", row.names = F, quote = F, col.names = F)
+
