@@ -132,8 +132,6 @@ colnames(SRP_monthly)[2:7] <- c(23:28)
 
 #Define your data range--this will vary with each run
 DataRange = "Observed_Data_2023-04_to_2024-01"
-# write subset data to CSV----
-write.csv(SRP_monthly, file = paste0("ProcessedData/SRP_",DataRange, ".csv"), row.names = FALSE)
 
 # Merge SRP and PRMS data to create Raw Flows CSV for DWRAT----
 
@@ -146,8 +144,6 @@ colnames(PRMS)[2:23] <- c(1:22)
 SRP_monthly$Date = as.Date(x = SRP_monthly$Date, format = "%Y-%m-%d")
 Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 
-# write Raw Flows to cvs for DWRAT input
+# Write Raw Flows to CSV for DWRAT input----
 write.csv(Raw_Flows, here("ProcessedData/Raw_Flows.csv"), row.names = FALSE)
 
-# write daily values - if needed - to CSV
-# write.csv(SRP, here("ProcessedData/SRP_daily_AcFt_2023.04.05.csv"), row.names = FALSE)
