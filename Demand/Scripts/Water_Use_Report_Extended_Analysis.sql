@@ -1,0 +1,32 @@
+--Query 1:
+Select top 10
+APPLICATION_NUMBER,
+YEAR,
+MONTH,
+AMOUNT,
+DIVERSION_TYPE,
+MAX_STORAGE,
+WATER_RIGHT_TYPE,
+FACE_VALUE_AMOUNT
+FROM ReportDBFLAT_FILEewrims_water_use_report_extended
+Where
+--WATER_RIGHT_TYPE like 'statement%'
+   Face_value_amount <> '0'
+Order by FACE_VALUE_AMOUNT DESC
+
+--Query 1:
+SELECT Distinct
+    APPLICATION_NUMBER,
+    SUM(CAST(AMOUNT AS DECIMAL(18,2))) AS TotalDiversion,
+    WATER_RIGHT_TYPE,
+	LATITUDE,
+	LONGITUDE,
+    SUB_TYPE,
+    USE_CODE
+FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
+Where SUB_TYPE NOT LIKE '%riparian%'
+    AND WATER_RIGHT_TYPE NOT LIKE '%federal%'
+    AND YEAR BETWEEN '2016' AND '2022'
+    AND DIVERSION_TYPE NOT LIKE 'use'
+GROUP BY APPLICATION_NUMBER, WATER_RIGHT_TYPE, SUB_TYPE, USE_CODE, Latitude, Longitude
+
