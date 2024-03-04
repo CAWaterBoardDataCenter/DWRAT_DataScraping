@@ -144,11 +144,11 @@ Duplicate_Reports = get_dupes(RMS_parties4, PK)
 
 #A similar protection
 
-if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"))) > 0) {
+if (!is.na(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH)) {
   
-  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports"), full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    read_xlsx()
+  reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET", 
+                      "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH", 
+                      "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
   
   
   Duplicate_Reports <- Duplicate_Reports %>%
@@ -158,6 +158,13 @@ if (length(list.files("InputData", pattern = paste0(ws$ID, "_Duplicate_Reports")
   remove(reviewDF)
   
 }
+
+
+
+# Add review columns as well
+Duplicate_Reports <- Duplicate_Reports %>%
+  mutate(QAQC_Action_Taken = NA_character_,
+         QAQC_Reason = NA_character_)
 
 
 

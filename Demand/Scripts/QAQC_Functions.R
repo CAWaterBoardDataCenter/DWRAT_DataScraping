@@ -45,45 +45,14 @@ unitFixer <- function (inputDF, ws) {
   
   # Otherwise, read in those two spreadsheets
   # The procedure will be slightly different depending on whether the paths are SharePoint paths
-  if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == TRUE) {
-    
-    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
-      makeSharePointPath() %>%
-      read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
-    
-  # Do not use makeSharePointPath() if "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET" is FALSE
-  } else if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == FALSE) {
-    
-    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
-      read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
-    
-  # Error Check
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  unitsQAQC <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                       "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
   
   
   
-  if (ws$IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET == TRUE) {
-    
-    unitsQAQC_Med <- ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
-      makeSharePointPath() %>%
-      read_xlsx(sheet = ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
-    
-    # Do not use makeSharePointPath() if "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET" is FALSE
-  } else if (ws$IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET == FALSE) {
-    
-    unitsQAQC_Med <- ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH %>%
-      read_xlsx(sheet = ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
-    
-    # Error Check
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  unitsQAQC_Med <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
   
   
   
@@ -132,21 +101,9 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Otherwise, read in the spreadsheet
   # (with a slightly different procedure depending on whether a SharePoint is used)
-  if (ws$IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET == TRUE) {
-    
-    qaqcDF <- makeSharePointPath(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH) %>%
-      read_xlsx(sheet = ws$QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME)
-    
-  } else if (ws$IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET == FALSE) {
-    
-    qaqcDF <- read_xlsx(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH, 
-                        sheet = ws$QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME)
-    
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  qaqcDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET",
+                    "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH",
+                    "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
   
   
   
@@ -802,9 +759,9 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   # set the values for a given year and diversion type to zero for all other rights
   
   
-  # Extract a subset of 'unitsQAQC'; all records that share this iteration's PARTY_ID
+  # Extract a subset of 'unitsQAQC'; all records that share this iteration's Primary Key
   qaqcSubset <- unitsQAQC %>%
-    filter(PARTY_ID == unitsQAQC$PARTY_ID[i])
+    filter(Primary_Key == unitsQAQC$Primary_Key[i])
   
   
   # Create a vector of unique years for the data in 'qaqcSubset'

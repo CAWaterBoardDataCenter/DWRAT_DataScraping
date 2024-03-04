@@ -18,6 +18,40 @@ makeSharePointPath <- function (filePathFragment) {
 
 
 
+getXLSX <- function (ws, SHAREPOINT_BOOL, FILEPATH, WORKSHEET_NAME) {
+  
+  # For a given spreadsheet, 'ws' contains three relevant columns:
+  #  The filepath ('FILEPATH')
+  #  The spreadsheet's worksheet name ('WORKSHEET_NAME')
+  #  A TRUE/FALSE variable for whether the file path is a SharePoint path ('SHAREPOINT_BOOL')
+  # Based on these variables, attempt to read in the spreadsheet
+  
+  
+  if (ws[[SHAREPOINT_BOOL]] == TRUE) {
+    
+    sheetDF <- ws[[FILEPATH]] %>%
+      makeSharePointPath() %>%
+      read_xlsx(sheet = ws[[WORKSHEET_NAME]])
+    
+  } else if (ws[[SHAREPOINT_BOOL]] == FALSE) {
+    
+    sheetDF <- ws[[FILEPATH]] %>%
+      read_xlsx(sheet = ws[[WORKSHEET_NAME]])
+    
+  } else {
+    
+    stop(paste0("Invalid value for '", SHAREPOINT_BOOL, "'. Expected 'TRUE' or 'FALSE'."))
+    
+  }
+  
+  
+  
+  return(sheetDF)
+  
+}
+
+
+
 getWatershedBoundaries <- function (ws) {
   
   # 'ws' contains filepaths that link to the watershed boundary layer

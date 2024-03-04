@@ -274,7 +274,7 @@ all_vars = ls()
   
   # Keep ws variable
 
-vars_to_keep = c("ws", "makeSharePointPath", "getWatershedBoundaries")
+vars_to_keep = c("ws")
 
   # Specify all other variables for removal
 vars_to_remove = setdiff(all_vars, vars_to_keep)
@@ -285,3 +285,5 @@ rm(list = vars_to_remove)
   
 remove(all_vars, vars_to_keep, vars_to_remove)
   
+
+source("Scripts/Shared_Functions.R")
