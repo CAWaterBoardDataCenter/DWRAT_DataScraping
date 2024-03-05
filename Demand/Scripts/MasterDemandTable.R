@@ -424,4 +424,4 @@ print("The MasterDemandTable.R script has finished running")
 
 remove(assignBasinData_RR, spreadsheetAdjustment, beneficialUse, diverDF,
        ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,countyDF, podDF, i,
-       ws, makeSharePointPath)
+       ws, makeSharePointPath, getWatershedBoundaries, getXLSX)
