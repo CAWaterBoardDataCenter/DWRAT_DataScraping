@@ -116,8 +116,17 @@ dupReportingFixer <- function (inputDF, ws) {
   # Remove entries in 'qaqcDF' where no actions are required
   # Also, rename "APPL_ID" to "APPLICATION_NUMBER"
   qaqcDF <- qaqcDF %>%
-    filter(!grepl("^None", QAQC_Action_Taken)) %>%
-    rename(APPLICATION_NUMBER = APPL_ID)
+    filter(!grepl("^None", QAQC_Action_Taken))
+  
+  
+  
+  # Also, rename "APPL_ID" to "APPLICATION_NUMBER" if it exists in the DF
+  if ("APPL_ID" %in% names(qaqcDF)) {
+    
+    qaqcDF <- qaqcDF %>%
+      rename(APPLICATION_NUMBER = APPL_ID)
+    
+  }
   
   
   
@@ -589,6 +598,44 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # If an action has multiple actions specified
+    } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep Direct") {
+      
+      
+      # Within the same year for the same right, 
+      # the report has the same exact values in both DIRECT and STORAGE
+      # Keep only one set of values (either the DIRECT or the STORAGE values)
+      
+      # In this case, only the DIRECT values will be kept
+      # Get the indices in 'inputDF' that contain data for the STORAGE values of this year and right
+      removalIndices <- which(inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                inputDF$YEAR == unitsQAQC$YEAR[i] &
+                                inputDF$DIVERSION_TYPE == "STORAGE")
+      
+      
+      stopifnot(length(removalIndices) > 0)
+      
+      
+      # Remove those rows from 'inputDF'
+      inputDF <- inputDF[-removalIndices, ]
+      
+      
+      # Perform similar actions as above (but "STORAGE" is kept instead of "DIRECT")
+    } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep Storage") {  
+      
+      # Get the indices in 'inputDF' that contain data for the DIRECT values of this year and right
+      removalIndices <- which(inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                inputDF$YEAR == unitsQAQC$YEAR[i] &
+                                inputDF$DIVERSION_TYPE == "DIRECT")
+      
+      
+      stopifnot(length(removalIndices) > 0)
+      
+      
+      # Remove those rows from 'inputDF'
+      inputDF <- inputDF[-removalIndices, ]
+      
+      
+      # If an action has multiple actions specified
     } else if (grepl("^Multiple Actions\\|", unitsQAQC$QAQC_Action_Taken[i])) {
       
       
@@ -761,7 +808,7 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   
   # Extract a subset of 'unitsQAQC'; all records that share this iteration's Primary Key
   qaqcSubset <- unitsQAQC %>%
-    filter(Primary_Key == unitsQAQC$Primary_Key[i])
+    filter(PK == unitsQAQC$PK[i])
   
   
   # Create a vector of unique years for the data in 'qaqcSubset'
