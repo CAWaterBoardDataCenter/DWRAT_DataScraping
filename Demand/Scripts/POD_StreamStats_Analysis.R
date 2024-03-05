@@ -82,21 +82,8 @@ mainProcedure <- function (ws) {
   
   
   # Then, based on whether or not that path is a SharePoint path, read it in as 'podDF'
-  if (ws$IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET == TRUE) {
-    
-    podDF <- makeSharePointPath(ws$GIS_PREPROCESSING_SPREADSHEET_PATH) %>%
-      read_xlsx(sheet = ws$GIS_PREPROCESSING_WORKSHEET_NAME)
-    
-  } else if (ws$IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET == FALSE) {
-    
-    podDF <- ws$GIS_PREPROCESSING_SPREADSHEET_PATH %>%
-      read_xlsx(sheet = ws$GIS_PREPROCESSING_WORKSHEET_NAME)
-    
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET", 
+                   "GIS_PREPROCESSING_SPREADSHEET_PATH", "GIS_PREPROCESSING_WORKSHEET_NAME")
   
   
   
@@ -279,7 +266,9 @@ mainProcedure <- function (ws) {
   
   # Save the updated 'podDF' to a file
   write_xlsx(list("StreamStats_Res" = podDF, 
-                  "Final_List" = bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER) & !(origDF$POD_ID %in% podDF$POD_ID), ])), 
+                  "Final_List" = bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER & origDF$POD_ID %in% podDF$POD_ID), ]) %>%
+                    filter(is.na(AT_LEAST_ONE_EXIT) | AT_LEAST_ONE_EXIT == TRUE) %>%
+                    select(APPLICATION_NUMBER, POD_ID, AT_LEAST_ONE_EXIT)), 
              paste0("OutputData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
   
   
@@ -1412,4 +1401,4 @@ print("The script has finished running!")
 remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-       splitSection, translatePoint, getWatershedBoundaries)
+       splitSection, translatePoint)
