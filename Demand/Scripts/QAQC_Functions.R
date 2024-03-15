@@ -130,6 +130,16 @@ dupReportingFixer <- function (inputDF, ws) {
   
   
   
+  # If "ADJ_YEAR" is present in the data frame, add a "YEAR" column to 'qaqcDF' 
+  if ("ADJ_YEAR" %in% names(qaqcDF)) {
+    
+    qaqcDF <- qaqcDF %>%
+      mutate(YEAR = ADJ_YEAR)
+    
+  }
+  
+  
+  
   # Rely on iterateQAQC() to apply changes to 'inputDF'
   inputDF <- inputDF %>% 
     iterateQAQC(qaqcDF, ws$ID)
@@ -149,6 +159,13 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   
   
+  #### REMOVE THIS LATER ####
+  # Filter out rows that have no action in 'unitsQAQC'
+  unitsQAQC <- unitsQAQC %>%
+    filter(!is.na(QAQC_Action_Taken))
+  
+  
+  
   # Make sure that the "YEAR" column is numeric in 'unitsQAQC'
   unitsQAQC$YEAR <- as.numeric(unitsQAQC$YEAR)
   
@@ -163,8 +180,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # S022856 for Russian River
       next
     }
-    
-    
+
     
     # For this first issue, values for this right and year will be set to 0
     if (grepl("^Change monthly (Direct )?(Storage )?values to 0$", unitsQAQC$QAQC_Action_Taken[i])) {
@@ -591,9 +607,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # As a final step, set "QAQC_Action_Taken" to "None" for all entries with this "Primary_Key"
+      # that had "Keep One" as their action
       # (The expectation is that only one of the rights with this Primary Key will be kept)
-      # (Therefore, no further actions should be needed for any of these rights)
-      unitsQAQC[unitsQAQC$Primary_Key == unitsQAQC$Primary_Key[i], ]$QAQC_Action_Taken <- "None"
+      # (Therefore, no further "Keep One" actions should be needed for any of these rights)
+      # (Other actions like "Keep Direct" or "Keep Storage"  may be applied, however)
+      unitsQAQC[unitsQAQC$PK == unitsQAQC$PK[i] & unitsQAQC$QAQC_Action_Taken == "Keep One", ]$QAQC_Action_Taken <- "None"
       
       
       
@@ -819,10 +837,6 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   appVec <- qaqcSubset$APPLICATION_NUMBER %>% unique() %>% sort()
   
   
-  # More than one use type may appear as well
-  # Get all relevant use types as well
-  useVec <- qaqcSubset$DIVERSION_TYPE %>% unique() %>% sort()
-  
   
   # Get the priority dates for these application numbers next
   priorityDF <- read_xlsx(paste0("OutputData/", wsID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
@@ -846,80 +860,69 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   for (j in 1:length(yearVec)) {
     
     
-    # Nested in that loop is an iteration through the diversion types in 'useVec'
-    for (k in 1:length(useVec)) {
+    # Create a subset of 'qaqcSubset' that only has data for this iteration's year
+    # It should be sorted so that the lowest priority date appears first in the tibble
+    qaqcSubSub <- qaqcSubset %>%
+      filter(YEAR == yearVec[j]) %>%
+      arrange(ASSIGNED_PRIORITY_DATE, APPLICATION_NUMBER)
+    
+    
+    # If 'qaqcSubSub' has 0 records, skip to the next iteration
+    # (This may happen if "DIRECT" and "STORAGE" are not always relevant to duplicate reporting errors in all years)
+    if (nrow(qaqcSubSub) == 0) {
+      next
+    }
+    
+    
+    # Error Check
+    # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
+    stopifnot(nrow(qaqcSubSub) > 1)
+    stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
+    
+    
+    # Ignore the first row of 'qaqcSubSub' (it has the earliest priority date)
+    qaqcSubSub <- qaqcSubSub[-1, ]
+    
+    
+    # The other rights will have their values set to 0 for this year
+    # The procedure will be a little different depending on the year
+    if (yearVec[j] < 2021) {
       
+      inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                inputDF$YEAR == yearVec[j], ]$AMOUNT <- 0
       
-      # Create a subset of 'qaqcSubset' that only has data for this iteration's year and diversion type
-      # It should be sorted so that the lowest priority date appears first in the tibble
-      qaqcSubSub <- qaqcSubset %>%
-        filter(YEAR == yearVec[j] & DIVERSION_TYPE == useVec[k]) %>%
-        arrange(ASSIGNED_PRIORITY_DATE, APPLICATION_NUMBER)
-      
-      
-      # If 'qaqcSubSub' has 0 records, skip to the next iteration
-      # (This may happen if "DIRECT" and "STORAGE" are not always relevant to duplicate reporting errors in all years)
-      if (nrow(qaqcSubSub) == 0) {
-        next
-      }
-      
-      
-      # Error Check
-      # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
-      stopifnot(nrow(qaqcSubSub) > 1)
-      stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
-      
-      
-      # Ignore the first row of 'qaqcSubSub' (it has the earliest priority date)
-      qaqcSubSub <- qaqcSubSub[-1, ]
-      
-      
-      # The other rights will have their values set to 0 for this year
-      # The procedure will be a little different depending on the year
-      if (yearVec[j] < 2021) {
-        
-        inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                  inputDF$YEAR == yearVec[j] &
-                  inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
-        
       # Starting in 2022, reports use a water year
       # Therefore, for 2021, if the owner has reported data in 2022 or later,
       # only change months 1-9 to zero (the last three months are part of water year 2022)
-      } else if (yearVec[j] == 2021) {
-        
-        
-        # If the owner has reports for 2022 and later, do not zero out the last three months in 2022
-        # (Because they are part of the WY2022 dataset)
-        if (sum(yearVec > 2021) > 0) {
-          
-          inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                    inputDF$YEAR == yearVec[j] &
-                    inputDF$MONTH %in% 1:9 &
-                    inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
-          
-        # If there are no reports after 2021, it is okay to zero out the last three months as well
-        # (Because this data is from the CY2021 report)
-        } else {
-          
-          inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                    inputDF$YEAR == yearVec[j] &
-                    inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
-          
-        }
-        
-        
-      # For the final case (reports in 2022 or later), water years are used
-      } else if (yearVec[j] > 2021) {
+    } else if (yearVec[j] == 2021) {
+      
+      
+      # If the owner has reports for 2022 and later, do not zero out the last three months in 2022
+      # (Because they are part of the WY2022 dataset)
+      if (sum(yearVec > 2021) > 0) {
         
         inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                  ((inputDF$YEAR == yearVec[j] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == yearVec[j] - 1 & inputDF$MONTH %in% 10:12)) &
-                  inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
+                  inputDF$YEAR == yearVec[j] &
+                  inputDF$MONTH %in% 1:9, ]$AMOUNT <- 0
+        
+        # If there are no reports after 2021, it is okay to zero out the last three months as well
+        # (Because this data is from the CY2021 report)
+      } else {
+        
+        inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                  inputDF$YEAR == yearVec[j], ]$AMOUNT <- 0
         
       }
       
       
-    } # End of 'useVec' loop (k)
+      # For the final case (reports in 2022 or later), water years are used
+    } else if (yearVec[j] > 2021) {
+      
+      inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                ((inputDF$YEAR == yearVec[j] & inputDF$MONTH %in% 1:9) | 
+                   (inputDF$YEAR == yearVec[j] - 1 & inputDF$MONTH %in% 10:12)), ]$AMOUNT <- 0
+      
+    }
     
   } # End of 'yearVec' loop (j)
   
