@@ -341,7 +341,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # The next action involves dividing all values for a right and year by a number
-    } else if (grepl("^Divide monthly reported values by [0-9]+$", unitsQAQC$QAQC_Action_Taken[i])) {
+    } else if (grepl("^Divide monthly reported values by [0-9\\.]+$", unitsQAQC$QAQC_Action_Taken[i])) {
       
       # Extract the number to use in the division
       divNum <- unitsQAQC$QAQC_Action_Taken[i] %>%
@@ -637,6 +637,15 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       inputDF <- inputDF[-removalIndices, ]
       
       
+      # The error check in this procedure will produce a false error if 
+      # more than one entry for this duplicate flag has "Keep Direct"
+      # To avoid that possibility, make all entries with this "PK" and "APPLICATION_NUMBER" 
+      # that have "Keep Direct" as an option changed to "None"
+      unitsQAQC$QAQC_Action_Taken[unitsQAQC$PK == unitsQAQC$PK[i] & 
+                                    unitsQAQC$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                    unitsQAQC$QAQC_Action_Taken == "Keep Direct"] <- "None"
+      
+      
       # Perform similar actions as above (but "STORAGE" is kept instead of "DIRECT")
     } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep Storage") {  
       
@@ -651,6 +660,15 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       # Remove those rows from 'inputDF'
       inputDF <- inputDF[-removalIndices, ]
+      
+      
+      # The error check in this procedure will produce a false error if 
+      # more than one entry for this duplicate flag has "Keep Storage"
+      # To avoid that possibility, make all entries with this "PK" and "APPLICATION_NUMBER" 
+      # that have "Keep Storage" as an option changed to "None"
+      unitsQAQC$QAQC_Action_Taken[unitsQAQC$PK == unitsQAQC$PK[i] & 
+                                    unitsQAQC$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                    unitsQAQC$QAQC_Action_Taken == "Keep Storage"] <- "None"
       
       
       # If an action has multiple actions specified
