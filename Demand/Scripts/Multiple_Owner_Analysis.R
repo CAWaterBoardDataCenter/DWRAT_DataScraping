@@ -174,6 +174,12 @@ Duplicate_Reports <- Duplicate_Reports %>%
 
 
 
+# Sort the columns too
+Duplicate_Reports <- Duplicate_Reports %>%
+  arrange(PARTY_ID, ADJ_YEAR, AnnualTotal, APPLICATION_NUMBER, DIVERSION_TYPE)
+
+
+
 writexl::write_xlsx(x= Duplicate_Reports, path = paste0("OutputData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
 
 print("The Multiple_Owner_Analysis.R script is done running!")
