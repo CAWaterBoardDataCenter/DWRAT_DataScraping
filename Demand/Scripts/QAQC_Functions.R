@@ -69,10 +69,10 @@ unitFixer <- function (inputDF, ws) {
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
   # Then make changes to 'inputDF'
-  inputDF <- iterateQAQC(inputDF, unitsQAQC, ws$ID)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC, ws$ID, ws)
   
   
-  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, ws$ID)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, ws$ID, ws)
   
   
   
@@ -115,8 +115,8 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Remove entries in 'qaqcDF' where no actions are required
   # Also, rename "APPL_ID" to "APPLICATION_NUMBER"
-  qaqcDF <- qaqcDF %>%
-    filter(!grepl("^None", QAQC_Action_Taken))
+  # qaqcDF <- qaqcDF %>%
+  #   filter(!grepl("^None", QAQC_Action_Taken))
   
   
   
@@ -142,7 +142,7 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Rely on iterateQAQC() to apply changes to 'inputDF'
   inputDF <- inputDF %>% 
-    iterateQAQC(qaqcDF, ws$ID)
+    iterateQAQC(qaqcDF, ws$ID, ws)
   
   
   
@@ -153,16 +153,9 @@ dupReportingFixer <- function (inputDF, ws) {
 
 
 
-iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
+iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
   
   # Given a source dataset and data frame of corrections, apply changes based on the "QAQC_Action_Taken" column
-  
-  
-  
-  #### REMOVE THIS LATER ####
-  # Filter out rows that have no action in 'unitsQAQC'
-  unitsQAQC <- unitsQAQC %>%
-    filter(!is.na(QAQC_Action_Taken))
   
   
   
@@ -171,12 +164,19 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   
   
+  # Define a counter for the iteration loop
+  i <- 1
+  
+  
   # Iterate through the different actions specified in 'unitsQAQC'
-  for (i in 1:nrow(unitsQAQC)) {
+  while (i < nrow(unitsQAQC)) {
     
     
     # If this row's "APPLICATION_NUMBER" value does not appear in 'inputDF', skip this row
     if (!(unitsQAQC$APPLICATION_NUMBER[i] %in% inputDF$APPLICATION_NUMBER)) {
+      
+      i <- i + 1
+      
       # S022856 for Russian River
       next
     }
@@ -592,7 +592,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # Use a separate function for this step
-      inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ], wsID)
+      inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ], wsID, ws)
       
       
     # Another type of issue is needing to select one right's entries among two or more options
@@ -700,14 +700,17 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       }
       
       
-      # After that, call iterateQAQC() again with 'dummyDF'
-      inputDF <- iterateQAQC(inputDF, dummyDF, wsID)
+      # After that, append 'dummyDF' to 'unitsQAQC'
+      # Eventually the loop will reach these actions
+      unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
+                             dummyDF,
+                             unitsQAQC[(i + 1):nrow(unitsQAQC), ])
       
     
-      # If an action is "None", skip it
+      # If an action is "None", do nothing
     } else if (unitsQAQC$QAQC_Action_Taken[i] == "None") {
       
-      next
+      # next
       
       # Throw an error for any other action  
     } else {
@@ -715,6 +718,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       stop(paste0("No procedure has been specified for this action: ", unitsQAQC$QAQC_Action_Taken[i]))
       
     }
+    
+    
+    # Increment the counter
+    i <- i + 1
+    
     
   } # End of loop through 'unitsQAQC'
   
@@ -755,7 +763,7 @@ chooseUseType <- function (action) {
 
 
 
-useMeasurementData <- function (inputDF, qaqcInfo, wsID) {
+useMeasurementData <- function (inputDF, qaqcInfo, wsID, ws) {
   
   # Using the information specified in 'qaqcInfo' (a single row DF), 
   # access a measurement spreadsheet ("Expected_Demand_Units_QAQC_Measurement_Values.xlsx") 
@@ -765,7 +773,9 @@ useMeasurementData <- function (inputDF, qaqcInfo, wsID) {
   
   # Read in the spreadsheet containing volumes compiled from measurement spreadsheets
   # Filter the data to this iteration's "APPLICATION_NUMBER"
-  measuredData <- read_xlsx(paste0("InputData/", wsID, "_Expected_Demand_Units_QAQC_Measurement_Values.xlsx"), sheet = "Data") %>%
+  measuredData <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEASUREMENT_VALUES",
+                          "QAQC_MEASUREMENT_VALUES_SPREADSHEET_PATH",
+                          "QAQC_MEASUREMENT_VALUES_SPREADSHEET_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] & YEAR == qaqcInfo$YEAR[1])
   
   
@@ -830,7 +840,9 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   
   # Extract a subset of 'unitsQAQC'; all records that share this iteration's Primary Key
   qaqcSubset <- unitsQAQC %>%
-    filter(PK == unitsQAQC$PK[i])
+    filter(PK == unitsQAQC$PK[i]) %>%
+    select(APPLICATION_NUMBER, YEAR) %>%
+    unique()
   
   
   # Create a vector of unique years for the data in 'qaqcSubset'
