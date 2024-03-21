@@ -71,9 +71,10 @@ expDemand <- expDemand %>%
 
 
 # Read in the other Units QA/QC spreadsheet and remove rows that are already present in that spreadsheet
-mainSheet <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                     "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
-                     "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+mainSheet <- list.files("OutputData", 
+                        pattern = paste0(ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx$"), 
+                        full.names = TRUE) %>%
+  read_xlsx() %>%
   mutate(APP_YEAR_KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
 
 
