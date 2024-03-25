@@ -24,7 +24,9 @@ mainProcedure <- function (ws) {
   
   
   # Get the watershed boundaries first
-  wsBound <- getWatershedBoundaries(ws)
+  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
