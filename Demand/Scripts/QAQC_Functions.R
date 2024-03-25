@@ -69,10 +69,10 @@ unitFixer <- function (inputDF, ws) {
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
   # Then make changes to 'inputDF'
-  inputDF <- iterateQAQC(inputDF, unitsQAQC, ws$ID)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC, ws$ID, ws)
   
   
-  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, ws$ID)
+  inputDF <- iterateQAQC(inputDF, unitsQAQC_Med, ws$ID, ws)
   
   
   
@@ -115,8 +115,8 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Remove entries in 'qaqcDF' where no actions are required
   # Also, rename "APPL_ID" to "APPLICATION_NUMBER"
-  qaqcDF <- qaqcDF %>%
-    filter(!grepl("^None", QAQC_Action_Taken))
+  # qaqcDF <- qaqcDF %>%
+  #   filter(!grepl("^None", QAQC_Action_Taken))
   
   
   
@@ -142,7 +142,7 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Rely on iterateQAQC() to apply changes to 'inputDF'
   inputDF <- inputDF %>% 
-    iterateQAQC(qaqcDF, ws$ID)
+    iterateQAQC(qaqcDF, ws$ID, ws)
   
   
   
@@ -153,16 +153,9 @@ dupReportingFixer <- function (inputDF, ws) {
 
 
 
-iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
+iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
   
   # Given a source dataset and data frame of corrections, apply changes based on the "QAQC_Action_Taken" column
-  
-  
-  
-  #### REMOVE THIS LATER ####
-  # Filter out rows that have no action in 'unitsQAQC'
-  unitsQAQC <- unitsQAQC %>%
-    filter(!is.na(QAQC_Action_Taken))
   
   
   
@@ -171,12 +164,19 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   
   
+  # Define a counter for the iteration loop
+  i <- 1
+  
+  
   # Iterate through the different actions specified in 'unitsQAQC'
-  for (i in 1:nrow(unitsQAQC)) {
+  while (i < nrow(unitsQAQC)) {
     
     
     # If this row's "APPLICATION_NUMBER" value does not appear in 'inputDF', skip this row
     if (!(unitsQAQC$APPLICATION_NUMBER[i] %in% inputDF$APPLICATION_NUMBER)) {
+      
+      i <- i + 1
+      
       # S022856 for Russian River
       next
     }
@@ -187,11 +187,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
     
       
       # If "Direct" or "Storage" are in the action string, only those values will be set to 0
-      if (grepl("Direct", unitsQAQC$QAQC_Action_Taken[i])) {
+      if (grepl("Direct", unitsQAQC$QAQC_Action_Taken[i], ignore.case = TRUE)) {
         
         useChoice <- "DIRECT"
         
-      } else if (grepl("Storage", unitsQAQC$QAQC_Action_Taken[i])) {
+      } else if (grepl("Storage", unitsQAQC$QAQC_Action_Taken[i], ignore.case = TRUE)) {
         
         useChoice <- "STORAGE"
         
@@ -341,7 +341,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # The next action involves dividing all values for a right and year by a number
-    } else if (grepl("^Divide monthly reported values by [0-9]+$", unitsQAQC$QAQC_Action_Taken[i])) {
+    } else if (grepl("^Divide monthly reported values by [0-9\\.]+$", unitsQAQC$QAQC_Action_Taken[i])) {
       
       # Extract the number to use in the division
       divNum <- unitsQAQC$QAQC_Action_Taken[i] %>%
@@ -378,11 +378,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # The next action is for multiplying a specific entry by a number
-    } else if (grepl("^Multiply [ADFJMNOS][a-z]+ [0-9]{4} [DS][irectoag]+ by [0-9]+$", unitsQAQC$QAQC_Action_Taken[i])) {
+    } else if (grepl("^Multiply [ADFJMNOS][a-z]+ [0-9]{4} [DS][irectoag]+ by [0-9\\.]+$", unitsQAQC$QAQC_Action_Taken[i], ignore.case = TRUE)) {
       
       # Extract the number to use in the multiplication
       mulNum <- unitsQAQC$QAQC_Action_Taken[i] %>%
-        str_extract("[0-9]+$") %>% as.numeric()
+        str_extract("[0-9\\.]+$") %>% as.numeric()
       
       
       # Error Check
@@ -393,7 +393,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # Similarly, get a month, year, and use type from 'unitsQAQC'
       recordData <- unitsQAQC$QAQC_Action_Taken[i] %>%
         str_remove("^Multiply ") %>%
-        str_remove(" by [0-9]+$") %>%
+        str_remove(" by [0-9\\.]+$") %>%
         str_split("\\s+") %>% unlist()
 
       
@@ -407,7 +407,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # The third element should be either "Direct" or "Storage"
-      stopifnot(recordData[3] %in% c("Direct", "Storage"))
+      stopifnot(toupper(recordData[3]) %in% c("DIRECT", "STORAGE"))
       
       
       # Multiply the specified "AMOUNT" value by 'mulNum'
@@ -421,7 +421,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # Another possible QA/QC action is replacing a value or values with a specified number
-    } else if (grepl("^Replace [ADFJMNOS][/A-Za-z]+ [0-9]{4} [DS][irectoag]+ with [0-9\\.]+", unitsQAQC$QAQC_Action_Taken[i])) {
+    } else if (grepl("^Replace [ADFJMNOS][/A-Za-z]+ [0-9]{4} [DS][irectoag]+ with [0-9\\.]+", unitsQAQC$QAQC_Action_Taken[i], ignore.case = TRUE)) {
       
       
       # There might be multiple changes intended in this action
@@ -453,7 +453,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         
         
         # The third element should be either "Direct" or "Storage"
-        stopifnot(recordData[3] %in% c("Direct", "Storage"))
+        stopifnot(toupper(recordData[3]) %in% c("DIRECT", "STORAGE"))
 
       
         # The fourth element should be a number
@@ -592,7 +592,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # Use a separate function for this step
-      inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ], wsID)
+      inputDF <- inputDF %>% useMeasurementData(unitsQAQC[i, ], wsID, ws)
       
       
     # Another type of issue is needing to select one right's entries among two or more options
@@ -637,6 +637,15 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       inputDF <- inputDF[-removalIndices, ]
       
       
+      # The error check in this procedure will produce a false error if 
+      # more than one entry for this duplicate flag has "Keep Direct"
+      # To avoid that possibility, make all entries with this "PK" and "APPLICATION_NUMBER" 
+      # that have "Keep Direct" as an option changed to "None"
+      unitsQAQC$QAQC_Action_Taken[unitsQAQC$PK == unitsQAQC$PK[i] & 
+                                    unitsQAQC$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                    unitsQAQC$QAQC_Action_Taken == "Keep Direct"] <- "None"
+      
+      
       # Perform similar actions as above (but "STORAGE" is kept instead of "DIRECT")
     } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep Storage") {  
       
@@ -651,6 +660,15 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       # Remove those rows from 'inputDF'
       inputDF <- inputDF[-removalIndices, ]
+      
+      
+      # The error check in this procedure will produce a false error if 
+      # more than one entry for this duplicate flag has "Keep Storage"
+      # To avoid that possibility, make all entries with this "PK" and "APPLICATION_NUMBER" 
+      # that have "Keep Storage" as an option changed to "None"
+      unitsQAQC$QAQC_Action_Taken[unitsQAQC$PK == unitsQAQC$PK[i] & 
+                                    unitsQAQC$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                    unitsQAQC$QAQC_Action_Taken == "Keep Storage"] <- "None"
       
       
       # If an action has multiple actions specified
@@ -682,14 +700,17 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       }
       
       
-      # After that, call iterateQAQC() again with 'dummyDF'
-      inputDF <- iterateQAQC(inputDF, dummyDF, wsID)
+      # After that, append 'dummyDF' to 'unitsQAQC'
+      # Eventually the loop will reach these actions
+      unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
+                             dummyDF,
+                             unitsQAQC[(i + 1):nrow(unitsQAQC), ])
       
     
-      # If an action is "None", skip it
+      # If an action is "None", do nothing
     } else if (unitsQAQC$QAQC_Action_Taken[i] == "None") {
       
-      next
+      # next
       
       # Throw an error for any other action  
     } else {
@@ -697,6 +718,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       stop(paste0("No procedure has been specified for this action: ", unitsQAQC$QAQC_Action_Taken[i]))
       
     }
+    
+    
+    # Increment the counter
+    i <- i + 1
+    
     
   } # End of loop through 'unitsQAQC'
   
@@ -737,7 +763,7 @@ chooseUseType <- function (action) {
 
 
 
-useMeasurementData <- function (inputDF, qaqcInfo, wsID) {
+useMeasurementData <- function (inputDF, qaqcInfo, wsID, ws) {
   
   # Using the information specified in 'qaqcInfo' (a single row DF), 
   # access a measurement spreadsheet ("Expected_Demand_Units_QAQC_Measurement_Values.xlsx") 
@@ -747,18 +773,10 @@ useMeasurementData <- function (inputDF, qaqcInfo, wsID) {
   
   # Read in the spreadsheet containing volumes compiled from measurement spreadsheets
   # Filter the data to this iteration's "APPLICATION_NUMBER"
-  if (qaqcInfo$YEAR[1] < 2022) {
-    
-    measuredData <- read_xlsx(paste0("InputData/", wsID, "_Expected_Demand_Units_QAQC_Measurement_Values.xlsx"), sheet = "Data") %>%
-      filter(APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] & YEAR == qaqcInfo$YEAR[1])
-    
-  } else {
-    
-    # Get data for the water year instead of the calendar year
-    measuredData <- read_xlsx(paste0("InputData/", wsID, "_Expected_Demand_Units_QAQC_Measurement_Values.xlsx"), sheet = "Data") %>%
-      filter(APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] & YEAR %in% c(qaqcInfo$YEAR[1], qaqcInfo$YEAR[1] - 1))
-    
-  }
+  measuredData <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEASUREMENT_VALUES",
+                          "QAQC_MEASUREMENT_VALUES_SPREADSHEET_PATH",
+                          "QAQC_MEASUREMENT_VALUES_SPREADSHEET_WORKSHEET_NAME") %>%
+    filter(APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] & YEAR == qaqcInfo$YEAR[1])
   
   
   
@@ -785,25 +803,21 @@ useMeasurementData <- function (inputDF, qaqcInfo, wsID) {
     } else {
       
       # The operation is more complicated for newer reports, which use a water year
-      # This iteration of 'measuredData' may either apply to the first 9 months of 
-      # the year in 'qaqcInfo' or the last 3 months of the year before qaqcInfo$YEAR
-      if (measuredData$YEAR[j] == qaqcInfo$YEAR[1]) {
-        
-        inputDF[inputDF$APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] &
-                  inputDF$YEAR == measuredData$YEAR[j] &
-                  inputDF$MONTH %in% 1:9 &
-                  inputDF$DIVERSION_TYPE == measuredData$DIVERSION_TYPE[j], ]$AMOUNT <- measuredData[j, ] %>%
-          select(toupper(month.abb[1:9])) %>% unlist() %>% as.vector()
-        
-      } else {
-        
-        inputDF[inputDF$APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] &
-                  inputDF$YEAR == measuredData$YEAR[j] &
-                  inputDF$MONTH %in% 10:12 &
-                  inputDF$DIVERSION_TYPE == measuredData$DIVERSION_TYPE[j], ]$AMOUNT <- measuredData[j, ] %>%
-          select(toupper(month.abb[10:12])) %>% unlist() %>% as.vector()
-        
-      }
+      # This iteration of 'measuredData' will apply to the first 9 months of 
+      # the year in 'qaqcInfo' and the last 3 months of the year before qaqcInfo$YEAR
+      inputDF[inputDF$APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] &
+                inputDF$YEAR == measuredData$YEAR[j] &
+                inputDF$MONTH %in% 1:9 &
+                inputDF$DIVERSION_TYPE == measuredData$DIVERSION_TYPE[j], ]$AMOUNT <- measuredData[j, ] %>%
+        select(toupper(month.abb[1:9])) %>% unlist() %>% as.vector()
+      
+      
+      
+      inputDF[inputDF$APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] &
+                inputDF$YEAR == (measuredData$YEAR[j] - 1) &
+                inputDF$MONTH %in% 10:12 &
+                inputDF$DIVERSION_TYPE == measuredData$DIVERSION_TYPE[j], ]$AMOUNT <- measuredData[j, ] %>%
+        select(toupper(month.abb[10:12])) %>% unlist() %>% as.vector()
       
     }
     
@@ -826,7 +840,9 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   
   # Extract a subset of 'unitsQAQC'; all records that share this iteration's Primary Key
   qaqcSubset <- unitsQAQC %>%
-    filter(PK == unitsQAQC$PK[i])
+    filter(PK == unitsQAQC$PK[i]) %>%
+    select(APPLICATION_NUMBER, YEAR) %>%
+    unique()
   
   
   # Create a vector of unique years for the data in 'qaqcSubset'
