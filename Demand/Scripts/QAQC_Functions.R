@@ -45,24 +45,14 @@ unitFixer <- function (inputDF, ws) {
   
   # Otherwise, read in those two spreadsheets
   # The procedure will be slightly different depending on whether the paths are SharePoint paths
-  if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == TRUE) {
-    
-    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME %>%
-      makeSharePointPath() %>%
-      read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
-    
-  # Do not use makeSharePointPath() if "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET" is FALSE
-  } else if (ws$IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET == FALSE) {
-    
-    unitsQAQC <- ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME %>%
-      read_xlsx(sheet = ws$QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME)
-    
-  # Error Check
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  unitsQAQC <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                       "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+  
+  
+  
+  unitsQAQC_Med <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
   
   
   
@@ -111,21 +101,9 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Otherwise, read in the spreadsheet
   # (with a slightly different procedure depending on whether a SharePoint is used)
-  if (ws$IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET == TRUE) {
-    
-    qaqcDF <- makeSharePointPath(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH) %>%
-      read_xlsx(sheet = ws$QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME)
-    
-  } else if (ws$IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET == FALSE) {
-    
-    qaqcDF <- read_xlsx(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH, 
-                        sheet = ws$QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME)
-    
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  qaqcDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET",
+                    "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH",
+                    "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
   
   
   
@@ -138,8 +116,27 @@ dupReportingFixer <- function (inputDF, ws) {
   # Remove entries in 'qaqcDF' where no actions are required
   # Also, rename "APPL_ID" to "APPLICATION_NUMBER"
   qaqcDF <- qaqcDF %>%
-    filter(!grepl("^None", QAQC_Action_Taken)) %>%
-    rename(APPLICATION_NUMBER = APPL_ID)
+    filter(!grepl("^None", QAQC_Action_Taken))
+  
+  
+  
+  # Also, rename "APPL_ID" to "APPLICATION_NUMBER" if it exists in the DF
+  if ("APPL_ID" %in% names(qaqcDF)) {
+    
+    qaqcDF <- qaqcDF %>%
+      rename(APPLICATION_NUMBER = APPL_ID)
+    
+  }
+  
+  
+  
+  # If "ADJ_YEAR" is present in the data frame, add a "YEAR" column to 'qaqcDF' 
+  if ("ADJ_YEAR" %in% names(qaqcDF)) {
+    
+    qaqcDF <- qaqcDF %>%
+      mutate(YEAR = ADJ_YEAR)
+    
+  }
   
   
   
@@ -162,6 +159,18 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
   
   
   
+  #### REMOVE THIS LATER ####
+  # Filter out rows that have no action in 'unitsQAQC'
+  unitsQAQC <- unitsQAQC %>%
+    filter(!is.na(QAQC_Action_Taken))
+  
+  
+  
+  # Make sure that the "YEAR" column is numeric in 'unitsQAQC'
+  unitsQAQC$YEAR <- as.numeric(unitsQAQC$YEAR)
+  
+  
+  
   # Iterate through the different actions specified in 'unitsQAQC'
   for (i in 1:nrow(unitsQAQC)) {
     
@@ -171,8 +180,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # S022856 for Russian River
       next
     }
-    
-    
+
     
     # For this first issue, values for this right and year will be set to 0
     if (grepl("^Change monthly (Direct )?(Storage )?values to 0$", unitsQAQC$QAQC_Action_Taken[i])) {
@@ -209,7 +217,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         # (e.g., WY2022 is from October 2021 to September 2022)
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                   ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% useChoice &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- 0
         
@@ -239,15 +247,15 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851
         
       } else {
-        
+
         # Apply the conversion to the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% toConvert &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                                                             ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 10:12)) &
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$DIVERSION_TYPE %in% toConvert &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851
         
@@ -278,12 +286,12 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         
         # Apply this conversion over the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% toConvert &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$DIVERSION_TYPE %in% toConvert &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 365
         
@@ -319,12 +327,12 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         
         # Apply these changes to the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$DIVERSION_TYPE %in% toConvert &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$DIVERSION_TYPE %in% toConvert &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 60 * 24 * 365
         
@@ -358,11 +366,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
         
         # Perform this operation over the water year
         inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                     (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:8) | 
-                                                               (inputDF$YEAR == unitsQAQC$YEAR[i] - 1 & inputDF$MONTH %in% 9:12)) &
+                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
+                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
                                                             inputDF$AMOUNT > 0, ]$AMOUNT / divNum
         
       }
@@ -524,12 +532,16 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       # whether the reporting year 'actionYear' had calendar years or water years
       if (actionYear < 2022) {
         
+        # "TEMP_YEAR" is used to ensure that the if_else statement's 
+        # TRUE/FALSE condition is evaluated for each row
         newRows <- tempDF %>%
           filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                    YEAR == actionYear &
                    DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>%
-          mutate(YEAR = if_else(unitsQAQC$YEAR[i] < 2022, unitsQAQC$YEAR[i],
-                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1)))
+          mutate(TEMP_YEAR = unitsQAQC$YEAR[i]) %>%
+          mutate(YEAR = if_else(TEMP_YEAR < 2022, unitsQAQC$YEAR[i],
+                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1))) %>%
+          select(-TEMP_YEAR)
         
       } else {
         
@@ -538,8 +550,10 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
                    ((YEAR == actionYear & MONTH %in% 1:9) | 
                       (YEAR == actionYear - 1 & MONTH %in% 10:12)) &
                    DIVERSION_TYPE %in% c("DIRECT", "STORAGE")) %>%
-          mutate(YEAR = if_else(unitsQAQC$YEAR[i] < 2022, unitsQAQC$YEAR[i],
-                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1)))
+          mutate(TEMP_YEAR = unitsQAQC$YEAR[i]) %>%
+          mutate(YEAR = if_else(TEMP_YEAR < 2022, unitsQAQC$YEAR[i],
+                                if_else(MONTH < 10, unitsQAQC$YEAR[i], unitsQAQC$YEAR[i] - 1))) %>%
+          select(-TEMP_YEAR)
         
       }
       
@@ -593,10 +607,50 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID) {
       
       
       # As a final step, set "QAQC_Action_Taken" to "None" for all entries with this "Primary_Key"
+      # that had "Keep One" as their action
       # (The expectation is that only one of the rights with this Primary Key will be kept)
-      # (Therefore, no further actions should be needed for any of these rights)
-      unitsQAQC[unitsQAQC$Primary_Key == unitsQAQC$Primary_Key[i], ]$QAQC_Action_Taken <- "None"
+      # (Therefore, no further "Keep One" actions should be needed for any of these rights)
+      # (Other actions like "Keep Direct" or "Keep Storage"  may be applied, however)
+      unitsQAQC[unitsQAQC$PK == unitsQAQC$PK[i] & unitsQAQC$QAQC_Action_Taken == "Keep One", ]$QAQC_Action_Taken <- "None"
       
+      
+      
+      # If an action has multiple actions specified
+    } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep Direct") {
+      
+      
+      # Within the same year for the same right, 
+      # the report has the same exact values in both DIRECT and STORAGE
+      # Keep only one set of values (either the DIRECT or the STORAGE values)
+      
+      # In this case, only the DIRECT values will be kept
+      # Get the indices in 'inputDF' that contain data for the STORAGE values of this year and right
+      removalIndices <- which(inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                inputDF$YEAR == unitsQAQC$YEAR[i] &
+                                inputDF$DIVERSION_TYPE == "STORAGE")
+      
+      
+      stopifnot(length(removalIndices) > 0)
+      
+      
+      # Remove those rows from 'inputDF'
+      inputDF <- inputDF[-removalIndices, ]
+      
+      
+      # Perform similar actions as above (but "STORAGE" is kept instead of "DIRECT")
+    } else if (unitsQAQC$QAQC_Action_Taken[i] == "Keep Storage") {  
+      
+      # Get the indices in 'inputDF' that contain data for the DIRECT values of this year and right
+      removalIndices <- which(inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                                inputDF$YEAR == unitsQAQC$YEAR[i] &
+                                inputDF$DIVERSION_TYPE == "DIRECT")
+      
+      
+      stopifnot(length(removalIndices) > 0)
+      
+      
+      # Remove those rows from 'inputDF'
+      inputDF <- inputDF[-removalIndices, ]
       
       
       # If an action has multiple actions specified
@@ -770,9 +824,9 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   # set the values for a given year and diversion type to zero for all other rights
   
   
-  # Extract a subset of 'unitsQAQC'; all records that share this iteration's PARTY_ID
+  # Extract a subset of 'unitsQAQC'; all records that share this iteration's Primary Key
   qaqcSubset <- unitsQAQC %>%
-    filter(PARTY_ID == unitsQAQC$PARTY_ID[i])
+    filter(PK == unitsQAQC$PK[i])
   
   
   # Create a vector of unique years for the data in 'qaqcSubset'
@@ -782,10 +836,6 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   # Get the unique water rights for this party as well
   appVec <- qaqcSubset$APPLICATION_NUMBER %>% unique() %>% sort()
   
-  
-  # More than one use type may appear as well
-  # Get all relevant use types as well
-  useVec <- qaqcSubset$DIVERSION_TYPE %>% unique() %>% sort()
   
   
   # Get the priority dates for these application numbers next
@@ -810,80 +860,69 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   for (j in 1:length(yearVec)) {
     
     
-    # Nested in that loop is an iteration through the diversion types in 'useVec'
-    for (k in 1:length(useVec)) {
+    # Create a subset of 'qaqcSubset' that only has data for this iteration's year
+    # It should be sorted so that the lowest priority date appears first in the tibble
+    qaqcSubSub <- qaqcSubset %>%
+      filter(YEAR == yearVec[j]) %>%
+      arrange(ASSIGNED_PRIORITY_DATE, APPLICATION_NUMBER)
+    
+    
+    # If 'qaqcSubSub' has 0 records, skip to the next iteration
+    # (This may happen if "DIRECT" and "STORAGE" are not always relevant to duplicate reporting errors in all years)
+    if (nrow(qaqcSubSub) == 0) {
+      next
+    }
+    
+    
+    # Error Check
+    # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
+    stopifnot(nrow(qaqcSubSub) > 1)
+    stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
+    
+    
+    # Ignore the first row of 'qaqcSubSub' (it has the earliest priority date)
+    qaqcSubSub <- qaqcSubSub[-1, ]
+    
+    
+    # The other rights will have their values set to 0 for this year
+    # The procedure will be a little different depending on the year
+    if (yearVec[j] < 2021) {
       
+      inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                inputDF$YEAR == yearVec[j], ]$AMOUNT <- 0
       
-      # Create a subset of 'qaqcSubset' that only has data for this iteration's year and diversion type
-      # It should be sorted so that the lowest priority date appears first in the tibble
-      qaqcSubSub <- qaqcSubset %>%
-        filter(YEAR == yearVec[j] & DIVERSION_TYPE == useVec[k]) %>%
-        arrange(ASSIGNED_PRIORITY_DATE, APPLICATION_NUMBER)
-      
-      
-      # If 'qaqcSubSub' has 0 records, skip to the next iteration
-      # (This may happen if "DIRECT" and "STORAGE" are not always relevant to duplicate reporting errors in all years)
-      if (nrow(qaqcSubSub) == 0) {
-        next
-      }
-      
-      
-      # Error Check
-      # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
-      stopifnot(nrow(qaqcSubSub) > 1)
-      stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
-      
-      
-      # Ignore the first row of 'qaqcSubSub' (it has the earliest priority date)
-      qaqcSubSub <- qaqcSubSub[-1, ]
-      
-      
-      # The other rights will have their values set to 0 for this year
-      # The procedure will be a little different depending on the year
-      if (yearVec[j] < 2021) {
-        
-        inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                  inputDF$YEAR == yearVec[j] &
-                  inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
-        
       # Starting in 2022, reports use a water year
       # Therefore, for 2021, if the owner has reported data in 2022 or later,
       # only change months 1-9 to zero (the last three months are part of water year 2022)
-      } else if (yearVec[j] == 2021) {
-        
-        
-        # If the owner has reports for 2022 and later, do not zero out the last three months in 2022
-        # (Because they are part of the WY2022 dataset)
-        if (sum(yearVec > 2021) > 0) {
-          
-          inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                    inputDF$YEAR == yearVec[j] &
-                    inputDF$MONTH %in% 1:9 &
-                    inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
-          
-        # If there are no reports after 2021, it is okay to zero out the last three months as well
-        # (Because this data is from the CY2021 report)
-        } else {
-          
-          inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                    inputDF$YEAR == yearVec[j] &
-                    inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
-          
-        }
-        
-        
-      # For the final case (reports in 2022 or later), water years are used
-      } else if (yearVec[j] > 2021) {
+    } else if (yearVec[j] == 2021) {
+      
+      
+      # If the owner has reports for 2022 and later, do not zero out the last three months in 2022
+      # (Because they are part of the WY2022 dataset)
+      if (sum(yearVec > 2021) > 0) {
         
         inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                  ((inputDF$YEAR == yearVec[j] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == yearVec[j] - 1 & inputDF$MONTH %in% 10:12)) &
-                  inputDF$DIVERSION_TYPE == useVec[k], ]$AMOUNT <- 0
+                  inputDF$YEAR == yearVec[j] &
+                  inputDF$MONTH %in% 1:9, ]$AMOUNT <- 0
+        
+        # If there are no reports after 2021, it is okay to zero out the last three months as well
+        # (Because this data is from the CY2021 report)
+      } else {
+        
+        inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                  inputDF$YEAR == yearVec[j], ]$AMOUNT <- 0
         
       }
       
       
-    } # End of 'useVec' loop (k)
+      # For the final case (reports in 2022 or later), water years are used
+    } else if (yearVec[j] > 2021) {
+      
+      inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+                ((inputDF$YEAR == yearVec[j] & inputDF$MONTH %in% 1:9) | 
+                   (inputDF$YEAR == yearVec[j] - 1 & inputDF$MONTH %in% 10:12)), ]$AMOUNT <- 0
+      
+    }
     
   } # End of 'yearVec' loop (j)
   
