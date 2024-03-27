@@ -18,7 +18,7 @@ require(readxl)
 #### Script Procedure ####
 
 
-mainProcedure <- function (wsID) {
+mainProcedure <- function (ws) {
   
   # The main body of the script
   
@@ -26,8 +26,8 @@ mainProcedure <- function (wsID) {
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv(paste0("IntermediateData/", wsID, "_Statistics_FINAL.csv"))
-  fvDF <- read.csv(paste0("IntermediateData/", wsID, "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
+  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"))
+  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
   
   
   # Create and append two new columns to 'statDF'
@@ -618,7 +618,7 @@ mainProcedure <- function (wsID) {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
+    write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
                overwrite = TRUE)
   
   
@@ -626,36 +626,40 @@ mainProcedure <- function (wsID) {
   monthlyDF %>%
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
   
   
   
   # A spreadsheet for QAQC review will be produced next
   # Before that, read in data from a previous manual review (if it exists)
   # Exclude entries that were already checked previously
-  if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
+  if (!is.na(ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH[1])) {
     
-    reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
-      sort() %>% tail(1) %>%
-      read_xlsx(sheet = "Corrected Data") %>%
+    reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                        "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                        "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
       select(APPLICATION_NUMBER, YEAR)
     
     
     # If the second manual review was also performed, add that spreadsheet here too
-    if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"))) > 0) {
+    if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH[1])) {
       
-      reviewDF2 <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"), full.names = TRUE) %>%
-        sort() %>% tail(1) %>%
-        read_xlsx(sheet = "Filtered Data") %>%
+      reviewDF2 <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
         select(APPLICATION_NUMBER, YEAR)
       
       
       # Combine the two review datasets
-      # Then make a single column that uniquely identifies each reviewed right's entries
-      reviewDF <- rbind(reviewDF, reviewDF2) %>%
-        mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+      reviewDF <- rbind(reviewDF, reviewDF2)
       
     }
+    
+    
+    
+    # Then make a single column that uniquely identifies each reviewed right's entries
+    reviewDF <- reviewDF %>%
+      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
     
     
     
@@ -685,14 +689,14 @@ mainProcedure <- function (wsID) {
              (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
              (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
              (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
   
   
   
   # Then include a spreadsheet focused on "CALENDAR_YEAR_TOTAL"/"WATER_YEAR_TOTAL" for all rights in 'monthlyDF'
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
   
@@ -703,6 +707,7 @@ mainProcedure <- function (wsID) {
   
   # Return nothing
   return(invisible(NULL))
+  
 }
 
 
@@ -1403,7 +1408,7 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 
 cat("Starting 'Expected_Demand.R'...")
 
-mainProcedure(ws$ID)
+mainProcedure(ws)
 
 
 print("The Expected_Demand.R script is done running!")

@@ -8,10 +8,8 @@ library(here)
 library(tinytex)
 require(rvest)
 require(httr)
-#jjkljldsdkl
+#
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
-# BEFORE running, download Downsizer data
-
 
 # Include forecasted data from CNRFC in the datasets? ----
 # (This should be either "TRUE" or "FALSE")
@@ -19,8 +17,10 @@ includeForecast <- FALSE
 
 
 # set start and end dates -------------------------------------------------
-## Set start date----
-StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date
+## Set start dates----
+StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date; serves as the metereological start date
+Hydro_StartDate = as.Date("2023-04-01", format = "%Y-%m-%d") #serves as the start date of the hydro simulation, 
+  #usually the 1st day of the following month
 
 #Serves as the start date for the observed data forecast and the DAT_Shell
 
@@ -33,7 +33,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-01-31")# set to desired end date for observed data range
+EndDate <- as.Date("2024-01-31")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -41,8 +41,11 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 
 print(EndDate)
 
-TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') #Timeframe is necessary for Downsizer_Processor.R
-End_Date <- Sys.Date() + 5 # forecast end date for DAT_Shell_Generation.R
+TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
+End_Date <- Sys.Date() + 5 # meteorological forecast end date
+
+Hydro_EndDate = as.Date("2024-01-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+  # usually the last day of the next month
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
@@ -67,3 +70,5 @@ source(here("Scripts/Dat_PRMS.R"))
 source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
 source(here("Scripts/PRISM_SRP_Processor.R")) #Formats already downloaded PRISM observed data for SRP
 
+# generate SRP Dat File
+source(here("Scripts/Dat_SRP.R"))

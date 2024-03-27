@@ -71,7 +71,10 @@ expDemand <- expDemand %>%
 
 
 # Read in the other Units QA/QC spreadsheet and remove rows that are already present in that spreadsheet
-mainSheet <- read_xlsx(paste0("OutputData/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx")) %>%
+mainSheet <- list.files("OutputData", 
+                        pattern = paste0(ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx$"), 
+                        full.names = TRUE) %>%
+  read_xlsx() %>%
   mutate(APP_YEAR_KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
 
 
@@ -85,11 +88,11 @@ expDemand <- expDemand %>%
 
 
 # Similarly, remove the rows from a previous version of this review sheet, if it exists
-if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"))) > 0) {
+if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
   
-  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_Median_Based_[0-9]"), full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    read_xlsx() %>%
+  reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                      "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                      "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
     select(APPLICATION_NUMBER, YEAR) %>%
     mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
 
@@ -110,11 +113,11 @@ if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Uni
 
 
 # Check the other review sheet too, if it exists
-if (length(list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
+if (!is.na(ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
   
-  reviewDF <- list.files("InputData", pattern = paste0(ws$ID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    read_xlsx() %>%
+  reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                      "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                      "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
     select(APPLICATION_NUMBER, YEAR) %>%
     mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
   
