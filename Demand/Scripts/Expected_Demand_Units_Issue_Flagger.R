@@ -161,7 +161,9 @@ if (sum(expDemand$APPLICATION_NUMBER %in% mainSheet$APPLICATION_NUMBER) > 0) {
 
 
 # Write 'expDemand' to a spreadsheet
-write.xlsx(expDemand,
+write.xlsx(expDemand %>%
+             mutate(QAQC_Action_Taken = NA,
+                    QAQC_Reason = NA),
            paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 
 
