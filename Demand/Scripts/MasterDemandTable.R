@@ -335,7 +335,9 @@ if ("MAINSTEM" %in% names(ewrimsDF) && grepl("^Russian", ws$NAME)) {
 if (grepl("^Russian", ws$NAME)) {
   
   # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
-  podDF <- read_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
+  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
+                   "POD_COORDINATES_SPREADSHEET_PATH",
+                   "POD_COORDINATES_WORKSHEET_NAME")
   
   
   # Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
