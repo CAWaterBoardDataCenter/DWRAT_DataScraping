@@ -16,6 +16,7 @@ cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
 POD <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
                "POD_COORDINATES_SPREADSHEET_PATH",
                "POD_COORDINATES_WORKSHEET_NAME") %>%
+  select(APPLICATION_NUMBER, POD_ID, LONGITUDE, LATITUDE) %>% unique() %>%
   mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = ws$POD_COORDINATES_REFERENCE_SYSTEM[1])
 
@@ -27,8 +28,9 @@ subWS <- getGIS(ws, "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
 
 
 
-# Change the CRS of 'subWS' to match 'POD'
-subWS <- st_transform(subWS, st_crs(POD))
+# Change the CRS of 'subWS' and 'POD' to the same projection
+subWS <- st_transform(subWS, "epsg:3488")
+POD <- st_transform(POD, "epsg:3488")
 
 
 
@@ -53,7 +55,8 @@ stopifnot(sum(overlapCheck < 1) == 0)
 
 # Perform the intersections for 'POD' with both 'subWS' and 'bufferPoly'
 subbasinPOD <- st_intersection(POD,
-                               subWS %>% select(Basin_ID, Basin_Num, Grouping))
+                               subWS %>% select(all_of(ws$SUBBASIN_FIELD_ID_NAMES %>%
+                                                         str_split(";") %>% unlist() %>% trimws())))
 
 
 #subbasinPOD_Buffer <- st_intersection(POD,
@@ -67,14 +70,14 @@ podTable <- st_drop_geometry(subbasinPOD)
 
 
 
-# Add a column to indicate whether each row's "POD_ID" and "APPL_NUM" pair appears more than once
+# Add a column to indicate whether each row's "POD_ID" and "APPLICATION_NUMBER" pair appears more than once
 uniqueCounts <- podTable %>%
   group_by(APPLICATION_NUMBER, POD_ID) %>%
   summarize(COUNTS = n(), .groups = "drop")
 
 
 podTable <- podTable %>%
-  left_join(uniqueCounts, by = c("APPLICATION_NUMBER", "POD_ID"), relationship = "one-to-one") %>%
+  left_join(uniqueCounts, by = c("APPLICATION_NUMBER", "POD_ID"), relationship = "many-to-one") %>%
   mutate(HAS_DUPLICATES = if_else(COUNTS > 1, TRUE, FALSE)) %>%
   select(-COUNTS)
 
@@ -92,9 +95,45 @@ podTable <- podTable %>%
 
 
 
+# Check if each right has more than one subbasin assigned
+# Select unique combinations of "APPLICATION_NUMBER" and the subbasin ID field(s)
+appRecords <- podTable %>%
+  select(APPLICATION_NUMBER, 
+         all_of(ws$SUBBASIN_FIELD_ID_NAMES %>% str_split(";") %>% unlist() %>% trimws())) %>%
+  unique()
+
+
+
+# If there are fewer instances of "APPLICATION_NUMBER" than the number of rows in 'appRecords',
+# a water right's number appears more than once with different sets of data
+if (length(unique(appRecords$APPLICATION_NUMBER)) != nrow(appRecords)) {
+  
+  message("A manual review is needed for this watershed. At least one water right has more than one assigned sub-basin")
+  
+  
+  
+  # Get a list of rights with multiple entries
+  appRecords <- appRecords %>%
+    group_by(APPLICATION_NUMBER) %>%
+    summarize(FREQ = n(), .groups = "drop") %>%
+    filter(FREQ > 1) %>%
+    select(APPLICATION_NUMBER)
+  
+  
+  
+  # Add fields to 'podTable' about this issue
+  podTable <- podTable %>%
+    mutate(MULTIPLE_SUBBASINS_ASSIGNED = APPLICATION_NUMBER %in% appRecords$APPLICATION_NUMBER,
+           MANUALLY_ASSIGNED_SUBBASIN = NA) %>%
+    arrange(APPLICATION_NUMBER)
+  
+}
+
+
+
 # Output the results to spreadsheets
 podTable %>%
-  write.xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"), overwrite = TRUE)
+  write_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
 
 
 
@@ -112,6 +151,7 @@ remove(podTable, #podTable_Buffer,
        #bufferPoly, 
        POD, subWS, 
        uniqueCounts, #uniqueCounts_Buffer, bufferOverlap, 
-       overlapCheck)
+       overlapCheck,
+       appRecords)
 
 print("The 'Assign_Subbasin_to_POD.R' script is done running!")
