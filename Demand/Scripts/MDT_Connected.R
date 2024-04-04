@@ -17,7 +17,7 @@ MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.
   MDT_2017_2022 = rename(MDT_2017_2022, USER = APPLICATION_NUMBER)
   
   #Set Diversion Year--change depending on the flow month you're modeling
-  Diversion_Year = "2023"
+  Diversion_Year = "2024"
     
   #Rename Diversion Columns
   Diversion_Columns = c(paste0(Diversion_Year,"-01"), 

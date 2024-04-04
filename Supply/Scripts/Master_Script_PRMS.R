@@ -18,7 +18,7 @@ includeForecast <- FALSE
 
 # set start and end dates -------------------------------------------------
 ## Set start dates----
-StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date; serves as the metereological start date
+StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date; serves as the meteorological start date
 Hydro_StartDate = as.Date("2023-04-01", format = "%Y-%m-%d") #serves as the start date of the hydro simulation, 
   #usually the 1st day of the following month
 
@@ -56,10 +56,8 @@ source(here("Scripts/CNRFC_API_Scraper.R")) #downloads CNRFC data for both PRMS 
 source(here("Scripts/CNRFC_PRMS_Processor.R")) #Formats CRNFC station data that are used by the PRMS model so 
   # they can be appended to the raw observed datasets from RAWS, CIMIS, and NOAA
 print(CNRFC_Processed)
-# change input file name for Downsizer data; you need to run Downsizer and  
-# move the Downsizer file to the WebData folder prior to running Downsizer_Processor.R
-# Downsizer filename should match the filename given by Downsizer_Processor.R
-source(here("Scripts/NOAA_Processor.R")) #Ignore the warning message: Expected 252 pieces...
+
+source(here("Scripts/NOAA_Processor.R")) 
 source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_API_Scraper.R"))
 
