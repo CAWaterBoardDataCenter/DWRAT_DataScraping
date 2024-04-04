@@ -122,7 +122,7 @@ Dat_PRMS_Final = rbind(Dat_PRMS_Header, Dat_PRMS_Final)
 
 #Write the Dat_Final_PRMS file to the ProcessedData folder
 write.table(x = Dat_PRMS_Final, 
-            file = paste0("ProcessedData/Dat_PRMS_Final_Forecast_End_Date_", End_Date, ".dat"),
+            file = paste0("ProcessedData/Dat_PRMS_Final_Forecast_End_Date_", EndDate$date, ".dat"),
             sep = "\t", row.names =  F, quote =  F, col.names = F)
 
   #This is one-time code used to generate the Dat PRMS file for the observed meteorological data
