@@ -66,9 +66,21 @@ source(here("Scripts/CIMIS_API_Scraper.R"))
 # Generate PRMS Dat File
 source(here("Scripts/Dat_PRMS.R"))
 
+
 # generate SRP model input ------------------------------------------------
-source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
+#source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
 source(here("Scripts/PRISM_SRP_Processor.R")) #Formats already downloaded PRISM observed data for SRP
 
 # generate SRP Dat File
 source(here("Scripts/Dat_SRP.R"))
+
+
+
+# Model Post-Processing ------------------------------------------------
+
+# PRMS Post-Processing Script
+source(here("Scripts/CNRFC_PRMS_Processor.R"))
+
+
+# SRP Post-Processing Script
+source(here("Scripts/SRP_Post_Processing.R"))
