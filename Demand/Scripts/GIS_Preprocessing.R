@@ -20,7 +20,9 @@ mainProcedure <- function (ws) {
   
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
-  wsBound <- getWatershedBoundaries(ws)
+  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   

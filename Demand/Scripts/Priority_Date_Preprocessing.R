@@ -13,22 +13,8 @@ cat("Starting 'Priority_Date_Preprocessing.R'...")
 
 # Read in the results of the GIS Pre-Processing steps
 # The filename will differ depending on its location (i.e., whether or not it's on SharePoint)
-if (ws$IS_SHAREPOINT_PATH_POD_APPLICATION_NUMBER_SPREADSHEET == TRUE) {
-  
-  Application_Number <- makeSharePointPath(ws$POD_APPLICATION_NUMBER_SPREADSHEET_PATH) %>%
-    read_xlsx(sheet = ws$POD_APPLICATION_NUMBER_WORKSHEET_NAME)
-  
-} else if (ws$IS_SHAREPOINT_PATH_POD_APPLICATION_NUMBER_SPREADSHEET == FALSE) {
-  
-  Application_Number <- read_xlsx(ws$POD_APPLICATION_NUMBER_SPREADSHEET_PATH,
-                                  sheet = ws$POD_APPLICATION_NUMBER_WORKSHEET_NAME)
-  
-} else {
-  
-  stop("Invalid value for 'IS_SHAREPOINT_PATH_POD_APPLICATION_NUMBER_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-  
-}
-
+Application_Number <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_APPLICATION_NUMBER_SPREADSHEET", 
+                              "POD_APPLICATION_NUMBER_SPREADSHEET_PATH", "POD_APPLICATION_NUMBER_WORKSHEET_NAME")
 
 
 # Keep only the "APPLICATION_NUMBER" column

@@ -24,7 +24,9 @@ mainProcedure <- function (ws) {
   
   
   # Get the watershed boundaries first
-  wsBound <- getWatershedBoundaries(ws)
+  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
@@ -82,21 +84,8 @@ mainProcedure <- function (ws) {
   
   
   # Then, based on whether or not that path is a SharePoint path, read it in as 'podDF'
-  if (ws$IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET == TRUE) {
-    
-    podDF <- makeSharePointPath(ws$GIS_PREPROCESSING_SPREADSHEET_PATH) %>%
-      read_xlsx(sheet = ws$GIS_PREPROCESSING_WORKSHEET_NAME)
-    
-  } else if (ws$IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET == FALSE) {
-    
-    podDF <- ws$GIS_PREPROCESSING_SPREADSHEET_PATH %>%
-      read_xlsx(sheet = ws$GIS_PREPROCESSING_WORKSHEET_NAME)
-    
-  } else {
-    
-    stop("Invalid value for 'IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET'. Expected 'TRUE' or 'FALSE'.")
-    
-  }
+  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET", 
+                   "GIS_PREPROCESSING_SPREADSHEET_PATH", "GIS_PREPROCESSING_WORKSHEET_NAME")
   
   
   
@@ -132,16 +121,21 @@ mainProcedure <- function (ws) {
   
   # The next step will be to use StreamStats and check that water drains from the listed coordinates into the watershed
   # Add logical columns for whether each recorded coordinate type has a positive StreamStats result 
+  # Also add numeric columns to calculate the difference between these coordinates and the eWRIMS coordinates
   podDF <- podDF %>%
     mutate(EWRIMS_LATLON_EXITS_WS = NA, EWRIMS_LATLON_OVERLAPS_WS = NA,
-           REPORT_LATLON_EXITS_WS = NA, REPORT_LATLON_OVERLAPS_WS = NA,
-           REPORT_NOREAS_EXITS_WS = NA, REPORT_NOREAS_OVERLAPS_WS = NA,
+           REPORT_LATLON_EXITS_WS = NA, REPORT_LATLON_OVERLAPS_WS = NA, REPORT_LATLON_DIST_FROM_EWRIMS_LATLON_METERS = NA_real_,
+           REPORT_NOREAS_EXITS_WS = NA, REPORT_NOREAS_OVERLAPS_WS = NA, REPORT_NOREAS_DIST_FROM_EWRIMS_LATLON_METERS = NA_real_,
            REPORT_SECTION_MOVE_EXITS_WS = NA,
-           REPORT_SECTION_MOVE_OVERLAPS_WS = NA) %>%
+           REPORT_SECTION_MOVE_OVERLAPS_WS = NA,
+           REPORT_SECTION_MOVE_DIST_FROM_EWRIMS_LATLON_METERS = NA_real_) %>%
     relocate(EWRIMS_LATLON_OVERLAPS_WS, EWRIMS_LATLON_EXITS_WS, .after = LONGITUDE) %>%
-    relocate(REPORT_LATLON_OVERLAPS_WS, REPORT_LATLON_EXITS_WS, .after = LAT_LON_CRS) %>%
-    relocate(REPORT_NOREAS_OVERLAPS_WS, REPORT_NOREAS_EXITS_WS, .after = NOR_EAS_CRS) %>%
-    relocate(REPORT_SECTION_MOVE_OVERLAPS_WS, REPORT_SECTION_MOVE_EXITS_WS, .after = MULTI_OPTIONS_CHOICE)
+    relocate(REPORT_LATLON_OVERLAPS_WS, REPORT_LATLON_EXITS_WS, 
+             REPORT_LATLON_DIST_FROM_EWRIMS_LATLON_METERS, .after = LAT_LON_CRS) %>%
+    relocate(REPORT_NOREAS_OVERLAPS_WS, REPORT_NOREAS_EXITS_WS, 
+             REPORT_NOREAS_DIST_FROM_EWRIMS_LATLON_METERS, .after = NOR_EAS_CRS) %>%
+    relocate(REPORT_SECTION_MOVE_OVERLAPS_WS, REPORT_SECTION_MOVE_EXITS_WS, 
+             REPORT_SECTION_MOVE_DIST_FROM_EWRIMS_LATLON_METERS, .after = MULTI_OPTIONS_CHOICE)
 
   
   
@@ -186,6 +180,19 @@ mainProcedure <- function (ws) {
         st_as_sf(coords = 1:2, crs = podDF$LAT_LON_CRS[i]) %>%
         verifyWatershedOverlap(wsExit, wsBound)
       
+      
+      
+      # If the eWRIMS coordinates are valid, also calculate the distance between its coordinates and the report coordinates
+      if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
+          podDF$LATITUDE[i] != -999 && podDF$LONGITUDE[i] != -999) {
+        
+        podDF$REPORT_LATLON_DIST_FROM_EWRIMS_LATLON_METERS[i] <- calcMinDistance(data.frame(x = podDF$LONGITUDE[i], y = podDF$LATITUDE[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = "NAD83"),
+                                                                                 data.frame(x = podDF$REPORT_LONGITUDE[i], y = podDF$REPORT_LATITUDE[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = podDF$LAT_LON_CRS[i]))
+        
+      }
+      
     }
     
     
@@ -222,6 +229,19 @@ mainProcedure <- function (ws) {
         st_as_sf(coords = 1:2, crs = iterCRS) %>%
         verifyWatershedOverlap(wsExit, wsBound)
       
+      
+      
+      # If the eWRIMS coordinates are valid, also calculate the distance between its coordinates and the report coordinates
+      if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
+          podDF$LATITUDE[i] != -999 && podDF$LONGITUDE[i] != -999) {
+        
+        podDF$REPORT_NOREAS_DIST_FROM_EWRIMS_LATLON_METERS[i] <- calcMinDistance(data.frame(x = podDF$LONGITUDE[i], y = podDF$LATITUDE[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = "NAD83"),
+                                                                                 data.frame(x = podDF$REPORT_EASTING[i], y = podDF$REPORT_NORTHING[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = iterCRS))
+        
+      }
+      
     }
     
     
@@ -243,6 +263,18 @@ mainProcedure <- function (ws) {
       # Use another function to check StreamStats for the flow path from this point
       podDF[i, colIndices] <- movePOD %>%
         verifyWatershedOverlap(wsExit, wsBound)
+      
+      
+      
+      # If the eWRIMS coordinates are valid, also calculate the distance between its coordinates and the report coordinates
+      if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
+          podDF$LATITUDE[i] != -999 && podDF$LONGITUDE[i] != -999) {
+        
+        podDF$REPORT_SECTION_MOVE_DIST_FROM_EWRIMS_LATLON_METERS[i] <- calcMinDistance(data.frame(x = podDF$LONGITUDE[i], y = podDF$LATITUDE[i]) %>%
+                                                                                         st_as_sf(coords = 1:2, crs = "NAD83"),
+                                                                                       movePOD)
+        
+      }
       
     }
     
@@ -277,9 +309,47 @@ mainProcedure <- function (ws) {
   
   
   
-  # Save the updated 'podDF' to a file
+  # Check to make sure that the eWRIMS coordinates match the result found by StreamStats
+  # If not, alert the user about this potential issue
+  if (podDF %>% filter(AT_LEAST_ONE_EXIT == TRUE & EWRIMS_LATLON_EXITS_WS == FALSE) %>%
+      nrow() > 0) {
+    
+    warning("At least one POD in the dataset was found to drain into the watershed, but its eWRIMS coordinates suggest otherwise.\nPlease investigate this discrepancy.")
+    
+    print(podDF %>%
+            filter(AT_LEAST_ONE_EXIT == TRUE & EWRIMS_LATLON_EXITS_WS == FALSE))
+    
+  }
+  
+  
+  
+  # Create a final list of PODs
+  # It will have PODs from 'podDF' and 'origDF' (that are at least one mile within the watershed boundaries)
+  finalDF <- bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER & origDF$POD_ID %in% podDF$POD_ID), ]) %>%
+    filter(is.na(AT_LEAST_ONE_EXIT) | AT_LEAST_ONE_EXIT == TRUE)
+  
+  
+  
+  # Write 'finalDF' to a GeoJSON file
+  # (Make sure that file doesn't already exist first)
+  if (paste0(ws$ID, "_PODs_Final_List.GeoJSON") %in% list.files("OutputData")) {
+    
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON")))
+    
+  }
+  
+  
+  
+  st_write(finalDF %>%
+             st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83"), 
+           paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON"), delete_dsn = TRUE)
+  
+  
+  
+  # Save the updated 'podDF' as well as 'finalDF' in an XLSX file as well
   write_xlsx(list("StreamStats_Res" = podDF, 
-                  "Final_List" = bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER) & !(origDF$POD_ID %in% podDF$POD_ID), ])), 
+                  "Final_List" = finalDF %>%
+                    select(APPLICATION_NUMBER, POD_ID, AT_LEAST_ONE_EXIT, LONGITUDE, LATITUDE)), 
              paste0("OutputData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
   
   
@@ -1412,4 +1482,4 @@ print("The script has finished running!")
 remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-       splitSection, translatePoint, getWatershedBoundaries)
+       splitSection, translatePoint)
