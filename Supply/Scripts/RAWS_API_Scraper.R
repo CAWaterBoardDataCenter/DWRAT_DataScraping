@@ -111,13 +111,24 @@ requestTable <- function (stationName, StartDate, EndDate) {
   
   
   
+  # Because of a glitch in RAWS, the total precipitation on 'StartDate' may appear as missing
+  # To avoid this issue, the actual StartDate submitted to RAWS should be one day earlier
+  adjStart <- StartDate
+  
+  adjStart$date <- adjStart$date - 1
+  adjStart$day <- day(adjStart$date)
+  adjStart$month <- month(adjStart$date)
+  adjStart$year <- year(adjStart$date)
+  
+  
+  
   # Prepare a POST request to the WRCC server
   dataReq <- POST(url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl",
                   body = list("stn" = stationName,
                               # Set the Start Date
-                              "smon" = paste0(if_else(StartDate$month < 10, "0", ""), StartDate$month),
-                              "sday" = paste0(if_else(StartDate$day < 10, "0", ""), StartDate$day),
-                              "syea" = StartDate$year %>% str_extract("[0-9]{2}$"),
+                              "smon" = paste0(if_else(adjStart$month < 10, "0", ""), adjStart$month),
+                              "sday" = paste0(if_else(adjStart$day < 10, "0", ""), adjStart$day),
+                              "syea" = adjStart$year %>% str_extract("[0-9]{2}$"),
                               # Set the End Date
                               "emon" = paste0(if_else(EndDate$month < 10, "0", ""), EndDate$month),
                               "eday" = paste0(if_else(EndDate$day < 10, "0", ""), EndDate$day),
@@ -160,6 +171,7 @@ requestTable <- function (stationName, StartDate, EndDate) {
   
   # Rename most columns within the data frame
   # Then, remove unnecessary columns
+  # (Also remove the first data row so that the table begins at the desired start date)
   htmlTable <- htmlTable %>%
     rename(Day_Of_Year = `Day of Year`, 
            Day_Of_Run = `Day of Run`,
@@ -167,7 +179,9 @@ requestTable <- function (stationName, StartDate, EndDate) {
            Tmax = `Max.  Average Air Temperature   Deg C`,
            Tmin = `Min.  Average Air Temperature   Deg C`,
            Precipitation = `Total  Precipitation    mm`) %>%
-    select(-Year, -Day_Of_Year, -Day_Of_Run)
+    select(-Year, -Day_Of_Year, -Day_Of_Run) %>%
+    mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+    filter(Date > adjStart$date)
   
   
   
