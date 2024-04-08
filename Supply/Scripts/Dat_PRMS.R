@@ -5,7 +5,14 @@ library(here)
 library(lubridate) #for make_date function
 library(data.table) #for fread function
 
-
+#Create a PRMS Dat Shell that consists of all data from 1/1/1990 to 9/30/2023; Dat_PRMS_Pre2024.
+# This is to ensure that the PRMS Dat files used to forecast both the worst-case scenario and the 
+# current water year have the same data through 9/30/2023. Additionally, this will allow us to clearly
+# break down the final PRMS Dat file into 3 segments:
+  # Pre-2024: 1/1/1990 - 9/30/2023--everything before 2024 water year
+  # Observed timeframe: 10/1/2023 - EndDate (EndDate will change for each run; for April, EndDate is 
+      #3/31/2024)
+  #Forecast timeframe: EndDate+ 1: 9/30/2024; for April, EndDate +1 is 4/1/2024
 #Import the PRMS DAT file used for the last model run
 Dat_PRMS_Path <- list.files("InputData", pattern = "PRMS.*\\.dat$", full.names = TRUE) %>% sort() %>% tail(1)
 print(Dat_PRMS_Path)
@@ -29,10 +36,9 @@ Dat_PRMS_Original$Date <- make_date(year = Dat_PRMS_Original$Year,
                                 day = Dat_PRMS_Original$day)
 
 Dat_Shell_PRMS <- subset(Dat_PRMS_Original, Date >= StartDate$date & Date <= EndDate$date)
-#Dat_Shell_PRMS <- subset(Dat_PRMS_Original, Date >= StartDate$date & Date <= End_Date) #Adjust as needed
 Dat_Shell_PRMS
 
-#Set Date as the 7th column in Dat_Shell_PRMS
+#Set Date as the 7th column in Dat_Shell_PRMS and WY_2021
 Dat_Shell_PRMS <- Dat_Shell_PRMS %>% relocate(Date, .after = s)
 
 # Import the necessary starter files for the  PRMS DAT File----
@@ -63,7 +69,7 @@ write.csv(x = Meteorological,
           file = paste0("ProcessedData/Meteorological_",EndDate$date, ".csv" ),
           row.names = F)
 
-# Merge Dat_Shell_PRMS with Meteorological data----
+# Determine the Worst-case scenario; 
 
 # Remove columns 1-6 of DAT_Shell_PRMS (individual datetime fields: year, month, etc) along with columns 39-60 (runoff columns)
 Dat_Shell_PRMS2 <- Dat_Shell_PRMS[,-c(1:6, 39:60)]

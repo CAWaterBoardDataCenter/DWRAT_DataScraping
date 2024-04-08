@@ -18,7 +18,7 @@ includeForecast <- FALSE
 
 # set start and end dates -------------------------------------------------
 ## Set start dates----
-StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date; serves as the meteorological start date
+StartDate <- as.Date("2023-10-01") # 1-2 months before previous end date; serves as the meteorological start date
 Hydro_StartDate = as.Date("2023-04-01", format = "%Y-%m-%d") #serves as the start date of the hydro simulation, 
   #usually the 1st day of the following month
 
@@ -33,7 +33,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-01-31")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2024-03-31")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -42,9 +42,9 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 print(EndDate)
 
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
-End_Date <- Sys.Date() + 5 # meteorological forecast end date
+End_Date <- as.Date("2024-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2024-01-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2024-04-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
   # usually the last day of the next month
 
 # generate PRMS model input -----------------------------------------------
@@ -55,8 +55,7 @@ source(here("Scripts/NOAA_API_Scraper.R"))
 #source(here("Scripts/CNRFC_API_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
 #source(here("Scripts/CNRFC_PRMS_Processor.R")) #Formats CRNFC station data that are used by the PRMS model so 
   # they can be appended to the raw observed datasets from RAWS, CIMIS, and NOAA
-print(CNRFC_Processed)
-
+# print(CNRFC_Processed)
 source(here("Scripts/NOAA_Processor.R")) 
 source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_API_Scraper.R"))
