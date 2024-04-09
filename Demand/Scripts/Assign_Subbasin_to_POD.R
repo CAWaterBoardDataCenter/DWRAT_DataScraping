@@ -71,6 +71,12 @@ mainProcedure <- function (ws) {
   
   
   
+  # Make sure 'podTable' is sorted by "APPLICATION_NUMBER" and "POD_ID"
+  podTable <- podTable %>%
+    arrange(APPLICATION_NUMBER, POD_ID)
+  
+  
+  
   # The next step is to export 'podTable' to a file
   # If a manual review is needed for this watershed, add an extra worksheet to the file
   if ("MULTIPLE_SUBBASINS_ASSIGNED" %in% names(podTable)) {
