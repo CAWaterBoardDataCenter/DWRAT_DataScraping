@@ -8,6 +8,7 @@ library(here)
 library(tinytex)
 require(rvest)
 require(httr)
+require(writexl)
 #
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 
@@ -18,8 +19,8 @@ includeForecast <- FALSE
 
 # set start and end dates -------------------------------------------------
 ## Set start dates----
-StartDate <- as.Date("2023-04-01") # 1-2 months before previous end date; serves as the metereological start date
-Hydro_StartDate = as.Date("2023-04-01", format = "%Y-%m-%d") #serves as the start date of the hydro simulation, 
+StartDate <- as.Date("2021-01-01") # 1-2 months before previous end date; serves as the metereological start date
+Hydro_StartDate = as.Date("2021-01-01", format = "%Y-%m-%d") #serves as the start date of the hydro simulation, 
   #usually the 1st day of the following month
 
 #Serves as the start date for the observed data forecast and the DAT_Shell
@@ -33,7 +34,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-01-31")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2024-03-31")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -44,7 +45,7 @@ print(EndDate)
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
 End_Date <- Sys.Date() + 5 # meteorological forecast end date
 
-Hydro_EndDate = as.Date("2024-01-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2024-03-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
   # usually the last day of the next month
 
 # generate PRMS model input -----------------------------------------------
