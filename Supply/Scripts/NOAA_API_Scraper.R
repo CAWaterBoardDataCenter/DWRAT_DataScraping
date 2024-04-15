@@ -29,12 +29,12 @@ requestURL <- paste0("https://www.ncei.noaa.gov/access/services/data/v1?dataset=
                      "&endDate=", EndDate$date, "T23:59:59", 
                      "&dataTypes=PRCP,TMAX,TMIN", "&format=csv",
                      "&options=includeAttributes:false,includeStationName:true,includeStationLocation:false",
-                     "&units=metric")
+                     "&units=standard")
 
 
 
 # Download the file to the "WebData" folder
-download.file(requestURL, paste0("WebData/NOAA_API_", EndDate$date, ".csv"), mode = "wb", quiet = TRUE)
+download.file(requestURL, "WebData/NOAA_API_Data.csv", mode = "wb", quiet = TRUE)
 
 
 
