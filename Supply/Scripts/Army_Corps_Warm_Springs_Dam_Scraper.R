@@ -147,7 +147,7 @@ for (i in 1:length(monthVals)) {
   
   # Add a flag to 'dataTable' if the mean inflow is negative
   dataTable <- dataTable %>%
-    filter(NEGATIVE_INFLOW = `Mean Inflow (cfs)` < 0)
+    mutate(NEGATIVE_INFLOW = `Mean Inflow (cfs)` < 0)
   
   
   
