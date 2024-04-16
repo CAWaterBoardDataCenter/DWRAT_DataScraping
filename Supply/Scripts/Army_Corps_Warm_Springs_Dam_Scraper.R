@@ -131,6 +131,20 @@ for (i in 1:length(monthVals)) {
   
   
   
+  # Convert the "Mean Inflow (sfd)" values to cfs
+  # "sfd" is "second-feet-day" or "cfs-day" (a measure of volume)
+  # To convert from sfd (volume) to cfs (volume/time), the sfd values should be
+  # divided by a unit of time (day)
+  # However, since these are daily measurements, dividing by "1 day" will not change
+  # the magnitude of the results
+  # Therefore, "Mean Inflow (sfd)" will simply be renamed to "Mean Inflow (cfs)"
+  # https://directives.sc.egov.usda.gov/31262.wba
+  # https://www.scbid.org/water-measurement
+  dataTable <- dataTable %>%
+    rename(`Mean Inflow (cfs)` = `Mean Inflow (sfd)`)
+  
+  
+  
   # Add 'dataTable' to a compiled tibble
   # (If this is the first iteration, initialize 'compiledDF' using 'dataTable')
   if (i == 1) {
