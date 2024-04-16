@@ -18,7 +18,7 @@ require(readxl)
 #### Script Procedure ####
 
 
-mainProcedure <- function (wsID) {
+mainProcedure <- function (ws) {
   
   # The main body of the script
   
@@ -26,8 +26,8 @@ mainProcedure <- function (wsID) {
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv(paste0("IntermediateData/", wsID, "_Statistics_FINAL.csv"))
-  fvDF <- read.csv(paste0("IntermediateData/", wsID, "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
+  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"))
+  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
   
   
   # Create and append two new columns to 'statDF'
@@ -592,7 +592,8 @@ mainProcedure <- function (wsID) {
   # NOTE: The data from October - December 2021 will be present twice in the dataset
   # (both the CY2021 and the WY2022 datasets)
   monthlyDF <- monthlyDF %>%
-    bind_rows(monthlyDF_WY)
+    bind_rows(monthlyDF_WY) %>%
+    mutate(YEAR_TOTAL = if_else(is.na(WATER_YEAR_TOTAL), CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL))
   
   
   # avgDF <- avgDF %>%
@@ -618,7 +619,7 @@ mainProcedure <- function (wsID) {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
+    write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
                overwrite = TRUE)
   
   
@@ -626,44 +627,46 @@ mainProcedure <- function (wsID) {
   monthlyDF %>%
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
   
   
   
   # A spreadsheet for QAQC review will be produced next
   # Before that, read in data from a previous manual review (if it exists)
   # Exclude entries that were already checked previously
-  if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"))) > 0) {
+  if (!is.na(ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH[1])) {
     
-    reviewDF <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_[0-9]"), full.names = TRUE) %>%
-      sort() %>% tail(1) %>%
-      read_xlsx(sheet = "Corrected Data") %>%
-      select(APPLICATION_NUMBER, YEAR)
+    reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                        "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                        "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+    
+    
+    
+    # Make a key for unique combinations of "APPLICATION_NUMBER", "YEAR", and "YEAR_TOTAL"
+    reviewDF <- reviewDF %>%
+      makeKey_APP_YEAR_AMOUNT()
+    
     
     
     # If the second manual review was also performed, add that spreadsheet here too
-    if (length(list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"))) > 0) {
+    if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH[1])) {
       
-      reviewDF2 <- list.files("InputData", pattern = paste0(wsID, "_Expected_Demand_Units_QAQC_Med"), full.names = TRUE) %>%
-        sort() %>% tail(1) %>%
-        read_xlsx(sheet = "Filtered Data") %>%
-        select(APPLICATION_NUMBER, YEAR)
+      reviewDF2 <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+        makeKey_APP_YEAR_AMOUNT()
+      
       
       
       # Combine the two review datasets
-      # Then make a single column that uniquely identifies each reviewed right's entries
-      reviewDF <- rbind(reviewDF, reviewDF2) %>%
-        mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
+      reviewDF <- rbind(reviewDF, reviewDF2)
       
     }
     
     
     
     # Remove those already-reviewed rows from 'monthlyDF'
-    monthlyDF <- monthlyDF %>%
-      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
-      filter(!(KEY %in% reviewDF$KEY)) %>%
-      select(-KEY)
+    monthlyDF <- compareKeys(monthlyDF, reviewDF)
     
   }
   
@@ -672,7 +675,7 @@ mainProcedure <- function (wsID) {
   # After that, save another spreadsheet with just columns related to assessing unit conversion errors
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR,
-           CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL, 
+           YEAR_TOTAL, 
            FACE_VALUE_AMOUNT, IniDiv_Converted_to_AF,
            Diversion_as_Percent_of_FV, Diversion_as_Percent_of_IniDiv,
            Annual_Diversion_if_reported_in_Gallons, Gallons_as_percent_of_FV,
@@ -685,14 +688,14 @@ mainProcedure <- function (wsID) {
              (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
              (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
              (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
   
   
   
   # Then include a spreadsheet focused on "CALENDAR_YEAR_TOTAL"/"WATER_YEAR_TOTAL" for all rights in 'monthlyDF'
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
-    write.xlsx(paste0("OutputData/", wsID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
   
@@ -703,6 +706,7 @@ mainProcedure <- function (wsID) {
   
   # Return nothing
   return(invisible(NULL))
+  
 }
 
 
@@ -1399,11 +1403,93 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
 }
 
 
+
+makeKey_APP_YEAR_AMOUNT <- function (dataDF) {
+  
+  # Make a column that identifies unique combinations of:
+  #   (1) APPLICATION_NUMBER
+  #   (2) YEAR
+  #   (3) YEAR_TOTAL
+  
+  
+  # Older spreadsheets either had "CALENDAR_YEAR_TOTAL" only
+  # or both "CALENDAR_YEAR_TOTAL" and "WATER_YEAR_TOTAL" as separate columns
+  # Newer versions of this script produce a single column "YEAR_TOTAL" instead
+  # If this spreadsheet is an older version, make it like newer review sheets (with "YEAR_TOTAL")
+  if ("YEAR_TOTAL" %in% names(dataDF)) {
+    
+    dataDF <- dataDF %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+    
+    # The spreadsheet has both columns
+  } else if ("WATER_YEAR_TOTAL" %in% names(dataDF) && "CALENDAR_YEAR_TOTAL" %in% names(dataDF)) {
+    
+    dataDF <- dataDF %>%
+      mutate(YEAR_TOTAL = if_else(is.na(WATER_YEAR_TOTAL), CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL)) %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+    
+    # Only "CALENDAR_YEAR_TOTAL"
+  } else if ("CALENDAR_YEAR_TOTAL" %in% names(dataDF)) {
+    
+    dataDF <- dataDF %>%
+      rename(YEAR_TOTAL = CALENDAR_YEAR_TOTAL) %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+    # Only "WATER_YEAR_TOTAL"
+  } else {
+    
+    dataDF <- dataDF %>%
+      rename(YEAR_TOTAL = WATER_YEAR_TOTAL) %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+  }
+  
+  
+  
+  # Create a column titled "KEY" with these three variables
+  # Then return 'dataDF'
+  return(dataDF %>%
+           mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", YEAR_TOTAL)))
+  
+  
+}
+
+
+
+compareKeys <- function (mainDF, compareDF) {
+  
+  # Compare "KEY" columns containing an "APPLICATION_NUMBER", "YEAR", and "YEAR_TOTAL" value
+  # Because of potential rounding differences between CSV and XLSX files, this comparison
+  # will be repeated with different levels of rounding
+  
+  
+  
+  # Iterate with different rounding digits used
+  for (i in 0:16) {
+    
+    mainDF <- mainDF %>%
+      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", round(YEAR_TOTAL, digits = i))) %>%
+      filter(!(KEY %in% compareDF$KEY)) %>%
+      select(-KEY)
+    
+  }
+  
+  
+  
+  # Return 'mainDF' afterwards
+  return(mainDF)
+  
+}
+
+
+
 #### Script Execution ####
 
 cat("Starting 'Expected_Demand.R'...")
 
-mainProcedure(ws$ID)
+mainProcedure(ws)
 
 
 print("The Expected_Demand.R script is done running!")

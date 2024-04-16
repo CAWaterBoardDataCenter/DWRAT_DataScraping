@@ -49,8 +49,7 @@ fileAdjustment <- function () {
   
   
   # First, get the filename for the NOAA CSV (downloaded by "NOAA_API_Scraper.R")
-  noaaPath <- list.files("WebData", pattern = "^NOAA_API.+\\.csv$", full.names = TRUE) %>%
-    sort() %>% tail(1)
+  noaaPath <- "WebData/NOAA_API_Data.csv"
   
   
   
@@ -131,7 +130,10 @@ fileAdjustment <- function () {
       
       
       # Update 'newDF' with this iteration's precipitation value
-      newDF[rowIndex, colIndex] <- noaaDF$PRCP[i]
+      # The precipitation data was downloaded as inches
+      # Therefore, it must also be converted into millimeters
+      # (25.4 mm per in)
+      newDF[rowIndex, colIndex] <- noaaDF$PRCP[i] * 25.4
       
     }
     
@@ -147,7 +149,10 @@ fileAdjustment <- function () {
       
       
       # Update 'newDF' with this iteration's maximum temperature value
-      newDF[rowIndex, colIndex] <- noaaDF$TMAX[i]
+      # The temperature data was downloaded as Fahrenheit
+      # Therefore, it must also be converted into Celsius
+      # deg-C = (deg-F - 32) * 5/9
+      newDF[rowIndex, colIndex] <- (noaaDF$TMAX[i] - 32) * 5/9
       
     }
     
@@ -163,7 +168,10 @@ fileAdjustment <- function () {
       
       
       # Update 'newDF' with this iteration's minimum temperature value
-      newDF[rowIndex, colIndex] <- noaaDF$TMIN[i]
+      # The temperature data was downloaded as Fahrenheit
+      # Therefore, it must also be converted into Celsius
+      # deg-C = (deg-F - 32) * 5/9
+      newDF[rowIndex, colIndex] <- (noaaDF$TMIN[i] - 32) * 5/9
       
     }
     
@@ -171,7 +179,7 @@ fileAdjustment <- function () {
   
   
   
-  # As a penultimate step, sort the columns in 'newDF' 
+  # After that, sort the columns in 'newDF' 
   # (but with "Date" as the first column)
   newDF <- newDF %>%
     select(sort(colnames(newDF))) %>%
@@ -187,11 +195,7 @@ fileAdjustment <- function () {
   
   # Save this updated CSV to the "ProcessedData" folder
   # (Use 'noaaPath' as a base for the output file string)
-  noaaPath %>%
-    str_extract("NOAA_API.+") %>%
-    str_replace("API_", "API_Processed_") %>%
-    paste0("ProcessedData/", .) %>%
-    write_csv(x = newDF, file = .)
+  write_csv(x = newDF, file = "ProcessedData/NOAA_API_Processed.csv")
   
   
   
@@ -254,9 +258,7 @@ prismFill <- function (StartDate, EndDate) {
   
   
   # Read in the processed NOAA CSV next
-  noaaDF <- list.files("ProcessedData", pattern = "NOAA_API_Processed.+\\.csv", full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    read_csv(show_col_types = FALSE)
+  noaaDF <- read_csv("ProcessedData/NOAA_API_Processed.csv", show_col_types = FALSE)
   
   
   
@@ -341,10 +343,8 @@ prismFill <- function (StartDate, EndDate) {
   
   
   # Save the updated 'noaaDF'
-  list.files("ProcessedData", pattern = "NOAA_API_Processed.+\\.csv", full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    write_csv(noaaDF, file = .)
-    
+  write_csv(noaaDF, "ProcessedData/NOAA_API_Processed.csv")
+  
   
   
   # Return nothing
@@ -360,9 +360,7 @@ cnrfcAdd <- function () {
   
   
   # Read in both files
-  noaaDF <- list.files("ProcessedData", pattern = "NOAA_API_Processed_", full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    read_csv(show_col_types = FALSE)
+  noaaDF <- read_csv("ProcessedData/NOAA_API_Processed.csv", show_col_types = FALSE)
   
   
   
@@ -438,9 +436,7 @@ cnrfcAdd <- function () {
   
   
   # Save the updated 'noaaDF'
-  list.files("ProcessedData", pattern = "NOAA_API_Processed.+\\.csv", full.names = TRUE) %>%
-    sort() %>% tail(1) %>%
-    write_csv(noaaDF, file = .)
+  write_csv(noaaDF, "ProcessedData/NOAA_API_Processed.csv")
   
   
   
