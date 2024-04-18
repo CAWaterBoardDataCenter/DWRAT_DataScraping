@@ -9,7 +9,7 @@ require(writexl)
 # Specify the bounds for data collection (month/day/year)
 # (Only the month and year matter)
 dateRange <- c("10/01/2023",
-               "03/31/2024") %>%
+               "04/30/2024") %>%
   as.Date(format = "%m/%d/%Y")
 
 
@@ -142,6 +142,12 @@ for (i in 1:length(monthVals)) {
   # https://www.scbid.org/water-measurement
   dataTable <- dataTable %>%
     rename(`Mean Inflow (cfs)` = `Mean Inflow (sfd)`)
+  
+  
+  
+  # Add a flag to 'dataTable' if the mean inflow is negative
+  dataTable <- dataTable %>%
+    mutate(NEGATIVE_INFLOW = `Mean Inflow (cfs)` < 0)
   
   
   
