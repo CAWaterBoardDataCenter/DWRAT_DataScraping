@@ -5,8 +5,6 @@ library(here)
 library(lubridate) #for make_date function
 library(data.table) #for fread function
 
-
-
 # Rely on the shared functions from the Demand scripts
 source("../Demand/Scripts/Shared_Functions.R")
 
@@ -42,11 +40,10 @@ DAT_Initial <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprin
 #8 temperature fields
 # We will append data for the current water year 
 
-
-
 # Next, read in the meteorological data that has been downloaded
 ## Meteorological Data Sources ----
 RAWS <- read_csv("ProcessedData/RAWS_Processed.csv", show_col_types = FALSE)
+
 
 NOAA <- read_csv("ProcessedData/NOAA_API_Processed.csv", show_col_types = FALSE) # Formerly Downsizer
 
