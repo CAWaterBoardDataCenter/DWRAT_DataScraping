@@ -74,8 +74,13 @@ expDemand <- expDemand %>%
 mainSheet <- list.files("OutputData", 
                         pattern = paste0("^", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx$"), 
                         full.names = TRUE) %>%
-  read_xlsx() %>%
-  makeKey_APP_YEAR_AMOUNT()
+  read_xlsx()
+
+
+
+mainSheet <- mainSheet %>%
+  left_join(makeKey_APP_YEAR_AMOUNT(mainSheet),
+            by = c("APPLICATION_NUMBER", "YEAR", "YEAR_TOTAL"), relationship = "one-to-one")
 
 
 
