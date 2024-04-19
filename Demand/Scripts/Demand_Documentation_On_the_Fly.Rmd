@@ -1,0 +1,22 @@
+---
+title: "Correcting PodDF"
+author: "Payman Alemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+-   Which script creates **RR_POD_Subbasin_Assignment.xlsx?** It is created by **Assign_Subbasin_to_POD.R**.
+
+-   Which sheet in the spreadsheet should we import? Right now the MasterDemandTable.R script doesn't specify, but it should be amended to point to the **PODTable** sheet.
+
+-   What library in R houses read_xlsx? *library(readxl)*
+
+```{r}
+library(readxl)
+getwd()
+podDf <- read_xlsx(path = "OutputData/RR_POD_Subbasin_Assignment.xlsx", sheet = "POD_Table",)
+```

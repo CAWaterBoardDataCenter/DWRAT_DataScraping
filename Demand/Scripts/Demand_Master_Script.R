@@ -21,13 +21,13 @@ source("Scripts/Shared_Functions.R")
 
 
 # Get watershed names and identifiers
-ws <- makeSharePointPath("Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
+ws <- makeSharePointPath(filepathFragment = "Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
   read_xlsx(sheet = "Main_Sheet", skip = 1)
 
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[2, ] # Change the row index to your desired watershed
+ws <- ws[1, ] # Change the row index to your desired watershed
 
 
 

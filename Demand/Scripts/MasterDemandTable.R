@@ -58,7 +58,13 @@ assignBasinData_RR <- function (ewrimsDF) {
   # manual review spreadsheet "Missing_MainStem_GIS_Manual_Assignment.xlsx"
   
   
-  # Also consult a manual review spreadsheet
+  # Create the manual review spreadsheet and then import it into ArcGIS Pro and visually inspect which PODs
+  # fall on or near the main stem of the Russian River
+  
+  ## Requires new code snippet --Payman to add later; the entire main stem assignment process can be done in R
+  # if we import the appropriate layers and projections; side project for Payman
+  
+  #After filling the manual review spreadsheet, import it back into R
   manualDF <- read_xlsx("InputData/RR_Missing_MainStem_GIS_Manual_Assignment.xlsx") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
@@ -72,9 +78,9 @@ assignBasinData_RR <- function (ewrimsDF) {
     ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- manualDF$MAINSTEM[i]
   }
   
-  
-  # Finally, rely on the output of "Assign_Subbasin_to_POD.R"
-  podDF <- read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>%
+  # Finally, rely on the output of "Assign_Subbasin_to_POD.R", the 
+  podDf <- read_xlsx(path = "OutputData/RR_POD_Subbasin_Assignment.xlsx",
+                     sheet = "POD_Table") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   # This procedure will not work if the remaining rights have multiple PODs
