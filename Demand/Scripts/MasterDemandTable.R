@@ -390,13 +390,13 @@ if (grepl("^Russian", ws$NAME)) {
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
-write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
-                                  min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-                                  "-",
-                                  max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-                                  "_MasterDemandTable.csv"), row.names = FALSE)
+# write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
+#                                   min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+#                                   "-",
+#                                   max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+#                                   "_MasterDemandTable.csv"), row.names = FALSE)
 #just the 2017-2020 reporting years
-#write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
+write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
