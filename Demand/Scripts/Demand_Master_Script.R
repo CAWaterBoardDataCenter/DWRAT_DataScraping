@@ -21,7 +21,7 @@ source("Scripts/Shared_Functions.R")
 
 
 # Get watershed names and identifiers
-ws <- makeSharePointPath(filepathFragment = "Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
+ws <- makeSharePointPath(filePathFragment = "Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
   read_xlsx(sheet = "Main_Sheet", skip = 1)
 
 
