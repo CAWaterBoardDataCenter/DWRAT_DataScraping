@@ -29,11 +29,6 @@ mainProcedure <- function (wsID) {
 
   
   
-  # Replace all "NA" values in the dataset with an empty string ""
-  priorityDateCSV <- priorityDateCSV %>%
-    mutate()
-    
-  
   # Recreate the following columns:
   #   (1)  PRE_1914_1
   #   (2)  PRE14_DIV_COMMENCED
