@@ -65,7 +65,9 @@ assignBasinData_RR <- function (ewrimsDF) {
   # if we import the appropriate layers and projections; side project for Payman
   
   #After filling the manual review spreadsheet, import it back into R
-  manualDF <- read_xlsx("InputData/RR_Missing_MainStem_GIS_Manual_Assignment.xlsx") %>%
+  manualDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_SUBBASIN_MANUAL_ASSIGNMENT",
+                      "SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH",
+                      "SUBBASIN_MANUAL_ASSIGNMENT_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   
@@ -399,13 +401,14 @@ if (grepl("^Russian", ws$NAME)) {
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
-# write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
-#                                   min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-#                                   "-",
-#                                   max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-#                                   "_MasterDemandTable.csv"), row.names = FALSE)
+ write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
+                                   min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+                                   "-",
+                                   max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+                                   "_MasterDemandTable_", Sys.Date(),
+                                   ".csv"), row.names = FALSE)
 #just the 2017-2020 reporting years
-write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
+#write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
