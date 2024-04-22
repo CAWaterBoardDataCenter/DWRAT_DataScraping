@@ -73,12 +73,21 @@ assignBasinData_RR <- function (ewrimsDF) {
   }
   
   
-  # Finally, rely on the output of "Assign_Subbasin_to_POD.R"
-  podDF <- read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>%
-    filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
+  # Finally, rely on the output of "Assign_Subbasin_to_POD.R" and the initial POD spreadsheet
+  # The initial spreadsheet has mainstem information about the PODs
+  # The POD Subbasin Assignment spreadsheet has subbasin information
+  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
+                   "POD_COORDINATES_SPREADSHEET_PATH",
+                   "POD_COORDINATES_WORKSHEET_NAME") %>%
+    filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)]) %>%
+    left_join(read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>% 
+                select(-LONGITUDE, -LATITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
+              relationship = "one-to-one")
+  
   
   # This procedure will not work if the remaining rights have multiple PODs
   stopifnot(nrow(podDF) == length(unique(podDF$APPLICATION_NUMBER)))
+  
   
   # Iterate through 'podDF' and apply these values to 'ewrimsDF'
   for (i in 1:nrow(podDF)) {
@@ -87,16 +96,18 @@ assignBasinData_RR <- function (ewrimsDF) {
                                                                                            if_else(podDF$Basin_Num[i] < 10, "0", ""), 
                                                                                            podDF$Basin_Num[i], 
                                                                                            if_else(podDF$MAIN_STEM[i] == "Y", "_M", ""))
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LATITUDE <- podDF$LATITUDE2[i]
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- podDF$LONGITUDE2[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LATITUDE <- podDF$LATITUDE[i]
+    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- podDF$LONGITUDE[i]
     ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- podDF$MAIN_STEM[i]
   }
+  
   
   # Check for errors
   stopifnot(!anyNA(ewrimsDF$BASIN))
   stopifnot(!anyNA(ewrimsDF$MAINSTEM))
   stopifnot(!anyNA(ewrimsDF$LONGITUDE))
   stopifnot(!anyNA(ewrimsDF$LATITUDE))
+  
   
   # Return 'ewrimsDF'
   return(ewrimsDF)
@@ -366,7 +377,7 @@ if (grepl("^Russian", ws$NAME)) {
       
       # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
       ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
-                                    round(podDF$LONGITUDE2, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
+                                    round(podDF$LONGITUDE, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
         unique()
       
     }
