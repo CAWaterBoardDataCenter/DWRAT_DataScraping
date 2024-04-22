@@ -58,7 +58,13 @@ assignBasinData_RR <- function (ewrimsDF) {
   # manual review spreadsheet "Missing_MainStem_GIS_Manual_Assignment.xlsx"
   
   
-  # Also consult a manual review spreadsheet
+  # Create the manual review spreadsheet and then import it into ArcGIS Pro and visually inspect which PODs
+  # fall on or near the main stem of the Russian River
+  
+  ## Requires new code snippet --Payman to add later; the entire main stem assignment process can be done in R
+  # if we import the appropriate layers and projections; side project for Payman
+  
+  #After filling the manual review spreadsheet, import it back into R
   manualDF <- read_xlsx("InputData/RR_Missing_MainStem_GIS_Manual_Assignment.xlsx") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
@@ -72,7 +78,6 @@ assignBasinData_RR <- function (ewrimsDF) {
     ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- manualDF$MAINSTEM[i]
   }
   
-  
   # Finally, rely on the output of "Assign_Subbasin_to_POD.R" and the initial POD spreadsheet
   # The initial spreadsheet has mainstem information about the PODs
   # The POD Subbasin Assignment spreadsheet has subbasin information
@@ -83,7 +88,6 @@ assignBasinData_RR <- function (ewrimsDF) {
     left_join(read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>% 
                 select(-LONGITUDE, -LATITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
               relationship = "one-to-one")
-  
   
   # This procedure will not work if the remaining rights have multiple PODs
   stopifnot(nrow(podDF) == length(unique(podDF$APPLICATION_NUMBER)))
@@ -154,7 +158,6 @@ diverDF <- diverDF %>%
 diverDF %>%
   write_csv("OutputData/DemandDataset_MonthlyValues.csv")
 
-  
 # Create a separate variable with expected total diversion values
 # (There are columns in 'expectedDF' with this name, but they are calculated differently)
 # (Averages of sums vs sums of averages)
@@ -396,13 +399,13 @@ if (grepl("^Russian", ws$NAME)) {
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
-write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
-                                  min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-                                  "-",
-                                  max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-                                  "_MasterDemandTable.csv"), row.names = FALSE)
+# write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
+#                                   min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+#                                   "-",
+#                                   max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
+#                                   "_MasterDemandTable.csv"), row.names = FALSE)
 #just the 2017-2020 reporting years
-#write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
+write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
