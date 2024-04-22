@@ -158,12 +158,6 @@ diverDF <- diverDF %>%
 diverDF %>%
   write_csv("OutputData/DemandDataset_MonthlyValues.csv")
 
-  # Whittle demand dataset to desired timeframe (2017-2020, 2017-2022, or 2017-2023)
-diverDF = diverDF %>%
-  filter(YEAR >= 2017 & YEAR <= 2020)
-# filter(YEAR >= 2017 & YEAR <= 2022)
-# filter(YEAR >= 2017 & YEAR <= 2023)
-
 # Create a separate variable with expected total diversion values
 # (There are columns in 'expectedDF' with this name, but they are calculated differently)
 # (Averages of sums vs sums of averages)
