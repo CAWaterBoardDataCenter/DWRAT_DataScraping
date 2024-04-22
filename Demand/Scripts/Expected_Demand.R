@@ -512,14 +512,18 @@ mainProcedure <- function (ws) {
   
   
   
-  avgDF_WY <- avgDF_WY %>%
-    rowwise() %>%
-    mutate(AVERAGE_STDEV = mean(JAN_STDEV, FEB_STDEV, MAR_STDEV,
-                                APR_STDEV, MAY_STDEV, JUN_STDEV,
-                                JUL_STDEV, AUG_STDEV, SEP_STDEV,
-                                OCT_STDEV, NOV_STDEV, DEC_STDEV,
-                                na.rm = TRUE)) %>%
-    ungroup()
+  if (nrow(avgDF_WY) > 0) {
+    
+    avgDF_WY <- avgDF_WY %>%
+      rowwise() %>%
+      mutate(AVERAGE_STDEV = mean(JAN_STDEV, FEB_STDEV, MAR_STDEV,
+                                  APR_STDEV, MAY_STDEV, JUN_STDEV,
+                                  JUL_STDEV, AUG_STDEV, SEP_STDEV,
+                                  OCT_STDEV, NOV_STDEV, DEC_STDEV,
+                                  na.rm = TRUE)) %>%
+      ungroup()
+    
+  }
   
   
   
