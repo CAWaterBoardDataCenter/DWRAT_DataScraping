@@ -43,12 +43,14 @@ cat(paste0("Running scripts for ", ws$NAME, "\n"))
 source("Scripts/GIS_POD_Flat_File_Prep.R")
 
 
-# GIS Pre-Processing
+# GIS Pre-Processing; pre-processing was last incorporated on 9/19/2023 to a dataset
+# initially downloaded in June 2023
 source("Scripts/GIS_Preprocessing.R")
 
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
-# to identify which PODs flow into the watershed (via USGS StreamStats)
+# to identify which PODs flow into the watershed (via USGS StreamStats); will not return any results as of 4/24/2024 
+# because the manual POD review spreadsheet produced by GIS_Preprocessing.R has not been assessed
 source("Scripts/POD_StreamStats_Analysis.R")
 
 
