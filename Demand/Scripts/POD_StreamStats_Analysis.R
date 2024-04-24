@@ -24,9 +24,10 @@ mainProcedure <- function (ws) {
   
   
   # Get the watershed boundaries first
-  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
-                    "WATERSHED_BOUNDARY_DATABASE_PATH",
-                    "WATERSHED_BOUNDARY_LAYER_NAME")
+  wsBound <- getGIS(ws = ws,
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
@@ -84,8 +85,10 @@ mainProcedure <- function (ws) {
   
   
   # Then, based on whether or not that path is a SharePoint path, read it in as 'podDF'
-  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET", 
-                   "GIS_PREPROCESSING_SPREADSHEET_PATH", "GIS_PREPROCESSING_WORKSHEET_NAME")
+  podDF <- getXLSX(ws = ws,
+                   SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET", 
+                   FILEPATH = "GIS_PREPROCESSING_SPREADSHEET_PATH", 
+                   WORKSHEET_NAME ="GIS_PREPROCESSING_WORKSHEET_NAME")
   
   
   
@@ -97,7 +100,7 @@ mainProcedure <- function (ws) {
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  plssDF <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -1099,7 +1102,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   # First read in that dataset
   # (It will appear as a variable called 'plssSub')
-  load(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
+  load(makeSharePointPath(filePathFragment ="Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
   
   
   
