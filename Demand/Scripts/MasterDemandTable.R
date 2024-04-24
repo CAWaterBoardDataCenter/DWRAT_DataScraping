@@ -409,7 +409,7 @@ write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
                                          min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE),
                                          "-",
                                          max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE),
-                                         "_MasterDemandTable_", format(Sys.Date(), "%Y-%m-%d"), ".csv"), row.names = FALSE)
+                                         "_MDT_", format(Sys.Date(), "%Y-%m-%d"), ".csv"), row.names = FALSE)
 #just the 2017-2020 reporting years
 #write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
