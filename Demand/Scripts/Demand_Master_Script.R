@@ -93,6 +93,10 @@ source("Scripts/Expected_Demand.R")
 source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
 
 
+# Try to fix reports with NA values for all months and diversion types
+source("Scripts/Check_Empty_Reports.R")
+
+
 # Beneficial Use, Return Flow Module
 source("Scripts/Beneficial_Use_Return_Flow.R")
 
