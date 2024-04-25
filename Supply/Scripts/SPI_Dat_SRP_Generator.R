@@ -8,7 +8,7 @@ library(readxl) #for read_xlsx function
 
 
 # Rely on the shared functions from the Demand scripts
-source("../Demand/Scripts/Shared_Functions.R")
+source("../Supply/Scripts/Shared_Functions_Supply.R")
 
 # Import Latest Dat SRP File
 
