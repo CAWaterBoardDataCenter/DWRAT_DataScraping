@@ -152,9 +152,10 @@ Duplicate_Reports = get_dupes(RMS_parties4, PK)
 
 if (!is.na(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH)) {
   
-  reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET", 
-                      "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH", 
-                      "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
+  reviewDF <- getXLSX(ws = ws, 
+                      SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET", 
+                      FILEPATH = "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH", 
+                      WORKSHEET_NAME = "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
   
   
   Duplicate_Reports <- Duplicate_Reports %>%
