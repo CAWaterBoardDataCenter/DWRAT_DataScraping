@@ -130,13 +130,14 @@ SRP_monthly$Month <- paste0(months, "-01")
 colnames(SRP_monthly)[colnames(SRP_monthly) == "Month"] <- "Date"
 colnames(SRP_monthly)[2:7] <- c(23:28)
 
-#Define your data range--this will vary with each run
-DataRange = "Observed_Data_2023-04_to_2024-01"
 
 # Merge SRP and PRMS data to create Raw Flows CSV for DWRAT----
 
 #Import PRMS data
-PRMS <- read.csv("ProcessedData/PRMS_Observed_Data_2023-04-01_2024-01-31.csv") #needs to be manually updated with each run
+PRMS <- list.files("ProcessedData", full.names = TRUE) %>%
+  str_subset(paste0("PRMS_Observed_Data_", Hydro_StartDate, "_", Hydro_EndDate, ".csv$")) %>%
+  read.csv()
+
 PRMS$Date <- as.Date(x = PRMS$Date, format = "%Y-%m-%d")
 colnames(PRMS)[2:23] <- c(1:22)
 

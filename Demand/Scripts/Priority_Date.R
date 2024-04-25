@@ -26,7 +26,7 @@ mainProcedure <- function (wsID) {
   # ("Priority_Data_FINAL.csv")
   priorityDateCSV <- read.csv(paste0("IntermediateData/", wsID, "_Priority_Date_FINAL.csv")) %>%
     unique()
-  
+
   
   
   # Recreate the following columns:
@@ -79,7 +79,7 @@ mainProcedure <- function (wsID) {
   # If that is the case, "PRE14_DATE" will be a concatenation of that year and "0101"
   # Otherwise, it would output "FALSE" (not sure if this behavior is desired)
   priorityDateCSV <- priorityDateCSV %>%
-    mutate(PRE14_DATE = if_else(PRE_1914_1 == "PRE_1914" & YEAR_DIVERSION_COMMENCED == "", 
+    mutate(PRE14_DATE = if_else(PRE_1914_1 == "PRE_1914" & is.na(YEAR_DIVERSION_COMMENCED), 
                                 "11111111",
                                 if_else(PRE_1914_1 == "PRE_1914",
                                         if_else(YEAR_DIVERSION_COMMENCED %>% map_lgl(~ !is.na(.) & is.numeric(.)),
@@ -138,9 +138,9 @@ mainProcedure <- function (wsID) {
   # If this is false, "APPROPRIATIVE_DATE" will be "APPLICATION_ACCEPTANCE_DATE"
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
-                                        if_else(PRIORITY_DATE == "",
-                                                if_else(APPLICATION_RECD_DATE == "",
-                                                        if_else(APPLICATION_ACCEPTANCE_DATE == "",
+                                        if_else(is.na(PRIORITY_DATE),
+                                                if_else(is.na(APPLICATION_RECD_DATE),
+                                                        if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                 "99999999",
                                                                 as.character(APPLICATION_ACCEPTANCE_DATE)),
                                                         as.character(APPLICATION_RECD_DATE)),
@@ -222,8 +222,8 @@ mainProcedure <- function (wsID) {
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE_SOURCE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
                                                if_else(PRIORITY_DATE == "", 
-                                                       if_else(APPLICATION_RECD_DATE == "",
-                                                               if_else(APPLICATION_ACCEPTANCE_DATE == "",
+                                                       if_else(is.na(APPLICATION_RECD_DATE),
+                                                               if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                        "NO_PRIORITY_DATE_INFORMATION",
                                                                        "APPLICATION_ACCEPTANCE_DATE"),
                                                                "APPLICATION_RECD_DATE"),

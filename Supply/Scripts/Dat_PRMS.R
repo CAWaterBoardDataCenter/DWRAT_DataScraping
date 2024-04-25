@@ -5,52 +5,58 @@ library(here)
 library(lubridate) #for make_date function
 library(data.table) #for fread function
 
+# Rely on the shared functions from the Demand scripts
+source("../Demand/Scripts/Shared_Functions.R")
 
-#Import the PRMS DAT file used for the last model run
-Dat_PRMS_Path <- list.files("InputData", pattern = "PRMS.*\\.dat$", full.names = TRUE) %>% sort() %>% tail(1)
-print(Dat_PRMS_Path)
-Dat_PRMS_Original <- read.delim(file = Dat_PRMS_Path, sep = "\t", skip = 6, header = FALSE)
-Dat_Fields_PRMS <- read.csv(here("InputData/Dat_Fields_PRMS.csv"))
 
-#Set Dat_File column names
-colnames(Dat_PRMS_Original) <- colnames(Dat_Fields_PRMS)
+
+# Use the DAT component files located on SharePoint
+
+
+# Metadata that appears at the beginning of the file
+DAT_Metadata <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Metadata.dat") %>%
+  read_lines()
+
+
+
+# Predicted values for the rest of the water year
+DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values.dat") %>%
+  read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
+  set_names(names(read_csv("InputData/DAT_Fields_PRMS.csv", show_col_types = FALSE)))
+
+
+
+# Read in the DAT file that contains data from 1990 up to the current water year
+DAT_Initial <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_PRMS_1990_to_WY2023.dat") %>%
+  read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
+  set_names(names(DAT_Predictions))
+
+
 
 #Notes about Dat_PRMS_Original fields----
 #22 Runoff fields, always equal 1
-#6 date-time fields, pre-filled from 1/1/1990 through 9/30/2024
+#6 date-time fields, from 1/1/1990 through 9/30 of the previous WY
 #15 precipitation fields
 #8 temperature fields
-#We will replace a subset of the data corresponding to our timeframe of interest
+# We will append data for the current water year 
 
-# Whittle the Dat_PRMS_Original to a subset corresponding to our timeframe of interest, "Dat_Shell_PRMS"----
-#Add a Date column
-Dat_PRMS_Original$Date <- make_date(year = Dat_PRMS_Original$Year, 
-                                month = Dat_PRMS_Original$month,
-                                day = Dat_PRMS_Original$day)
-
-Dat_Shell_PRMS <- subset(Dat_PRMS_Original, Date >= StartDate$date & Date <= EndDate$date)
-#Dat_Shell_PRMS <- subset(Dat_PRMS_Original, Date >= StartDate$date & Date <= End_Date) #Adjust as needed
-Dat_Shell_PRMS
-
-#Set Date as the 7th column in Dat_Shell_PRMS
-Dat_Shell_PRMS <- Dat_Shell_PRMS %>% relocate(Date, .after = s)
-
-# Import the necessary starter files for the  PRMS DAT File----
-# DAT_Shell_PRMS serves as the shell of the PRMS DAT File, meteorological data (already pre-filled with PRISM and forecast data) contained in these files:
-# RAWS_Processed.csv, CIMIS_Processed.csv, NOAA_Processed_[DATE].csv 
-
+# Next, read in the meteorological data that has been downloaded
 ## Meteorological Data Sources ----
-RAWS <- read.csv(here("ProcessedData/RAWS_Processed.csv"))
+RAWS <- read_csv("ProcessedData/RAWS_Processed.csv", show_col_types = FALSE)
 
-NOAA <- list.files("ProcessedData", pattern = "NOAA_API_Processed_", full.names = TRUE) %>%
-  sort() %>% tail(1) %>% read.csv() # Formerly Downsizer
 
-CIMIS <- read.csv(here("ProcessedData/CIMIS_Processed.csv"))
+NOAA <- read_csv("ProcessedData/NOAA_API_Processed.csv", show_col_types = FALSE) # Formerly Downsizer
 
-#Convert dates in all 3 data sources to date type in YYYY-MM-DD format
+CIMIS <- read_csv("ProcessedData/CIMIS_Processed.csv", show_col_types = FALSE)
+
+
+
+# Ensure that the "Date" column is correctly interpreted as a "date" type in each dataset
 RAWS$Date = as.Date(x = RAWS$Date, format = "%m/%d/%Y")
 CIMIS$Date = as.Date(x = CIMIS$Date, format = "%Y-%m-%d")
 NOAA$Date = as.Date(x = NOAA$Date, format = "%Y-%m-%d")
+
+
 
 # Create Dat_Final_PRMS----
 
@@ -59,94 +65,142 @@ Meteorological <- Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE),
               list(RAWS, NOAA, CIMIS))
 
 #Write the full Meteorological dataset to a CSV
-write.csv(x = Meteorological, 
-          file = paste0("ProcessedData/Meteorological_",EndDate$date, ".csv" ),
-          row.names = F)
-
-# Merge Dat_Shell_PRMS with Meteorological data----
-
-# Remove columns 1-6 of DAT_Shell_PRMS (individual datetime fields: year, month, etc) along with columns 39-60 (runoff columns)
-Dat_Shell_PRMS2 <- Dat_Shell_PRMS[,-c(1:6, 39:60)]
-head(Dat_Shell_PRMS2)
-
-#Inner Join the Meteorological dataframe to Dat_Shell_PRMS2 by the Date field
-Dat_Shell_PRMS3 <- inner_join(x = Meteorological, 
-                              y =select(Dat_Shell_PRMS2, Date), 
-                              by = "Date")
-head(Dat_Shell_PRMS3)
-
-# Import the individual datetime fields (year, month, etc) from Dat_Shell_PRMS
-# And import the 22 runoff columns from Dat_Shell_PRMS
-Dat_Shell_PRMS4 <- cbind(Dat_Shell_PRMS[(1:6)], Dat_Shell_PRMS3,Dat_Shell_PRMS[,39:60])
-head(Dat_Shell_PRMS4)
-
-# 'anti_join' keeps all records from Dat_PRMS_Original except the ones that 
-#  match Dat_Shell_PRMS4
-Dat_PRMS_Final <- anti_join(x = Dat_PRMS_Original, y = Dat_Shell_PRMS4, by = "Date")
-
-# bind_row adds the dates that we removed in the previous step but this time those
-# dates have the meteorological data that we have downloaded; this completes the data
-# substitution for the PRMS Dat file
-Dat_PRMS_Final <- bind_rows(Dat_PRMS_Final, Dat_Shell_PRMS4)
-Dat_PRMS_Final
+write_csv(x = Meteorological, 
+          file = paste0("ProcessedData/Meteorological_",EndDate$date, ".csv" ))
 
 
-#Set Date as the 7th column in Dat_Shell_PRMS and sort by Date
-Dat_PRMS_Final <- Dat_PRMS_Final %>% relocate(Date, .after = s) %>%
+
+# Append 'Meteorological' to 'DAT_Initial'
+
+
+# 'DAT_Initial' will need a date field for this join to be possible
+DAT_Initial <- DAT_Initial %>%
+  mutate(Date = as.Date(paste0(Year, "/", month, "/", day), format = "%Y/%m/%d"))
+
+
+
+# Similarly, 'Meteorological' will require additional columns in order to match 'DAT_Initial'
+Meteorological <- Meteorological %>%
+  mutate(Year = year(Date), month = month(Date), day = day(Date), h = 0, m = 0, s = 0)
+
+
+# 22 runoff columns are required as well
+Meteorological[, paste0("Runoff", 1:22)] <- 1
+
+
+
+# Perform an error check as well
+# Check if 'Meteorological' contains any dates that appear in 'DAT_Initial'
+# If that is the case, output a message and remove those rows from 'DAT_Initial'
+if (DAT_Initial %>% filter(Date %in% Meteorological$Date) %>% nrow() > 0) {
+  
+  print(c("The scraped meteorological dataset contains rows for dates that appear in the DAT skeleton file.", 
+          "The data for those dates in 'DAT_Initial' will be replaced with the data in the meteorological dataset."))
+  
+  
+  # Remove those rows in 'DAT_Initial'
+  DAT_Initial <- DAT_Initial %>%
+    filter(!(Date %in% Meteorological$Date))
+  
+}
+
+
+
+# Once these preparations are complete, the two data frames can be merged
+DAT_Merged <- DAT_Initial %>%
+  bind_rows(Meteorological) %>%
   arrange(Date)
 
-#Remove the date column from Dat_Final_PRMS
-Dat_PRMS_Final$Date = NULL
-
-# Restore original column order to DAT_PRMS_Final----
-# Get the column names from both dataframes
-dat_final_names <- names(Dat_PRMS_Final)
-col_order_final <- names(Dat_Fields_PRMS)
-
-# Find the mapping between column positions
-mapping <- match(col_order_final, dat_final_names)
-
-# Reorder columns using indexing
-Dat_PRMS_Final <- Dat_PRMS_Final[, mapping]
-
-#Add the header to the Dat_PRMS_Final file----
-Dat_PRMS_Header = read.csv(file = "InputData/Dat_PRMS_header.csv", header = F)
-
-## Add 58 empty columns to DAT_PRMS_Header----
-empty_cols <- data.frame(matrix("", nrow = 6, ncol = 58))
-Dat_PRMS_Header = cbind(Dat_PRMS_Header, empty_cols)
-colnames(Dat_PRMS_Header) = colnames(Dat_Fields_PRMS)
-
-# Combine Dat_PRMS_Header with Dat_PRMS_Final
-Dat_PRMS_Final = rbind(Dat_PRMS_Header, Dat_PRMS_Final)
-
-#Write the Dat_Final_PRMS file to the ProcessedData folder
-write.table(x = Dat_PRMS_Final, 
-            file = paste0("ProcessedData/Dat_PRMS_Final_Forecast_End_Date", End_Date, ".dat"),
-            sep = "\t", row.names =  F, quote =  F, col.names = F)
-
-  #This is one-time code used to generate the Dat PRMS file for the observed meteorological data
-  #from 4/1/2023 - 1/31/2024
-# write.table(x = Dat_PRMS_Final,
-#             file =  "ProcessedData/Dat_PRMS_Final_Observed_2023-04-01_2024-01-31.dat",
-#             sep = "\t", row.names = F, quote = F, col.names = F)
-
-# Climate_Scenarios_Path = "C:\\RR_PRMS\\PRMS\\input\\climate_scenarios\\"
-# write.table(x = Dat_Final_PRMS, file = paste0(Climate_Scenarios_Path, "DAT_Final_PRMS_Forecast_End_Date_", End_Date, ".dat"),
-#             sep = "\t", row.names = F, quote = F, col.names = F)
 
 
-#Clean up variables----
-#Add Dat_PRMS_Final to vars_to_keep
-#vars_to_keep = c(vars_to_keep, "Dat_PRMS_Final")
+# Water Year Forecast data----
+# The next step is to append forecasted data for the rest of the water year
 
-# List all variables in the global environment
-#all_vars <- ls()
 
-# Identify which variables to remove
-#vars_to_remove <- setdiff(all_vars, vars_to_keep)
+# Filter 'DAT_Predictions' to dates that do not appear in 'DAT_Merged'
+DAT_Predictions <- DAT_Predictions %>%
+  mutate(Date = as.Date(paste0(Year, "/", month, "/", day), format = "%Y/%m/%d")) %>%
+  filter(Date > max(DAT_Merged$Date))
 
-# Remove variables except those in vars_to_keep
-#rm(list = vars_to_remove)
+
+
+if (nrow(DAT_Predictions) > 0) {
+  
+  DAT_Merged <- bind_rows(DAT_Merged, DAT_Predictions) %>%
+    arrange(Date)
+  
+}
+
+
+
+# Check for errors----
+
+# Check to make sure that no dates are missing data between the beginning and end of 'DAT_Merged'
+dateSeq <- seq(from = min(DAT_Merged$Date), to = max(DAT_Merged$Date), by = "day")
+
+
+
+if (dateSeq[!(dateSeq %in% DAT_Merged$Date)] %>% length() > 0) {
+  
+  print("DAT_Merged is missing data for the following date(s):")
+  print(dateSeq[!(dateSeq %in% DAT_Merged$Date)])
+  stop("Please correct this error before proceeding")
+  
+}
+
+
+
+# Make sure there are no NA values or missing values in the dataset
+stopifnot(!anyNA(DAT_Merged))
+stopifnot(sum(grepl("\\-99", DAT_Merged)) == 0)
+
+
+
+# Round the numeric values in 'DAT_Merged'
+# (Keeping at most one decimal place)
+DAT_Merged <- DAT_Merged %>%
+  mutate(across(where(is.numeric), ~ round(., 1)))
+
+
+
+# Output the final DAT file----
+
+
+# Temporarily write 'DAT_Merged' to a file
+DAT_Merged %>%
+  select(-Date) %>%
+  write_delim(paste0("ProcessedData/Dat_PRMS_Final_End_Date_", EndDate$date, ".dat"),
+              delim = "\t", col_names = FALSE)
+
+
+
+# Read back in this file
+# Then, append 'DAT_Metadata' to the beginning
+DAT_Merged_Tab <- c(DAT_Metadata,
+  read_lines(paste0("ProcessedData/Dat_PRMS_Final_End_Date_", EndDate$date, ".dat")))
+
+
+
+# Double-check that the same number of tabs appears in every row of the vector
+stopifnot(DAT_Merged_Tab %>% str_count("\t") %>% unique() %>% length() == 1)
+stopifnot(DAT_Merged_Tab %>% str_count("\t") %>% unique() == 58)
+
+
+
+# Write this vector to a file
+write.table(DAT_Merged_Tab,
+            paste0("ProcessedData/Dat_PRMS_Final_End_Date_", EndDate$date, ".dat"),
+            sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE)
+
+
+
+# Remove variables from the environment
+remove(DAT_Initial, DAT_Merged, DAT_Predictions, 
+       DAT_Merged_Tab, DAT_Metadata,
+       Meteorological, CIMIS, NOAA, RAWS,
+       dateSeq,
+       getGIS, getXLSX, makeSharePointPath)
+
+
 
 print("Dat PRMS script has finished running!")

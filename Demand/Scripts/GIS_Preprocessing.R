@@ -20,7 +20,9 @@ mainProcedure <- function (ws) {
   
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
-  wsBound <- getWatershedBoundaries(ws)
+  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
@@ -67,6 +69,8 @@ mainProcedure <- function (ws) {
   # (2) Get all PODs within one mile of the boundary
   # (This action is currently not being performed; the code is there, but it is commented out)
   # (This can add a lot of extra work for very little gain)
+  
+  # NEW (2) Get all PODs within one mile of the boundary (on the inside only)
   
   # (3) Get all PODs that intersect with the watershed polygon
   
@@ -165,6 +169,23 @@ mainProcedure <- function (ws) {
   
   
   
+  #### Task NEW 2 (Less than one mile from the boundary--inside only) ####
+  
+  # (Set after Task 3 because its variables will be used)
+  
+  # Get PODs that are within one mile of the watershed boundary (inside only)
+  
+  
+  # Create a polygon using the difference between 'wsBound' and 'wsBound_Inner'
+  # (It will be the one-mile strip on the inside of the boundaries)
+  oneMilePoly <- st_difference(wsBound, wsBound_Inner)
+  
+  
+  # Get all PODs that intersect with 'oneMilePoly'
+  wsBound_OneMile_Intersect <- st_intersection(pod_points_statewide_spatial, oneMilePoly)
+  
+  
+  
   #### Task 4 (Watershed Tributary/Source) ####
   
   
@@ -191,7 +212,8 @@ mainProcedure <- function (ws) {
   # Output the four variables to a spreadsheet for further analysis
   # ('WS_pod_points_Merge', 'wsLine_Buffer_Intersect', 'wsBound_Inner_Intersect', and 'wsMention')
   #outputResults(ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
-  outputResults_NoTask2(ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
+  #outputResults_NoTask2(ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
+  outputResults(ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention)
   
   
   
@@ -291,7 +313,7 @@ deleteIdentical <- function (gisDF, colName) {
 
 
 
-outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention) {
+outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention) {
   
   # Write the four output variables to a spreadsheet
   # (Create a shapefile as well)
@@ -303,9 +325,9 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   
   
-  # Create a combined version of all four variables
+  # Create a combined version of all three variables
   allDF <- wsBound_Inner_Intersect %>%
-    bind_rows(wsLine_Buffer_Intersect, WS_pod_points_Merge, wsMention) %>%
+    bind_rows(wsBound_OneMile_Intersect, WS_pod_points_Merge, wsMention) %>%
     unique() %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     deleteIdentical("POD_ID")
@@ -313,7 +335,45 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   
   # Write 'allDF' to a GeoJSON file
-  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"))
+  # (But first remove the older version, if it exists in the directory)
+  if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("OutputData")) {
+    
+    #system("rm OutputData/NV_PODS_of_Interest.GeoJSON", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON")))
+    
+  }
+  
+  
+  
+  # Check for fields with identical names (they create errors when writing the dataset)
+  if (length(names(allDF)) != length(unique(toupper(names(allDF))))) {
+    
+    # Get a list of names that appear more than once
+    multiNames <- names(table(toupper(names(allDF)))[table(toupper(names(allDF))) > 1])
+    
+    
+    
+    # Iterate through the names in 'multiNames'
+    for (i in 1:length(multiNames)) {
+      
+      # Get the indices where these duplicate names occur
+      multiIndex <- which(toupper(names(allDF)) == multiNames[i])
+      
+      
+      # Append a number to these names (from the second instance onwards)
+      for (j in 2:length(multiIndex)) {
+        
+        names(allDF)[multiIndex[j]] <- paste0(names(allDF)[multiIndex[j]], "_", j)
+        
+      }
+      
+    }
+    
+  }
+  
+  
+  
+  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
   
   
   
@@ -355,30 +415,28 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   # Have separate worksheets for each variable too
   addWorksheet(wb, "MTRS_and_FFMTRS")
-   
+  
   writeData(wb, "MTRS_and_FFMTRS", WS_pod_points_Merge %>% st_drop_geometry())
   
-   
-   
-  addWorksheet(wb, "One_Mile_Buffer")
-   
-  writeData(wb, "One_Mile_Buffer", wsLine_Buffer_Intersect %>% st_drop_geometry())
   
-   
-   
+  addWorksheet(wb, "Up_to_One_Mile_Inside_WS")
+  
+  writeData(wb, "Up_to_One_Mile_Inside_WS", wsBound_OneMile_Intersect %>% st_drop_geometry())
+  
+  
   addWorksheet(wb, "One_Mile_or_More_Inside_WS")
   
   writeData(wb, "One_Mile_or_More_Inside_WS", wsBound_Inner_Intersect %>% st_drop_geometry())
-   
-   
-   
+  
+  
+  
   addWorksheet(wb, "Mentions_WS")
-   
+  
   writeData(wb, "Mentions_WS", wsMention %>% st_drop_geometry())
   
   
   
-  # Finally, create a summary table that identifies which task each POD was gathered from
+  # After that, create a summary table that identifies which task each POD was gathered from
   task1 <- WS_pod_points_Merge %>%
     st_drop_geometry() %>%
     select(APPLICATION_NUMBER, POD_ID) %>%
@@ -386,10 +444,10 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   
   
-  task2 <- wsLine_Buffer_Intersect %>%
+  task2 <- wsBound_OneMile_Intersect %>%
     st_drop_geometry() %>%
     select(APPLICATION_NUMBER, POD_ID) %>%
-    mutate(WITHIN_ONE_MILE_OF_WATERSHED_BOUNDARY_LINE = TRUE)
+    mutate(LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY = TRUE)
   
   
   
@@ -414,7 +472,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
     full_join(task4, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     mutate(MATCHING_MTRS_OR_FFMTRS = replace_na(MATCHING_MTRS_OR_FFMTRS, FALSE),
-           WITHIN_ONE_MILE_OF_WATERSHED_BOUNDARY_LINE = replace_na(WITHIN_ONE_MILE_OF_WATERSHED_BOUNDARY_LINE, FALSE),
+           LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY = replace_na(LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY, FALSE),
            ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
            MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = replace_na(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION, FALSE))
   
@@ -434,6 +492,22 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   
   
+  # As a final step, add a second review sheet focused on plotting points via Stream Stats ('POD_StreamStats_Analysis.R')
+  addWorksheet(wb, "R_Review")
+  
+  writeData(wb, "R_Review",
+            allDF %>%
+              left_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
+              select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
+              mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
+                     REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
+                     REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
+                     REPORT_SECTION = NA, REPORT_TOWNSHIP = NA, REPORT_RANGE = NA, REPORT_DATUM = NA, MULTI_OPTIONS_CHOICE = NA_integer_, NOTES2 = "--") %>%
+              mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE)) %>%
+              unique())
+  
+  
+  
   # Save 'wb' to a file
   saveWorkbook(wb, 
                paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
@@ -442,6 +516,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsB
   
   # Return nothing
   return(invisible(NULL))
+  
   
 }
 

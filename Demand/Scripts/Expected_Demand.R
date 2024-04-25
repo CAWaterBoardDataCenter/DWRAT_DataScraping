@@ -512,14 +512,18 @@ mainProcedure <- function (ws) {
   
   
   
-  avgDF_WY <- avgDF_WY %>%
-    rowwise() %>%
-    mutate(AVERAGE_STDEV = mean(JAN_STDEV, FEB_STDEV, MAR_STDEV,
-                                APR_STDEV, MAY_STDEV, JUN_STDEV,
-                                JUL_STDEV, AUG_STDEV, SEP_STDEV,
-                                OCT_STDEV, NOV_STDEV, DEC_STDEV,
-                                na.rm = TRUE)) %>%
-    ungroup()
+  if (nrow(avgDF_WY) > 0) {
+    
+    avgDF_WY <- avgDF_WY %>%
+      rowwise() %>%
+      mutate(AVERAGE_STDEV = mean(JAN_STDEV, FEB_STDEV, MAR_STDEV,
+                                  APR_STDEV, MAY_STDEV, JUN_STDEV,
+                                  JUL_STDEV, AUG_STDEV, SEP_STDEV,
+                                  OCT_STDEV, NOV_STDEV, DEC_STDEV,
+                                  na.rm = TRUE)) %>%
+      ungroup()
+    
+  }
   
   
   
@@ -592,7 +596,8 @@ mainProcedure <- function (ws) {
   # NOTE: The data from October - December 2021 will be present twice in the dataset
   # (both the CY2021 and the WY2022 datasets)
   monthlyDF <- monthlyDF %>%
-    bind_rows(monthlyDF_WY)
+    bind_rows(monthlyDF_WY) %>%
+    mutate(YEAR_TOTAL = if_else(is.na(WATER_YEAR_TOTAL), CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL))
   
   
   # avgDF <- avgDF %>%
@@ -637,8 +642,14 @@ mainProcedure <- function (ws) {
     
     reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
                         "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
-                        "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
-      select(APPLICATION_NUMBER, YEAR)
+                        "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+    
+    
+    
+    # Make a key for unique combinations of "APPLICATION_NUMBER", "YEAR", and "YEAR_TOTAL"
+    reviewDF <- reviewDF %>%
+      makeKey_APP_YEAR_AMOUNT()
+    
     
     
     # If the second manual review was also performed, add that spreadsheet here too
@@ -647,7 +658,8 @@ mainProcedure <- function (ws) {
       reviewDF2 <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
                            "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
                            "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
-        select(APPLICATION_NUMBER, YEAR)
+        makeKey_APP_YEAR_AMOUNT()
+      
       
       
       # Combine the two review datasets
@@ -657,17 +669,8 @@ mainProcedure <- function (ws) {
     
     
     
-    # Then make a single column that uniquely identifies each reviewed right's entries
-    reviewDF <- reviewDF %>%
-      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR))
-    
-    
-    
     # Remove those already-reviewed rows from 'monthlyDF'
-    monthlyDF <- monthlyDF %>%
-      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR)) %>%
-      filter(!(KEY %in% reviewDF$KEY)) %>%
-      select(-KEY)
+    monthlyDF <- compareKeys(monthlyDF, reviewDF)
     
   }
   
@@ -676,7 +679,7 @@ mainProcedure <- function (ws) {
   # After that, save another spreadsheet with just columns related to assessing unit conversion errors
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR,
-           CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL, 
+           YEAR_TOTAL, 
            FACE_VALUE_AMOUNT, IniDiv_Converted_to_AF,
            Diversion_as_Percent_of_FV, Diversion_as_Percent_of_IniDiv,
            Annual_Diversion_if_reported_in_Gallons, Gallons_as_percent_of_FV,
@@ -1402,6 +1405,88 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
   return(invisible(NULL))
   
 }
+
+
+
+makeKey_APP_YEAR_AMOUNT <- function (dataDF) {
+  
+  # Make a column that identifies unique combinations of:
+  #   (1) APPLICATION_NUMBER
+  #   (2) YEAR
+  #   (3) YEAR_TOTAL
+  
+  
+  # Older spreadsheets either had "CALENDAR_YEAR_TOTAL" only
+  # or both "CALENDAR_YEAR_TOTAL" and "WATER_YEAR_TOTAL" as separate columns
+  # Newer versions of this script produce a single column "YEAR_TOTAL" instead
+  # If this spreadsheet is an older version, make it like newer review sheets (with "YEAR_TOTAL")
+  if ("YEAR_TOTAL" %in% names(dataDF)) {
+    
+    dataDF <- dataDF %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+    
+    # The spreadsheet has both columns
+  } else if ("WATER_YEAR_TOTAL" %in% names(dataDF) && "CALENDAR_YEAR_TOTAL" %in% names(dataDF)) {
+    
+    dataDF <- dataDF %>%
+      mutate(YEAR_TOTAL = if_else(is.na(WATER_YEAR_TOTAL), CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL)) %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+    
+    # Only "CALENDAR_YEAR_TOTAL"
+  } else if ("CALENDAR_YEAR_TOTAL" %in% names(dataDF)) {
+    
+    dataDF <- dataDF %>%
+      rename(YEAR_TOTAL = CALENDAR_YEAR_TOTAL) %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+    # Only "WATER_YEAR_TOTAL"
+  } else {
+    
+    dataDF <- dataDF %>%
+      rename(YEAR_TOTAL = WATER_YEAR_TOTAL) %>%
+      select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL)
+    
+  }
+  
+  
+  
+  # Create a column titled "KEY" with these three variables
+  # Then return 'dataDF'
+  return(dataDF %>%
+           mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", YEAR_TOTAL)))
+  
+  
+}
+
+
+
+compareKeys <- function (mainDF, compareDF) {
+  
+  # Compare "KEY" columns containing an "APPLICATION_NUMBER", "YEAR", and "YEAR_TOTAL" value
+  # Because of potential rounding differences between CSV and XLSX files, this comparison
+  # will be repeated with different levels of rounding
+  
+  
+  
+  # Iterate with different rounding digits used
+  for (i in 0:16) {
+    
+    mainDF <- mainDF %>%
+      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", round(YEAR_TOTAL, digits = i))) %>%
+      filter(!(KEY %in% compareDF$KEY)) %>%
+      select(-KEY)
+    
+  }
+  
+  
+  
+  # Return 'mainDF' afterwards
+  return(mainDF)
+  
+}
+
 
 
 #### Script Execution ####

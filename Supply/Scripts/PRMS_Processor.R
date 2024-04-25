@@ -43,7 +43,7 @@ colnames(RR_Subset_Summed) = RR_Headers
 RR_Subset_Summed$Date <- as.Date(paste0(RR_Subset_Summed$Date, "-01"), format = "%Y-%m-%d")
 
 #Write a csv for SRP_Post_Processing.R to combine the 2 model outputs for DWRAT
-PRMS_DataRange = "Observed_Data_2023-04-01_2024-01-31"
+PRMS_DataRange = paste0("Observed_Data_", Hydro_StartDate, "_", Hydro_EndDate)
 write.csv(x = RR_Subset_Summed, 
           file = paste0("ProcessedData/PRMS_", PRMS_DataRange, ".csv"),
           row.names = FALSE)

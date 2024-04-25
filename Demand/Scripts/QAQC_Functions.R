@@ -169,7 +169,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
   
   
   # Iterate through the different actions specified in 'unitsQAQC'
-  while (i < nrow(unitsQAQC)) {
+  while (i <= nrow(unitsQAQC)) {
     
     
     # If this row's "APPLICATION_NUMBER" value does not appear in 'inputDF', skip this row
