@@ -571,8 +571,8 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         
         inputDF <- inputDF %>%
           filter(!(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                     ((YEAR == actionYear & MONTH %in% 1:9) | 
-                        (YEAR == actionYear - 1 & MONTH %in% 10:12)) &
+                     ((YEAR == unitsQAQC$YEAR[i] & MONTH %in% 1:9) | 
+                        (YEAR == unitsQAQC$YEAR[i] - 1 & MONTH %in% 10:12)) &
                      DIVERSION_TYPE %in% c("DIRECT", "STORAGE")))
         
       }
