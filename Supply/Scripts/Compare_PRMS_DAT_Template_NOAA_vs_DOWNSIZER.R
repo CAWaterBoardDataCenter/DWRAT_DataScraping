@@ -9,15 +9,33 @@ require(writexl)
 # Compare the two versions
 
 
-# Get "Shared_Functions.R" functions from the Demand folder
-source("../Demand/Scripts/Shared_Functions.R")
+# Get "Shared_Functions_Demand.R" functions from the Demand folder
+source("../Demand/Scripts/Shared_Functions_Demand.R.R")
 
 
 noaaDF <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\2023-10 to 2024-03 Manual Downloads\\PRMS Dat Manual Template.xlsx") %>%
   read_xlsx(sheet = "NOAA Version")
+  # read_csv("C:/Users/aprashar/Desktop/Supply_Issues_Investigation/JAN-2021 to MAR-2024 (No PRISM Substitution)/[NO_PRISM]_NOAA_API_Processed_2024-03-31.csv") %>%
+  # filter(Date >= "2023-10-01" & Date <= "2024-03-31") %>%
+  # select(Date, NOAA_PRECIP1, NOAA_PRECIP2,
+  #        NOAA_PRECIP3, NOAA_PRECIP5,
+  #        NOAA_PRECIP8, NOAA_PRECIP10, 
+  #        NOAA_PRECIP11, NOAA_PRECIP13,
+  #        NOAA_PRECIP14, NOAA_PRECIP15,
+  #        NOAA_TMAX1, NOAA_TMAX2,
+  #        NOAA_TMAX6, NOAA_TMIN1,
+  #        NOAA_TMIN2, NOAA_TMIN6)
 
 downDF <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\2023-10 to 2024-03 Manual Downloads\\PRMS Dat Manual Template.xlsx") %>%
-  read_xlsx(sheet = "DOWNSIZER Version")
+  read_xlsx(sheet = "DOWNSIZER Version") #%>%
+  # select(Date, DOWNSIZER_PRECIP1, DOWNSIZER_PRECIP2,
+  #        DOWNSIZER_PRECIP3, DOWNSIZER_PRECIP5,
+  #        DOWNSIZER_PRECIP8, DOWNSIZER_PRECIP10,
+  #        DOWNSIZER_PRECIP11, DOWNSIZER_PRECIP13,
+  #        DOWNSIZER_PRECIP14, DOWNSIZER_PRECIP15,
+  #        `DOWNSIZER_TMAX1\r\n(USC00043875)`, DOWNSIZER_TMAX2,
+  #        `DOWNSIZER_TMAX6\r\n(USC00047109)`, DOWNSIZER_TMIN1,
+  #        DOWNSIZER_TMIN2, DOWNSIZER_TMIN6)
 
 
 stopifnot(nrow(noaaDF) == nrow(downDF))

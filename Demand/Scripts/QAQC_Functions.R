@@ -45,14 +45,17 @@ unitFixer <- function (inputDF, ws) {
   
   # Otherwise, read in those two spreadsheets
   # The procedure will be slightly different depending on whether the paths are SharePoint paths
-  unitsQAQC <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                       "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+  unitsQAQC <- getXLSX(ws = ws, 
+                       SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                       FILEPATH = "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                       WORKSHEET_NAME = "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
   
   
   
-  unitsQAQC_Med <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
-                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+  unitsQAQC_Med <- getXLSX(ws = ws, 
+                           SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                           FILEPATH = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                           WORKSHEET_NAME = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
   
   
   
@@ -101,9 +104,10 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Otherwise, read in the spreadsheet
   # (with a slightly different procedure depending on whether a SharePoint is used)
-  qaqcDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET",
-                    "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH",
-                    "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
+  qaqcDF <- getXLSX(ws = ws, 
+                    SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET",
+                    FILEPATH ="QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH",
+                    WORKSHEET_NAME = "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
   
   
   
@@ -571,8 +575,8 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         
         inputDF <- inputDF %>%
           filter(!(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                     ((YEAR == actionYear & MONTH %in% 1:9) | 
-                        (YEAR == actionYear - 1 & MONTH %in% 10:12)) &
+                     ((YEAR == unitsQAQC$YEAR[i] & MONTH %in% 1:9) | 
+                        (YEAR == unitsQAQC$YEAR[i] - 1 & MONTH %in% 10:12)) &
                      DIVERSION_TYPE %in% c("DIRECT", "STORAGE")))
         
       }
@@ -773,9 +777,10 @@ useMeasurementData <- function (inputDF, qaqcInfo, wsID, ws) {
   
   # Read in the spreadsheet containing volumes compiled from measurement spreadsheets
   # Filter the data to this iteration's "APPLICATION_NUMBER"
-  measuredData <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEASUREMENT_VALUES",
-                          "QAQC_MEASUREMENT_VALUES_SPREADSHEET_PATH",
-                          "QAQC_MEASUREMENT_VALUES_SPREADSHEET_WORKSHEET_NAME") %>%
+  measuredData <- getXLSX(ws = ws, 
+                          SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_MEASUREMENT_VALUES",
+                          FILEPATH = "QAQC_MEASUREMENT_VALUES_SPREADSHEET_PATH",
+                          WORKSHEET_NAME = "QAQC_MEASUREMENT_VALUES_SPREADSHEET_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER == qaqcInfo$APPLICATION_NUMBER[1] & YEAR == qaqcInfo$YEAR[1])
   
   
