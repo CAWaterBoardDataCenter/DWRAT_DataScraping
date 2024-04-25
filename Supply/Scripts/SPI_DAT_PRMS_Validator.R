@@ -6,34 +6,6 @@ library(lubridate) #for make_date function
 library(data.table) #for fread function
 library(readxl) #for read_xlsx function
 
-
-#Create add_date_column function to generate a custom date to serve as the 7th column in the
-# various iterations of the Dat_PRMS files and dataframes
-
-add_date_column <- function(dat, col_position) {
-  # dat is your input dat dataframe and col_position refers to the desired position of the Date column
-  # you are creating
-  
-  # Check that year, month, and day columns exist
-  required_cols <- c("Year", "month", "day")
-  
-  if (!all(required_cols %in% names(dat))) {
-    stop("One or more of the date columns (Year, month, day) is missing.")
-  }
-  # Check that year, month, and day are all numeric
-  if (!all(sapply(dat[required_cols], is.numeric))) {
-    stop("One or more of the date columns (Year, month, day) is not numeric.")
-  }
-  
-  # Create the date_column
-  date_column <- paste0(dat$Year, "/", dat$month, "/", dat$day) %>% as.Date(format = "%Y/%m/%d")
-  
-  # Bind the date_column to the original dataframe dat
-  dat <- cbind(dat[, 1:col_position-1], Date = date_column, dat[, col_position:ncol(dat)])
-  
-  return(dat)
-}
-
 # Rely on the shared functions from the Demand scripts
 source("../Demand/Scripts/Shared_Functions.R")
 
