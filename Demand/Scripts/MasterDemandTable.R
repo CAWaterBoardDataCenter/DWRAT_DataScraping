@@ -120,6 +120,55 @@ assignBasinData_RR <- function (ewrimsDF) {
   
 }
 
+
+
+colAdd <- function (col1, col2) {
+  
+  # This function adds two numeric columns together
+  # However, it handles NA values in specific ways
+  
+  # If both column values are not NA, a simple sum is returned
+  # If one column value is NA, the other column value is returned
+  # If both column values are NA, NA is returned
+  
+  
+  
+  # If 'col1' is NA, return the value of 'col2' 
+  # (This is fine regardless of whether 'col2' is NA or not because the above requirements
+  #  will still be satisfied either way)
+  # If 'col1' is NOT NA, check 'col2'
+  # If 'col2' is NA, return 'col1' (the same reasoning from above applies here)
+  # If 'col2' is NOT NA, then both column values are not NA, so their sum should be returned
+  return(if_else(is.na(col1), col2,
+                 if_else(is.na(col2), col1, col1 + col2)))
+  
+}
+
+
+
+colMean <- function (colData) {
+  
+  # Given the data for a numeric column, compute the mean
+  # This is written as a custom function to ensure that NA values are handled in a specific way
+  
+  print(length(colData))
+  
+  
+  # If all of a right's diversion values for this month are NA, return NA
+  if (sum(is.na(colData)) == length(colData)) {
+    return(NA_real_)
+  }
+  
+  
+  
+  # Otherwise, return the mean, removing NA values from the calculation
+  return(mean(colData, na.rm = TRUE))
+  
+}
+
+
+
+
 # Import the data from the Expected Demand module----
 #expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
                         #col_types = "text") #%>%
@@ -140,18 +189,18 @@ diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_Uni
 
 # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
 diverDF <- diverDF %>%
-  mutate(JAN_TOTAL_DIVERSION = replace_na(JAN_DIRECT_DIVERSION, 0) + replace_na(JAN_STORAGE_DIVERSION, 0),
-         FEB_TOTAL_DIVERSION = replace_na(FEB_DIRECT_DIVERSION, 0) + replace_na(FEB_STORAGE_DIVERSION, 0),
-         MAR_TOTAL_DIVERSION = replace_na(MAR_DIRECT_DIVERSION, 0) + replace_na(MAR_STORAGE_DIVERSION, 0),
-         APR_TOTAL_DIVERSION = replace_na(APR_DIRECT_DIVERSION, 0) + replace_na(APR_STORAGE_DIVERSION, 0),
-         MAY_TOTAL_DIVERSION = replace_na(MAY_DIRECT_DIVERSION, 0) + replace_na(MAY_STORAGE_DIVERSION, 0),
-         JUN_TOTAL_DIVERSION = replace_na(JUN_DIRECT_DIVERSION, 0) + replace_na(JUN_STORAGE_DIVERSION, 0),
-         JUL_TOTAL_DIVERSION = replace_na(JUL_DIRECT_DIVERSION, 0) + replace_na(JUL_STORAGE_DIVERSION, 0),
-         AUG_TOTAL_DIVERSION = replace_na(AUG_DIRECT_DIVERSION, 0) + replace_na(AUG_STORAGE_DIVERSION, 0),
-         SEP_TOTAL_DIVERSION = replace_na(SEP_DIRECT_DIVERSION, 0) + replace_na(SEP_STORAGE_DIVERSION, 0),
-         OCT_TOTAL_DIVERSION = replace_na(OCT_DIRECT_DIVERSION, 0) + replace_na(OCT_STORAGE_DIVERSION, 0),
-         NOV_TOTAL_DIVERSION = replace_na(NOV_DIRECT_DIVERSION, 0) + replace_na(NOV_STORAGE_DIVERSION, 0),
-         DEC_TOTAL_DIVERSION = replace_na(DEC_DIRECT_DIVERSION, 0) + replace_na(DEC_STORAGE_DIVERSION, 0)) %>%
+  mutate(JAN_TOTAL_DIVERSION = colAdd(JAN_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION),
+         FEB_TOTAL_DIVERSION = colAdd(FEB_DIRECT_DIVERSION, FEB_STORAGE_DIVERSION),
+         MAR_TOTAL_DIVERSION = colAdd(MAR_DIRECT_DIVERSION, MAR_STORAGE_DIVERSION),
+         APR_TOTAL_DIVERSION = colAdd(APR_DIRECT_DIVERSION, APR_STORAGE_DIVERSION),
+         MAY_TOTAL_DIVERSION = colAdd(MAY_DIRECT_DIVERSION, MAY_STORAGE_DIVERSION),
+         JUN_TOTAL_DIVERSION = colAdd(JUN_DIRECT_DIVERSION, JUN_STORAGE_DIVERSION),
+         JUL_TOTAL_DIVERSION = colAdd(JUL_DIRECT_DIVERSION, JUL_STORAGE_DIVERSION),
+         AUG_TOTAL_DIVERSION = colAdd(AUG_DIRECT_DIVERSION, AUG_STORAGE_DIVERSION),
+         SEP_TOTAL_DIVERSION = colAdd(SEP_DIRECT_DIVERSION, SEP_STORAGE_DIVERSION),
+         OCT_TOTAL_DIVERSION = colAdd(OCT_DIRECT_DIVERSION, OCT_STORAGE_DIVERSION),
+         NOV_TOTAL_DIVERSION = colAdd(NOV_DIRECT_DIVERSION, NOV_STORAGE_DIVERSION),
+         DEC_TOTAL_DIVERSION = colAdd(DEC_DIRECT_DIVERSION, DEC_STORAGE_DIVERSION)) %>%
   ungroup()
 
 
@@ -165,29 +214,29 @@ diverDF %>%
 # (Averages of sums vs sums of averages)
 sumDF <- diverDF %>%
   group_by(APPLICATION_NUMBER) %>%
-  summarize(JAN_MEAN_DIV = mean(JAN_TOTAL_DIVERSION, na.rm = TRUE),
-            FEB_MEAN_DIV = mean(FEB_TOTAL_DIVERSION, na.rm = TRUE),
-            MAR_MEAN_DIV = mean(MAR_TOTAL_DIVERSION, na.rm = TRUE),
-            APR_MEAN_DIV = mean(APR_TOTAL_DIVERSION, na.rm = TRUE),
-            MAY_MEAN_DIV = mean(MAY_TOTAL_DIVERSION, na.rm = TRUE),
-            JUN_MEAN_DIV = mean(JUN_TOTAL_DIVERSION, na.rm = TRUE),
-            JUL_MEAN_DIV = mean(JUL_TOTAL_DIVERSION, na.rm = TRUE),
-            AUG_MEAN_DIV = mean(AUG_TOTAL_DIVERSION, na.rm = TRUE),
-            SEP_MEAN_DIV = mean(SEP_TOTAL_DIVERSION, na.rm = TRUE),
-            OCT_MEAN_DIV = mean(OCT_TOTAL_DIVERSION, na.rm = TRUE),
-            NOV_MEAN_DIV = mean(NOV_TOTAL_DIVERSION, na.rm = TRUE),
-            DEC_MEAN_DIV = mean(DEC_TOTAL_DIVERSION, na.rm = TRUE),
+  summarize(JAN_MEAN_DIV = colMean(JAN_TOTAL_DIVERSION),
+            FEB_MEAN_DIV = colMean(FEB_TOTAL_DIVERSION),
+            MAR_MEAN_DIV = colMean(MAR_TOTAL_DIVERSION),
+            APR_MEAN_DIV = colMean(APR_TOTAL_DIVERSION),
+            MAY_MEAN_DIV = colMean(MAY_TOTAL_DIVERSION),
+            JUN_MEAN_DIV = colMean(JUN_TOTAL_DIVERSION),
+            JUL_MEAN_DIV = colMean(JUL_TOTAL_DIVERSION),
+            AUG_MEAN_DIV = colMean(AUG_TOTAL_DIVERSION),
+            SEP_MEAN_DIV = colMean(SEP_TOTAL_DIVERSION),
+            OCT_MEAN_DIV = colMean(OCT_TOTAL_DIVERSION),
+            NOV_MEAN_DIV = colMean(NOV_TOTAL_DIVERSION),
+            DEC_MEAN_DIV = colMean(DEC_TOTAL_DIVERSION),
             .groups = "drop") %>%
-  mutate(TOTAL_ANNUAL_EXPECTED_DIVERSION = JAN_MEAN_DIV + 
-           FEB_MEAN_DIV + MAR_MEAN_DIV + 
-           APR_MEAN_DIV + MAY_MEAN_DIV + 
-           JUN_MEAN_DIV + JUL_MEAN_DIV +
-           AUG_MEAN_DIV + SEP_MEAN_DIV +
-           OCT_MEAN_DIV + NOV_MEAN_DIV + 
-           DEC_MEAN_DIV,
-         MAY_TO_SEPT_EXPECTED_DIVERSION = MAY_MEAN_DIV + 
-           JUN_MEAN_DIV + JUL_MEAN_DIV +
-           AUG_MEAN_DIV + SEP_MEAN_DIV)
+  mutate(TOTAL_ANNUAL_EXPECTED_DIVERSION = replace_na(JAN_MEAN_DIV, 0) + 
+           replace_na(FEB_MEAN_DIV, 0) + replace_na(MAR_MEAN_DIV, 0) + 
+           replace_na(APR_MEAN_DIV, 0) + replace_na(MAY_MEAN_DIV, 0) + 
+           replace_na(JUN_MEAN_DIV, 0) + replace_na(JUL_MEAN_DIV, 0) +
+           replace_na(AUG_MEAN_DIV, 0) + replace_na(SEP_MEAN_DIV, 0) +
+           replace_na(OCT_MEAN_DIV, 0) + replace_na(NOV_MEAN_DIV, 0) + 
+           replace_na(DEC_MEAN_DIV, 0),
+         MAY_TO_SEPT_EXPECTED_DIVERSION = replace_na(MAY_MEAN_DIV, 0) + 
+           replace_na(JUN_MEAN_DIV, 0) + replace_na(JUL_MEAN_DIV, 0) +
+           replace_na(AUG_MEAN_DIV, 0) + replace_na(SEP_MEAN_DIV, 0))
 
 
 
