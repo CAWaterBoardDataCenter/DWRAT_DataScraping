@@ -41,7 +41,7 @@ expDemand <- expDemand %>% group_by(APPLICATION_NUMBER, YEAR) %>%
 #  select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL) %>%
 #  mutate(YEAR_TOTAL = as.numeric(YEAR_TOTAL))
 
-
+#expDemand$YEAR_TOTAL[expDemand$APPLICATION_NUMBER == "C004070" & expDemand$YEAR == 2017] <- 219000
 
 # Create a summary tibble with median values of "YEAR_TOTAL" for each "APPLICATION_NUMBER"
 medVals <- expDemand %>%
@@ -65,8 +65,12 @@ expDemand <- expDemand %>%
 # Keep records that are more than two orders of magnitude away from the median (in either direction)
 expDemand <- expDemand %>%
   filter((MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF > 100) |
-           (MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF < 1/100)) %>%
-  select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL, MEDIAN_TOTAL_AF) 
+           (MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF < 1/100) |
+           (YEAR_TOTAL > 0 & abs(YEAR_TOTAL - MEDIAN_TOTAL_AF) > 100) |
+           (AVG_TOTAL_AF > 0 & YEAR_TOTAL / AVG_TOTAL_AF > 100) |
+           (AVG_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / AVG_TOTAL_AF < 1/100) |
+           (YEAR_TOTAL > 0 & abs(YEAR_TOTAL - AVG_TOTAL_AF) > 100)) %>%
+  select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL, MEDIAN_TOTAL_AF, AVG_TOTAL_AF) 
 
 
 
