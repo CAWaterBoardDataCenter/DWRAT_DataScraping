@@ -20,9 +20,10 @@ mainProcedure <- function (ws) {
   
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
-  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
-                    "WATERSHED_BOUNDARY_DATABASE_PATH",
-                    "WATERSHED_BOUNDARY_LAYER_NAME")
+  wsBound <- getGIS(ws = ws, 
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
@@ -49,7 +50,7 @@ mainProcedure <- function (ws) {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   

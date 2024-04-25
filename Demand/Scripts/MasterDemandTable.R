@@ -65,9 +65,10 @@ assignBasinData_RR <- function (ewrimsDF) {
   # if we import the appropriate layers and projections; side project for Payman
   
   #After filling the manual review spreadsheet, import it back into R
-  manualDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_SUBBASIN_MANUAL_ASSIGNMENT",
-                      "SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH",
-                      "SUBBASIN_MANUAL_ASSIGNMENT_WORKSHEET_NAME") %>%
+  manualDF <- getXLSX(ws = ws, 
+                      SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_MANUAL_ASSIGNMENT",
+                      FILEPATH ="SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH",
+                      WORKSHEET_NAME = "SUBBASIN_MANUAL_ASSIGNMENT_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)])
   
   
@@ -83,9 +84,10 @@ assignBasinData_RR <- function (ewrimsDF) {
   # Finally, rely on the output of "Assign_Subbasin_to_POD.R" and the initial POD spreadsheet
   # The initial spreadsheet has mainstem information about the PODs
   # The POD Subbasin Assignment spreadsheet has subbasin information
-  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
-                   "POD_COORDINATES_SPREADSHEET_PATH",
-                   "POD_COORDINATES_WORKSHEET_NAME") %>%
+  podDF <- getXLSX(ws = ws, 
+                   SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
+                   FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
+                   WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)]) %>%
     left_join(read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>% 
                 select(-LONGITUDE, -LATITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
@@ -399,10 +401,11 @@ if ("MAINSTEM" %in% names(ewrimsDF) && grepl("^Russian", ws$NAME)) {
 
 if (grepl("^Russian", ws$NAME)) {
   
-  # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx"
-  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
-                   "POD_COORDINATES_SPREADSHEET_PATH",
-                   "POD_COORDINATES_WORKSHEET_NAME")
+  # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx, which is now hosted on SharePoint"
+  podDF <- getXLSX(ws = ws, 
+                   SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
+                   FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
+                   WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME")
   
   
   # Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
@@ -450,12 +453,12 @@ if (grepl("^Russian", ws$NAME)) {
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
- write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_", 
-                                   min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-                                   "-",
-                                   max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE), 
-                                   "_MasterDemandTable_", Sys.Date(),
-                                   ".csv"), row.names = FALSE)
+write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
+                                         min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE),
+                                         "-",
+                                         max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE),
+                                         "_MDT_", format(Sys.Date(), "%Y-%m-%d"), ".csv"), row.names = FALSE)
+
 #just the 2017-2020 reporting years
 #write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 

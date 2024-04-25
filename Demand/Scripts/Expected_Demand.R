@@ -640,9 +640,10 @@ mainProcedure <- function (ws) {
   # Exclude entries that were already checked previously
   if (!is.na(ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH[1])) {
     
-    reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                        "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
-                        "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+    reviewDF <- getXLSX(ws = ws, 
+                        SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                        FILEPATH = "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                        WORKSHEET_NAME = "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
     
     
     
@@ -655,9 +656,10 @@ mainProcedure <- function (ws) {
     # If the second manual review was also performed, add that spreadsheet here too
     if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH[1])) {
       
-      reviewDF2 <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
-                           "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+      reviewDF2 <- getXLSX(ws = ws,
+                           SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                           FILEPATH = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
+                          WORKSHEET_NAME =  "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
         makeKey_APP_YEAR_AMOUNT()
       
       
