@@ -701,7 +701,7 @@ mainProcedure <- function (ws) {
   # Then include a spreadsheet focused on "CALENDAR_YEAR_TOTAL"/"WATER_YEAR_TOTAL" for all rights in 'monthlyDF'
   monthlyDF %>%
     select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_Year_Totals_AF.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_or_Water_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
   
