@@ -111,6 +111,16 @@ dupReportingFixer <- function (inputDF, ws) {
   
   
   
+  # If "ADJ_YEAR" is present in the data frame, add a "YEAR" column to 'qaqcDF' 
+  if ("ADJ_YEAR" %in% names(qaqcDF)) {
+    
+    qaqcDF <- qaqcDF %>%
+      mutate(YEAR = ADJ_YEAR)
+    
+  }
+  
+  
+  
   # Keep only entries in 'qaqcDF' that are relevant to the years in 'inputDF'
   qaqcDF <- qaqcDF %>%
     filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
@@ -129,16 +139,6 @@ dupReportingFixer <- function (inputDF, ws) {
     
     qaqcDF <- qaqcDF %>%
       rename(APPLICATION_NUMBER = APPL_ID)
-    
-  }
-  
-  
-  
-  # If "ADJ_YEAR" is present in the data frame, add a "YEAR" column to 'qaqcDF' 
-  if ("ADJ_YEAR" %in% names(qaqcDF)) {
-    
-    qaqcDF <- qaqcDF %>%
-      mutate(YEAR = ADJ_YEAR)
     
   }
   
