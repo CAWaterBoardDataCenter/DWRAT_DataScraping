@@ -16,7 +16,7 @@ require(writexl)
 
 
 # Generic functions that are used in multiple scripts
-source("Scripts/Shared_Functions.R")
+source("Scripts/Shared_Functions_Demand.R")
 
 
 
@@ -93,6 +93,10 @@ source("Scripts/Expected_Demand.R")
 
 # Supplemental Expected Demand Module
 source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
+
+
+# Try to fix reports with NA values for all months and diversion types
+source("Scripts/Check_Empty_Reports.R")
 
 
 # Beneficial Use, Return Flow Module

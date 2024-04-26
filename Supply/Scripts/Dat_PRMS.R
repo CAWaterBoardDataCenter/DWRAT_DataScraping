@@ -6,7 +6,7 @@ library(lubridate) #for make_date function
 library(data.table) #for fread function
 
 # Rely on the shared functions from the Demand scripts
-source("../Demand/Scripts/Shared_Functions.R")
+source("../Demand/Scripts/Shared_Functions_Demand.R")
 
 
 
