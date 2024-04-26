@@ -10,7 +10,7 @@ require(writexl)
 
 
 # Get "Shared_Functions_Demand.R" functions from the Demand folder
-source("../Demand/Scripts/Shared_Functions_Demand.R.R")
+source("../Demand/Scripts/Shared_Functions_Demand.R")
 
 
 noaaDF <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\2023-10 to 2024-03 Manual Downloads\\PRMS Dat Manual Template.xlsx") %>%
