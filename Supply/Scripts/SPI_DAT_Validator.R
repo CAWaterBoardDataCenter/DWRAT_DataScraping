@@ -95,6 +95,48 @@ for (j in 1:ncol(DAT_Initial_PRMS_Subset)) {
 # are no precipitation or temperature value differences, so the data was copied and pasted correctly!
 
 
-# Check Dat_SRP for accuracy of April 2024 - September 2024 SPI data
-Dat_Initial_SRP <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\DAT_SRP_1990_to_WY2023.dat") %>%
-  read_delim()
+# Check Dat_SRP for accuracy of April 2024 - September 2024 SPI data----
+
+# Import Pre-2023 WY Dat SRP File
+Dat_Initial_SRP <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\DAT_SRP_1947_to_WY2023.dat") %>%
+  read_delim(delim = ",")
+
+# Filter Dat_Initial_SRP to just the month-year combinations that pertain to SPI
+Dat_Initial_SRP = rename(Dat_Initial_SRP, "Year" = "year")
+Dat_Initial_SRP_Subset <- filter(Dat_Initial_SRP, eval(parse(text = combined_conditions))) %>%
+  arrange(month) 
+
+# Import Forecast Dat SRP Data (4/1/2024 - 9/30/2024)
+Dat_Predictions_SRP <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\SPI_SRP_WY_2023_2024.csv") %>%
+  read.csv() %>%
+  rename("Year" = "year")
+
+## Recreate the mismatchDF dataframe to house the discrepant values----
+mismatchDF <- matrix(rep(integer(0), 7), ncol = 7) %>%
+  data.frame() %>%
+  set_names(c("Row_Index", "Col_Index", "Date", "Initial_Col_Name", 
+              "Prediction_Col_Name", "Initial_Value", "Prediction_Value")) %>%
+  mutate(Date = as.Date(Date))
+
+## Compare the Dat_Initial_SRP_Subset to Dat_Predictions_SRP dataframes----
+for (j in 1:ncol(Dat_Initial_SRP_Subset)) {
+  
+  for (i in 1:nrow(Dat_Initial_SRP_Subset)) {
+    
+    if (Dat_Initial_SRP_Subset[i, j] != Dat_Predictions_SRP[i, j]) {
+      
+      print(paste0("Mismatch at Row ", i, ", ", names(Dat_Initial_SRP_Subset)[j], " (",
+                   Dat_Initial_SRP_Subset[i,j], " and ", Dat_Predictions_SRP[i, j], ")"))
+      
+      mismatchDF[nrow(mismatchDF) + 1, ] <- list(i, j, Dat_Initial_SRP_Subset$Date[i], 
+                                                 names(Dat_Initial_SRP_Subset)[j], 
+                                                 names(Dat_Predictions_SRP)[j], 
+                                                 Dat_Initial_SRP_Subset[i, j], 
+                                                 Dat_Predictions_SRP[i, j])
+    }
+  }
+}
+
+# The only discrepancies are the in the Date and month columns, which is expected. The
+# precipitation and temperature values were correctly copied and pasted.
+
