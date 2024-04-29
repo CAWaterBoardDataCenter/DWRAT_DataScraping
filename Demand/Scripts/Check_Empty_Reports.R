@@ -21,7 +21,7 @@ mainProcedure <- function (ws) {
   
   # Read in th expected demand dataset
   flowDF <- paste0("OutputData/", ws$ID, 
-                   "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx") %>%
+                   "_Monthly_Diversions.xlsx") %>%
     read_xlsx()
   
   
