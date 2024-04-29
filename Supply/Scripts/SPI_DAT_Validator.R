@@ -7,7 +7,7 @@ library(data.table) #for fread function
 library(readxl) #for read_xlsx function
 
 # Rely on the shared functions from the Demand scripts
-source("../Supply/Scripts/Shared_Functions.R")
+source("../Demand/Scripts/Shared_Functions_Demand.R")
 
 # Check Dat_PRMS for accuracy of April 2024 - September 2024 SPI data----
 
