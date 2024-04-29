@@ -187,16 +187,6 @@ diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_Uni
 
 
 
-stopifnot(!anyNA(diverDF$APPLICATION_NUMBER))
-stopifnot(!anyNA(diverDF$YEAR))
-
-
-
-# Remove records with NA values for all diversion values
-diverDF <- diverDF[rowSums(is.na(diverDF)) < ncol(diverDF) - 2, ]
-
-
-
 # Add a new column for each month that is the total diversion (DIRECT + STORAGE)
 diverDF <- diverDF %>%
   mutate(JAN_TOTAL_DIVERSION = colAdd(JAN_DIRECT_DIVERSION, JAN_STORAGE_DIVERSION),
@@ -522,5 +512,5 @@ print("The MasterDemandTable.R script has finished running")
 
 
 remove(assignBasinData_RR, spreadsheetAdjustment, beneficialUse, diverDF,
-       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,countyDF, podDF, i,
-       ws, makeSharePointPath, getGIS, getXLSX)
+       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF, countyDF, podDF, i,
+       ws, makeSharePointPath, getGIS, getXLSX, colAdd, colMean)

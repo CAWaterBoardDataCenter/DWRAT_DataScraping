@@ -623,15 +623,36 @@ mainProcedure <- function (ws) {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
+    write.xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"),
                overwrite = TRUE)
+    #write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
+    #           overwrite = TRUE)
   
   
   
   monthlyDF %>%
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
+    unique() %>%
     write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
+  
+  
+  
+  if (monthlyDF %>%
+      select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, FACE_VALUE_AMOUNT) %>% 
+      filter(is.na(INI_REPORTED_DIV_AMOUNT) & FACE_VALUE_AMOUNT == 0) %>% unique() %>%
+      nrow() > 0) {
+    
+    cat(paste0("\n\nWarning: The following rights have a face value amount of 0 AF (with no initial reported diversion amount):\n\n",
+               monthlyDF %>%
+                 select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, FACE_VALUE_AMOUNT) %>% 
+                 filter(is.na(INI_REPORTED_DIV_AMOUNT) & FACE_VALUE_AMOUNT == 0) %>% unique() %>%
+                 select(APPLICATION_NUMBER) %>% unlist() %>% sort() %>% paste0(collapse = "\n"),
+               "\n\n"))
+    
+    cat(paste0("Note: This list can be extracted from the spreadsheet 'OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx'\n\n"))
+    
+  }
   
   
   
@@ -699,9 +720,9 @@ mainProcedure <- function (ws) {
   
   
   # Then include a spreadsheet focused on "CALENDAR_YEAR_TOTAL"/"WATER_YEAR_TOTAL" for all rights in 'monthlyDF'
-  monthlyDF %>%
-    select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_or_Water_Year_Totals_AF.xlsx"), overwrite = TRUE)
+  # monthlyDF %>%
+  #   select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
+  #   write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_or_Water_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
   
