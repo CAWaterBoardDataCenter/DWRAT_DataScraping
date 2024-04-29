@@ -14,7 +14,7 @@ source("../Demand/Scripts/Shared_Functions_Demand.R")
 # Import Latest Dat SRP File
 Dat_SRP_Path = makeSharePointPath(filePathFragment = "DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\Dat_SRP_Body.dat")
 
-
+# Manipulate the Dat SRP File----
 # Read the data as a single column
 Dat_SRP_Full <- read_lines(Dat_SRP_Path)
 
@@ -44,12 +44,18 @@ Dat_SRP_Full <- cbind(Dat_SRP_Full[, 1:6],Date, Dat_SRP_Full[,7:ncol(Dat_SRP_Ful
     #Save to DAT SRP Blueprints folder on SharePoint
   #A file consisting of data from 3/1/2024 - 9/30/2024; that's our SPI WY 2023-2024 DAT file or Dat SRP Forecast file for short
     #Save to DAT SRP Blueprints folder on SharePoint
+
+## Create the DAT SRP Forecast file----
 SPI_WY_2023_2024 = Dat_SRP_Full %>% filter(Date >= "2024-04-01" & Date <= "2024-09-30")
 
-write.csv(x = SPI_WY_2023_2024, file = paste0(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\"), "SPI_SRP_WY_2023_2024.csv"), row.names = FALSE)
+write.csv(x = SPI_WY_2023_2024, file = paste0(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\"), 
+                                              "SPI_SRP_WY_2023_2024.csv"), row.names = FALSE)
 
-#Whittle SPI_WY_2023_2024 to precede the observed time range
-SPI_WY_2023_2024_Test = SPI_WY_2023_2024 %>% filter(Date >= EndDate$date)
+## Create the Pre-2023 WY DAT SRP file----
+DAT_SRP_1990_to_WY2023 = Dat_SRP_Full %>% filter(Date >= "1947-10-01" & Date <= "2023-09-30")
+
+write.csv(x = DAT_SRP_1990_to_WY2023, file = paste0(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\"), 
+                                                    "DAT_SRP_1990_to_WY2023.dat"), row.names = F)
 
 #Constructing a new SRP Dat File
   #Run the first portion of Master_Script_PRMS.R where you define StartDate, EndDate, and you download the SRP raw data

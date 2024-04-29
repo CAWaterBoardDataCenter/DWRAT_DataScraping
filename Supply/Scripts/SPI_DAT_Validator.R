@@ -8,6 +8,7 @@ library(readxl) #for read_xlsx function
 
 # Rely on the shared functions from the Demand scripts
 source("../Demand/Scripts/Shared_Functions_Demand.R")
+source("Scripts/Shared_Functions_Supply.R")
 
 # Check Dat_PRMS for accuracy of April 2024 - September 2024 SPI data----
 
@@ -58,11 +59,42 @@ combined_conditions <- paste(conditions, collapse = " | ")
 
 # Filter DAT_Initial_PRMS and DAT_Prediction_PRMS
 DAT_Initial_PRMS_Subset <- filter(DAT_Initial_PRMS, eval(parse(text = combined_conditions)))
-DAT_Initial_PRMS_Subset = DAT_Initial_PRMS_Subset[,1:38]
+DAT_Initial_PRMS_Subset = DAT_Initial_PRMS_Subset[,1:38] 
 DAT_Initial_PRMS_Subset = DAT_Initial_PRMS_Subset %>% arrange(month)
 
 DAT_Predictions_PRMS_Subset = DAT_Predictions_PRMS[,1:38]
+DAT_Predictions_PRMS_Subset %>% arrange(month)
 
-#Compare two dataframes
-identical(DAT_Initial_PRMS_Subset[,8:38], DAT_Predictions_PRMS_Subset[,8:38])
-# Both dataframes are identical; hence the data was copied and pasted correctly!
+mismatchDF <- matrix(rep(integer(0), 7), ncol = 7) %>%
+  data.frame() %>%
+  set_names(c("Row_Index", "Col_Index", "Date", "Initial_Col_Name", 
+              "Prediction_Col_Name", "Initial_Value", "Prediction_Value")) %>%
+  mutate(Date = as.Date(Date))
+
+#Compare DAT_Initial_PRMS_Subst to DAT_Predictions_PRMS_Subset
+for (j in 1:ncol(DAT_Initial_PRMS_Subset)) {
+  
+  for (i in 1:nrow(DAT_Initial_PRMS_Subset)) {
+    
+    if (DAT_Initial_PRMS_Subset[i, j] != DAT_Predictions_PRMS_Subset[i, j]) {
+      
+      print(paste0("Mismatch at Row ", i, ", ", names(DAT_Initial_PRMS_Subset)[j], " (",
+                   DAT_Initial_PRMS_Subset[i,j], " and ", DAT_Predictions_PRMS_Subset[i, j], ")"))
+      
+      mismatchDF[nrow(mismatchDF) + 1, ] <- list(i, j, DAT_Initial_PRMS_Subset$Date[i], 
+                                                 names(DAT_Initial_PRMS_Subset)[j], 
+                                                 names(DAT_Predictions_PRMS_Subset)[j], 
+                                                 DAT_Initial_PRMS_Subset[i, j], 
+                                                 DAT_Predictions_PRMS_Subset[i, j])
+    }
+  }
+}
+
+#All mismatches are due to the Year and Date columns not matching, which is to be expected!
+# The entire point of SPI data is to replace the current year with an older year, but there 
+# are no precipitation or temperature value differences, so the data was copied and pasted correctly!
+
+
+# Check Dat_SRP for accuracy of April 2024 - September 2024 SPI data
+Dat_Initial_SRP <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\DAT_SRP_1990_to_WY2023.dat") %>%
+  read_delim()
