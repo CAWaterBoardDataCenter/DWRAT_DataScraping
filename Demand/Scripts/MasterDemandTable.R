@@ -153,8 +153,6 @@ colMean <- function (colData) {
   # Given the data for a numeric column, compute the mean
   # This is written as a custom function to ensure that NA values are handled in a specific way
   
-  print(length(colData))
-  
   
   # If all of a right's diversion values for this month are NA, return NA
   if (sum(is.na(colData)) == length(colData)) {
@@ -209,7 +207,7 @@ diverDF <- diverDF %>%
 # Generate Monthly Demand Dataset for every year in your timeframe; uncomment these lines for the PowerBI 
 # Demand Analysis
 diverDF %>%
-  write_csv("OutputData/DemandDataset_MonthlyValues.csv")
+  write_csv(paste0("OutputData/", ws$ID, "_DemandDataset_MonthlyValues.csv"))
 
 # Create a separate variable with expected total diversion values
 # (There are columns in 'expectedDF' with this name, but they are calculated differently)
@@ -239,6 +237,13 @@ sumDF <- diverDF %>%
          MAY_TO_SEPT_EXPECTED_DIVERSION = replace_na(MAY_MEAN_DIV, 0) + 
            replace_na(JUN_MEAN_DIV, 0) + replace_na(JUL_MEAN_DIV, 0) +
            replace_na(AUG_MEAN_DIV, 0) + replace_na(SEP_MEAN_DIV, 0))
+
+
+if (anyNA(sumDF)) {
+  
+  cat("Warning: There are rights with 'NA' monthly averages\n")
+  
+}
 
 
 
@@ -275,12 +280,12 @@ priorityDF <- read_xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xl
 
 
 #Change RIPARIAN values in RIPARIAN column to Y or N values
-priorityDF$RIPARIAN <- ifelse(test = priorityDF$RIPARIAN == "RIPARIAN", 
-                              yes = "Y", 
-                              no = "N")
+priorityDF$RIPARIAN <- if_else(priorityDF$RIPARIAN == "RIPARIAN", "Y", "N")
+
 
 # Replace NA values in Riparian column with N
 priorityDF$RIPARIAN[is.na(priorityDF$RIPARIAN)] <- "N"
+
 
 # Use a left join once again
 ewrimsDF <- ewrimsDF %>%
@@ -347,7 +352,6 @@ ewrimsDF <- ewrimsDF %>%
          INI_REPORTED_DIV_AMOUNT_AF = as.numeric(INI_REPORTED_DIV_AMOUNT_AF),
          FACE_VALUE_AMOUNT_AF = as.numeric(FACE_VALUE_AMOUNT_AF)) %>%
   rowwise() %>%
-  
   mutate(PERCENT_FACE = 
            TOTAL_EXPECTED_ANNUAL_DIVERSION / max(INI_REPORTED_DIV_AMOUNT_AF, FACE_VALUE_AMOUNT_AF, -Inf, na.rm = TRUE),
          ZERO_DEMAND = if_else(TOTAL_EXPECTED_ANNUAL_DIVERSION == 0, "Y", "N")) %>%
@@ -363,10 +367,24 @@ if (grepl("^Russian", ws$NAME)) {
 
 
 # Error Check
-stopifnot(!anyNA(ewrimsDF$BASIN))
-stopifnot(!anyNA(ewrimsDF$MAINSTEM))
-stopifnot(!anyNA(ewrimsDF$LONGITUDE))
-stopifnot(!anyNA(ewrimsDF$LATITUDE))
+if ("BASIN" %in% names(ewrimsDF)) {
+  stopifnot(!anyNA(ewrimsDF$BASIN))
+}
+
+if ("MAINSTEM" %in% names(ewrimsDF)) {
+  stopifnot(!anyNA(ewrimsDF$MAINSTEM))
+}
+
+if ("LONGITUDE" %in% names(ewrimsDF)) {
+  stopifnot(!anyNA(ewrimsDF$LONGITUDE))
+}
+
+if ("LATITUDE" %in% names(ewrimsDF)) {
+  stopifnot(!anyNA(ewrimsDF$LATITUDE))
+}
+
+
+
 
 
 
@@ -494,5 +512,5 @@ print("The MasterDemandTable.R script has finished running")
 
 
 remove(assignBasinData_RR, spreadsheetAdjustment, beneficialUse, diverDF,
-       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF,countyDF, podDF, i,
-       ws, makeSharePointPath, getGIS, getXLSX)
+       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF, countyDF, podDF, i,
+       ws, makeSharePointPath, getGIS, getXLSX, colAdd, colMean)

@@ -706,9 +706,19 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       # After that, append 'dummyDF' to 'unitsQAQC'
       # Eventually the loop will reach these actions
-      unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
-                             dummyDF,
-                             unitsQAQC[(i + 1):nrow(unitsQAQC), ])
+      if (i < nrow(unitsQAQC)) {
+        
+        unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
+                               dummyDF,
+                               unitsQAQC[(i + 1):nrow(unitsQAQC), ])
+        
+      } else {
+        
+        unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
+                               dummyDF)
+        
+      }
+      
       
     
       # If an action is "None", do nothing

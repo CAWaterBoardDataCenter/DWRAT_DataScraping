@@ -41,7 +41,6 @@ expDemand <- expDemand %>% group_by(APPLICATION_NUMBER, YEAR) %>%
 #  select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL) %>%
 #  mutate(YEAR_TOTAL = as.numeric(YEAR_TOTAL))
 
-#expDemand$YEAR_TOTAL[expDemand$APPLICATION_NUMBER == "C004070" & expDemand$YEAR == 2017] <- 219000
 
 # Create a summary tibble with median values of "YEAR_TOTAL" for each "APPLICATION_NUMBER"
 medVals <- expDemand %>%

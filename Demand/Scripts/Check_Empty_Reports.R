@@ -41,7 +41,8 @@ mainProcedure <- function (ws) {
   # "APPLICATION_NUMBER" and "YEAR" are confirmed to NOT contain any NA values
   # Therefore, if a row has all NA flow volumes, 
   # the total NA count for the row should equal "ncol(flowDF) - 2"
-  naRecords <- flowDF[which(naSums == ncol(flowDF) - 2), ]
+  naRecords <- flowDF[which(naSums == ncol(flowDF) - 2), ] %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
   
   
   
@@ -60,28 +61,34 @@ mainProcedure <- function (ws) {
   if (!is.na(ws$NA_REPORTS_SPREADSHEET_PATH)) {
     
     reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_NA_REPORTS_SPREADSHEET",
-                        "NA_REPORTS_SPREADSHEET_PATH", "NA_REPORTS_WORKSHEET_NAME")
+                        "NA_REPORTS_SPREADSHEET_PATH", "NA_REPORTS_WORKSHEET_NAME") %>%
+      mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
+    
     
     
     # Shorten 'reviewDF' to records that are contained within 'naRecords'
     # (And that involve replacing NA records with 0s or other numbers)
     reviewDF <- reviewDF %>%
-      filter(APPLICATION_NUMBER %in% naRecords$APPLICATION_NUMBER &
-               YEAR %in% naRecords$YEAR) %>%
+      filter(KEY %in% naRecords$KEY) %>%
       filter(REPLACE_NA_VALUES_WITH_ZEROS == TRUE | !is.na(ALT_VALUE_REPLACEMENT))
     
     
     
-    # Update 'flowDF' based on the data in 'reviewDF'
-    flowDF <- flowDF %>%
-      updateValues(reviewDF)
-    
-    
-    
-    # Exclude those rows from 'naRecords'
-    naRecords <- naRecords %>%
-      filter(!(APPLICATION_NUMBER %in% reviewDF$APPLICATION_NUMBER &
-                 YEAR %in% reviewDF$YEAR))
+    # If 'reviewDF' still contains data after the filter,
+    if (nrow(reviewDF) > 0) {
+      
+      # Update 'flowDF' based on the data in 'reviewDF'
+      flowDF <- flowDF %>%
+        updateValues(reviewDF)
+      
+      
+      
+      # Exclude those rows from 'naRecords'
+      naRecords <- naRecords %>%
+        mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR)) %>%
+        filter(!(KEY %in% reviewDF$KEY))
+      
+    }
     
     
     
@@ -125,8 +132,8 @@ mainProcedure <- function (ws) {
                      REPORT_LIST_TABLE_LINK = NA_character_,
                      REPORT_LINK = NA_character_,
                      REPLACE_NA_VALUES_WITH_ZEROS = NA,
-                     ALT_VALUE_REPLACEMENT = NA_real_)
-  
+                     ALT_VALUE_REPLACEMENT = NA_real_) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
   
   
   
@@ -236,7 +243,22 @@ mainProcedure <- function (ws) {
   
   
   
-  # In either case, write 'flowDF' to a file
+  # Filter 'flowDF' to remove records for non-existent NA-only reports
+  # They correspond to the entries in 'naDF' that already contain "FALSE" for "REPLACE_NA_VALUES_WITH_ZEROS"
+  # Filter 'naDF' to only those entries, and use them to filter 'flowDF'
+  naDF <- naDF %>%
+    filter(REPLACE_NA_VALUES_WITH_ZEROS == FALSE)
+  
+  
+  
+  flowDF <- flowDF %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR)) %>%
+    filter(!(KEY %in% naDF$KEY)) %>%
+    select(-KEY)
+  
+  
+  
+  # Finally, write 'flowDF' to a file
   # (Overwriting its original version)
   write_xlsx(flowDF,
              paste0("OutputData/", ws$ID, 
@@ -353,4 +375,4 @@ mainProcedure(ws)
 
 #### Cleanup ####
 
-remove(mainProcedure, extractTable)
+remove(mainProcedure, extractTable, updateValues)
