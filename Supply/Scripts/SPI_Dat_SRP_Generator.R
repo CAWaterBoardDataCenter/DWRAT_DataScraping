@@ -40,7 +40,7 @@ Date = as.Date(x = paste0(Dat_SRP_Full$month, "/", Dat_SRP_Full$day, "/", Dat_SR
 Dat_SRP_Full <- cbind(Dat_SRP_Full[, 1:6],Date, Dat_SRP_Full[,7:ncol(Dat_SRP_Full)])
 
 #DAT_SRP_Full needs to subdivided into 2 separate standalone CSVs
-  #A file consisting of data from 1/1/1990 - 9/30/2023; that's our pre-2023WY_SRP_DAT file
+  #A file consisting of data from 10/1/1947 - 9/30/2023; that's our pre-2023WY_SRP_DAT file
     #Save to DAT SRP Blueprints folder on SharePoint
   #A file consisting of data from 3/1/2024 - 9/30/2024; that's our SPI WY 2023-2024 DAT file or Dat SRP Forecast file for short
     #Save to DAT SRP Blueprints folder on SharePoint
@@ -52,10 +52,10 @@ write.csv(x = SPI_WY_2023_2024, file = paste0(makeSharePointPath("DWRAT\\SDU_Run
                                               "SPI_SRP_WY_2023_2024.csv"), row.names = FALSE)
 
 ## Create the Pre-2023 WY DAT SRP file----
-DAT_SRP_1990_to_WY2023 = Dat_SRP_Full %>% filter(Date >= "1947-10-01" & Date <= "2023-09-30")
+DAT_SRP_1947_to_WY2023 = Dat_SRP_Full %>% filter(Date >= "1947-10-01" & Date <= "2023-09-30")
 
-write.csv(x = DAT_SRP_1990_to_WY2023, file = paste0(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\"), 
-                                                    "DAT_SRP_1990_to_WY2023.dat"), row.names = F)
+write.csv(x = DAT_SRP_1947_to_WY2023, file = paste0(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\"), 
+                                                    "DAT_SRP_1947_to_WY2023.dat"), row.names = F)
 
 #Constructing a new SRP Dat File
   #Run the first portion of Master_Script_PRMS.R where you define StartDate, EndDate, and you download the SRP raw data
