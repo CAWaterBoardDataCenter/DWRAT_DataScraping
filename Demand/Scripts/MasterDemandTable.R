@@ -183,7 +183,7 @@ colMean <- function (colData) {
            #               grep("^[A-Z]{3}_STORAGE_DIVERSION$", names(expectedDF)))] %>%
   #mutate(across(ends_with("DIVERSION"), as.numeric))
 
-diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))
+diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))
 
 
 
@@ -472,9 +472,9 @@ if (grepl("^Russian", ws$NAME)) {
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
 write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
-                                         min(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE),
+                                         min(read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))$YEAR, na.rm = TRUE),
                                          "-",
-                                         max(read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))$YEAR, na.rm = TRUE),
+                                         max(read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))$YEAR, na.rm = TRUE),
                                          "_MDT_", format(Sys.Date(), "%Y-%m-%d"), ".csv"), row.names = FALSE)
 
 #just the 2017-2020 reporting years
