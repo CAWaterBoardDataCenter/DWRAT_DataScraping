@@ -21,7 +21,7 @@ mainProcedure <- function (ws) {
   
   # Read in th expected demand dataset
   flowDF <- paste0("OutputData/", ws$ID, 
-                   "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx") %>%
+                   "_Monthly_Diversions.xlsx") %>%
     read_xlsx()
   
   
@@ -41,7 +41,8 @@ mainProcedure <- function (ws) {
   # "APPLICATION_NUMBER" and "YEAR" are confirmed to NOT contain any NA values
   # Therefore, if a row has all NA flow volumes, 
   # the total NA count for the row should equal "ncol(flowDF) - 2"
-  naRecords <- flowDF[which(naSums == ncol(flowDF) - 2), ]
+  naRecords <- flowDF[which(naSums == ncol(flowDF) - 2), ] %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
   
   
   
@@ -59,17 +60,69 @@ mainProcedure <- function (ws) {
   # Check if a manual review was already performed for this issue
   if (!is.na(ws$NA_REPORTS_SPREADSHEET_PATH)) {
     
+    reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_NA_REPORTS_SPREADSHEET",
+                        "NA_REPORTS_SPREADSHEET_PATH", "NA_REPORTS_WORKSHEET_NAME") %>%
+      mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
     
+    
+    
+    # Shorten 'reviewDF' to records that are contained within 'naRecords'
+    # (And that involve replacing NA records with 0s or other numbers)
+    reviewDF <- reviewDF %>%
+      filter(KEY %in% naRecords$KEY) %>%
+      filter(REPLACE_NA_VALUES_WITH_ZEROS == TRUE | !is.na(ALT_VALUE_REPLACEMENT))
+    
+    
+    
+    # If 'reviewDF' still contains data after the filter,
+    if (nrow(reviewDF) > 0) {
+      
+      # Update 'flowDF' based on the data in 'reviewDF'
+      flowDF <- flowDF %>%
+        updateValues(reviewDF)
+      
+      
+      
+      # Exclude those rows from 'naRecords'
+      naRecords <- naRecords %>%
+        mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR)) %>%
+        filter(!(KEY %in% reviewDF$KEY))
+      
+    }
+    
+    
+    
+    # If 'naRecords' is now empty, write the updated 'flowDF' to a file and end the procedure
+    if (nrow(naRecords) == 0) {
+      
+      write_xlsx(flowDF,
+                 paste0("OutputData/", ws$ID, 
+                        "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))
+      
+      
+      return(invisible(NULL))
+      
+    }
     
   }
   
   
   
-  # 
+  # If the code reaches this point, it's one of two cases:
+  # (1) No manual review was done yet, and the spreadsheet must now be generated
+  # (2) A manual review was completed, but there are some remaining empty report records
   
   
-  # Otherwise, output a message about the presence of NA reports
+  # Note: (2) is not necessarily a bad thing
+  # Reports that are determined to be non-existent will not be removed from the dataset
+  # (just excluded from the calculations)
+  # This prevents any issues in the event that a right holder later submits that report
+  
+  
+  
+  # Output a message about the presence of NA reports
   cat("There are reports with empty values for every month and diversion type (DIRECT/STORAGE) in the calendar year/water year\n")
+  cat("If these reports actually exist on eWRIMS, a manual review may be necessary\n")
   
   
   
@@ -79,7 +132,8 @@ mainProcedure <- function (ws) {
                      REPORT_LIST_TABLE_LINK = NA_character_,
                      REPORT_LINK = NA_character_,
                      REPLACE_NA_VALUES_WITH_ZEROS = NA,
-                     ALT_VALUE_REPLACEMENT = NA_real_)
+                     ALT_VALUE_REPLACEMENT = NA_real_) %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR))
   
   
   
@@ -161,16 +215,54 @@ mainProcedure <- function (ws) {
   
   
   
-  # Output a message that a manual review is required
-  # Then write 'naDF' to a file
-  cat("\nA manual review is required to inspect the reports that contain only NA (empty values)\n")
-  cat("Reports that truly do not exist should be left as empty. Reports that have data (even if 0) should not be NA\n")
-  cat(paste0("\nPlease see ", "OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx", "\n"))
+  # Check if only non-existent reports were encountered
+  # If every row of 'naDF' has a value of "FALSE" for "REPLACE_NA_VALUES_WITH_ZEROS",
+  # no manual review is necessary
+  if (nrow(naDF) == naDF %>% filter(REPLACE_NA_VALUES_WITH_ZEROS == FALSE) %>% nrow()) {
+    
+    # Mention that no manual review is needed
+    cat("\nNo manual review is required\n")
+    cat("All of the remaining flagged reports do not actually exist on eWRIMS\n")
+    
+    
+  # Otherwise, a manual review is required
+  } else {
+    
+    # Output a message that a manual review is required
+    cat("\nA manual review is required to inspect the reports that contain only NA (empty values)\n")
+    cat("Reports that truly do not exist should be left as empty. Reports that have data (even if 0) should not be NA\n")
+    cat(paste0("\nPlease see ", "OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx", "\n"))
+    
+    
+    
+    # Then write 'naDF' to a file
+    naDF %>%
+      write_xlsx(paste0("OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx"))
+    
+  }
   
   
   
-  naDF %>%
-    write_xlsx(paste0("OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx"))
+  # Filter 'flowDF' to remove records for non-existent NA-only reports
+  # They correspond to the entries in 'naDF' that already contain "FALSE" for "REPLACE_NA_VALUES_WITH_ZEROS"
+  # Filter 'naDF' to only those entries, and use them to filter 'flowDF'
+  naDF <- naDF %>%
+    filter(REPLACE_NA_VALUES_WITH_ZEROS == FALSE)
+  
+  
+  
+  flowDF <- flowDF %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", YEAR)) %>%
+    filter(!(KEY %in% naDF$KEY)) %>%
+    select(-KEY)
+  
+  
+  
+  # Finally, write 'flowDF' to a file
+  # (Overwriting its original version)
+  write_xlsx(flowDF,
+             paste0("OutputData/", ws$ID, 
+                    "_Monthly_Diversions.xlsx"))
   
   
   
@@ -181,6 +273,49 @@ mainProcedure <- function (ws) {
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+updateValues <- function (flowDF, reviewDF) {
+  
+  # Based on the manual review (results in 'reviewDF'),
+  # update the values in 'flowDF'
+  
+  
+  
+  # Iterate through 'reviewDF'
+  for (i in 1:nrow(reviewDF)) {
+    
+    # If "REPLACE_NA_VALUES_WITH_ZEROS" is "TRUE", replace the NA values with 0
+    # for that "APPLICATION_NUMBER" and "YEAR" pair
+    if (reviewDF$REPLACE_NA_VALUES_WITH_ZEROS[i] == TRUE) {
+      
+      flowDF[flowDF$APPLICATION_NUMBER == reviewDF$APPLICATION_NUMBER[i] &
+               flowDF$YEAR == reviewDF$YEAR[i], ] <- flowDF[flowDF$APPLICATION_NUMBER == reviewDF$APPLICATION_NUMBER[i] &
+                                                              flowDF$YEAR == reviewDF$YEAR[i], ] %>%
+        mutate(across(contains("_DIVERSION"), ~ replace_na(., 0)))
+      
+    } else if (!is.na(reviewDF$ALT_VALUE_REPLACEMENT[i])) {
+      
+      stop("A procedure hasn't been written yet for custom value replacement.")
+      
+    } else {
+      
+      stop(paste0("Something is wrong with the manual review sheet (", 
+                  reviewDF$APPLICATION_NUMBER[i], "/", reviewDF$YEAR[i], "):\n",
+                  "If 'REPLACE_NA_VALUES_WITH_ZEROS' is not 'TRUE', then ",
+                  "something must be specified in 'ALT_VALUE_REPLACEMENT'"))
+      
+    }
+    
+  }
+  
+  
+  
+  # Return 'flowDF' after these updates
+  return(flowDF)
   
 }
 
@@ -240,4 +375,4 @@ mainProcedure(ws)
 
 #### Cleanup ####
 
-remove(mainProcedure, extractTable)
+remove(mainProcedure, extractTable, updateValues)
