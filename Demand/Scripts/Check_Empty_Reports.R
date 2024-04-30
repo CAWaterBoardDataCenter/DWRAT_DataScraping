@@ -97,7 +97,7 @@ mainProcedure <- function (ws) {
       
       write_xlsx(flowDF,
                  paste0("OutputData/", ws$ID, 
-                        "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))
+                        "_Monthly_Diversions.xlsx"))
       
       
       return(invisible(NULL))
