@@ -95,6 +95,9 @@ mainProcedure <- function (ws) {
     # If 'naRecords' is now empty, write the updated 'flowDF' to a file and end the procedure
     if (nrow(naRecords) == 0) {
       
+      cat("Done!\n")
+      
+      
       write_xlsx(flowDF,
                  paste0("OutputData/", ws$ID, 
                         "_Monthly_Diversions.xlsx"))
