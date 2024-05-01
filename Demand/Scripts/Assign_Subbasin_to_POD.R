@@ -13,7 +13,13 @@ cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
 #### Functions ####
 
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
+  
+  
+  source("Scripts/Watershed_Selection.R")
+  source("Scripts/Dataset_Year_Range.R")
+  
+  
   
   # Read in a spreadsheet with coordinate data and convert it into a spatial feature
   #   (Also, keep copies of the latitude and longitude coordinates in new columns)
@@ -256,7 +262,7 @@ checkForMultiBasinRights <- function (podTable, fieldNames, ws) {
 
 
 # Run the script
-mainProcedure(ws)
+mainProcedure()
 
 
 cat("Done!\n")

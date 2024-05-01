@@ -8,6 +8,10 @@
 cat("Starting 'MasterDemandTable.R'...\n")
 
 
+source("Scripts/Watershed_Selection.R")
+source("Scripts/Dataset_Year_Range.R")
+
+
 #### Dependencies ####
 
 require(tidyverse)
@@ -89,7 +93,7 @@ assignBasinData_RR <- function (ewrimsDF) {
                    FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
                    WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)]) %>%
-    left_join(read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>% 
+    left_join(read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>%
                 select(-LONGITUDE, -LATITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
               relationship = "one-to-one")
   
@@ -183,7 +187,8 @@ colMean <- function (colData) {
            #               grep("^[A-Z]{3}_STORAGE_DIVERSION$", names(expectedDF)))] %>%
   #mutate(across(ends_with("DIVERSION"), as.numeric))
 
-diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))
+diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                            "_Monthly_Diversions.xlsx"))
 
 
 
@@ -207,7 +212,8 @@ diverDF <- diverDF %>%
 # Generate Monthly Demand Dataset for every year in your timeframe; uncomment these lines for the PowerBI 
 # Demand Analysis
 diverDF %>%
-  write_csv(paste0("OutputData/", ws$ID, "_DemandDataset_MonthlyValues.csv"))
+  write_csv(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                   "_DemandDataset_MonthlyValues.csv"))
 
 # Create a separate variable with expected total diversion values
 # (There are columns in 'expectedDF' with this name, but they are calculated differently)
@@ -250,11 +256,13 @@ if (anyNA(sumDF)) {
 # Import the ewrims_flat_file_working_file.csv----
   # Will be the basis of the Master Demand Table
   # (In the master table, "PRIMARY_OWNER_ENTITY_TYPE" is called "PRIMARY_OWNER_TYPE")
-ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_Working_File.csv")) %>%
+ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                            "_ewrims_flat_file_Working_File.csv")) %>%
   rename(PRIMARY_OWNER_TYPE = PRIMARY_OWNER_ENTITY_TYPE)
 
 # Add in columns from the beneficial use module
-beneficialUse <- read_xlsx(paste0("OutputData/", ws$ID, "_Beneficial_Use_Return_Flow_Scripted.xlsx")) %>%
+beneficialUse <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                                  "_Beneficial_Use_Return_Flow_Scripted.xlsx")) %>%
   spreadsheetAdjustment()
 
 
@@ -297,7 +305,8 @@ ewrimsDF <- ewrimsDF %>%
 #expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
 #                        col_types = "text") %>%
 #  spreadsheetAdjustment()
-expectedDF <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx"), col_types = "text")
+expectedDF <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                               "_ExpectedDemand_FV.xlsx"), col_types = "text")
 
 # Get two sub-tables from the main dataset
 # (Rename some columns too)
@@ -472,9 +481,7 @@ if (grepl("^Russian", ws$NAME)) {
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
 write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
-                                         min(read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))$YEAR, na.rm = TRUE),
-                                         "-",
-                                         max(read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))$YEAR, na.rm = TRUE),
+                                         yearRange[1], "_", yearRange[2],
                                          "_MDT_", format(Sys.Date(), "%Y-%m-%d"), ".csv"), row.names = FALSE)
 
 #just the 2017-2020 reporting years
@@ -513,4 +520,4 @@ print("The MasterDemandTable.R script has finished running")
 
 remove(assignBasinData_RR, spreadsheetAdjustment, beneficialUse, diverDF,
        ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF, countyDF, podDF, i,
-       ws, makeSharePointPath, getGIS, getXLSX, colAdd, colMean)
+       ws, makeSharePointPath, getGIS, getXLSX, colAdd, colMean, yearRange)
