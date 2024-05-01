@@ -6,7 +6,10 @@ library(readxl)
 
 
 # Output a message to the console
-cat("Starting 'Priority_Date_Preprocessing.R'...")
+cat("Starting 'Priority_Date_Preprocessing.R'...\n")
+
+
+source("Scripts/Watershed_Selection.R")
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################

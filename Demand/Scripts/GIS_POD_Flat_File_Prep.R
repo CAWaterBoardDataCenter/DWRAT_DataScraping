@@ -272,18 +272,9 @@ write_csv(Flat_File_eWRIMS,
   # Get the name of all variables in the environment
 all_vars = ls()
   
-  # Keep ws variable
 
-vars_to_keep = c("ws")
-
-  # Specify all other variables for removal
-vars_to_remove = setdiff(all_vars, vars_to_keep)
-  
   # Remove variables
 rm(list = vars_to_remove)
   
   
-remove(all_vars, vars_to_keep, vars_to_remove)
-  
-
-source("Scripts/Shared_Functions_Demand.R")
+remove(all_vars)

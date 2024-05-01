@@ -13,14 +13,18 @@ require(writexl)
 #### Functions ####
 
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
   
   
   cat("Starting 'Check_NA_Reports.R'...\n")
   
   
+  source("Scripts/Watershed_Selection.R")
+  source("Scripts/Dataset_Year_Range.R")
+  
+  
   # Read in th expected demand dataset
-  flowDF <- paste0("OutputData/", ws$ID, 
+  flowDF <- paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                    "_Monthly_Diversions.xlsx") %>%
     read_xlsx()
   
@@ -99,7 +103,7 @@ mainProcedure <- function (ws) {
       
       
       write_xlsx(flowDF,
-                 paste0("OutputData/", ws$ID, 
+                 paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                         "_Monthly_Diversions.xlsx"))
       
       
@@ -264,7 +268,7 @@ mainProcedure <- function (ws) {
   # Finally, write 'flowDF' to a file
   # (Overwriting its original version)
   write_xlsx(flowDF,
-             paste0("OutputData/", ws$ID, 
+             paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                     "_Monthly_Diversions.xlsx"))
   
   
@@ -373,7 +377,7 @@ extractTable <- function (htmlPage) {
 #### Script Execution ####
 
 
-mainProcedure(ws)
+mainProcedure()
 
 
 #### Cleanup ####

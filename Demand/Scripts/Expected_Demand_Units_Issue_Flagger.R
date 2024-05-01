@@ -6,8 +6,12 @@ require(openxlsx)
 print("Starting 'Expected_Demand_Units_Issue_Flagger.R'...")
 
 
+source("Scripts/Watershed_Selection.R")
+source("Scripts/Dataset_Year_Range.R")
+
+
 # Read in the Expected Demand spreadsheet
-expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))
+expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions.xlsx"))
 
 
 
