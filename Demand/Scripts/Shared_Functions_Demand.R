@@ -119,6 +119,3 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
   
 }
 
-#Create add_date_column function to generate a custom date to serve as the 7th column in the
-# various iterations of the Dat_PRMS files and dataframes
-

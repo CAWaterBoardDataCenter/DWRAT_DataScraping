@@ -12,10 +12,11 @@ require(openxlsx)
 
 #### Functions ####
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
   
   # Given the watershed in 'ws', perform the GIS pre-processing steps
-
+  source("Scripts/Watershed_Selection.R")
+  
   
   
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
@@ -721,10 +722,10 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
 #### Script Execution ####
 
 
-print(paste0("Starting 'GIS_Preprocessing.R' with watershed name ", ws$NAME, "..."))
+print("Starting 'GIS_Preprocessing.R'...")
 
 
-mainProcedure(ws)
+mainProcedure()
 
 
 remove(mainProcedure, confirmCS, deleteIdentical, outputResults, outputResults_NoTask2)

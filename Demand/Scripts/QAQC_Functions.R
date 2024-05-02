@@ -111,6 +111,16 @@ dupReportingFixer <- function (inputDF, ws) {
   
   
   
+  # If "ADJ_YEAR" is present in the data frame, add a "YEAR" column to 'qaqcDF' 
+  if ("ADJ_YEAR" %in% names(qaqcDF)) {
+    
+    qaqcDF <- qaqcDF %>%
+      mutate(YEAR = ADJ_YEAR)
+    
+  }
+  
+  
+  
   # Keep only entries in 'qaqcDF' that are relevant to the years in 'inputDF'
   qaqcDF <- qaqcDF %>%
     filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
@@ -129,16 +139,6 @@ dupReportingFixer <- function (inputDF, ws) {
     
     qaqcDF <- qaqcDF %>%
       rename(APPLICATION_NUMBER = APPL_ID)
-    
-  }
-  
-  
-  
-  # If "ADJ_YEAR" is present in the data frame, add a "YEAR" column to 'qaqcDF' 
-  if ("ADJ_YEAR" %in% names(qaqcDF)) {
-    
-    qaqcDF <- qaqcDF %>%
-      mutate(YEAR = ADJ_YEAR)
     
   }
   
@@ -575,8 +575,8 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         
         inputDF <- inputDF %>%
           filter(!(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                     ((YEAR == actionYear & MONTH %in% 1:9) | 
-                        (YEAR == actionYear - 1 & MONTH %in% 10:12)) &
+                     ((YEAR == unitsQAQC$YEAR[i] & MONTH %in% 1:9) | 
+                        (YEAR == unitsQAQC$YEAR[i] - 1 & MONTH %in% 10:12)) &
                      DIVERSION_TYPE %in% c("DIRECT", "STORAGE")))
         
       }
@@ -706,9 +706,19 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       # After that, append 'dummyDF' to 'unitsQAQC'
       # Eventually the loop will reach these actions
-      unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
-                             dummyDF,
-                             unitsQAQC[(i + 1):nrow(unitsQAQC), ])
+      if (i < nrow(unitsQAQC)) {
+        
+        unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
+                               dummyDF,
+                               unitsQAQC[(i + 1):nrow(unitsQAQC), ])
+        
+      } else {
+        
+        unitsQAQC <- bind_rows(unitsQAQC[1:i, ],
+                               dummyDF)
+        
+      }
+      
       
     
       # If an action is "None", do nothing
@@ -953,5 +963,3 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   return(inputDF)
   
 }
-
-print("The QAQC_Functions.R script is done running!")
