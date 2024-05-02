@@ -274,7 +274,4 @@ all_vars = ls()
   
 
   # Remove variables
-rm(list = vars_to_remove)
-  
-  
-remove(all_vars)
+  remove(all_vars)
