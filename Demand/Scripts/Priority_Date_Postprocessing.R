@@ -44,6 +44,18 @@ filter(YEAR <= yearRange[2]) #Added to generate a 2017-2020 dataset on 4/22/2024
 
 
 
+# If 'yearRange[2]' is 2022 or later, the most recent reports use water years
+# In that case, filter out October - December of the last year in 'water_use_report_Date'
+# Those three months are part of the next water year, which is not in this dataset
+if (yearRange[2] >= 2022) {
+  
+  water_use_report_Date <- water_use_report_Date %>%
+    filter(!(YEAR == yearRange[2] & MONTH %in% 10:12))
+  
+}
+
+
+
 # SQLite Approach
 # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
 # water_use_report <- dbGetQuery(conn, 
@@ -107,7 +119,8 @@ write.csv(water_use_report_Date,
 # Remove variables from the environment that will no longer be used (free up memory)
 remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Combined,
        chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
-       faceValSub, faceValExtract, faceValAssign, monthExtract)#, conn)
+       faceValSub, faceValExtract, faceValAssign, monthExtract,
+       applyConversionFactor)#, conn)
 
 ######################################################################## Break ####################################################################################
 

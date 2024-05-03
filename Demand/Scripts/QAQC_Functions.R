@@ -215,6 +215,13 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
                   inputDF$DIVERSION_TYPE %in% useChoice &
                   inputDF$AMOUNT > 0, ]$AMOUNT <- 0
         
+      } else if (unitsQAQC$YEAR[i] == 2022) {
+        
+        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                  inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9 &
+                  inputDF$DIVERSION_TYPE %in% useChoice &
+                  inputDF$AMOUNT > 0, ]$AMOUNT <- 0
+        
       } else {
         
         # The water year is the first 9 months of the current year and the last 3 months of the previous year
@@ -239,31 +246,13 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       
       
-      if (unitsQAQC$YEAR[i] < 2022) {
-        
-        # There are 325,851 gallons in 1 AF
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  inputDF$YEAR == unitsQAQC$YEAR[i] &
-                  inputDF$DIVERSION_TYPE %in% toConvert &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            inputDF$YEAR == unitsQAQC$YEAR[i] &
-                                                            inputDF$DIVERSION_TYPE %in% toConvert &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / 325851
-        
-      } else {
-
-        # Apply the conversion to the water year
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                  inputDF$DIVERSION_TYPE %in% toConvert &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                                                            inputDF$DIVERSION_TYPE %in% toConvert &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / 325851
-        
-      }
+      # Then, apply the conversion factor
+      inputDF <- inputDF %>%
+        applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
+                              unitsQAQC$YEAR[i], toConvert,
+                              1 / 325851)
+      
+      
       
       # For these notes, the actual units are "gpd"
       # They need to be converted into AF
@@ -275,31 +264,11 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       
       
-      if (unitsQAQC$YEAR[i] < 2022) {
-        
-        # There are 325,851 gallons in 1 AF and 365 days in a year
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  inputDF$YEAR == unitsQAQC$YEAR[i] &
-                  inputDF$DIVERSION_TYPE %in% toConvert &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            inputDF$YEAR == unitsQAQC$YEAR[i] &
-                                                            inputDF$DIVERSION_TYPE %in% toConvert &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 365
-        
-      } else {
-        
-        # Apply this conversion over the water year
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                  inputDF$DIVERSION_TYPE %in% toConvert &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                                                            inputDF$DIVERSION_TYPE %in% toConvert &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 365
-        
-      }
+      # Then, apply the conversion factor
+      inputDF <- inputDF %>%
+        applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
+                              unitsQAQC$YEAR[i], toConvert,
+                              1 / 325851 * 365)
       
       
       
@@ -312,35 +281,17 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       toConvert <- chooseUseType(unitsQAQC$QAQC_Action_Taken[i])
       
       
-      if (unitsQAQC$YEAR[i] < 2022) {
-        
-        # There are:
-        #   325,851 gallons in 1 AF
-        #   365 days in a year
-        #   24 hours in a day
-        #   60 minutes in an hour
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  inputDF$YEAR == unitsQAQC$YEAR[i] &
-                  inputDF$DIVERSION_TYPE %in% toConvert &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            inputDF$YEAR == unitsQAQC$YEAR[i] &
-                                                            inputDF$DIVERSION_TYPE %in% toConvert &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 60 * 24 * 365
-        
-      } else {
-        
-        # Apply these changes to the water year
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                  inputDF$DIVERSION_TYPE %in% toConvert &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                                                            inputDF$DIVERSION_TYPE %in% toConvert &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / 325851 * 60 * 24 * 365
-        
-      }
+      
+      # Then, apply the conversion factor
+      # There are:
+      #   325,851 gallons in 1 AF
+      #   365 days in a year
+      #   24 hours in a day
+      #   60 minutes in an hour
+      inputDF <- inputDF %>%
+        applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
+                              unitsQAQC$YEAR[i], toConvert,
+                              1 / 325851 * 60 * 24 * 365)
       
       
       
@@ -357,27 +308,13 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       stopifnot(!is.na(divNum) & divNum != 0)
       
       
-      if (unitsQAQC$YEAR[i] < 2022) {
-        
-        # Divide all non-zero "AMOUNT" values by 'divNum'
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  inputDF$YEAR == unitsQAQC$YEAR[i] &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            inputDF$YEAR == unitsQAQC$YEAR[i] &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / divNum
-        
-      } else {
-        
-        # Perform this operation over the water year
-        inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                  ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                     (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                  inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
-                                                            ((inputDF$YEAR == unitsQAQC$YEAR[i] & inputDF$MONTH %in% 1:9) | 
-                                                               (inputDF$YEAR == (unitsQAQC$YEAR[i] - 1) & inputDF$MONTH %in% 10:12)) &
-                                                            inputDF$AMOUNT > 0, ]$AMOUNT / divNum
-        
-      }
+      
+      # Even though this is technically NOT a unit conversion factor,
+      # the applyConversionFactor() function can be used here as well
+      inputDF <- inputDF %>%
+        applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
+                              unitsQAQC$YEAR[i], unique(inputDF$DIVERSION_TYPE),
+                              1 / divNum)
       
       
       
@@ -490,6 +427,8 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       if (actionYear < min(inputDF$YEAR)) {
         
         # If 'actionYear' is a report that uses a calendar year, then only one year's data is needed
+        # (Note: If 'actionYear' is 2021, then data from the 2021 and 2022 RMS reports will be used
+        #        because the 2021 RMS report only extends up to September 2021)
         if (actionYear < 2022) {
           
           tempDF <- fread(file = "RawData/water_use_report_extended.csv",
@@ -564,12 +503,25 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       
       # Remove the problematic year's data from 'inputDF' and append 'newRows' to 'inputDF'
-      if (unitsQAQC$YEAR[i] < 2022) {
+      if (unitsQAQC$YEAR[i] < 2021) {
         
         inputDF <- inputDF %>%
           filter(!(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
                      YEAR == unitsQAQC$YEAR[i] &
                      DIVERSION_TYPE %in% c("DIRECT", "STORAGE")))
+        
+      # 2021 also is a calendar year, but the last three months are part of WY2022
+      } else if (unitsQAQC$YEAR[i] == 2021) {
+        
+        inputDF <- inputDF %>%
+          filter(!(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] &
+                     YEAR == unitsQAQC$YEAR[i] & MONTH %in% 1:9 &
+                     DIVERSION_TYPE %in% c("DIRECT", "STORAGE")))
+        
+        
+        # Filter 'newRows' to make sure that it only affects the first nine months
+        newRows <- newRows %>%
+          filter(MONTH %in% 1:9)
         
       } else {
         
@@ -772,6 +724,69 @@ chooseUseType <- function (action) {
     stop(paste0("Unknown marker at the end of the action: ", action))
     
   }
+  
+}
+
+
+
+applyConversionFactor <- function (inputDF, appNum, year, diverType, convFactor) {
+  
+  # Apply a conversion factor ('convFactor') to certain "AMOUNT" values in 'inputDF'
+  # 'appNum', 'year', and 'diverType' give the "APPLICATION_NUMBER", "YEAR", and
+  # "DIVERSION_TYPE" of the rows that will be updated
+  
+  # "YEAR" can be a calendar year or water year depending its value
+  # That will change which values are updated
+  
+  # Calendar years are used before 2022
+  # Water years are used from 2022 onwards
+  
+  
+  
+  # If 'year' is before 2021,
+  # use calendar years without any special considerations
+  if (year < 2021) {
+    
+    # There are 325,851 gallons in 1 AF
+    inputDF[inputDF$APPLICATION_NUMBER == appNum &
+              inputDF$YEAR == year &
+              inputDF$DIVERSION_TYPE %in% diverType &
+              inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == appNum &
+                                                        inputDF$YEAR == year &
+                                                        inputDF$DIVERSION_TYPE %in% diverType &
+                                                        inputDF$AMOUNT > 0, ]$AMOUNT * convFactor
+    
+  # 2021 uses calendar years, but October, November, and December are part of WY2022
+  # Therefore, these changes will only apply to January through September
+  } else if (year == 2021) {
+    
+    inputDF[inputDF$APPLICATION_NUMBER == appNum &
+              inputDF$YEAR == year & inputDF$MONTH %in% 1:9 &
+              inputDF$DIVERSION_TYPE %in% diverType &
+              inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == appNum &
+                                                        inputDF$YEAR == year & inputDF$MONTH %in% 1:9 &
+                                                        inputDF$DIVERSION_TYPE %in% diverType &
+                                                        inputDF$AMOUNT > 0, ]$AMOUNT * convFactor
+    
+  # Apply the conversion to the water year
+  } else {
+    
+    inputDF[inputDF$APPLICATION_NUMBER == appNum &
+              ((inputDF$YEAR == year & inputDF$MONTH %in% 1:9) | 
+                 (inputDF$YEAR == (year - 1) & inputDF$MONTH %in% 10:12)) &
+              inputDF$DIVERSION_TYPE %in% diverType &
+              inputDF$AMOUNT > 0, ]$AMOUNT <- inputDF[inputDF$APPLICATION_NUMBER == appNum &
+                                                        ((inputDF$YEAR == year & inputDF$MONTH %in% 1:9) | 
+                                                           (inputDF$YEAR == (year - 1) & inputDF$MONTH %in% 10:12)) &
+                                                        inputDF$DIVERSION_TYPE %in% diverType &
+                                                        inputDF$AMOUNT > 0, ]$AMOUNT * convFactor
+    
+  }
+  
+  
+  
+  # Return 'inputDF' after this update
+  return(inputDF)
   
 }
 
