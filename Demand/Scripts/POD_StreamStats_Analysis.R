@@ -361,7 +361,9 @@ mainProcedure <- function () {
   # Create the final list of PODs
   finalDF <- bind_rows(podDF, origDF) %>%
     select(-KEY) %>%
-    arrange(APPLICATION_NUMBER, POD_ID)
+    arrange(APPLICATION_NUMBER, POD_ID) %>%
+    filter(AT_LEAST_ONE_EXIT == TRUE | 
+             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE)
   
   
   
