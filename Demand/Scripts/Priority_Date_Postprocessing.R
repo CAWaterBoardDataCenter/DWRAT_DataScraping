@@ -10,6 +10,11 @@ require(data.table)
 
 cat("Starting 'Priority_Date_Postprocessing.R'...\n")
 
+
+source("Scripts/Watershed_Selection.R")
+source("Scripts/Dataset_Year_Range.R")
+
+
 ######################################################################## Break ####################################################################################
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
@@ -33,9 +38,21 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
-filter(YEAR >= 2017) %>%
-filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023, 
+filter(YEAR >= yearRange[1]) %>%
+filter(YEAR <= yearRange[2]) #Added to generate a 2017-2020 dataset on 4/22/2024, 
 #2021 and 2022 were heavily curtailed years
+
+
+
+# If 'yearRange[2]' is 2022 or later, the most recent reports use water years
+# In that case, filter out October - December of the last year in 'water_use_report_Date'
+# Those three months are part of the next water year, which is not in this dataset
+if (yearRange[2] >= 2022) {
+  
+  water_use_report_Date <- water_use_report_Date %>%
+    filter(!(YEAR == yearRange[2] & MONTH %in% 10:12))
+  
+}
 
 
 
@@ -62,6 +79,17 @@ filter(YEAR <= 2022) #Added to generate a 2017-2020 dataset on 10/17/2023,
 #                                     relationship = "one-to-many")
 
 
+# Import functions for updates to the dataset
+
+
+# QA/QC functions for correcting unit conversion errors and duplicate reporting
+source("Scripts/QAQC_Functions.R")
+
+
+# A function to update reported amounts for new rights
+source("Scripts/Face_Value_Substitution.R")
+
+
 
 # Using the function defined in "Scripts/QAQC_Unit_Fixer_Function.R",
 # correct entries in 'water_use_report_Date' for unit conversion errors
@@ -80,18 +108,19 @@ water_use_report_Date <- water_use_report_Date %>%
 # if they report no values for a year, replace their data so that
 # the total AMOUNT for that year equals their Face Value
 water_use_report_Date <- water_use_report_Date %>%
-  faceValSub(yearRange = 2021:2023)
+  faceValSub(yearRange = (year(Sys.Date()) - 2):year(Sys.Date()))
 
 
 
 # Output the data to a CSV file
 write.csv(water_use_report_Date,
-          paste0("IntermediateData/", ws$ID, "_water_use_report_DATE.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE", ".csv"), row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
 remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Combined,
        chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
-       faceValSub, faceValExtract, faceValAssign)#, conn)
+       faceValSub, faceValExtract, faceValAssign, monthExtract,
+       applyConversionFactor)#, conn)
 
 ######################################################################## Break ####################################################################################
 
@@ -144,7 +173,7 @@ ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_fil
 
 # Write the output to a file
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
-          paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_use_season_WITH_FILTERS.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS.csv"), row.names = FALSE)
 
 # Remove unnecessary variables again to save memory
 remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
@@ -158,7 +187,9 @@ remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
 # Prepare the input file for the beneficial use module next
 
 # Read in the CSV
-Beneficial_Use_and_Return_Flow <- read.csv(paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_use_season_WITH_FILTERS.csv"))
+Beneficial_Use_and_Return_Flow <- read.csv(paste0("IntermediateData/", ws$ID, 
+                                                  "_", yearRange[1], "_", yearRange[2], 
+                                                  "_ewrims_flat_file_use_season_WITH_FILTERS.csv"))
 
 
 # Keep a subset of the columns
@@ -171,7 +202,7 @@ Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
 
 ####Output the variable to a file
 write.csv(Beneficial_Use_and_Return_Flow_FINAL,
-          paste0("IntermediateData/", ws$ID, "_Beneficial_Use_and_Return_Flow_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Beneficial_Use_and_Return_Flow_FINAL.csv"), row.names = FALSE)
 
 
 
@@ -180,7 +211,7 @@ write.csv(Beneficial_Use_and_Return_Flow_FINAL,
 # Get statistical data next
 
 # Read in a CSV 
-Statistics <- read.csv(paste0("IntermediateData/", ws$ID, "_water_use_report_DATE.csv"))
+Statistics <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE.csv"))
 
 
 # Keep a subset of the columns
@@ -190,7 +221,7 @@ Statistics_FINAL  <- Statistics %>%
 
 # Output the data
 write.csv(Statistics_FINAL,
-          paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL.csv"), row.names = FALSE)
 
 
 # Read in another CSV next 
@@ -205,7 +236,7 @@ Statistics_FaceValue_IniDiv_Final  <- Statistics_FaceValue_IniDiv %>%
 
 # Output results to a file structure
 write.csv(Statistics_FaceValue_IniDiv_Final,
-          paste0("IntermediateData/", ws$ID, "_Statistics_FaceValue_IniDiv_Final.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final.csv"), row.names = FALSE)
 
 
 ################################################################### Diversion out of Season Part A ############################################################
@@ -213,7 +244,7 @@ write.csv(Statistics_FaceValue_IniDiv_Final,
 # Write a CSV file for the first Diversion out of Season module
 
 # Read in the use season flat file
-Diversion_out_of_Season_Part_A <- read.csv(paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_use_season_WITH_FILTERS.csv"))
+Diversion_out_of_Season_Part_A <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS.csv"))
 
 
 # Extract a portion of the table
@@ -226,7 +257,7 @@ Diversion_out_of_Season_Part_A_FINAL <- Diversion_out_of_Season_Part_A %>%
 
 # Output the data to a file
 write.csv(Diversion_out_of_Season_Part_A_FINAL,
-          paste0("IntermediateData/", ws$ID, "_Diversion_out_of_Season_Part_A_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_A_FINAL.csv"), row.names = FALSE)
 
 
 ###################################################################Diversion out of Season Part B############################################################
@@ -234,7 +265,7 @@ write.csv(Diversion_out_of_Season_Part_A_FINAL,
 # Write a CSV file for the second Diversion out of Season module
 
 # Read in a flat file
-Diversion_out_of_Season_Part_B <- read.csv(paste0("IntermediateData/", ws$ID, "_water_use_report_DATE.csv"))
+Diversion_out_of_Season_Part_B <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE.csv"))
 
 
 # Filter down the table to remove application numbers that start with "S" (statements of diversion and use)
@@ -252,7 +283,7 @@ Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
 
 # Output a CSV file
 write.csv(Diversion_out_of_Season_Part_B_FINAL,
-          paste0("IntermediateData/", ws$ID, "_Diversion_out_of_Season_Part_B_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_B_FINAL.csv"), row.names = FALSE)
 
 
 # Remove unnecessary variables at this step to free up memory
@@ -270,7 +301,7 @@ remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
 
 
 # Read in a flat file CSV
-Missing_RMS_Reports <- read.csv(paste0("IntermediateData/", ws$ID, "_water_use_report_DATE.csv")) %>%
+Missing_RMS_Reports <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE.csv")) %>%
   unique()
 
 
@@ -295,7 +326,7 @@ Missing_RMS_Reports_FINAL <- Missing_RMS_Reports_Priority_Date_Combined %>%
 
 # Output the data
 write.csv(Missing_RMS_Reports_FINAL,
-          paste0("IntermediateData/", ws$ID, "_Missing_RMS_Reports_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Missing_RMS_Reports_FINAL.csv"), row.names = FALSE)
 
 
 ######################################## QAQC Working Files###################################
@@ -337,7 +368,7 @@ ewrims_flat_file_Working_File <- ewrims_flat_file_Three %>%
 
 # Output data to a file structure
 write.csv(ewrims_flat_file_Working_File,
-          paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_Working_File.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_Working_File.csv"), row.names = FALSE)
 
 
 ####################################################Contact Information#################################################

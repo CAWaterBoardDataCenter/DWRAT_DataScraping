@@ -17,14 +17,22 @@ require(httr)
 
 #### Functions ####
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
 
-  # Start with gathering datasets related to the watershed
+  # Analyze the specified coordinates in the GIS manual review
+  source("Scripts/Watershed_Selection.R")
+  
+  
+  
+  # Start by gathering datasets related to the watershed
   
   
   
   # Get the watershed boundaries first
-  wsBound <- getWatershedBoundaries(ws)
+  wsBound <- getGIS(ws = ws,
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
@@ -41,7 +49,10 @@ mainProcedure <- function (ws) {
   # If that is not the case, throw an error
   if (!is.numeric(ws$WATERSHED_EXIT_POINT_INDEX)) {
     
-    stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\nPlease use the code 'mapview(wsPoints)' to view the points in 'wsPoints'. Then, choose the point (using its ID/row number) that best represents the watershed's exit area."))
+    stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\n", 
+                "Please use the code 'mapview(wsPoints)' to view the points ",
+                "in 'wsPoints'. Then, choose the point (using its ID/row number) ",
+                "that best represents the watershed's exit area."))
     
   }
   
@@ -82,32 +93,41 @@ mainProcedure <- function (ws) {
   
   
   # Then, based on whether or not that path is a SharePoint path, read it in as 'podDF'
-  podDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET", 
-                   "GIS_PREPROCESSING_SPREADSHEET_PATH", "GIS_PREPROCESSING_WORKSHEET_NAME")
+  podDF <- getXLSX(ws = ws,
+                   SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_GIS_PREPROCESSING_SPREADSHEET", 
+                   FILEPATH = "GIS_PREPROCESSING_SPREADSHEET_PATH", 
+                   WORKSHEET_NAME ="GIS_PREPROCESSING_WORKSHEET_NAME")
   
   
   
   # Narrow the selection of columns in 'podDF'
-  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
-                            REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, MULTI_OPTIONS_CHOICE, 
-                            NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
+  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, 
+                            REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, 
+                            REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
+                            REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, 
+                            REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, 
+                            REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, 
+                            MULTI_OPTIONS_CHOICE, NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
   
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  plssDF <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
-  # For now, focus on PODs that are not one mile or more within the watershed boundary
-  # (Save the original tibble to another variable)
+  # Focus on PODs that have a value specified in one of the three main "REPORT" fields
+  # (Also save the original tibble to another variable)
   origDF <- podDF
   
   
   
   # Then, filter 'podDF' down
   podDF <- podDF %>%
-    filter(is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
+    filter(!is.na(REPORT_LATITUDE) | 
+             !is.na(REPORT_NORTHING) | 
+             !is.na(REPORT_SECTION_CORNER))
+      #is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
   
   
   
@@ -119,16 +139,21 @@ mainProcedure <- function (ws) {
   
   # The next step will be to use StreamStats and check that water drains from the listed coordinates into the watershed
   # Add logical columns for whether each recorded coordinate type has a positive StreamStats result 
+  # Also add numeric columns to calculate the difference between these coordinates and the eWRIMS coordinates
   podDF <- podDF %>%
     mutate(EWRIMS_LATLON_EXITS_WS = NA, EWRIMS_LATLON_OVERLAPS_WS = NA,
-           REPORT_LATLON_EXITS_WS = NA, REPORT_LATLON_OVERLAPS_WS = NA,
-           REPORT_NOREAS_EXITS_WS = NA, REPORT_NOREAS_OVERLAPS_WS = NA,
+           REPORT_LATLON_EXITS_WS = NA, REPORT_LATLON_OVERLAPS_WS = NA, REPORT_LATLON_DIST_FROM_EWRIMS_LATLON_METERS = NA_real_,
+           REPORT_NOREAS_EXITS_WS = NA, REPORT_NOREAS_OVERLAPS_WS = NA, REPORT_NOREAS_DIST_FROM_EWRIMS_LATLON_METERS = NA_real_,
            REPORT_SECTION_MOVE_EXITS_WS = NA,
-           REPORT_SECTION_MOVE_OVERLAPS_WS = NA) %>%
+           REPORT_SECTION_MOVE_OVERLAPS_WS = NA,
+           REPORT_SECTION_MOVE_DIST_FROM_EWRIMS_LATLON_METERS = NA_real_) %>%
     relocate(EWRIMS_LATLON_OVERLAPS_WS, EWRIMS_LATLON_EXITS_WS, .after = LONGITUDE) %>%
-    relocate(REPORT_LATLON_OVERLAPS_WS, REPORT_LATLON_EXITS_WS, .after = LAT_LON_CRS) %>%
-    relocate(REPORT_NOREAS_OVERLAPS_WS, REPORT_NOREAS_EXITS_WS, .after = NOR_EAS_CRS) %>%
-    relocate(REPORT_SECTION_MOVE_OVERLAPS_WS, REPORT_SECTION_MOVE_EXITS_WS, .after = MULTI_OPTIONS_CHOICE)
+    relocate(REPORT_LATLON_OVERLAPS_WS, REPORT_LATLON_EXITS_WS, 
+             REPORT_LATLON_DIST_FROM_EWRIMS_LATLON_METERS, .after = LAT_LON_CRS) %>%
+    relocate(REPORT_NOREAS_OVERLAPS_WS, REPORT_NOREAS_EXITS_WS, 
+             REPORT_NOREAS_DIST_FROM_EWRIMS_LATLON_METERS, .after = NOR_EAS_CRS) %>%
+    relocate(REPORT_SECTION_MOVE_OVERLAPS_WS, REPORT_SECTION_MOVE_EXITS_WS, 
+             REPORT_SECTION_MOVE_DIST_FROM_EWRIMS_LATLON_METERS, .after = MULTI_OPTIONS_CHOICE)
 
   
   
@@ -173,6 +198,19 @@ mainProcedure <- function (ws) {
         st_as_sf(coords = 1:2, crs = podDF$LAT_LON_CRS[i]) %>%
         verifyWatershedOverlap(wsExit, wsBound)
       
+      
+      
+      # If the eWRIMS coordinates are valid, also calculate the distance between its coordinates and the report coordinates
+      if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
+          podDF$LATITUDE[i] != -999 && podDF$LONGITUDE[i] != -999) {
+        
+        podDF$REPORT_LATLON_DIST_FROM_EWRIMS_LATLON_METERS[i] <- calcMinDistance(data.frame(x = podDF$LONGITUDE[i], y = podDF$LATITUDE[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = "NAD83"),
+                                                                                 data.frame(x = podDF$REPORT_LONGITUDE[i], y = podDF$REPORT_LATITUDE[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = podDF$LAT_LON_CRS[i]))
+        
+      }
+      
     }
     
     
@@ -209,6 +247,19 @@ mainProcedure <- function (ws) {
         st_as_sf(coords = 1:2, crs = iterCRS) %>%
         verifyWatershedOverlap(wsExit, wsBound)
       
+      
+      
+      # If the eWRIMS coordinates are valid, also calculate the distance between its coordinates and the report coordinates
+      if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
+          podDF$LATITUDE[i] != -999 && podDF$LONGITUDE[i] != -999) {
+        
+        podDF$REPORT_NOREAS_DIST_FROM_EWRIMS_LATLON_METERS[i] <- calcMinDistance(data.frame(x = podDF$LONGITUDE[i], y = podDF$LATITUDE[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = "NAD83"),
+                                                                                 data.frame(x = podDF$REPORT_EASTING[i], y = podDF$REPORT_NORTHING[i]) %>%
+                                                                                   st_as_sf(coords = 1:2, crs = iterCRS))
+        
+      }
+      
     }
     
     
@@ -230,6 +281,18 @@ mainProcedure <- function (ws) {
       # Use another function to check StreamStats for the flow path from this point
       podDF[i, colIndices] <- movePOD %>%
         verifyWatershedOverlap(wsExit, wsBound)
+      
+      
+      
+      # If the eWRIMS coordinates are valid, also calculate the distance between its coordinates and the report coordinates
+      if (!is.na(podDF$LATITUDE[i]) && !is.na(podDF$LONGITUDE[i]) &&
+          podDF$LATITUDE[i] != -999 && podDF$LONGITUDE[i] != -999) {
+        
+        podDF$REPORT_SECTION_MOVE_DIST_FROM_EWRIMS_LATLON_METERS[i] <- calcMinDistance(data.frame(x = podDF$LONGITUDE[i], y = podDF$LATITUDE[i]) %>%
+                                                                                         st_as_sf(coords = 1:2, crs = "NAD83"),
+                                                                                       movePOD)
+        
+      }
       
     }
     
@@ -264,11 +327,66 @@ mainProcedure <- function (ws) {
   
   
   
-  # Save the updated 'podDF' to a file
-  write_xlsx(list("StreamStats_Res" = podDF, 
-                  "Final_List" = bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER & origDF$POD_ID %in% podDF$POD_ID), ]) %>%
-                    filter(is.na(AT_LEAST_ONE_EXIT) | AT_LEAST_ONE_EXIT == TRUE) %>%
-                    select(APPLICATION_NUMBER, POD_ID, AT_LEAST_ONE_EXIT)), 
+  # Check to make sure that the eWRIMS coordinates match the result found by StreamStats
+  # If not, alert the user about this potential issue
+  if (podDF %>% filter(AT_LEAST_ONE_EXIT == TRUE & EWRIMS_LATLON_EXITS_WS == FALSE) %>%
+      nrow() > 0) {
+    
+    warning("At least one POD in the dataset was found to drain into the watershed, but its eWRIMS coordinates suggest otherwise.\nPlease investigate this discrepancy.")
+    
+    print(podDF %>%
+            filter(AT_LEAST_ONE_EXIT == TRUE & EWRIMS_LATLON_EXITS_WS == FALSE))
+    
+  }
+  
+  
+  
+  # The next step is to create a final list of PODs
+  # 'podDF' only contains the rows that were checked via StreamStats
+  # The rest are in 'origDF' but it also contains rows present in 'podDF'
+  # Filter down 'origDF' (then bind the remaining rows to 'podDF')
+  origDF <- origDF %>% 
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", POD_ID))
+  
+  podDF <- podDF %>% 
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", POD_ID))
+  
+  
+  
+  origDF <- origDF %>%
+    filter(!(KEY %in% podDF$KEY))
+  
+  
+  
+  # Create the final list of PODs
+  finalDF <- bind_rows(podDF, origDF) %>%
+    select(-KEY) %>%
+    arrange(APPLICATION_NUMBER, POD_ID) %>%
+    filter(AT_LEAST_ONE_EXIT == TRUE | 
+             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE)
+  
+  
+  
+  # Write 'finalDF' to a GeoJSON file
+  # (Make sure that file doesn't already exist first)
+  if (paste0(ws$ID, "_PODs_Final_List.GeoJSON") %in% list.files("OutputData")) {
+    
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON")))
+    
+  }
+  
+  
+  
+  st_write(finalDF %>%
+             st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83"), 
+           paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON"), delete_dsn = TRUE)
+  
+  
+  
+  # Save the updated 'podDF' as well as 'finalDF' in an XLSX file as well
+  write_xlsx(list("StreamStats_Res" = podDF %>% select(-KEY), 
+                  "Final_List" = finalDF %>%
+                    select(APPLICATION_NUMBER, POD_ID, AT_LEAST_ONE_EXIT, LONGITUDE, LATITUDE)), 
              paste0("OutputData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
   
   
@@ -418,7 +536,11 @@ requestFlowPath <- function (pod) {
                     #  294
                     "Content-Type" = "application/json;charset=UTF-8", 
                     # Cookie:
-                    #   AWSALB=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP; AWSALBCORS=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP
+                    #   AWSALB=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5
+                    #   KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8Sg
+                    #   PmpiQtX6vhkpyzP; AWSALBCORS=47A+MRlQ4OVQMuc5ytXvkQekgQsquF
+                    #   Nd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9
+                    #   UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP
                     "Dnt" = 1,
                     #Origin:
                     #  https://streamstats.usgs.gov
@@ -434,8 +556,12 @@ requestFlowPath <- function (pod) {
                     #  same-origin
                     "User-Agent" = "R version 4.2.3",
                     "User-Contact" = "aakash.prashar@waterboards.ca.gov")),
-                  body = paste0('[{"id":1,"name":"Start point location","required":true,"description":"Specified lat/long/crs  navigation start location","valueType":"geojson point geometry",', 
-                                '"value":{"type":"Point","coordinates":[', st_coordinates(pod) %>% paste0(collapse = ","), '],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}}]'))
+                  body = paste0('[{"id":1,"name":"Start point location","required":true,',
+                                '"description":"Specified lat/long/crs  navigation start location",', 
+                                '"valueType":"geojson point geometry",', 
+                                '"value":{"type":"Point","coordinates":[', 
+                                st_coordinates(pod) %>% paste0(collapse = ","), 
+                                '],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}}]'))
   
   
   
@@ -886,7 +1012,7 @@ extractCorner <- function (sectionPoints, corner) {
     
   } else if (corner %in% c("N1/4", "S1/4")) {
     
-    targetLon <- mean(c(min(latLon$X), max(latlon$X)))
+    targetLon <- mean(c(min(latLon$X), max(latLon$X)))
     
   } else if (corner %in% c("NE", "E1/4", "SE")) {
     
@@ -1018,7 +1144,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   # First read in that dataset
   # (It will appear as a variable called 'plssSub')
-  load(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
+  load(makeSharePointPath(filePathFragment ="Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
   
   
   
@@ -1393,8 +1519,8 @@ translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
 #### Script Execution ####
 
 
-print("Starting 'POD_StreamStats_Analysis.R'")
-mainProcedure(ws)
+print("Starting 'POD_StreamStats_Analysis.R'...")
+mainProcedure()
 print("The script has finished running!")
 
 

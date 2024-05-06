@@ -15,27 +15,14 @@ require(janitor)
 require(writexl)
 
 
-# Generic functions that are used in multiple scripts
-source("Scripts/Shared_Functions.R")
 
+# IMPORTANT!!
+# Update "Watershed_Selection.R" to select a watershed
+source("Scripts/Watershed_Selection.R")
 
-
-# Get watershed names and identifiers
-ws <- makeSharePointPath("Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
-  read_xlsx(sheet = "Main_Sheet", skip = 1)
-
-
-
-# IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[2, ] # Change the row index to your desired watershed
-
-
-
-stopifnot(nrow(ws) == 1)
-
-
-
-cat(paste0("Running scripts for ", ws$NAME, "\n"))
+# IMPORTANT!! x2
+# Specify the years to be included in the demand dataset
+source("Scripts/Dataset_Year_Range.R")
 
 
 
@@ -48,20 +35,12 @@ source("Scripts/GIS_Preprocessing.R")
 
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
-# to identify which PODs flow into the watershed (via USGS StreamStats)
+# to identify which PODs flow into the watershed (via USGS StreamStats) 
 source("Scripts/POD_StreamStats_Analysis.R")
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
 #source("Scripts/Extended_CSV_to_SQLite.R")
-
-
-# QA/QC functions for correcting unit conversion errors and duplicate reporting
-source("Scripts/QAQC_Functions.R")
-
-
-# A function to update reported amounts for new rights
-source("Scripts/Face_Value_Substitution.R")
 
 
 # Priority Date Pre-Processing
@@ -91,6 +70,10 @@ source("Scripts/Expected_Demand.R")
 
 # Supplemental Expected Demand Module
 source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
+
+
+# Try to fix reports with NA values for all months and diversion types
+source("Scripts/Check_Empty_Reports.R")
 
 
 # Beneficial Use, Return Flow Module
