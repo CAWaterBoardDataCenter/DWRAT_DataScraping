@@ -1,6 +1,4 @@
 # Run scripts to produce a master demand table
-
-
 require(tidyverse)
 require(sf)
 require(openxlsx)
@@ -15,7 +13,6 @@ require(janitor)
 require(writexl)
 
 
-
 # IMPORTANT!!
 # Update "Watershed_Selection.R" to select a watershed
 source("Scripts/Watershed_Selection.R")
@@ -25,17 +22,16 @@ source("Scripts/Watershed_Selection.R")
 source("Scripts/Dataset_Year_Range.R")
 
 
-
-# GIS Pre-Processing Initial Steps
+# GIS Pre-Processing Initial Steps, last run on 5/2/2024 by Payman, skipped on 5/7/2024 by Payman
 source("Scripts/GIS_POD_Flat_File_Prep.R")
 
 
-# GIS Pre-Processing
+# GIS Pre-Processing, skipped on 5/7/2024 by Payman
 source("Scripts/GIS_Preprocessing.R")
 
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
-# to identify which PODs flow into the watershed (via USGS StreamStats) 
+# to identify which PODs flow into the watershed (via USGS StreamStats), skipped on 5/7/2024 by Payman
 source("Scripts/POD_StreamStats_Analysis.R")
 
 
@@ -54,29 +50,34 @@ source("Scripts/Priority_Date.R")
 # Priority Date Post-Processing
 source("Scripts/Priority_Date_Postprocessing.R")
 
-
 # Duplicate Report Module *
   # Identifies 1 owner per water right per reporting year
   # Identifies if a single owner submitted duplicate reports across multiple water rights
   # in the same year
   # Doesn't need to be run again unless we want to analyze new Russian River water rights; 
   # the manual review has already been performed on the duplicates
+  #skipped by Payman on 5/2/2024
 source("Scripts/Multiple_Owner_Analysis.R")
 
-
 # Expected Demand Module
+#skipped by Payman on 5/2/2024
 source("Scripts/Expected_Demand.R")
 
-
 # Supplemental Expected Demand Module
+#Skipped by Payman on 5/2/2024
 source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
 
 
 # Try to fix reports with NA values for all months and diversion types
+#skipped by Payman on 5/2/2024
 source("Scripts/Check_Empty_Reports.R")
 
+# Demand Dataset PowerBI Prepper; not required for generating MDT
+  #As of 5/7/2024, only applicable to RR watershed
+source("Scripts/Demand_Dataset_PowerBI_Prepper.R")
 
 # Beneficial Use, Return Flow Module
+#skipped by Payman on 5/2/2024
 source("Scripts/Beneficial_Use_Return_Flow.R")
 
 
@@ -89,6 +90,7 @@ source("Scripts/Beneficial_Use_Return_Flow.R")
 
 
 # POD Sub-basin Assignment
+#Skipped by Payman on 5/2/2024
 source("Scripts/Assign_Subbasin_to_POD.R")
 
 
@@ -100,6 +102,7 @@ source("Scripts/Assign_Subbasin_to_POD.R")
 
 
 # MasterDemandTable.CSV for DWRAT
+#Skipped by Payman on 5/2/2024
 source("Scripts/MasterDemandTable.R")
 
 
