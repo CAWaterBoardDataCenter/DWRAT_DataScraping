@@ -8,7 +8,11 @@ require(mapview)
 require(httr)
 
 
-mainProcedure <- function (ws, flowlines = NULL) {
+mainProcedure <- function (flowlines = NULL) {
+  
+  
+  source("Scripts/Watershed_Selection.R")
+  
   
   
   # Get the eWRIMS POD coordinates
@@ -198,7 +202,7 @@ requestFlowPath <- function (pod) {
 
 #### Script Execution ####
 
-mainProcedure(ws)#, 
+mainProcedure() 
               #flowlines = makeSharePointPath("Watershed Folders\\Navarro\\Data\\GIS Datasets\\NHDPlus_Delineations\\LSPC_Delineations") %>%
                 #st_read(layer = "NHDFlowline_EditedforLSPC"))
 
