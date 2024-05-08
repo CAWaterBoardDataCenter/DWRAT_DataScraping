@@ -701,7 +701,8 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
                      REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
                      REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
                      REPORT_SECTION = NA, REPORT_TOWNSHIP = NA, REPORT_RANGE = NA, REPORT_DATUM = NA, MULTI_OPTIONS_CHOICE = NA_integer_, `ANY_VAL?` = FALSE, NOTES2 = "--") %>%
-              mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE)) %>%
+              mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
+                     REMOVE_POD = FALSE) %>%
               unique())
   
   
