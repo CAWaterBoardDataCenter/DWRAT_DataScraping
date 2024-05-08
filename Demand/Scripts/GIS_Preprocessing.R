@@ -12,17 +12,19 @@ require(openxlsx)
 
 #### Functions ####
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
   
   # Given the watershed in 'ws', perform the GIS pre-processing steps
-
+  source("Scripts/Watershed_Selection.R")
+  
   
   
   # Based on the value of "NAME" in 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
-  wsBound <- getGIS(ws, "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
-                    "WATERSHED_BOUNDARY_DATABASE_PATH",
-                    "WATERSHED_BOUNDARY_LAYER_NAME")
+  wsBound <- getGIS(ws = ws, 
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
   
   
   
@@ -49,7 +51,7 @@ mainProcedure <- function (ws) {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read(makeSharePointPath("Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -720,10 +722,10 @@ outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Inters
 #### Script Execution ####
 
 
-print(paste0("Starting 'GIS_Preprocessing.R' with watershed name ", ws$NAME, "..."))
+print("Starting 'GIS_Preprocessing.R'...")
 
 
-mainProcedure(ws)
+mainProcedure()
 
 
 remove(mainProcedure, confirmCS, deleteIdentical, outputResults, outputResults_NoTask2)

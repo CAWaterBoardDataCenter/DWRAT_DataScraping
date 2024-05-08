@@ -8,7 +8,7 @@ require(openxlsx)
 require(data.table)
 
 
-faceValSub <- function (inputDF, yearRange = 2021:2023) {
+faceValSub <- function (inputDF, yearRange = (year(Sys.Date()) - 2):year(Sys.Date())) {
   
   # If 'yearRange' is outside of the range of 'inputDF', make no changes
   if (sum(yearRange %in% inputDF$YEAR) == 0) {
@@ -52,7 +52,7 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
   
   # Filter 'extendedDF' to appropriative rights that have an "EFFECTIVE_DATE" within 'yearRange'
   extendedDF <- extendedDF %>%
-    filter(grepl("^Appro", WATER_RIGHT_TYPE)) %>%
+    filter(grepl("^Appro", WATER_RIGHT_TYPE, ignore.case = TRUE)) %>%
     mutate(YEAR = as.numeric(str_extract(EFFECTIVE_DATE, "[0-9]{4}$"))) %>%
     filter(YEAR %in% yearRange) %>%
     filter(DIVERSION_TYPE != "USE")
@@ -79,18 +79,16 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
     rowwise() %>%
     mutate(DD_START = if_else(is.na(DIRECT_DIV_SEASON_START),
                               NA_real_,
-                              DIRECT_DIV_SEASON_START %>%
-                                str_split("/") %>% unlist() %>% pluck(1) %>% 
-                                str_replace("^$", "0") %>% as.numeric()),
-           DD_END = DIRECT_DIV_SEASON_END %>%
-             str_split("/") %>% unlist() %>% pluck(1) %>% 
-             str_replace("^$", "0") %>% as.numeric(),
-           STOR_START = STORAGE_SEASON_START %>%
-             str_split("/") %>% unlist() %>% pluck(1) %>% 
-             str_replace("^$", "0") %>% as.numeric(),
-           STOR_END = STORAGE_SEASON_END %>%
-             str_split("/") %>% unlist() %>% pluck(1) %>% 
-             str_replace("^$", "0") %>% as.numeric()) %>%
+                              monthExtract(DIRECT_DIV_SEASON_START)),
+           DD_END = if_else(is.na(DIRECT_DIV_SEASON_END),
+                            NA_real_,
+                            monthExtract(DIRECT_DIV_SEASON_END)),
+           STOR_START = if_else(is.na(STORAGE_SEASON_START),
+                                NA_real_,
+                                monthExtract(STORAGE_SEASON_START)),
+           STOR_END = if_else(is.na(STORAGE_SEASON_END),
+                              NA_real_,
+                              monthExtract(STORAGE_SEASON_END))) %>%
     ungroup()
   
   
@@ -182,10 +180,16 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
           
           
           
+          # Output a message about this update
+          cat(paste0("Added data for ", yearRange[j], " for ", appVec[i], "\n"))
+          
+          
           # After these operations, skip the rest of this iteration's code
           next
           
           
+        # If the right doesn't have data for this year, but the year is 
+        # equal to or earlier than its effective year, skip the iteration
         } else {
           
           next
@@ -196,7 +200,12 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
       
       
       
-      # If this right already has non-zero data for this year, skip it
+      # If the above loop did not apply to this right, it has data for this year
+      
+      
+      
+      # If that data is non-zero, make no changes to its data
+      # Simply skip the iteration
       if (inputDF %>%
           filter(APPLICATION_NUMBER == appVec[i] & YEAR == yearRange[j]) %>%
           summarize(TOTAL = sum(AMOUNT, na.rm = TRUE)) %>%
@@ -206,7 +215,16 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
       
       
       
-      # Otherwise, the right's face-value amount will be assigned to one month during their diversion season
+      # At this part of the iteration, the right has records for this year,
+      # but they are zeroes
+      
+      # Output a message about the incoming update
+      cat(paste0(appVec[i], "'s data for ", yearRange[j],
+                 " will be replaced with its face-value amount\n",
+                 "(the original reported data is all NA or 0)\n"))
+      
+      
+      # The right's face-value amount will be assigned to one month during their diversion season
       # The default choice is a month in their DIRECT_DIVERSION season, but if they have none,
       # a month from the STORAGE season will be used instead
       inputDF <- faceValAssign(extendedDF, inputDF, appVec[i], yearRange[j])
@@ -219,6 +237,18 @@ faceValSub <- function (inputDF, yearRange = 2021:2023) {
   
   # Return 'inputDF' after these changes
   return(inputDF)
+  
+}
+
+
+
+monthExtract <- function (monthDayVec) {
+  
+  # Given strings consisting of a month and a day (e.g., "11/1"),
+  # extract the months and return them as numeric values
+  return(monthDayVec %>%
+           str_split("/") %>% unlist() %>% pluck(1) %>% 
+           str_replace("^$", "0") %>% as.numeric())
   
 }
 

@@ -5,7 +5,7 @@ require(tidyverse)
 require(readxl)
 
 
-cat("Starting 'NOAA_API_Scraper.R'...\n")
+cat("Starting 'NOAA_Processor.R'...\n")
 
 
 mainProcedure <- function (StartDate, EndDate, includeForecast) {

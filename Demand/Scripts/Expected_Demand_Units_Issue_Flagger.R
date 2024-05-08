@@ -6,8 +6,12 @@ require(openxlsx)
 print("Starting 'Expected_Demand_Units_Issue_Flagger.R'...")
 
 
+source("Scripts/Watershed_Selection.R")
+source("Scripts/Dataset_Year_Range.R")
+
+
 # Read in the Expected Demand spreadsheet
-expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"))
+expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions.xlsx"))
 
 
 
@@ -42,7 +46,6 @@ expDemand <- expDemand %>% group_by(APPLICATION_NUMBER, YEAR) %>%
 #  mutate(YEAR_TOTAL = as.numeric(YEAR_TOTAL))
 
 
-
 # Create a summary tibble with median values of "YEAR_TOTAL" for each "APPLICATION_NUMBER"
 medVals <- expDemand %>%
   group_by(APPLICATION_NUMBER) %>%
@@ -65,8 +68,12 @@ expDemand <- expDemand %>%
 # Keep records that are more than two orders of magnitude away from the median (in either direction)
 expDemand <- expDemand %>%
   filter((MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF > 100) |
-           (MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF < 1/100)) %>%
-  select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL, MEDIAN_TOTAL_AF) 
+           (MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF < 1/100) |
+           (YEAR_TOTAL > 0 & abs(YEAR_TOTAL - MEDIAN_TOTAL_AF) > 100) |
+           (AVG_TOTAL_AF > 0 & YEAR_TOTAL / AVG_TOTAL_AF > 100) |
+           (AVG_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / AVG_TOTAL_AF < 1/100) |
+           (YEAR_TOTAL > 0 & abs(YEAR_TOTAL - AVG_TOTAL_AF) > 100)) %>%
+  select(APPLICATION_NUMBER, YEAR, YEAR_TOTAL, MEDIAN_TOTAL_AF, AVG_TOTAL_AF) 
 
 
 
@@ -74,8 +81,13 @@ expDemand <- expDemand %>%
 mainSheet <- list.files("OutputData", 
                         pattern = paste0("^", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx$"), 
                         full.names = TRUE) %>%
-  read_xlsx() %>%
-  makeKey_APP_YEAR_AMOUNT()
+  read_xlsx()
+
+
+
+mainSheet <- mainSheet %>%
+  left_join(makeKey_APP_YEAR_AMOUNT(mainSheet),
+            by = c("APPLICATION_NUMBER", "YEAR", "YEAR_TOTAL"), relationship = "one-to-one")
 
 
 
@@ -91,9 +103,10 @@ expDemand <- expDemand %>%
 if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
   
   expDemand <- expDemand %>%
-    compareKeys(getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                        "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
-                        "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+    compareKeys(getXLSX(ws= ws, 
+                        SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                        FILEPATH = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                        WORKSHEET_NAME = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
                   makeKey_APP_YEAR_AMOUNT())
   
 }
@@ -104,9 +117,10 @@ if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
 if (!is.na(ws$QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
   
   expDemand <- expDemand %>%
-    compareKeys(getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                        "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
-                        "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+    compareKeys(getXLSX(ws = ws, 
+                        SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                        FILEPATH = "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                        WORKSHEET_NAME = "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
                   makeKey_APP_YEAR_AMOUNT() %>%
                   select(APPLICATION_NUMBER, YEAR, KEY))
   
@@ -147,9 +161,10 @@ if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
   
   
   # Read in the review spreadsheet
-  reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
-                      "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
-                      "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+  reviewDF <- getXLSX(ws = ws, 
+                      SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
+                      FILEPATH = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH",
+                      WORKSHEET_NAME = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
   
   
   

@@ -1,10 +1,11 @@
 #IGNORE SUPPLY DATA FILES
 # Ignore all files in ProcessedData and WebData
-Supply/ProcessedData/*.csv
 Supply/WebData/*.csv
 Supply/InputData/*.gag
-Supply/ProcessedData/*.txt
+Supply/ProcessedData/*.csv
 Supply/ProcessedData/*.dat
+Supply/ProcessedData/*.txt
+Supply/ProcessedData/*.xlsx
 
 #IGNORE DEMAND DATA FILES 
 # Ignore all CSVs and xlsx files in IntermediateData, RawData and ProcessedData folders

@@ -13,14 +13,21 @@ cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
 #### Functions ####
 
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
+  
+  
+  source("Scripts/Watershed_Selection.R")
+  source("Scripts/Dataset_Year_Range.R")
+  
+  
   
   # Read in a spreadsheet with coordinate data and convert it into a spatial feature
   #   (Also, keep copies of the latitude and longitude coordinates in new columns)
   #   (Otherwise, when the geometry is dropped, the coordinate data is removed)
-  POD <- getXLSX(ws, "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
-                 "POD_COORDINATES_SPREADSHEET_PATH",
-                 "POD_COORDINATES_WORKSHEET_NAME") %>%
+  POD <- getXLSX(ws = ws, 
+                 SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
+                 FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
+                 WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME") %>%
     select(APPLICATION_NUMBER, POD_ID, LONGITUDE, LATITUDE) %>% unique() %>%
     mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
     st_as_sf(coords = c("LONGITUDE2", "LATITUDE2"), crs = ws$POD_COORDINATES_REFERENCE_SYSTEM[1])
@@ -29,9 +36,10 @@ mainProcedure <- function (ws) {
   
   # Also import a layer with the watershed's subbasins
   # (There should be one polygon per subbasin)
-  subWS <- getGIS(ws, "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
-                  "SUBBASIN_POLYGONS_DATABASE_PATH",
-                  "SUBBASIN_POLYGONS_LAYER_NAME")
+  subWS <- getGIS(ws = ws, 
+                  GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
+                  GIS_FILE_PATH = "SUBBASIN_POLYGONS_DATABASE_PATH",
+                  GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME")
   
   
   
@@ -167,9 +175,10 @@ checkForMultiBasinRights <- function (podTable, fieldNames, ws) {
   if (!is.na(ws$SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH[1])) {
     
     # Import the review spreadsheet
-    reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_SUBBASIN_MANUAL_ASSIGNMENT",
-                        "SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH",
-                        "SUBBASIN_MANUAL_ASSIGNMENT_WORKSHEET_NAME") %>%
+    reviewDF <- getXLSX(ws = ws, 
+                        SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_MANUAL_ASSIGNMENT",
+                        FILEPATH = "SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH",
+                        WORKSHEET_NAME = "SUBBASIN_MANUAL_ASSIGNMENT_WORKSHEET_NAME") %>%
       select(APPLICATION_NUMBER, all_of(fieldNames))
     
     
@@ -253,7 +262,7 @@ checkForMultiBasinRights <- function (podTable, fieldNames, ws) {
 
 
 # Run the script
-mainProcedure(ws)
+mainProcedure()
 
 
 cat("Done!\n")

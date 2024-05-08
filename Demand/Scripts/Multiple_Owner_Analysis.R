@@ -6,12 +6,17 @@ require(janitor) # for get_dupes function
 require(writexl) # for write_xlsx function
 require(readxl) # for read_xlsx function
 
+
+source("Scripts/Watershed_Selection.R")
+source("Scripts/Dataset_Year_Range.R")
+
+
 #Import Raw Data ----
 
 #Import Statistics_FINAL.csv. This is one of the output files of the Priority_Date_Preprocessing.R 
 #script; but we just want the unique APPLICATION_NUMBERS; these are just water rights
 #in the Russian River.
-appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"), show_col_types = FALSE) %>%
+appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL.csv"), show_col_types = FALSE) %>%
   select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>% unique() %>%
   mutate(ADJ_YEAR = if_else(YEAR < 2021, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
   #Add a YEAR_ID column that concatenates the year and application number
@@ -152,9 +157,10 @@ Duplicate_Reports = get_dupes(RMS_parties4, PK)
 
 if (!is.na(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH)) {
   
-  reviewDF <- getXLSX(ws, "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET", 
-                      "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH", 
-                      "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
+  reviewDF <- getXLSX(ws = ws, 
+                      SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_DUPLICATE_REPORTING_SPREADSHEET", 
+                      FILEPATH = "QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH", 
+                      WORKSHEET_NAME = "QAQC_DUPLICATE_REPORTING_WORKSHEET_NAME")
   
   
   Duplicate_Reports <- Duplicate_Reports %>%

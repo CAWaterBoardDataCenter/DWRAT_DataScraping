@@ -7,6 +7,9 @@
 # mirrors the format of the original "Priority_Date.xlsx" file
 
 
+cat("Starting 'Priority_Date.R'...\n")
+
+
 #### Dependencies ####
 
 
@@ -17,16 +20,19 @@ require(openxlsx)
 #### Script Procedure ####
 
 
-mainProcedure <- function (wsID) {
+mainProcedure <- function () {
   
   # The main body of the script
   
   
+  source("Scripts/Watershed_Selection.R")
+  
+  
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv(paste0("IntermediateData/", wsID, "_Priority_Date_FINAL.csv")) %>%
+  priorityDateCSV <- read.csv(paste0("IntermediateData/", ws$ID, "_Priority_Date_FINAL.csv")) %>%
     unique()
-  
+
   
   
   # Recreate the following columns:
@@ -79,7 +85,7 @@ mainProcedure <- function (wsID) {
   # If that is the case, "PRE14_DATE" will be a concatenation of that year and "0101"
   # Otherwise, it would output "FALSE" (not sure if this behavior is desired)
   priorityDateCSV <- priorityDateCSV %>%
-    mutate(PRE14_DATE = if_else(PRE_1914_1 == "PRE_1914" & YEAR_DIVERSION_COMMENCED == "", 
+    mutate(PRE14_DATE = if_else(PRE_1914_1 == "PRE_1914" & is.na(YEAR_DIVERSION_COMMENCED), 
                                 "11111111",
                                 if_else(PRE_1914_1 == "PRE_1914",
                                         if_else(YEAR_DIVERSION_COMMENCED %>% map_lgl(~ !is.na(.) & is.numeric(.)),
@@ -138,9 +144,9 @@ mainProcedure <- function (wsID) {
   # If this is false, "APPROPRIATIVE_DATE" will be "APPLICATION_ACCEPTANCE_DATE"
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
-                                        if_else(PRIORITY_DATE == "",
-                                                if_else(APPLICATION_RECD_DATE == "",
-                                                        if_else(APPLICATION_ACCEPTANCE_DATE == "",
+                                        if_else(is.na(PRIORITY_DATE),
+                                                if_else(is.na(APPLICATION_RECD_DATE),
+                                                        if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                 "99999999",
                                                                 as.character(APPLICATION_ACCEPTANCE_DATE)),
                                                         as.character(APPLICATION_RECD_DATE)),
@@ -222,8 +228,8 @@ mainProcedure <- function (wsID) {
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE_SOURCE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
                                                if_else(PRIORITY_DATE == "", 
-                                                       if_else(APPLICATION_RECD_DATE == "",
-                                                               if_else(APPLICATION_ACCEPTANCE_DATE == "",
+                                                       if_else(is.na(APPLICATION_RECD_DATE),
+                                                               if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                        "NO_PRIORITY_DATE_INFORMATION",
                                                                        "APPLICATION_ACCEPTANCE_DATE"),
                                                                "APPLICATION_RECD_DATE"),
@@ -257,7 +263,7 @@ mainProcedure <- function (wsID) {
   # Output 'priorityDateCSV' as a new XLSX file
   # (in the "OutputData" folder)
   priorityDateCSV %>%
-    write.xlsx(paste0("OutputData/", wsID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
   
   
   
@@ -274,9 +280,7 @@ mainProcedure <- function (wsID) {
 #### Script Execution ####
 
 
-cat("Starting 'Priority_Date.R'...")
-
-mainProcedure(ws$ID)
+mainProcedure()
 
 
 # Remove the function from the environment when the procedure is complete
