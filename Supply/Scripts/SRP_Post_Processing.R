@@ -109,7 +109,7 @@ SRP <- Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE),
 # remove intermediaries from environment
 rm(sub23,sub24,sub25,sub26,sub27,sub28)
 
-# convert cubic feet/seconds (CFD) to acre-feet/seconds
+# convert cubic feet/day (CFD) to acre-feet/day
 AFD <- 1/43560 # 1 acre-ft/ 43560 ft^3
 SRP[, 2:7] <- SRP[,2:7]*AFD
 
