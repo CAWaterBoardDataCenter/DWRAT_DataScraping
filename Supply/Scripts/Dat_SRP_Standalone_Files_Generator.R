@@ -1,4 +1,4 @@
-#Install and load libraries----
+#Install and load libraries and custom functions----
 library(dplyr)
 library(tidyverse)
 library(here)
@@ -11,12 +11,14 @@ library(readxl) #for read_xlsx function
 source("../Supply/Scripts/Shared_Functions_Supply.R")
 source("../Demand/Scripts/Shared_Functions_Demand.R")
 
-# Import Latest Dat SRP File
-Dat_SRP_Path = makeSharePointPath(filePathFragment = "DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\Dat_SRP_Body.dat")
+# Import the SRP Dat file used for the 3/14/2024 model run from SDA SharePoint folder 
+  # Documents\DWRAT\SDU_Runs\Hydrology\2024-03-14
+
+Dat_SRP_Path = makeSharePointPath(filePathFragment = "DWRAT\\SDU_Runs\\Hydrology\\2024-03-14\\Dat_SRP_Final_Forecast_2024-03-19.dat")
 
 # Manipulate the Dat SRP File----
 # Read the data as a single column
-Dat_SRP_Full <- read_lines(Dat_SRP_Path)
+Dat_SRP_Body <- read_lines(file_path = Dat_SRP_Path, skip = 5)
 
 # Define a regular expression pattern to split the data based on one or more spaces
 pattern <- "\\s+"
