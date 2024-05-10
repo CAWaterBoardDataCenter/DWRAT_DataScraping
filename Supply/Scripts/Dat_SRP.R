@@ -166,6 +166,10 @@ names(Dat_SRP_Final) = "Dat_SRP_Final"
 # Combine Dat_SRP_Final with Dat_SRP_Heading
 Dat_SRP_Heading = read.csv(file = paste0(SRP_Blueprints_Path, "Dat_SRP_Heading.dat"),
                            header = F)
+
+#Unite all the columns in Dat_SRP_Heading into a single column
+Dat_SRP_Heading = unite(Dat_SRP_Heading, Concatenated_Column, V1, V2, V3, sep = "")
+
 names(Dat_SRP_Heading) = "Dat_SRP_Final"
 Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
 
