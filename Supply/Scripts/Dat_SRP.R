@@ -52,8 +52,14 @@ SPI_Forecast_SRP$Date = as.Date(SPI_Forecast_SRP$Date, format = "%Y-%m-%d")
 SRP_Processed = read.csv(file = "ProcessedData/SRP_Processed.csv")
 
 #Rename the columns in SRP_Processed
-SRP_Processed_names = c("Date","precip01","tmin01","tmax01", "precip02", "tmin02", "tmax02")
-colnames(SRP_Processed) = SRP_Processed_names
+SRP_Processed = SRP_Processed %>% rename(
+  "precip01" = "CIMIS_083_ppt",
+  "tmin01" = "CIMIS_083_tmin",
+  "tmax01" = "CIMIS_083_tmax",
+  "precip02" = "CIMIS_103_ppt",
+  "tmin02" =  "CIMIS_103_tmin",
+  "tmax02" = "CIMIS_103_tmax",
+)
 
 # Convert Date field from character to date format
 SRP_Processed$Date = as.Date(SRP_Processed$Date, format = "%Y-%m-%d")
@@ -78,11 +84,11 @@ SRP_Processed <- SRP_Processed %>%
 if (Pre2023_SRP %>% filter(Date %in% SRP_Processed$Date) %>% nrow() > 0) {
   
   print(c("The scraped SRP meteorological dataset contains rows for dates that appear in the Pre2023_SRP dat file.", 
-          "The data for those dates in 'PRe2023_SRP' will be replaced with the data in the meteorological dataset."))
+          "The data for those dates in 'Pre2023_SRP' will be replaced with the data in the meteorological dataset."))
   
-  # Remove those rows in 'DAT_Initial'
+  # Remove those rows from 'Pre2023_SRP'
   Pre2023_SRP <- Pre2023_SRP %>%
-    filter(!(Date %in% Pre2023_SRP$Date))
+    filter(!(Date %in% SRP_Processed$Date))
 
   # Check for continuity of dataset--the earliest date in SRP_Processed should be 1 day AFTER the
    # latest date in Pre2023_SRP
@@ -170,10 +176,11 @@ Dat_SRP_Heading = read.csv(file = paste0(SRP_Blueprints_Path, "Dat_SRP_Heading.d
 #Unite all the columns in Dat_SRP_Heading into a single column
 Dat_SRP_Heading = unite(Dat_SRP_Heading, Concatenated_Column, V1, V2, V3, sep = "")
 
+# Rename the single column in Dat_SRP_Heading to "Dat_SRP_Final"
 names(Dat_SRP_Heading) = "Dat_SRP_Final"
 Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
 
-# Export Dat_SRP_Final to ProcessedData folder 
+# Export Dat_SRP_Final to the ProcessedData folder 
   # Include the final observed date, EndDate as the suffix to the file name
 
 write.table(x = Dat_SRP_Final,
