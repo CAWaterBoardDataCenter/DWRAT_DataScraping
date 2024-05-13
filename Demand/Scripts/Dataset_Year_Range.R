@@ -2,7 +2,7 @@
 
 
 
-# Change the numbers here!
+# Change the numbers here!!
 yearRange <- c(Start = 2017, # The start year
                End = 2022)   # The end year
 
@@ -13,10 +13,14 @@ yearRange <- c(Start = 2017, # The start year
 
 
 
+# No other changes to the script are needed!!
+
+
+
 # Error Checks
 stopifnot(is.numeric(yearRange[1]))
 stopifnot(is.numeric(yearRange[2]))
-stopifnot(yearRange[2] > yearRange[1])
+stopifnot(yearRange[2] >= yearRange[1])
 
 
 
