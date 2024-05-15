@@ -388,22 +388,22 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   # Add a worksheet for the manual review that contains a portion of the columns in this variable
-  addWorksheet(wb, "Review")
-  
-  writeData(wb, "Review",
-            allDF %>%
-              select(APPLICATION_NUMBER, POD_ID, WATER_RIGHT_TYPE, URL, COUNTY,
-                     FFMTRS, MTRS, MTRS_Match, PARCEL_NUMBER, 
-                     LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD,
-                     SOURCE_NAME, TRIB_DESC) %>%
-              unique() %>%
-              mutate(ERROR_CASE = NA_character_,
-                     ERROR_RESOLVED = NA,
-                     NEW_LATITUDE = NA_real_,
-                     NEW_LONGITUDE = NA_real_,
-                     NEW_MTRS = NA_character_,
-                     NOTES = NA_character_,
-                     REVIEWED_BY = NA_character_))
+  # addWorksheet(wb, "Review")
+  # 
+  # writeData(wb, "Review",
+  #           allDF %>%
+  #             select(APPLICATION_NUMBER, POD_ID, WATER_RIGHT_TYPE, URL, COUNTY,
+  #                    FFMTRS, MTRS, MTRS_Match, PARCEL_NUMBER, 
+  #                    LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD,
+  #                    SOURCE_NAME, TRIB_DESC) %>%
+  #             unique() %>%
+  #             mutate(ERROR_CASE = NA_character_,
+  #                    ERROR_RESOLVED = NA,
+  #                    NEW_LATITUDE = NA_real_,
+  #                    NEW_LONGITUDE = NA_real_,
+  #                    NEW_MTRS = NA_character_,
+  #                    NOTES = NA_character_,
+  #                    REVIEWED_BY = NA_character_))
   
   
   
@@ -494,7 +494,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
-  # As a final step, add a second review sheet focused on plotting points via Stream Stats ('POD_StreamStats_Analysis.R')
+  # As a final step, add a review sheet focused on plotting points via Stream Stats ('POD_StreamStats_Analysis.R')
   addWorksheet(wb, "R_Review")
   
   writeData(wb, "R_Review",
