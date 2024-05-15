@@ -10,7 +10,7 @@ source("../Demand/Scripts/Shared_Functions_Demand.R")
 
 
 
-# Use the DAT component files located on SharePoint
+# Use the Dat component files located on SharePoint
 
 
 # Metadata that appears at the beginning of the file
@@ -169,7 +169,7 @@ DAT_Merged <- DAT_Merged %>%
 # Temporarily write 'DAT_Merged' to a file
 DAT_Merged %>%
   select(-Date) %>%
-  write_delim(paste0("ProcessedData/Dat_PRMS_Final_End_Date_", EndDate$date, ".dat"),
+  write_delim(paste0("ProcessedData/Dat_PRMS_Observed_EndDate_", EndDate$date, ".dat"),
               delim = "\t", col_names = FALSE)
 
 
@@ -177,7 +177,7 @@ DAT_Merged %>%
 # Read back in this file
 # Then, append 'DAT_Metadata' to the beginning
 DAT_Merged_Tab <- c(DAT_Metadata,
-  read_lines(paste0("ProcessedData/Dat_PRMS_Final_End_Date_", EndDate$date, ".dat")))
+  read_lines(paste0("ProcessedData/Dat_PRMS_Observed_EndDate_", EndDate$date, ".dat")))
 
 
 
