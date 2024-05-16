@@ -177,7 +177,7 @@ DAT_Merged %>%
 # Read back in this file
 # Then, append 'DAT_Metadata' to the beginning
 DAT_Merged_Tab <- c(DAT_Metadata,
-  read_lines(paste0("ProcessedData/Dat_PRMS_Final_EndDate_", EndDate$date, ".dat")))
+  read_lines(paste0("ProcessedData/Dat_PRMS_Observed_EndDate_", EndDate$date, ".dat")))
 
 
 
@@ -189,7 +189,7 @@ stopifnot(DAT_Merged_Tab %>% str_count("\t") %>% unique() == 58)
 
 # Write this vector to a file
 write.table(DAT_Merged_Tab,
-            paste0("ProcessedData/Dat_PRMS_Final_EndDate_", EndDate$date, ".dat"),
+            paste0("ProcessedData/Dat_PRMS_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE)
 
 
