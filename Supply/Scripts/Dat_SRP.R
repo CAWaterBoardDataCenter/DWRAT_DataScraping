@@ -184,5 +184,5 @@ Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
   # Include the final observed date, EndDate as the suffix to the file name
 
 write.table(x = Dat_SRP_Final,
-            file = paste0("ProcessedData/Dat_SRP_Observed_EndDate_", EndDate$Date, ".dat"),
+            file = paste0("ProcessedData/Dat_SRP_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
