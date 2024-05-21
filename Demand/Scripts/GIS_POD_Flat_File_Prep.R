@@ -274,7 +274,6 @@ all_vars = ls()
 
 
   # Remove variables
-
 rm(list = all_vars)
 
 remove(all_vars)

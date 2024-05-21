@@ -107,7 +107,8 @@ mainProcedure <- function () {
                             REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, 
                             REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, 
                             REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, 
-                            MULTI_OPTIONS_CHOICE, NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
+                            MULTI_OPTIONS_CHOICE, NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY,
+                            `MANUAL_OVERRIDE: KEEP POD`, `MANUAL_OVERRIDE: REMOVE POD`)
   
   
   
@@ -126,7 +127,8 @@ mainProcedure <- function () {
   podDF <- podDF %>%
     filter(!is.na(REPORT_LATITUDE) | 
              !is.na(REPORT_NORTHING) | 
-             !is.na(REPORT_SECTION_CORNER))
+             !is.na(REPORT_SECTION_CORNER)) %>%
+    filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
       #is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
   
   
@@ -361,7 +363,11 @@ mainProcedure <- function () {
   # Create the final list of PODs
   finalDF <- bind_rows(podDF, origDF) %>%
     select(-KEY) %>%
-    arrange(APPLICATION_NUMBER, POD_ID)
+    arrange(APPLICATION_NUMBER, POD_ID) %>%
+    filter(AT_LEAST_ONE_EXIT == TRUE | 
+             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
+             !is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
+    filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
   
   
   
