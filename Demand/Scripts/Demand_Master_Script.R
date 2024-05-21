@@ -64,11 +64,11 @@ source("Scripts/Multiple_Owner_Analysis.R") # FLAGGING SCRIPT
 
 # Expected Demand Module
 #skipped by Payman on 5/2/2024
-source("Scripts/Expected_Demand.R")
+source("Scripts/Expected_Demand.R") # FLAGGING SCRIPT
 
 # Supplemental Expected Demand Module
 #Skipped by Payman on 5/2/2024
-source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
+source("Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
 
 
 # Try to fix reports with NA values for all months and diversion types
