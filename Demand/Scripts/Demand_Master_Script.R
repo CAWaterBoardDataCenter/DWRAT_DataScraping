@@ -12,31 +12,30 @@ require(readxl)
 require(janitor)
 require(writexl)
 
-# There are 4 different coding blocks, which the SDA Demand QAQC Flags document 
+# There are several different coding blocks, which the SDA Demand QAQC Flags document 
   # in the SOPs and Documentation\1. Demand Data\SDU Methodology folder describes
-  # in detail, but we have stamped them in the Demand Scripts as Category 1, Category 2, 
-  # Category 3, and Category 4
+  # in detail, but we have stamped them in the Demand Scripts 
 
 # IMPORTANT!!
 # Update "Watershed_Selection.R" to select a watershed
-source("Scripts/Watershed_Selection.R")
+source("Scripts/Watershed_Selection.R") # DATA ACQUISITION SCRIPT
 
 # IMPORTANT!! x2
 # Specify the years to be included in the demand dataset
-source("Scripts/Dataset_Year_Range.R")
+source("Scripts/Dataset_Year_Range.R")  #DATA ACQUISITION SCRIPT
 
 
 # GIS Pre-Processing Initial Steps, last run on 5/2/2024 by Payman, skipped on 5/7/2024 by Payman
-source("Scripts/GIS_POD_Flat_File_Prep.R")
+source("Scripts/GIS_POD_Flat_File_Prep.R") # Consists of Remediation coding block and
+# Data Acquisition coding block
 
 
 # GIS Pre-Processing, skipped on 5/7/2024 by Payman
-source("Scripts/GIS_Preprocessing.R")
+source("Scripts/GIS_Preprocessing.R") # FLAGGING SCRIPT
 
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
 # to identify which PODs flow into the watershed (via USGS StreamStats), skipped on 5/7/2024 by Payman
-source("Scripts/POD_StreamStats_Analysis.R")
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
