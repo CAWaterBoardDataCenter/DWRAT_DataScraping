@@ -12,6 +12,10 @@ require(readxl)
 require(janitor)
 require(writexl)
 
+# There are 4 different coding blocks, which the SDA Demand QAQC Flags document 
+  # in the SOPs and Documentation\1. Demand Data\SDU Methodology folder describes
+  # in detail, but we have stamped them in the Demand Scripts as Category 1, Category 2, 
+  # Category 3, and Category 4
 
 # IMPORTANT!!
 # Update "Watershed_Selection.R" to select a watershed
