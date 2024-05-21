@@ -5,6 +5,8 @@
 # This script will try to find them by checking if the all-NA report actually exists on eWRIMS
 # (Some NA-only years are introduced by the procedure for handling both calendar and water years)
 
+# FLAGGING BLOCK----
+
 require(tidyverse)
 require(readxl)
 require(writexl)
@@ -59,7 +61,7 @@ mainProcedure <- function () {
     
   }
   
-  
+  # REMEDIATION BLOCK----
   
   # Check if a manual review was already performed for this issue
   if (!is.na(ws$NA_REPORTS_SPREADSHEET_PATH)) {
@@ -114,10 +116,14 @@ mainProcedure <- function () {
   }
   
   
+  # FINAL CONTIGENCY BLOCK----
   
   # If the code reaches this point, it's one of two cases:
-  # (1) No manual review was done yet, and the spreadsheet must now be generated
+  # (1) No manual review was done yet, and the spreadsheet must now be generated 
+    # flagging AND remediation occur
+  
   # (2) A manual review was completed, but there are some remaining empty report records
+    # only remediation occurs
   
   
   # Note: (2) is not necessarily a bad thing
