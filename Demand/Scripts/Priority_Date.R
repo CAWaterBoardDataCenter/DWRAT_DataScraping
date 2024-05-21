@@ -1,3 +1,6 @@
+# FLAGGING SCRIPT that also serves as a DWRAT COMPLIANCE SCRIPT-- DWRAT requires
+# ASSIGNED_PRIORITY_DATE as a field so that it can allocate water based on seniority
+
 # Classify different water right types and assign priority dates
 
 

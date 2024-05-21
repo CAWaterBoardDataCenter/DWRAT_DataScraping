@@ -19,6 +19,7 @@ source("Scripts/Dataset_Year_Range.R")
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
+# FLAGGING BLOCK----
 
 # Read in the (very large) water use report extended flat file
 # Import only certain columns
@@ -81,7 +82,7 @@ if (yearRange[2] >= 2022) {
 
 # Import functions for updates to the dataset
 
-
+# REMEDIATION BLOCK----
 # QA/QC functions for correcting unit conversion errors and duplicate reporting
 source("Scripts/QAQC_Functions.R")
 
@@ -124,6 +125,7 @@ remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Comb
 
 ######################################################################## Break ####################################################################################
 
+# FLAGGING BLOCK ----
 # Read the use season flat file next
 ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv")
 

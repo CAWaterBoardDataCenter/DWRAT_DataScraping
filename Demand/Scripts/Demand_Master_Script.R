@@ -47,11 +47,11 @@ source("Scripts/Priority_Date_Preprocessing.R") # FLAGGING SCRIPT
 
 
 # Priority Date Module
-source("Scripts/Priority_Date.R")
+source("Scripts/Priority_Date.R") # FLAGGING SCRIPT and # DWRAT COMPLIANCE SCRIPT
 
 
 # Priority Date Post-Processing
-source("Scripts/Priority_Date_Postprocessing.R")
+source("Scripts/Priority_Date_Postprocessing.R") # FLAGGING SCRIPT and REMEDIATION SCRIPT
 
 # Duplicate Report Module *
   # Identifies 1 owner per water right per reporting year
@@ -60,7 +60,7 @@ source("Scripts/Priority_Date_Postprocessing.R")
   # Doesn't need to be run again unless we want to analyze new Russian River water rights; 
   # the manual review has already been performed on the duplicates
   #skipped by Payman on 5/2/2024
-source("Scripts/Multiple_Owner_Analysis.R")
+source("Scripts/Multiple_Owner_Analysis.R") # FLAGGING SCRIPT
 
 # Expected Demand Module
 #skipped by Payman on 5/2/2024
