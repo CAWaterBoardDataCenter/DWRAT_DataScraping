@@ -7,6 +7,7 @@ library(lubridate)
 
 #PRISM Precipitation Data Manipulation----
 #Import PRISM_Precipitation.csv by skipping first 10 rows
+# (Removing metadata)
 ndays = 85
 PP <- read.csv(here("WebData/PRISM_Precip_Raw.csv"), skip = 10, header = T)
 
@@ -28,7 +29,7 @@ PP_OldNames <- unique(PP) #vector of unique Prism station names
 colnames(PP) = PP_NewNames
 
 #PRISM Temperature Data Manipulation----
-#Import Prism_Temp.csv by skipping first 10 rows
+#Import Prism_Temp.csv by skipping first 10 rows (removing metadata again)
 PT <- read.csv(here("WebData/PRISM_Temp_Raw.csv"), skip = 10, header = T)
 names(PT)[c(1, 6, 7)] <- c("Station", "Tmin", "Tmax")
 
@@ -51,5 +52,5 @@ colnames(PT) = PT_NewNames
 #Merge PT and PP dataframes and export to CSV----
 Prism_Processed = merge(x= PT, y = PP, by = "Date")
 write.csv(Prism_Processed, here("ProcessedData/Prism_Processed.csv"), row.names = FALSE)
-
+print("Prism_Processed.R has finished running!")
 

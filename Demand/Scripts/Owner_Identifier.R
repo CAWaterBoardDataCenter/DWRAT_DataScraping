@@ -11,21 +11,20 @@ library(tidyverse)
 
 mainProcedure <- function () {
   
-  # Read in 'Statistics_FINAL.csv' and create a variable of unique application-year pairs
+# Read in 'Statistics_FINAL.csv' and create a variable of unique application-year pairs
   appYears <- read_csv("IntermediateData/Statistics_FINAL.csv", show_col_types = FALSE) %>%
     select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>% unique()
   
   
-  # Also read in 'ewrims_flat_file_party.csv'
-  # Filter it down to only "Primary Owner" records and "APPLICATION_ID" values that
-  # match "APPLICATION_NUMBER" in 'appYears'
-  # Along with that, the "EFFECTIVE_TO_DATE" should be NA (currently active), 
-  # or the ownership ended during the dataset's timeframe ("EFFECTIVE_TO_DATE" is between 2017-present)
+# Also read in 'ewrims_flat_file_party.csv'
+    # Filter it down to only "Primary Owner" records and "APPLICATION_ID" values that
+    # match "APPLICATION_NUMBER" in 'appYears'
+    # Along with that, the "EFFECTIVE_TO_DATE" should be NA (currently active), 
+    # or the ownership ended during the dataset's timeframe ("EFFECTIVE_TO_DATE" is between 2017-present)
   partyDF <- read_csv("RawData/ewrims_flat_file_party.csv", col_types = cols(.default = col_character())) %>%
     filter(RELATIONSHIP_TYPE == "Primary Owner" & APPLICATION_ID %in% appYears$APPLICATION_NUMBER) %>%
     mutate(EFFECTIVE_TO_YEAR = as.numeric(str_extract(EFFECTIVE_TO_DATE, "[0-9]{4}$"))) %>%
     filter(is.na(EFFECTIVE_TO_DATE) | EFFECTIVE_TO_YEAR >= min(appYears$YEAR))
-  
   
   
   # Ideally, there should only be one row per application number in 'partyDF'

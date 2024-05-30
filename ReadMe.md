@@ -2,9 +2,9 @@ DWRAT DataScraping GitHub Repository README
 ================
 **Author:** Payman Alemi
 
-**Last Updated On:** 2023-09-05
+**Last Updated On:** 2024-04-24
 
-I have set up 3 folders for this project, each of which has several
+I have set up 2 folders for this project, each of which has several
 subfolders. We have intentionally added some of the subfolder paths to
 the .gitignore file for this repository because they contain massive
 files that GitHub cannot handle. While the files themselves are ignored,
@@ -14,7 +14,7 @@ structural integrity.
 **Supply**  
 This folder contains the files necessary for automating the Santa Rosa
 Plains (SRP) GS Flow and PRMS (Precipitation-Runoff Modeling System)
-hydrology models. As of 2023-08-28 this folder has 5 subfolders. The
+hydrology models. As of 2024-04-24 this folder has 5 subfolders. The
 pre-processing and post-processing of the *PRMS* model has been nearly
 entirely automated. By contrast, much of the *SRP GS Flow* model still
 needs to be automated.
@@ -62,23 +62,11 @@ for importation into DWRAT.
   models.
 
 - *RawData:* This folder contains the downloaded flat files from
-  eWRIMS. A copy of each flat file is also saved in this SharePoint folder, which was last updated on 8/16/2023:
-  https://cawaterboards.sharepoint.com/:f:/r/DWR/SDA/Shared%20Documents/DWRAT/RawData?csf=1&web=1&e=xk4aZa.
+  eWRIMS. 
   *Files in this folder are ignored by the .gitignore file.*
 
 - *Scripts:* This folder will contain the scripts that convert the raw
   diverter demand datasets into the final datasets to be used by the
   DWRAT models.
 
-**Allocation**  
-This folder will contain the files necessary for running the URR and LRR
-DWRATs, each of which will have a separate folder.
 
-- ***URR DWRAT***
-  - *Input:* This folder contains the input files for the URR DWRAT run.
-  - *Output:* This folder contains the output files for the URR DWRAT
-    run.
-- ***LRR DWRAT***
-  - *Input:* This folder contains the input files for the LRR DWRAT run.
-  - *Output:* This folder contains the output files for the URR DWRAT
-    run.

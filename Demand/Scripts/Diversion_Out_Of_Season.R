@@ -5,6 +5,11 @@
 # "Diversion out of Season_Part_A.xlsx" and "Diversion out of Season_Part_B.xlsx"
 
 
+# This script also contains a unique procedure where the direct diversion and
+# storage season are combined into a single "super" season; the analysis is repeated
+# with this super season instead of the separate direct and storage seasons
+
+
 #### Dependencies ####
 
 
@@ -134,8 +139,7 @@ mainProcedure <- function () {
   
   # Another input file is "Diversion_out_of_Season_Part_B_FINAL.csv"
   # Read that file into R
-  oosDF <- read.csv("IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv") %>%
-    filter(AMOUNT > 1)
+  oosDF <- read.csv("IntermediateData/Diversion_out_of_Season_Part_B_FINAL.csv")
   
   
   
@@ -315,6 +319,10 @@ mainProcedure <- function () {
   # After that, the last step is to export the data into two Excel files
   # Complete those steps in a separate function
   excelExport(diverDF, finalDF, oosDF, oosDF_Super, oosCounts, oosCounts_Super)
+  
+  
+  
+  cat("Done!\n")
   
   
   
@@ -972,4 +980,12 @@ excelExport <- function (diverDF, finalDF, oosDF, oosDF_Super, oosCounts, oosCou
 
 #### Script Execution ####
 
+
+cat("Starting 'Diversion_Out_Of_Season.R'...")
+
 mainProcedure()
+
+
+
+remove(mainProcedure, applicantSeasonSummary, authorizedUses, excelExport,
+       finalAuthCol, seasonInfo, useStatusAdjustment)

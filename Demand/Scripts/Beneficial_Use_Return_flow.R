@@ -18,9 +18,14 @@ mainProcedure <- function () {
   
   # The main body of the script
   
+  source("Scripts/Watershed_Selection.R")
+  source("Scripts/Dataset_Year_Range.R")
+  
+  
   
   # Read in the input CSV file for this analysis
-  inputDF <- read.csv("IntermediateData/Beneficial_Use_and_Return_Flow_FINAL.csv")
+  inputDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                             "_Beneficial_Use_and_Return_Flow_FINAL.csv"))
   
   
   
@@ -312,7 +317,11 @@ mainProcedure <- function () {
   
   
   # Finally, prepare a spreadsheet with the output data
-  writeSpreadsheet(inputDF, resDF)
+  writeSpreadsheet(inputDF, resDF, ws$ID)
+  
+  
+  
+  cat("Done!\n")
   
   
   
@@ -396,7 +405,7 @@ standardReturnFlow <- function () {
 }
 
 
-writeSpreadsheet <- function (inputDF, resDF) {
+writeSpreadsheet <- function (inputDF, resDF, wsID) {
   
   # Create a spreadsheet with similar formatting to the Excel module
   
@@ -514,7 +523,8 @@ writeSpreadsheet <- function (inputDF, resDF) {
   
   
   # Save 'wb' to a file
-  saveWorkbook(wb, "OutputData/Beneficial_Use_Return_Flow_Scripted.xlsx", overwrite = TRUE)
+  saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                          "_Beneficial_Use_Return_Flow_Scripted.xlsx"), overwrite = TRUE)
   
   
   
@@ -526,4 +536,9 @@ writeSpreadsheet <- function (inputDF, resDF) {
 
 #### Script Execution ####
 
+
+cat("Starting 'Beneficial_Use_Return_Flow.R'...")
+
 mainProcedure()
+
+remove(mainProcedure, standardReturnFlow, useRanking, writeSpreadsheet)

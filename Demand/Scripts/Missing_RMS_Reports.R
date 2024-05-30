@@ -109,6 +109,10 @@ mainProcedure <- function () {
   
   
   
+  cat("Done!\n")
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
   
@@ -134,8 +138,8 @@ writeExcel <- function (reportDF, reportCounts, reportStartYear, reportEndYear) 
   # Write most of 'reportDF' to the beginning of the spreadsheet
   writeData(wb, "Missing_RMS_Reports", startCol = 1, startRow = 3, 
             reportDF %>%
-              select(APPLICATION_NUMBER, WATER_RIGHT_ID, 
-                     YEAR, MONTH, AMOUNT, DIVERSION_TYPE, ASSIGNED_PRIORITY_DATE))
+              select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT,
+                     DIVERSION_TYPE, ASSIGNED_PRIORITY_DATE))
   
   
   
@@ -228,4 +232,12 @@ writeExcel <- function (reportDF, reportCounts, reportStartYear, reportEndYear) 
 
 #### Script Execution ####
 
+
+cat("Starting 'Missing_RMS_Reports.R'...")
+
+
 mainProcedure()
+
+
+
+remove(mainProcedure, writeExcel)

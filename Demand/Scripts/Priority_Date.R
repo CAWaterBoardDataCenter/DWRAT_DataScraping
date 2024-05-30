@@ -1,3 +1,6 @@
+# FLAGGING SCRIPT that also serves as a DWRAT COMPLIANCE SCRIPT-- DWRAT requires
+# ASSIGNED_PRIORITY_DATE as a field so that it can allocate water based on seniority
+
 # Classify different water right types and assign priority dates
 
 
@@ -5,6 +8,9 @@
 
 # It will produce a spreadsheet called "Priority_Date_Scripted.xlsx" that 
 # mirrors the format of the original "Priority_Date.xlsx" file
+
+
+cat("Starting 'Priority_Date.R'...\n")
 
 
 #### Dependencies ####
@@ -22,11 +28,14 @@ mainProcedure <- function () {
   # The main body of the script
   
   
+  source("Scripts/Watershed_Selection.R")
+  
+  
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv("IntermediateData/Priority_Date_FINAL.csv") %>%
+  priorityDateCSV <- read.csv(paste0("IntermediateData/", ws$ID, "_Priority_Date_FINAL.csv")) %>%
     unique()
-  
+
   
   
   # Recreate the following columns:
@@ -79,7 +88,7 @@ mainProcedure <- function () {
   # If that is the case, "PRE14_DATE" will be a concatenation of that year and "0101"
   # Otherwise, it would output "FALSE" (not sure if this behavior is desired)
   priorityDateCSV <- priorityDateCSV %>%
-    mutate(PRE14_DATE = if_else(PRE_1914_1 == "PRE_1914" & YEAR_DIVERSION_COMMENCED == "", 
+    mutate(PRE14_DATE = if_else(PRE_1914_1 == "PRE_1914" & is.na(YEAR_DIVERSION_COMMENCED), 
                                 "11111111",
                                 if_else(PRE_1914_1 == "PRE_1914",
                                         if_else(YEAR_DIVERSION_COMMENCED %>% map_lgl(~ !is.na(.) & is.numeric(.)),
@@ -138,9 +147,9 @@ mainProcedure <- function () {
   # If this is false, "APPROPRIATIVE_DATE" will be "APPLICATION_ACCEPTANCE_DATE"
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
-                                        if_else(PRIORITY_DATE == "",
-                                                if_else(APPLICATION_RECD_DATE == "",
-                                                        if_else(APPLICATION_ACCEPTANCE_DATE == "",
+                                        if_else(is.na(PRIORITY_DATE),
+                                                if_else(is.na(APPLICATION_RECD_DATE),
+                                                        if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                 "99999999",
                                                                 as.character(APPLICATION_ACCEPTANCE_DATE)),
                                                         as.character(APPLICATION_RECD_DATE)),
@@ -222,8 +231,8 @@ mainProcedure <- function () {
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE_SOURCE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
                                                if_else(PRIORITY_DATE == "", 
-                                                       if_else(APPLICATION_RECD_DATE == "",
-                                                               if_else(APPLICATION_ACCEPTANCE_DATE == "",
+                                                       if_else(is.na(APPLICATION_RECD_DATE),
+                                                               if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                        "NO_PRIORITY_DATE_INFORMATION",
                                                                        "APPLICATION_ACCEPTANCE_DATE"),
                                                                "APPLICATION_RECD_DATE"),
@@ -257,11 +266,25 @@ mainProcedure <- function () {
   # Output 'priorityDateCSV' as a new XLSX file
   # (in the "OutputData" folder)
   priorityDateCSV %>%
-    write.xlsx("OutputData/Priority_Date_Scripted.xlsx", overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
+  
+  
+  
+  # Send a completion message to the console
+  cat("Done!\n")
+  
+  
+  
+  return(invisible(NULL))
   
 }
 
 
 #### Script Execution ####
 
+
 mainProcedure()
+
+
+# Remove the function from the environment when the procedure is complete
+remove(mainProcedure)
