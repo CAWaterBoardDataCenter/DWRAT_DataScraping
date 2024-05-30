@@ -1,3 +1,5 @@
+# REMEDIATION SCRIPT
+
 # Analyze the POD coordinates specified in a GIS Preprocessing spreadsheet
 # Use USGS StreamStats to see the water drainage path from each set of coordinates
 # Make notes in the dataset about whether the path from the coordinates drains out of the watershed's main river

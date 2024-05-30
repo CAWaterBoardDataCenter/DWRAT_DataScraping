@@ -1,3 +1,5 @@
+# FLAGGING SCRIPT that produces 4 different flags
+
 # Perform the steps to identify PODs within a watershed
 # (A manual review will be needed on the output)
 
