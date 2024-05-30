@@ -36,7 +36,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-05-08")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2024-05-31")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -47,7 +47,7 @@ print(EndDate)
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
 End_Date <- as.Date("2024-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2024-05-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2024-04-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
 
   # usually the last day of the next month
 
@@ -85,7 +85,7 @@ source(here("Scripts/Dat_SRP.R"))
 # Model Post-Processing ------------------------------------------------
 
 # PRMS Post-Processing Script
-source(here("Scripts/CNRFC_PRMS_Processor.R"))
+source(here("Scripts/PRMS_Processor.R"))
 
 
 # SRP Post-Processing Script
