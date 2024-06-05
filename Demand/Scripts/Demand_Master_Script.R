@@ -92,6 +92,9 @@ source("Scripts/Beneficial_Use_Return_Flow.R")
 # POD Sub-basin Assignment
 #Skipped by Payman on 5/2/2024
 source("Scripts/Assign_Subbasin_to_POD.R")
+#source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
+# ^ Alternative script that uses connectivity matrix for sub-basin assignment
+
 
 
 # QA/QC Working File Module*
