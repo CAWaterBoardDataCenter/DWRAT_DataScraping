@@ -17,6 +17,8 @@ require(DBI)
 # is not included with the month. It affects every water right and possibly every analysis 
 # performed on Water Year 2022 data or later where the error went unnoticed.
 
+# REMEDIATION CODING BLOCK
+
 fixData <- function(x) {
   
   # WY 2022 data:
@@ -100,6 +102,7 @@ if (water_use_report %>%
   
 }
 
+# DATA ACQUISITION CODING BLOCK
 
 # Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
 # (This works, but it takes a long time, and the progress bar might not update)

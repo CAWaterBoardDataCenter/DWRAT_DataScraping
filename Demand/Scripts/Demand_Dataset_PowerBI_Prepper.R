@@ -1,3 +1,6 @@
+# This script generates a PowerBI friendly demand dataset for analysis and visualization;
+# This script is not involved in flagging, remediation, or DWRAT.
+
 # Load libraries----
 library(readxl)
 library(dplyr)

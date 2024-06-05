@@ -1,3 +1,5 @@
+# FLAGGING SCRIPT -- Flags demand data based on the median and the average reported values for the water right
+
 require(tidyverse)
 require(readxl)
 require(openxlsx)
@@ -50,9 +52,9 @@ expDemand <- expDemand %>% group_by(APPLICATION_NUMBER, YEAR) %>%
 medVals <- expDemand %>%
   group_by(APPLICATION_NUMBER) %>%
   summarize(MEDIAN_TOTAL_AF = median(YEAR_TOTAL, na.rm = TRUE),
-            Q1_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[2],
-            IQR_TOTAL_AF = IQR(YEAR_TOTAL, na.rm = TRUE),
-            Q3_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[4],
+            Q1_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[2], # Not used currently for analysis
+            IQR_TOTAL_AF = IQR(YEAR_TOTAL, na.rm = TRUE), # Not used currently for analysis
+            Q3_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[4], # Not used currently for analysis
             AVG_TOTAL_AF = mean(YEAR_TOTAL, na.rm = TRUE),
             SD_TOTAL_AF = sd(YEAR_TOTAL, na.rm = TRUE))
 
