@@ -141,6 +141,34 @@ rows_with_minus_99 <- apply(Dat_SRP_Merged == -99, 1, any)
 rows_with_minus_99_values <- Dat_SRP_Merged[rows_with_minus_99, ]
 print(rows_with_minus_99_values)
 
+
+
+# Water Year Forecast data 2----
+
+# This procedure will only be used if precipitation data from October 
+# to February is available for the current water year
+
+# Based on a previously generated linear regression model, the most
+# similar water year to the current water year (WY2024) was identified
+
+# That year's data will be substituted in for the remainder of WY2024
+
+
+# Check that 'EndDate' is within the proper bounds for this procedure
+if (EndDate$date >= paste0(EndDate$year, "-03-01") & 
+    EndDate$date < paste0(EndDate$year, "-09-30")) {
+  
+  # This is a manual assignment
+  # Based on the regression model generated on 5/17/2024,
+  # data from WY2020 should be substituted into the remaining WY2024 range
+  Dat_SRP_Merged[Dat_SRP_Merged$Date > EndDate$date & 
+                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("Year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= "2020-09-30" &
+                                                                                                                                                                         Dat_SRP_Merged$Date > paste0("2020-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("Year", "month", "day", "Date"))]
+  
+}
+
+
+
 # Ensure all numeric columns have at least 4 decimal places
 Dat_SRP_Merged[, c("precip01", "precip02", "tmax01", "tmax02", "tmin01", "tmin02")] <- 
   format(Dat_SRP_Merged[, c("precip01", "precip02", "tmax01", "tmax02", "tmin01", "tmin02")], nsmall = 4)
