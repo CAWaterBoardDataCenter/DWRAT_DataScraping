@@ -94,6 +94,7 @@ mainProcedure <- function (StartDate, EndDate) {
   
   
   # Prepare the POST request content
+  # The SRP stations require English units (inches and Fahrenheit)
   bodyList <- list(call = "pp/daily_timeseries_mp",
                    proc = "gridserv",
                    lons = statDF$X2 %>% paste0(collapse = "|"),
@@ -102,7 +103,7 @@ mainProcedure <- function (StartDate, EndDate) {
                    spares = "4km",
                    interp = "idw",
                    stats = "ppt tmin tmax",
-                   units = "si",
+                   units = "eng",
                    range = "daily",
                    start = paste0(StartDate$year, twoDigitText(StartDate$month), twoDigitText(StartDate$day)),
                    end = paste0(EndDate$year, twoDigitText(EndDate$month), twoDigitText(EndDate$day)),

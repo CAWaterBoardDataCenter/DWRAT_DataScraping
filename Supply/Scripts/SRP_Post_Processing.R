@@ -144,6 +144,7 @@ colnames(PRMS)[2:23] <- c(1:22)
 # Convert SRP_monthly$Date to adate format
 SRP_monthly$Date = as.Date(x = SRP_monthly$Date, format = "%Y-%m-%d")
 Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
+Raw_Flows$Date = format(Raw_Flows$Date, "%m/%d/%Y")
 
 # Write Raw Flows to CSV for DWRAT input----
 write.csv(Raw_Flows, here("ProcessedData/Raw_Flows.csv"), row.names = FALSE)

@@ -1,3 +1,5 @@
+# REMEDIATION SCRIPT
+
 # Analyze the POD coordinates specified in a GIS Preprocessing spreadsheet
 # Use USGS StreamStats to see the water drainage path from each set of coordinates
 # Make notes in the dataset about whether the path from the coordinates drains out of the watershed's main river
@@ -17,9 +19,14 @@ require(httr)
 
 #### Functions ####
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
 
-  # Start with gathering datasets related to the watershed
+  # Analyze the specified coordinates in the GIS manual review
+  source("Scripts/Watershed_Selection.R")
+  
+  
+  
+  # Start by gathering datasets related to the watershed
   
   
   
@@ -44,7 +51,10 @@ mainProcedure <- function (ws) {
   # If that is not the case, throw an error
   if (!is.numeric(ws$WATERSHED_EXIT_POINT_INDEX)) {
     
-    stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\nPlease use the code 'mapview(wsPoints)' to view the points in 'wsPoints'. Then, choose the point (using its ID/row number) that best represents the watershed's exit area."))
+    stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\n", 
+                "Please use the code 'mapview(wsPoints)' to view the points ",
+                "in 'wsPoints'. Then, choose the point (using its ID/row number) ",
+                "that best represents the watershed's exit area."))
     
   }
   
@@ -93,9 +103,14 @@ mainProcedure <- function (ws) {
   
   
   # Narrow the selection of columns in 'podDF'
-  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
-                            REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, MULTI_OPTIONS_CHOICE, 
-                            NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY)
+  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, 
+                            REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, 
+                            REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
+                            REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, 
+                            REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, 
+                            REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, 
+                            MULTI_OPTIONS_CHOICE, NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY,
+                            `MANUAL_OVERRIDE: KEEP POD`, `MANUAL_OVERRIDE: REMOVE POD`)
   
   
   
@@ -104,15 +119,19 @@ mainProcedure <- function (ws) {
   
   
   
-  # For now, focus on PODs that are not one mile or more within the watershed boundary
-  # (Save the original tibble to another variable)
+  # Focus on PODs that have a value specified in one of the three main "REPORT" fields
+  # (Also save the original tibble to another variable)
   origDF <- podDF
   
   
   
   # Then, filter 'podDF' down
   podDF <- podDF %>%
-    filter(is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
+    filter(!is.na(REPORT_LATITUDE) | 
+             !is.na(REPORT_NORTHING) | 
+             !is.na(REPORT_SECTION_CORNER)) %>%
+    filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
+      #is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
   
   
   
@@ -326,10 +345,31 @@ mainProcedure <- function (ws) {
   
   
   
-  # Create a final list of PODs
-  # It will have PODs from 'podDF' and 'origDF' (that are at least one mile within the watershed boundaries)
-  finalDF <- bind_rows(podDF, origDF[!(origDF$APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER & origDF$POD_ID %in% podDF$POD_ID), ]) %>%
-    filter(is.na(AT_LEAST_ONE_EXIT) | AT_LEAST_ONE_EXIT == TRUE)
+  # The next step is to create a final list of PODs
+  # 'podDF' only contains the rows that were checked via StreamStats
+  # The rest are in 'origDF' but it also contains rows present in 'podDF'
+  # Filter down 'origDF' (then bind the remaining rows to 'podDF')
+  origDF <- origDF %>% 
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", POD_ID))
+  
+  podDF <- podDF %>% 
+    mutate(KEY = paste0(APPLICATION_NUMBER, "|", POD_ID))
+  
+  
+  
+  origDF <- origDF %>%
+    filter(!(KEY %in% podDF$KEY))
+  
+  
+  
+  # Create the final list of PODs
+  finalDF <- bind_rows(podDF, origDF) %>%
+    select(-KEY) %>%
+    arrange(APPLICATION_NUMBER, POD_ID) %>%
+    filter(AT_LEAST_ONE_EXIT == TRUE | 
+             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
+             !is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
+    filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
   
   
   
@@ -350,7 +390,7 @@ mainProcedure <- function (ws) {
   
   
   # Save the updated 'podDF' as well as 'finalDF' in an XLSX file as well
-  write_xlsx(list("StreamStats_Res" = podDF, 
+  write_xlsx(list("StreamStats_Res" = podDF %>% select(-KEY), 
                   "Final_List" = finalDF %>%
                     select(APPLICATION_NUMBER, POD_ID, AT_LEAST_ONE_EXIT, LONGITUDE, LATITUDE)), 
              paste0("OutputData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
@@ -502,7 +542,11 @@ requestFlowPath <- function (pod) {
                     #  294
                     "Content-Type" = "application/json;charset=UTF-8", 
                     # Cookie:
-                    #   AWSALB=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP; AWSALBCORS=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP
+                    #   AWSALB=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5
+                    #   KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8Sg
+                    #   PmpiQtX6vhkpyzP; AWSALBCORS=47A+MRlQ4OVQMuc5ytXvkQekgQsquF
+                    #   Nd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9
+                    #   UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP
                     "Dnt" = 1,
                     #Origin:
                     #  https://streamstats.usgs.gov
@@ -518,8 +562,12 @@ requestFlowPath <- function (pod) {
                     #  same-origin
                     "User-Agent" = "R version 4.2.3",
                     "User-Contact" = "aakash.prashar@waterboards.ca.gov")),
-                  body = paste0('[{"id":1,"name":"Start point location","required":true,"description":"Specified lat/long/crs  navigation start location","valueType":"geojson point geometry",', 
-                                '"value":{"type":"Point","coordinates":[', st_coordinates(pod) %>% paste0(collapse = ","), '],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}}]'))
+                  body = paste0('[{"id":1,"name":"Start point location","required":true,',
+                                '"description":"Specified lat/long/crs  navigation start location",', 
+                                '"valueType":"geojson point geometry",', 
+                                '"value":{"type":"Point","coordinates":[', 
+                                st_coordinates(pod) %>% paste0(collapse = ","), 
+                                '],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}}]'))
   
   
   
@@ -970,7 +1018,7 @@ extractCorner <- function (sectionPoints, corner) {
     
   } else if (corner %in% c("N1/4", "S1/4")) {
     
-    targetLon <- mean(c(min(latLon$X), max(latlon$X)))
+    targetLon <- mean(c(min(latLon$X), max(latLon$X)))
     
   } else if (corner %in% c("NE", "E1/4", "SE")) {
     
@@ -1477,8 +1525,8 @@ translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
 #### Script Execution ####
 
 
-print("Starting 'POD_StreamStats_Analysis.R'")
-mainProcedure(ws)
+print("Starting 'POD_StreamStats_Analysis.R'...")
+mainProcedure()
 print("The script has finished running!")
 
 

@@ -1,3 +1,5 @@
+# FLAGGING SCRIPT
+
 # Looking for annual diversion amounts that exceed previously report diversion amounts
 # Also look for unit conversion errors
 
@@ -18,16 +20,19 @@ require(readxl)
 #### Script Procedure ####
 
 
-mainProcedure <- function (ws) {
+mainProcedure <- function () {
   
   # The main body of the script
   
   
+  source("Scripts/Watershed_Selection.R")
+  source("Scripts/Dataset_Year_Range.R")
+  
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_Statistics_FINAL.csv"))
-  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
+  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL.csv"))
+  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
   
   
   # Create and append two new columns to 'statDF'
@@ -623,7 +628,7 @@ mainProcedure <- function (ws) {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"),
+    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions.xlsx"),
                overwrite = TRUE)
     #write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
     #           overwrite = TRUE)
@@ -634,7 +639,7 @@ mainProcedure <- function (ws) {
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
     unique() %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
   
   
   
@@ -650,7 +655,9 @@ mainProcedure <- function (ws) {
                  select(APPLICATION_NUMBER) %>% unlist() %>% sort() %>% paste0(collapse = "\n"),
                "\n\n"))
     
-    cat(paste0("Note: This list can be extracted from the spreadsheet 'OutputData/", ws$ID, "_ExpectedDemand_FV.xlsx'\n\n"))
+    cat(paste0("Note: This list can be extracted from the spreadsheet 'OutputData/", ws$ID, 
+               "_", yearRange[1], "_", yearRange[2], 
+               "_ExpectedDemand_FV.xlsx'\n\n"))
     
   }
   
@@ -1516,7 +1523,8 @@ compareKeys <- function (mainDF, compareDF) {
 
 cat("Starting 'Expected_Demand.R'...")
 
-mainProcedure(ws)
+
+mainProcedure()
 
 
 print("The Expected_Demand.R script is done running!")

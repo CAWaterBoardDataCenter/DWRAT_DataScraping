@@ -1,3 +1,6 @@
+# FLAGGING SCRIPT that also serves as a DWRAT COMPLIANCE SCRIPT-- DWRAT requires
+# ASSIGNED_PRIORITY_DATE as a field so that it can allocate water based on seniority
+
 # Classify different water right types and assign priority dates
 
 
@@ -5,6 +8,9 @@
 
 # It will produce a spreadsheet called "Priority_Date_Scripted.xlsx" that 
 # mirrors the format of the original "Priority_Date.xlsx" file
+
+
+cat("Starting 'Priority_Date.R'...\n")
 
 
 #### Dependencies ####
@@ -17,14 +23,17 @@ require(openxlsx)
 #### Script Procedure ####
 
 
-mainProcedure <- function (wsID) {
+mainProcedure <- function () {
   
   # The main body of the script
   
   
+  source("Scripts/Watershed_Selection.R")
+  
+  
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv(paste0("IntermediateData/", wsID, "_Priority_Date_FINAL.csv")) %>%
+  priorityDateCSV <- read.csv(paste0("IntermediateData/", ws$ID, "_Priority_Date_FINAL.csv")) %>%
     unique()
 
   
@@ -257,7 +266,7 @@ mainProcedure <- function (wsID) {
   # Output 'priorityDateCSV' as a new XLSX file
   # (in the "OutputData" folder)
   priorityDateCSV %>%
-    write.xlsx(paste0("OutputData/", wsID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
   
   
   
@@ -274,9 +283,7 @@ mainProcedure <- function (wsID) {
 #### Script Execution ####
 
 
-cat("Starting 'Priority_Date.R'...")
-
-mainProcedure(ws$ID)
+mainProcedure()
 
 
 # Remove the function from the environment when the procedure is complete

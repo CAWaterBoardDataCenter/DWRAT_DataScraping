@@ -1,3 +1,5 @@
+# FLAGGING SCRIPT
+
 #Install if you do not have in your current packages or are not up to date.----
 # install.packages("tidyverse")
 #Load Packages- This step must be done each time the project is opened. ----
@@ -6,7 +8,10 @@ library(readxl)
 
 
 # Output a message to the console
-cat("Starting 'Priority_Date_Preprocessing.R'...")
+cat("Starting 'Priority_Date_Preprocessing.R'...\n")
+
+
+source("Scripts/Watershed_Selection.R")
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################

@@ -1,3 +1,5 @@
+# FLAGGING SCRIPT -- Flags demand data based on the median and the average reported values for the water right
+
 require(tidyverse)
 require(readxl)
 require(openxlsx)
@@ -6,8 +8,12 @@ require(openxlsx)
 print("Starting 'Expected_Demand_Units_Issue_Flagger.R'...")
 
 
+source("Scripts/Watershed_Selection.R")
+source("Scripts/Dataset_Year_Range.R")
+
+
 # Read in the Expected Demand spreadsheet
-expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_Monthly_Diversions.xlsx"))
+expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions.xlsx"))
 
 
 
@@ -46,9 +52,9 @@ expDemand <- expDemand %>% group_by(APPLICATION_NUMBER, YEAR) %>%
 medVals <- expDemand %>%
   group_by(APPLICATION_NUMBER) %>%
   summarize(MEDIAN_TOTAL_AF = median(YEAR_TOTAL, na.rm = TRUE),
-            Q1_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[2],
-            IQR_TOTAL_AF = IQR(YEAR_TOTAL, na.rm = TRUE),
-            Q3_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[4],
+            Q1_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[2], # Not used currently for analysis
+            IQR_TOTAL_AF = IQR(YEAR_TOTAL, na.rm = TRUE), # Not used currently for analysis
+            Q3_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[4], # Not used currently for analysis
             AVG_TOTAL_AF = mean(YEAR_TOTAL, na.rm = TRUE),
             SD_TOTAL_AF = sd(YEAR_TOTAL, na.rm = TRUE))
 

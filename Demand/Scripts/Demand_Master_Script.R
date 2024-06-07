@@ -1,6 +1,4 @@
 # Run scripts to produce a master demand table
-
-
 require(tidyverse)
 require(sf)
 require(openxlsx)
@@ -14,69 +12,46 @@ require(readxl)
 require(janitor)
 require(writexl)
 
+# There are several different coding blocks, which the SDA Demand QAQC Flags document 
+  # in the SOPs and Documentation\1. Demand Data\SDU Methodology folder describes
+  # in detail, but we have stamped them in the Demand Scripts 
 
-# Generic functions that are used in multiple scripts
-source("Scripts/Shared_Functions_Demand.R")
+# IMPORTANT!!
+# Update "Watershed_Selection.R" to select a watershed
+source("Scripts/Watershed_Selection.R") # DATA ACQUISITION SCRIPT
 
-
-
-# Get watershed names and identifiers
-ws <- makeSharePointPath(filePathFragment = "Watershed Folders/Watershed_Demand_Dataset_Paths.xlsx") %>%
-  read_xlsx(sheet = "Main_Sheet", skip = 1)
-
-
-
-# IMPORTANT!! CHOOSE A WATERSHED
-ws <- ws[1, ] # Change the row index to your desired watershed
+# IMPORTANT!! x2
+# Specify the years to be included in the demand dataset
+source("Scripts/Dataset_Year_Range.R")  #DATA ACQUISITION SCRIPT
 
 
-
-stopifnot(nrow(ws) == 1)
-
-
-
-cat(paste0("Running scripts for ", ws$NAME, "\n"))
+# GIS Pre-Processing Initial Steps, last run on 5/2/2024 by Payman, skipped on 5/7/2024 by Payman
+source("Scripts/GIS_POD_Flat_File_Prep.R") # Consists of Remediation coding block and
+# Data Acquisition coding block
 
 
-
-# GIS Pre-Processing Initial Steps
-source("Scripts/GIS_POD_Flat_File_Prep.R")
-
-
-# GIS Pre-Processing; pre-processing was last incorporated on 9/19/2023 to a dataset
-# initially downloaded in June 2023
-source("Scripts/GIS_Preprocessing.R")
+# GIS Pre-Processing, skipped on 5/7/2024 by Payman
+source("Scripts/GIS_Preprocessing.R") # FLAGGING SCRIPT
 
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
-# to identify which PODs flow into the watershed (via USGS StreamStats); will not return any results as of 4/24/2024 
-# because the manual POD review spreadsheet produced by GIS_Preprocessing.R has not been assessed
-source("Scripts/POD_StreamStats_Analysis.R")
+# to identify which PODs flow into the watershed (via USGS StreamStats), skipped on 5/7/2024 by Payman
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
 #source("Scripts/Extended_CSV_to_SQLite.R")
 
 
-# QA/QC functions for correcting unit conversion errors and duplicate reporting
-source("Scripts/QAQC_Functions.R")
-
-
-# A function to update reported amounts for new rights
-source("Scripts/Face_Value_Substitution.R")
-
-
 # Priority Date Pre-Processing
-source("Scripts/Priority_Date_Preprocessing.R")
+source("Scripts/Priority_Date_Preprocessing.R") # FLAGGING SCRIPT
 
 
 # Priority Date Module
-source("Scripts/Priority_Date.R")
+source("Scripts/Priority_Date.R") # FLAGGING SCRIPT and # DWRAT COMPLIANCE SCRIPT
 
 
 # Priority Date Post-Processing
-source("Scripts/Priority_Date_Postprocessing.R")
-
+source("Scripts/Priority_Date_Postprocessing.R") # FLAGGING SCRIPT and REMEDIATION SCRIPT
 
 # Duplicate Report Module *
   # Identifies 1 owner per water right per reporting year
@@ -84,23 +59,30 @@ source("Scripts/Priority_Date_Postprocessing.R")
   # in the same year
   # Doesn't need to be run again unless we want to analyze new Russian River water rights; 
   # the manual review has already been performed on the duplicates
-source("Scripts/Multiple_Owner_Analysis.R")
-
+  #skipped by Payman on 5/2/2024
+source("Scripts/Multiple_Owner_Analysis.R") # FLAGGING SCRIPT
 
 # Expected Demand Module
-source("Scripts/Expected_Demand.R")
-
+#skipped by Payman on 5/2/2024
+source("Scripts/Expected_Demand.R") # FLAGGING SCRIPT
 
 # Supplemental Expected Demand Module
-source("Scripts/Expected_Demand_Units_Issue_Flagger.R")
+#Skipped by Payman on 5/2/2024
+source("Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
 
 
 # Try to fix reports with NA values for all months and diversion types
-source("Scripts/Check_Empty_Reports.R")
+#skipped by Payman on 5/2/2024
+source("Scripts/Check_Empty_Reports.R") # FLAGGING AND REMEDIATION SCRIPT
 
+# Demand Dataset PowerBI Prepper; not required for generating MDT, can be skipped
+  #As of 5/7/2024, only applicable to RR watershed
+source("Scripts/Demand_Dataset_PowerBI_Prepper.R") # Miscellaneous Script; not 1 of 5 main categories
 
 # Beneficial Use, Return Flow Module
-source("Scripts/Beneficial_Use_Return_Flow.R")
+#skipped by Payman on 5/2/2024
+source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
+# because DWRAT does not consider beneficial uses or return flows
 
 
 # Diversion Out of Season Module (Parts A and B)*
@@ -112,7 +94,11 @@ source("Scripts/Beneficial_Use_Return_Flow.R")
 
 
 # POD Sub-basin Assignment
+#Skipped by Payman on 5/2/2024
 source("Scripts/Assign_Subbasin_to_POD.R")
+#source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
+# ^ Alternative script that uses connectivity matrix for sub-basin assignment
+
 
 
 # QA/QC Working File Module*
@@ -123,6 +109,7 @@ source("Scripts/Assign_Subbasin_to_POD.R")
 
 
 # MasterDemandTable.CSV for DWRAT
+#Skipped by Payman on 5/2/2024
 source("Scripts/MasterDemandTable.R")
 
 
