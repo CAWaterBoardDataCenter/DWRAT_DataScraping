@@ -19,17 +19,20 @@ DAT_Metadata <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Bluepri
 
 
 
-# Predicted values for the rest of the water year
+# SBI predicted values for the rest of the water year
+# (Used when October-February data for the water year is not yet available)
 DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values.dat") %>%
   read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
-  set_names(names(read_csv("InputData/DAT_Fields_PRMS.csv", show_col_types = FALSE)))
+  set_names(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Headers.txt") %>%
+              read_lines())
 
 
 
 # Read in the DAT file that contains data from 1990 up to the current water year
 DAT_Initial <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_PRMS_1990_to_WY2023.dat") %>%
   read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
-  set_names(names(DAT_Predictions))
+  set_names(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Headers.txt") %>%
+              read_lines())
 
 
 
@@ -66,7 +69,7 @@ Meteorological <- Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE),
 
 #Write the full Meteorological dataset to a CSV
 write_csv(x = Meteorological, 
-          file = paste0("ProcessedData/Meteorological_",EndDate$date, ".csv" ))
+          file = paste0("ProcessedData/Meteorological_", EndDate$date, ".csv" ))
 
 
 
@@ -117,6 +120,7 @@ DAT_Merged <- DAT_Initial %>%
 # The next step is to append forecasted data for the rest of the water year
 
 
+
 # Filter 'DAT_Predictions' to dates that do not appear in 'DAT_Merged'
 DAT_Predictions <- DAT_Predictions %>%
   mutate(Date = as.Date(paste0(Year, "/", month, "/", day), format = "%Y/%m/%d")) %>%
@@ -153,6 +157,200 @@ if (dateSeq[!(dateSeq %in% DAT_Merged$Date)] %>% length() > 0) {
 # Make sure there are no NA values or missing values in the dataset
 stopifnot(!anyNA(DAT_Merged))
 stopifnot(sum(grepl("\\-99", DAT_Merged)) == 0)
+
+
+
+# Water Year Forecast data 2----
+
+
+# This procedure will only be used if precipitation data from October 
+# to February is available for the current water year
+
+# Based on a previously generated linear regression model, the most
+# similar water year to the current water year (WY2024) was identified
+
+# That year's data will be substituted in for the remainder of WY2024
+
+
+# Unused Procedure:
+
+# Using linear regression, develop a model that predicts the total
+# precipitation for a water year using the October - February precipitation total
+
+# Then, find the year whose total is most similar to the 
+# predicted total for the current water year
+
+# Substitute that chosen year's precipitation and temperature values for 
+# the rest of the current water year
+
+# (This procedure is repeated for each precipitation column)
+
+
+
+# Check that 'EndDate' is within the proper bounds for this procedure
+if (EndDate$date >= paste0(EndDate$year, "-03-01") & 
+    EndDate$date < paste0(EndDate$year, "-09-30")) {
+  
+  
+  # The commented-out code was meant to automate the process of 
+  # identifying and substituting data from another WY
+  # A manual selection was made instead at the end
+  # However, this commented-out code should remain in case the procedure is later changed
+  
+  
+  
+  # Define a vector with the names of the precipitation columns in 'DAT_Merged'
+  # precipNames <- names(DAT_Merged) %>%
+  #   str_subset("_PRECIP")
+  # 
+  # 
+  # 
+  # # Iterate through each precipitation column
+  # for (i in 1:length(precipNames)) {
+  #   
+  #   cat(paste0("Modeling ", precipNames[i], "...\n"))
+  #   
+  #   
+  #   
+  #   # Define a variable with monthly precipitation values
+  #   monthlyDF <- DAT_Merged %>%
+  #     mutate(WATER_YEAR = if_else(month < 10, Year, Year + 1)) %>%
+  #     group_by(WATER_YEAR, month) %>%
+  #     summarize(MONTHLY_PRECIP = sum(!!sym(precipNames[i])), .groups = "drop")
+  #   
+  #   
+  #   
+  #   # Calculate the October-to-February and WY total precipitation
+  #   modelDF <- monthlyDF %>%
+  #     group_by(WATER_YEAR) %>%
+  #     summarize(OCT_TO_FEB_PRECIP = sum(MONTHLY_PRECIP[month > 9 | month < 3]),
+  #               WY_PRECIP = sum(MONTHLY_PRECIP), .groups = "drop")
+  #   
+  #   
+  #   
+  #   # Randomly partition 'modelDF' into calibration and validation datasets
+  #   # (Use a seed for reproducibility)
+  #   set.seed(10)
+  #   
+  #   
+  #   
+  #   # Randomly assign water years to the calibration and validation datasets
+  #   caliIndices <- sample(nrow(modelDF) - 1, round(2/3 * (nrow(modelDF) - 1)))
+  #   valiIndices <- base::setdiff(1:(nrow(modelDF) - 1), caliIndices)
+  #   
+  #   
+  #   
+  #   # Error Check
+  #   stopifnot(length(caliIndices) + length(valiIndices) + 1 == nrow(modelDF))
+  #   
+  #   
+  #   
+  #   # Define the datasets
+  #   caliDF <- modelDF[caliIndices, ]
+  #   valiDF <- modelDF[valiIndices, ]
+  #   
+  #   
+  #   
+  #   # Construct the regression model
+  #   linModel <- lm(WY_PRECIP ~ OCT_TO_FEB_PRECIP, caliDF)
+  #   
+  #   
+  #   
+  #   # Calculate the R^2 value for the validation dataset
+  #   valiDF <- valiDF %>%
+  #     mutate(PREDICTED_VALUES = predict(linModel, valiDF),
+  #            RESIDUALS = WY_PRECIP - PREDICTED_VALUES)
+  #   
+  #   
+  #   
+  #   # Calculate the components for the SSR and SST as well
+  #   valiDF <- valiDF %>%
+  #     mutate(SSR = (RESIDUALS)^2,
+  #            SST = (WY_PRECIP - mean(valiDF$WY_PRECIP))^2)
+  #   
+  #   
+  #   
+  #   # After that, get the R^2 squared value for the validation dataset
+  #   valiRSq <- 1 - sum(valiDF$SSR) / sum(valiDF$SST)
+  #   
+  #   
+  #   
+  #   # Next, find the most similar water year 
+  #   # Get the difference between the predicted total for the current water
+  #   # year and the actual total precipitation of the other water years
+  #   # Choose the one with a minimal difference (but not the current water year)
+  #   similarYear <- modelDF %>%
+  #     mutate(PREDICTED_TOTAL = predict(linModel, modelDF)) %>%
+  #     mutate(ERROR = abs(WY_PRECIP - PREDICTED_TOTAL[WATER_YEAR == last(WATER_YEAR)]) / PREDICTED_TOTAL[WATER_YEAR == last(WATER_YEAR)]) %>%
+  #     filter(WATER_YEAR != last(WATER_YEAR)) %>%
+  #     filter(ERROR == min(ERROR))
+  #   
+  #   
+  #   
+  #   # There is a small chance that more than one water year has the minimum "ERROR" value
+  #   # However, only one year's data will be used
+  #   if (nrow(similarYear) > 1) {
+  #     
+  #     cat(paste0("More than one water year (", 
+  #                similarYear$WATER_YEAR %>% paste0(collapse = "; "),
+  #                ") has a total precipitation ",
+  #                "similar to the predicted total for the current water year\n",
+  #                "The first one will be arbitrarily chosen\n"))
+  #     
+  #     
+  #     similarYear <- similarYear[1, ]
+  #     
+  #   }
+  #   
+  #   
+  #   
+  #   # Output information about the fit and results to the console
+  #   cat(sprintf("\nLinear Fit: y = %.3f * x + %.3f\nCalibration R^2 is %.3f\nValidation R^2 is %.3f\n\n", 
+  #               linModel$coefficients[2], 
+  #               linModel$coefficients[1],
+  #               summary(linModel)$r.squared,
+  #               valiRSq))
+  #   
+  #   cat(paste0("Most similar water year: ", similarYear$WATER_YEAR[1], "\n\n\n"))
+  #   
+  #   
+  #   
+  #   # For the current water year, substitute data for the rest of the 
+  #   # water year (after 'EndDate' to September 30th)
+  #   # Use data from the chosen similar water year
+  #   DAT_Merged[DAT_Merged$Date > EndDate$date & 
+  #                DAT_Merged$Date <= paste0(EndDate$year, "-09-30"), ][precipNames[i]] <- DAT_Merged[DAT_Merged$Date <= paste0(similarYear$WATER_YEAR, "-09-30") &
+  #                DAT_Merged$Date > paste0(similarYear$WATER_YEAR, "-",
+  #                                         EndDate$month, "-", EndDate$day), ][precipNames[i]]
+  #   
+  #   
+  #   
+  #   
+  #   
+  # }
+  # 
+  
+  
+  
+  # This is a manual assignment
+  # Based on the regression model generated on 5/17/2024,
+  # data from WY2020 should be substituted into the remaining WY2024 range
+  DAT_Merged[DAT_Merged$Date > EndDate$date & 
+               DAT_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(DAT_Merged), c("Year", "month", "day", "Date"))] <- DAT_Merged[DAT_Merged$Date <= "2020-09-30" &
+                                                                                                    DAT_Merged$Date > paste0("2020-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(DAT_Merged), c("Year", "month", "day", "Date"))]
+  
+}
+
+
+
+
+# For each precipitation column, 
+names(Meteorological)
+
+
+
+
+
 
 
 
