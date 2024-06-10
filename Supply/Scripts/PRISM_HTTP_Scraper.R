@@ -166,7 +166,12 @@ getPRISM <- function (bodyList, writePath) {
   
   
   
-  # Send the next request with 'gricketVal'
+  # The next step will be to send 'gricketVal' and request the CSV file path
+  # If the request is very large, PRISM will need extra time to process the data
+  
+  
+  
+  # Try to send the next request with 'gricketVal'
   nextReq <- POST(url = "https://prism.oregonstate.edu/explorer/dataexplorer/rpc.php", 
                   body = list(call = "pp/checkup",
                               proc = "gridserv",
@@ -193,6 +198,50 @@ getPRISM <- function (bodyList, writePath) {
     str_extract("csv.: .+\\.csv.,") %>%
     str_remove(".,$") %>%
     str_remove("^csv.: .")
+  
+  
+  
+  # If PRISM needs more time, 'csvStr' will be NA
+  while (is.na(csvStr)) {
+    
+    # In that case, wait a little bit
+    # Then, resend the request
+    
+    
+    cat("PRISM needs more time to process the request!\n")
+    Sys.sleep(5)
+    
+    
+    
+    # Submit the request with 'gricketVal' again
+    nextReq <- POST(url = "https://prism.oregonstate.edu/explorer/dataexplorer/rpc.php", 
+                    body = list(call = "pp/checkup",
+                                proc = "gridserv",
+                                gricket = gricketVal),
+                    encode = "form",
+                    add_headers(Accept = "application/json, text/javascript, */*; q=0.01",
+                                `Accept-Language` = "en-US,en;q=0.9",
+                                `Accept-Encoding` = "gzip, deflate, br",
+                                `Sec-Ch-Ua-Platform` = "Windows",
+                                `User-Agent` = "R-Programming-Script",
+                                `User-Contact` = "DWR-SDA@Waterboards.ca.gov",
+                                `X-Requested-With` = "XMLHttpRequest",
+                                `Content-Type` = "application/x-www-form-urlencoded; charset=UTF-8"))
+    
+    
+    
+    # Verify that the request was successful 
+    stopifnot(nextReq$status_code == 200)
+    
+    
+    
+    # Get a string containing the filename of the CSV output on PRISM's server
+    csvStr <- content(nextReq) %>% as.character() %>%
+      str_extract("csv.: .+\\.csv.,") %>%
+      str_remove(".,$") %>%
+      str_remove("^csv.: .")
+    
+  }
   
   
   
@@ -237,7 +286,7 @@ twoDigitText <- function (num) {
 #### Script Execution ####
 
 
-print("Starting 'PRISM_Static_Scraper.R'...")
+print("Starting 'PRISM_HTTP_Scraper.R'...")
 
 
 mainProcedure(StartDate, EndDate)
