@@ -162,8 +162,8 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
   # Based on the regression model generated on 5/17/2024,
   # data from WY2020 should be substituted into the remaining WY2024 range
   Dat_SRP_Merged[Dat_SRP_Merged$Date > EndDate$date & 
-                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("Year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= "2020-09-30" &
-                                                                                                                                                                         Dat_SRP_Merged$Date > paste0("2020-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("Year", "month", "day", "Date"))]
+                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= "2020-09-30" &
+                                                                                                                                                                         Dat_SRP_Merged$Date > paste0("2020-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))]
   
 }
 
