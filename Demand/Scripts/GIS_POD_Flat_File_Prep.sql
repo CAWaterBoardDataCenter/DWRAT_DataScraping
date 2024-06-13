@@ -1,0 +1,103 @@
+--Query 1: Water Use Report Extended Dataframe
+With WURE AS (
+SELECT
+AMOUNT, 
+APPLICATION_ACCEPTANCE_DATE, 
+APPLICATION_NUMBER as APPL_ID, 
+APPLICATION_PRIMARY_OWNER, 
+APPLICATION_RECD_DATE, 
+Cast(MONTH as INT) as Month, --change to integer 
+Cast(YEAR as INT) as YEAR, -- change to integer
+DIRECT_DIV_SEASON_END , 
+DIRECT_DIV_SEASON_START, 
+DIVERSION_TYPE, 
+EFFECTIVE_DATE , 
+EFFECTIVE_FROM_DATE, 
+FACE_VALUE_AMOUNT, 
+FACE_VALUE_UNITS, 
+INI_REPORTED_DIV_AMOUNT, 
+INI_REPORTED_DIV_UNIT, 
+MAX_STORAGE, 
+PARTY_ID, 
+PRIMARY_OWNER_ENTITY_TYPE, 
+PRIORITY_DATE, 
+SOURCE_NAME,
+STORAGE_SEASON_END, 
+STORAGE_SEASON_START, 
+SUB_TYPE, 
+TRIB_DESC,
+USE_CODE, 
+WATER_RIGHT_STATUS,
+WATER_RIGHT_TYPE, 
+WATERSHED
+
+From ReportDB.FLAT_FILE.ewrims_water_use_report_extended
+WHERE YEAR >= 2016)
+
+Select * from WURE
+
+
+--Query 2: POD_Flat_File Dataframe
+With POD_Flat_File as (
+SELECT
+APPLICATION_NUMBER,
+CERTIFICATE_ID, 
+COUNTY,
+EAST_COORD,
+HUC_12_NAME, 
+HUC_12_NUMBER,
+HUC_8_NAME, 
+HUC_8_NUMBER,
+CONVERT(DECIMAL(18, 8), LATITUDE) AS LATITUDE,	--Convert to numeric field with 8 decimals
+LICENSE_ID, 
+LOCATION_METHOD, 
+CONVERT(DECIMAL(18,8), LONGITUDE) as LONGITUDE, 
+CASE
+	WHEN MERIDIAN = ' San Bernardino' Then 'S'
+	WHEN MERIDIAN = 'Mount Diablo' Then 'M'
+	When MERIDIAN = 'Humboldt' Then 'H'
+	ELSE 'O'
+	End As MERIDIAN,
+NORTH_COORD, 
+OBJECTID, 
+PARCEL_NUMBER, 
+PERMIT_ID, 
+POD_COUNT, 
+POD_ID, 
+POD_LAST_UPDATE_DATE, 
+POD_NUMBER, 
+POD_NUMBER_GIS, 
+POD_STATUS, 
+POD_TYPE, 
+QUAD_MAP_NAME, 
+QUAD_MAP_NUMBER, 
+QUARTER, 
+QUARTER_QUARTER, 
+RANGE_DIRECTION, 
+RANGE_NUMBER, 
+SECTION_CLASSIFIER, 
+SECTION_NUMBER, 
+SOURCE_NAME, 
+SP_ZONE, 
+SPECIAL_USE_AREA, 
+TOWNSHIP_DIRECTION, 
+TOWNSHIP_NUMBER, 
+TRIB_DESC, 
+WATER_RIGHT_STATUS, 
+WATER_RIGHT_TYPE, 
+WATERSHED, 
+WR_WATER_RIGHT_ID, 
+YEAR_DIVERSION_COMMENCED
+From ReportDB.FLAT_FILE.ewrims_flat_file_pod
+)
+
+Select *,
+Concat(Meridian, Township_Number, Township_Direction, Range_Number, Range_Direction, Section_Number)  as FFTMRS
+from Pod_Flat_File		 --Returns 65,958 rows on 6/11/2024
+Where
+POD_Status = 'Active' --Filter for Active PODs, returns 53,397 rows on 6/11/2024
+AND WATER_RIGHT_TYPE IN	(
+'Appropriative', 'Federal Claims', 'Federal stockponds', 'Registration Cannabis', 
+'Registration Domestic', 'Registration Irrigation', 'Registration Livestock',
+'Statement of Div and Use', 'Stockpond', '')  --Returns 48,680 rows on on 6/11/2024
+
