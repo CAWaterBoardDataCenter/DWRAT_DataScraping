@@ -36,6 +36,7 @@ source("Scripts/GIS_Preprocessing.R") # FLAGGING SCRIPT
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
 # to identify which PODs flow into the watershed (via USGS StreamStats), skipped on 5/7/2024 by Payman
+source("Scripts/POD_StreamStats_Analysis.R")
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
