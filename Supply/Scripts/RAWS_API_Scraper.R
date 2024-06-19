@@ -122,6 +122,41 @@ requestTable <- function (stationName, StartDate, EndDate) {
   
   
   
+  # Next, double check the bounds for the dataset
+  # RAWS will throw an error if 'adjStart' is earlier than the dataset start date
+  # ('EndDate' can be later than the dataset end date without any issue)
+  datasetStart <- getDatasetStartDate(stationName)
+  
+  
+  
+  # Between 'adjStart' and 'datasetStart', choose the date that appears later
+  # Only update 'adjStart' if 'datasetStart' is a more recent date
+  if (datasetStart > adjStart$date) {
+    
+    
+    # Update 'adjStart' and its columns
+    adjStart$date <- datasetStart
+    adjStart$day <- day(adjStart$date)
+    adjStart$month <- month(adjStart$date)
+    adjStart$year <- year(adjStart$date)
+    
+    
+    
+    # Verify that 'EndDate' is still a later date than the new 'adjStart' value
+    # If not, update 'EndDate' to equal 'adjStart'
+    if (EndDate$date < adjStart$date) {
+      
+      EndDate <- adjStart
+      
+    }
+    
+  }
+  
+  
+  
+  
+  
+  
   # Prepare a POST request to the WRCC server
   dataReq <- POST(url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl",
                   body = list("stn" = stationName,
@@ -187,6 +222,81 @@ requestTable <- function (stationName, StartDate, EndDate) {
   
   # Return 'htmlTable'
   return(htmlTable)
+  
+}
+
+
+
+getDatasetStartDate <- function (stationName) {
+  
+  # For this station, extract its start date from the "Daily Time Series" webpage
+  # Towards the beginning of the page, 
+  # there is a line that says "Earliest available data: [MONTH] [YEAR]"
+  # Use that to determine the start date
+   
+  
+  
+  # Use 'stationName' to access the webpage
+  pageContent <- paste0("https://wrcc.dri.edu/cgi-bin/wea_dysimts.pl?ca", stationName) %>%
+    read_lines()
+  
+  
+  
+  # Wait a bit before continuing
+  Sys.sleep(runif(1, min = 1, max = 1.3))
+  
+  
+  
+  # Find the text that says "Earliest available data"
+  # Extract the month and year from that name
+  startDateString <- grep("Earliest available data:", pageContent, 
+                          ignore.case = TRUE, value = TRUE) %>%
+    str_extract(" [A-Za-z]+ [0-9]+\\.?$") %>%
+    trimws()
+  
+  
+  
+  # Make sure 'startDateString' was successfully extracted
+  stopifnot(length(startDateString) == 1)
+  stopifnot(!is.na(startDateString))
+  
+  
+  
+  # Get the month and year from 'startDateString'
+  startMonth <- startDateString %>% str_extract("^[A-Za-z]+")
+  startYear <- startDateString %>% str_extract("[0-9]+")
+  
+  
+  
+  # Make sure that the extraction was successful
+  stopifnot(length(startMonth) == 1)
+  stopifnot(length(StartYear) == 1)
+  
+  stopifnot(!is.na(startMonth))
+  stopifnot(!is.na(StartYear))
+  
+  
+  
+  # 'startMonth' should be a valid month name
+  # (It should appear in the global variable 'month.name')
+  stopifnot(startMonth %in% month.name)
+  
+  
+  
+  # Use 'month.name' to convert 'startMonth' into a number
+  startMonth <- which(startMonth == month.name)
+  
+  
+  
+  # Create a date string with these values ("YYYY-MM-DD")
+  # (The day will be set to the first of the month)
+  datasetStartDate <- paste0(startYear, "-", startMonth, "-01") %>%
+    as.Date()
+  
+  
+  
+  # Return 'datasetStartDate'
+  return(datasetStartDate)
   
 }
 

@@ -136,10 +136,13 @@ faceValSub <- function (inputDF, yearRange = (year(Sys.Date()) - 2):year(Sys.Dat
       # }
       
       
-      # If this right doesn't have data for this iteration's year,
+      # If this right submitted a report but doesn't have data for this iteration's year,
       if (inputDF %>%
           filter(APPLICATION_NUMBER == appVec[i] & YEAR == yearRange[j]) %>%
-          nrow() == 0) {
+          nrow() > 0 &&
+          inputDF %>%
+          filter(APPLICATION_NUMBER == appVec[i] & YEAR == yearRange[j]) %>%
+          select(AMOUNT) %>% unlist() %>% sum() == 0) {
         
         
         # Add AMOUNT data for it based on the FV (if the year is greater than the year of "EFFECTIVE_DATE")
@@ -184,6 +187,19 @@ faceValSub <- function (inputDF, yearRange = (year(Sys.Date()) - 2):year(Sys.Dat
           cat(paste0("Added data for ", yearRange[j], " for ", appVec[i], "\n"))
           
           
+          
+          # At this part of the iteration, the right has records for this year,
+          # but they are zeroes
+          
+          
+          
+          # The right's face-value amount will be assigned to one month during their diversion season
+          # The default choice is a month in their DIRECT_DIVERSION season, but if they have none,
+          # a month from the STORAGE season will be used instead
+          inputDF <- faceValAssign(extendedDF, inputDF, appVec[i], yearRange[j])
+          
+          
+          
           # After these operations, skip the rest of this iteration's code
           next
           
@@ -201,33 +217,6 @@ faceValSub <- function (inputDF, yearRange = (year(Sys.Date()) - 2):year(Sys.Dat
       
       
       # If the above loop did not apply to this right, it has data for this year
-      
-      
-      
-      # If that data is non-zero, make no changes to its data
-      # Simply skip the iteration
-      if (inputDF %>%
-          filter(APPLICATION_NUMBER == appVec[i] & YEAR == yearRange[j]) %>%
-          summarize(TOTAL = sum(AMOUNT, na.rm = TRUE)) %>%
-          select(TOTAL) %>% unlist() > 0) {
-        next
-      }
-      
-      
-      
-      # At this part of the iteration, the right has records for this year,
-      # but they are zeroes
-      
-      # Output a message about the incoming update
-      cat(paste0(appVec[i], "'s data for ", yearRange[j],
-                 " will be replaced with its face-value amount\n",
-                 "(the original reported data is all NA or 0)\n"))
-      
-      
-      # The right's face-value amount will be assigned to one month during their diversion season
-      # The default choice is a month in their DIRECT_DIVERSION season, but if they have none,
-      # a month from the STORAGE season will be used instead
-      inputDF <- faceValAssign(extendedDF, inputDF, appVec[i], yearRange[j])
       
     } # End of 'j' loop through 'yearRange'
     

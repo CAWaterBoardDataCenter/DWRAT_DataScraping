@@ -28,8 +28,8 @@ mainProcedure <- function (StartDate, EndDate) {
                    lons = statDF$X2 %>% paste0(collapse = "|"),
                    lats = statDF$X1 %>% paste0(collapse = "|"),
                    names = statDF$X3 %>% paste0(collapse = "|"),
-                   spares = "4km",
-                   interp = "idw",
+                   spares = "4km", # Resolution
+                   interp = "idw", # Interpolate grid cell values ("0" if no)
                    stats = "ppt",
                    units = "si",
                    range = "daily",
