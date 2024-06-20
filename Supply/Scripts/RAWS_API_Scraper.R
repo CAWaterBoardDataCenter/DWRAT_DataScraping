@@ -21,6 +21,10 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
   # Iterate through the list of stations and collect data from the RAWS website
   for (i in 1:nrow(stationDF)) {
     
+    print(paste0("Station ", i, " of ", nrow(stationDF), " (", stationDF$Alias[i], ")"))
+    
+    
+    
     # Make a POST request to the API and collect a data frame from the returned content
     resTable <- requestTable(stationDF$Station[i], StartDate, EndDate)
     
@@ -65,6 +69,12 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
            RAWS_PRECIP4, RAWS_PRECIP7, RAWS_PRECIP9,
            RAWS_TMAX5, RAWS_TMAX7, RAWS_TMAX8, 
            RAWS_TMIN5, RAWS_TMIN7, RAWS_TMIN8)
+  
+  
+  
+  # Add rows to 'combinedTable' if there are any missing dates
+  combinedTable <- combinedTable %>%
+    addMissingDates(StartDate, EndDate)
   
   
   
@@ -151,9 +161,6 @@ requestTable <- function (stationName, StartDate, EndDate) {
     }
     
   }
-  
-  
-  
   
   
   
@@ -377,6 +384,45 @@ columnRename <- function (stationID, dataTable) {
 
 
 
+addMissingDates <- function (rawsTable, StartDate, EndDate) {
+  
+  
+  # Using 'StartDate' and 'EndDate', create a vector of dates
+  # Each date in this vector is expected to appear in 'rawsTable'
+  dateVec <- seq(from = StartDate$date, to = EndDate$date, by = "day")
+  
+  
+  
+  # Create a vector of missing dates in 'rawsTable'
+  missingDates <- dateVec[!(dateVec %in% rawsTable$Date)]
+  
+  
+  
+  # If there are missing dates, add empty rows to 'rawsTable' for each date
+  if (length(missingDates) > 0) {
+    
+    # Convert 'missingDates' into a data frame with column name "Date"
+    # Bind it to 'rawsTable' (and then sort the data frame by date)
+    rawsTable <- bind_rows(rawsTable,
+                        data.frame(Date = missingDates)) %>%
+      arrange(Date)
+    
+    
+    
+    # Replace 'NA' in 'rawsTable' with "-999"
+    rawsTable[is.na(rawsTable)] <- -999
+    
+  }
+  
+  
+  
+  # Regardless of whether changes are made, return 'rawsTable'
+  return(rawsTable)
+  
+}
+
+
+
 prismSub <- function (rawsTable) {
   
   # In 'rawsTable', missing data is written as "-999"
@@ -458,4 +504,5 @@ cat("Starting 'RAWS_API_Scraper.R'...\n")
 mainProcedure(StartDate, EndDate, includeForecast)
 
 
-remove(mainProcedure, requestTable, columnRemoval, columnRename, prismSub, addCNRFC)
+remove(mainProcedure, requestTable, columnRemoval, columnRename, 
+       prismSub, addCNRFC, getDatasetStartDate, addMissingDates)
