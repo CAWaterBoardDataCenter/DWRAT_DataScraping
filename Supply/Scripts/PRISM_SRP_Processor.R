@@ -3,7 +3,6 @@ library(tidyverse)
 library(here)
 
 #PRISM Precipitation Data Manipulation----
-ndays = 85
 PSRP <- read.csv(here("WebData/PRISM_SRP_Raw.csv"), skip = 10, header = T)
 
 #Rename columns as needed
