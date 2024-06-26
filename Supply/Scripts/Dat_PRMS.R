@@ -165,11 +165,47 @@ for (i in 1:8) {
 negative_tdiff_rows <- rowSums(Dat_Merged_Temp[, paste0("TDIFF", 1:8)] < 0) > 0
 tmin_exceedance_dates <- Dat_Merged_Temp[negative_tdiff_rows, ]
 
+
 # Print or use tmin_exceedance_dates as needed
 print(tmin_exceedance_dates)
 
-  # 2) TMIN < average(TMIN) - 5 * standard deviations
+  # 2) TMIN < average(TMIN) - 5 * standard deviations AND
   # 3) TMIN > average(TMIN) + 5 * standard deviations
+
+    Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+    
+    # Initialize a vector to store flag column names
+    flag_columns <- character(length = 8)  # Assuming 8 TMIN columns
+    
+    # Loop through each TMIN column
+    for (i in 1:8) {
+      tmin_col <- temperature_columns[i + 8]
+      
+      # Calculate average and standard deviation for TMIN_i
+      avg_tmin_i <- mean(Dat_Merged_Temp[[tmin_col]], na.rm = TRUE)
+      sd_tmin_i <- sd(Dat_Merged_Temp[[tmin_col]], na.rm = TRUE)
+      
+      # Create flag column names
+      flag_tmin_i_lt <- paste0("flag_", tmin_col, "_lt")
+      flag_tmin_i_gt <- paste0("flag_", tmin_col, "_gt")
+      flag_columns[i] <- flag_tmin_i_lt  # Store one flag column name for each TMIN column
+      
+      # Create flag columns where TMIN_i < avg(TMIN_i) - 5 * sd(TMIN_i)
+      Dat_Merged_Temp[[flag_tmin_i_lt]] <- Dat_Merged_Temp[[tmin_col]] < avg_tmin_i - 5 * sd_tmin_i
+      
+      # Create flag columns where TMIN_i > avg(TMIN_i) + 5 * sd(TMIN_i)
+      Dat_Merged_Temp[[flag_tmin_i_gt]] <- Dat_Merged_Temp[[tmin_col]] > avg_tmin_i + 5 * sd_tmin_i
+    }
+    
+    # Filter to rows where any flag column is TRUE
+    tmin_absurd <- Dat_Merged_Temp %>%
+      filter(rowSums(select(., starts_with("flag"))) > 0)
+    
+    # Print or use tmin_absurd as needed
+    print(tmin_absurd) # Returns 1 record on 6/25/2024
+
+
+ 
   # 4) TMAX < average(TMAX) - 5 * standard deviations
   # 5) TMAX > average(TMAX) + 5 * standard deviations
 
