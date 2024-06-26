@@ -114,6 +114,64 @@ DAT_Merged <- DAT_Initial %>%
   bind_rows(Meteorological) %>%
   arrange(Date)
 
+# QAQC steps----
+
+## Identify negative precipitation values----
+
+# Identify precipitation columns
+precip_columns <- names(DAT_Merged)[grepl("PRECIP", names(DAT_Merged))]
+
+# Create negative precipitation flag columns
+Dat_Merged_Precip_Flags <- DAT_Merged %>%
+  mutate(across(all_of(precip_columns), ~. < 0, .names = "{.col}_flag"))
+    # across applies the mutate function to multiple columns; relies on helper
+    # functions like all_of(), any_of(), starts_with()
+    # across takes 3 arguments, must be defined and run inside mutate, else will fail
+        # 1) dataset to apply it to, all_of(precip_columns)
+        # 2) conditional statement, ~. < 0; the tilde allows you to create an 
+        # an anonymous that's not defined explicitly
+        # 3) column names to produces, ".names argument)
+
+# Compute row sums of flag columns
+row_sums <- Dat_Merged_Precip_Flags %>%
+  select(ends_with("_flag")) %>%
+  rowSums()
+
+
+# Filter Dat_Merged_Flags based on row sums exceeding 0
+negative_precip_dates <- Dat_Merged_Precip_Flags %>%
+  filter(row_sums > 0)
+
+print(negative_precip_dates) # returns 0 records on 6/25/2024
+
+## Identify extreme temperature values----
+  
+  # 1) TMIN > TMAX
+
+# Identify temperature columns
+temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
+
+Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+
+# Create TDIFF columns
+for (i in 1:8) {
+  tmax_col <- temperature_columns[i]
+  tmin_col <- temperature_columns[i + 8]
+  tdiff_col <- paste0("TDIFF", i)
+  Dat_Merged_Temp[[tdiff_col]] = Dat_Merged_Temp[[tmax_col]] - Dat_Merged_Temp[[tmin_col]]
+}
+
+# Filter rows where any TDIFF is negative
+negative_tdiff_rows <- rowSums(Dat_Merged_Temp[, paste0("TDIFF", 1:8)] < 0) > 0
+tmin_exceedance_dates <- Dat_Merged_Temp[negative_tdiff_rows, ]
+
+# Print or use tmin_exceedance_dates as needed
+print(tmin_exceedance_dates)
+
+  # 2) TMIN < average(TMIN) - 5 * standard deviations
+  # 3) TMIN > average(TMIN) + 5 * standard deviations
+  # 4) TMAX < average(TMAX) - 5 * standard deviations
+  # 5) TMAX > average(TMAX) + 5 * standard deviations
 
 
 # Water Year Forecast data----

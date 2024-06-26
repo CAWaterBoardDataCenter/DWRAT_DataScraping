@@ -46,9 +46,9 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 print(EndDate)
 
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
-End_Date <- as.Date("2024-09-30", format = "%Y-%m-%d") # End of current Water Year
+End_Date <- as.Date("2024-06-06", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2024-06-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2024-06-06", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
 
   # usually the last day of the next month
 
