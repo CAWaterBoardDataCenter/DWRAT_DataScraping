@@ -2,14 +2,17 @@
   # Run the first portion of Master_Script_PRMS.R where you define StartDate, EndDate, and includeForecast,
     # through line 52
   # and you download the SRP raw data
-  # Import Pre-2023 WY SRP DAT file
-  # Import SPI WY 2023-2024 SRP DAT File
-  # Import SRP_Processed.csv
+    # Import Pre-2023 WY SRP DAT file--might need to be updated in the future with corrections; 
+        # for February 2024 - September 2024, the most similar water year, 2020, portion of this file
+        # is used for forecasting
+    # Import SPI WY 2023-2024 SRP DAT File; used for forecasting October 2023 - January 2024
+    # Import SRP_Processed.csv, which contains the observed meteorological data for SRP
 
 # Have some logic that overrides overlapping portion of SPI file with observed data if observed data exists. 
 # Never use SPI data if you have observed data available.
 # combine the 3 datasets (Pre-2023 WY SRP DAT File, SPI data, and observed data) to generate final SRP DAT file
 # for a specific month
+# For 
 # Save the SRP_Dat file for a specific month to the ProcessedData folder with a timestamp. The timestamp is the EndDate;
 # EndDate is the last day of the observed data range. 
 
@@ -104,6 +107,38 @@ print("No errors exist because SRP_Preprocessed and Pre2023_SRP have no
 Dat_SRP_Merged = bind_rows(Pre2023_SRP, SRP_Processed) %>%
   arrange(Date)
 
+## QAQC Flags -----
+
+### Identify negative precipitation values---
+
+# Identify precipitation columns
+precip_columns <- names(Dat_SRP_Merged)[grepl("precip", names(Dat_SRP_Merged))]
+
+# Create negative precipitation flag columns
+Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
+  mutate(across(all_of(precip_columns), ~. <0, .names = "{.col}_flag"))
+    # across applies the mutate function to multiple columns; relies on helper
+    # functions like all_of(), any_of(), starts_with()
+    # across takes 3 arguments, must be defined and run inside mutate, else will fail
+        # 1) dataset to apply it to, all_of (precip_columns)
+        # 2) conditional statement, ~. <0, the tilde allows you to create an
+        # anonymous function that's not defined explicity
+        # 3) column names to produce, ".names argument)
+
+# Compute row sums of flag_columns
+  row_sums = Dat_SRP_Merged_Precip_Flags %>%
+    select(ends_with("_flag")) %>%
+    rowSums
+    
+  #Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
+  # Add row_sums as a column to the dataset
+  Dat_SRP_Merged_Precip_Flags <- Dat_SRP_Merged_Precip_Flags %>%
+    mutate(row_sums = row_sums)
+  
+  # Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
+  negative_precip_dates <- Dat_SRP_Merged_Precip_Flags %>%
+    filter(row_sums > 0) # Returns 0 records with negative precipitation values
+  
 ## Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
 if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {
   
