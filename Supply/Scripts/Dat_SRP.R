@@ -129,12 +129,6 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
     Dat_SRP_Merged_Precip_Flags <- Dat_SRP_Merged_Precip_Flags %>%
             mutate(row_sums = select(., ends_with("_flag")) %>% 
             rowSums())
-
-    
-  #Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
-  # Add row_sums as a column to the dataset
-  Dat_SRP_Merged_Precip_Flags <- Dat_SRP_Merged_Precip_Flags %>%
-    mutate(row_sums = row_sums)
   
   # Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
   negative_precip_dates <- Dat_SRP_Merged_Precip_Flags %>%
