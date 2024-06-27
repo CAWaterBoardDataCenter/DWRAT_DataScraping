@@ -133,6 +133,132 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
   # Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
   negative_precip_dates <- Dat_SRP_Merged_Precip_Flags %>%
     filter(row_sums > 0)
+
+##  Identify extreme temperature values ----
+  
+  ### 1) TMIN > TMAX----
+  
+  # Identify temperature columns
+  temperature_columns <- names(Dat_SRP_Merged)[grepl("tm", names(Dat_SRP_Merged))]
+  
+  Dat_Merged_SRP_Temp <- Dat_SRP_Merged[, c("Date", temperature_columns)]
+  
+  #Create TDIFF columns
+  for (i in 1:2){
+    tmax_col <- temperature_columns[i]
+    tmin_col <- temperature_columns[i+2]
+    tdiff_col <- paste0("TDIFF", i)
+    Dat_Merged_SRP_Temp[[tdiff_col]] = Dat_Merged_SRP_Temp[[tmax_col]] - 
+      Dat_Merged_SRP_Temp[[tmin_col]]
+  }
+  
+  # Filter rows where any TDIFF is negative
+  negative_tdiff_rows <- rowSums(Dat_Merged_SRP_Temp[, paste0("TDIFF", 1:2)] < 0) > 0
+  tmin_exceedance_dates <- Dat_Merged_SRP_Temp[negative_tdiff_rows,]
+  
+  # Print or use tmin_exceedance_dates as needed
+  print(tmin_exceedance_dates) # returns 0 records on 6/27/2024
+  
+  ### 2) TMIN < average(TMIN) - 5 * standard deviations AND ----
+  # 3) TMIN > average(TMIN) + 5 * standard deviations
+  
+  Dat_Merged_SRP_Temp <- Dat_SRP_Merged[, c("Date", temperature_columns)]
+  
+  # Initialize a vector to store flag column names
+  flag_columns <- character(length = 2) # Assuming 2 TMIN columns
+  
+  # Loop through each TMIN column
+  for (i in 1:2) {
+    tmax_col <- temperature_columns[i]
+    tmin_col <- temperature_columns[i+2]
+    
+    # Calculate average and standard deviation for TMIN_i
+    avg_tmin_i <- mean(Dat_SRP_Merged[[tmin_col]], na.rm = TRUE)
+    sd_tmin_i <- sd(Dat_Merged_SRP_Temp[[tmin_col]], na.rm = TRUE)
+    
+    # Create flag column names
+    flag_tmin_i_lt <- paste0("flag_", tmin_col, "_lt")
+    flag_tmin_i_gt <- paste0("flag_", tmin_col," _gt")
+    flag_columns[i] <- flag_tmin_i_lt  # Store one flag column name for each TMIN column   
+    
+    # Create flag columns where TMIN_i < avg(TMIN_i) - 5 * sd(TMIN_i)
+    Dat_Merged_SRP_Temp[[flag_tmin_i_lt]] <- Dat_Merged_SRP_Temp[[tmin_col]] < 
+                                              avg_tmin_i - 5 * sd_tmin_i
+    
+    # Create flag columns where TMIN_i > avg(TMIN_i) + 5 * sd(TMIN_i)
+    Dat_Merged_SRP_Temp[[flag_tmin_i_gt]] <- Dat_Merged_SRP_Temp[[tmin_col]] > 
+                                              avg_tmin_i + 5 * sd_tmin_i
+  }
+  
+  # Filter to rows where any flag column is TRUE
+  tmin_absurd <- Dat_Merged_SRP_Temp %>%
+    filter(rowSums(select(., starts_with("flag"))) > 0 )
+  
+  #Print or use tmin_absurd as needed
+  print(tmin_absurd) # REturns 0 records on 6/27/2024
+  
+  ### 4) TMAX < average(TMAX) - 5 * standard deviations----
+  # 5) TMAX > average(TMAX) + 5 * standard deviations
+  
+  # Assuming temperature_columns contains both TMAX and TMIN columns
+  Dat_Merged_SRP_Temp <- Dat_SRP_Merged[, c("Date", temperature_columns)]
+  
+  # Initialize a vector to store flag column names
+  flag_columns <- character(length = 2)  # Assuming 2 TMAX columns
+  
+  # Loop through each TMAX column
+  for (i in 1:2) {
+    tmax_col <- temperature_columns[i]  # Adjust the index to select TMAX columns
+    
+    # Calculate average and standard deviation for TMAX_i
+    avg_tmax_i <- mean(Dat_Merged_SRP_Temp[[tmax_col]], na.rm = TRUE)
+    sd_tmax_i <- sd(Dat_Merged_SRP_Temp[[tmax_col]], na.rm = TRUE)
+    
+    # Create flag column names
+    flag_tmax_i_lt <- paste0("flag_", tmax_col, "_lt")
+    flag_tmax_i_gt <- paste0("flag_", tmax_col, "_gt")
+    flag_columns[i] <- flag_tmax_i_lt  # Store one flag column name for each TMAX column
+    
+    # Create flag columns where TMAX_i < avg(TMAX_i) - 5 * sd(TMAX_i)
+    Dat_Merged_SRP_Temp[[flag_tmax_i_lt]] <- Dat_Merged_SRP_Temp[[tmax_col]] < avg_tmax_i - 5 * sd_tmax_i
+    
+    # Create flag columns where TMAX_i > avg(TMAX_i) + 5 * sd(TMAX_i)
+    Dat_Merged_SRP_Temp[[flag_tmax_i_gt]] <- Dat_Merged_SRP_Temp[[tmax_col]] > avg_tmax_i + 5 * sd_tmax_i
+  }
+  
+  # Filter to rows where any flag column is TRUE
+  tmax_absurd <- Dat_Merged_SRP_Temp %>%
+    filter(rowSums(select(., starts_with("flag"))) > 0) 
+  
+  # Print or use tmax_absurd as needed
+  print(tmax_absurd) # returns 0 records on 6/27/2024
+  
+  ### Export QAQC Flags to Excel spreadsheet----
+    library(openxlsx)
+    spreadsheet_name <- paste0("Dat_SRP_QAQC_Flags_", Sys.Date(), ".xlsx")
+    folder_path <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints") 
+    
+    file_path = file.path(folder_path, spreadsheet_name)
+    print(file_path)
+    
+    # Create a new workbook
+    wb = createWorkbook()
+    
+    # Add each dataframe as a sheet
+    addWorksheet(wb, "Negative Precipitation")
+    writeData(wb, sheet = "Negative Precipitation", x= negative_precip_dates)
+    
+    addWorksheet(wb,"TMIN Exceedance")
+    writeData(wb, sheet = "TMIN Exceedance", x = tmin_exceedance_dates)
+    
+    addWorksheet(wb,"TMAX absurd")
+    writeData(wb, sheet = "TMAX absurd", x = tmax_absurd)
+    
+    addWorksheet(wb,"TMIN absurd")
+    writeData(wb, sheet = "TMIN absurd", x = tmin_absurd)
+    
+    # Save the workbook
+    saveWorkbook(wb, file = file_path, overwrite = TRUE)
   
 ## Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
 if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {

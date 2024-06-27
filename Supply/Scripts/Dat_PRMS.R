@@ -129,8 +129,8 @@ Dat_Merged_Precip_Flags <- DAT_Merged %>%
     # across takes 3 arguments, must be defined and run inside mutate, else will fail
         # 1) dataset to apply it to, all_of(precip_columns)
         # 2) conditional statement, ~. < 0; the tilde allows you to create an 
-        # an anonymous that's not defined explicitly
-        # 3) column names to produces, ".names argument)
+        # an anonymous function that's not defined explicitly
+        # 3) column names to produce, ".names argument)
 
 # Compute row sums of flag columns
 row_sums <- Dat_Merged_Precip_Flags %>%
