@@ -10,6 +10,7 @@ names(PSRP)[c(1, 6, 7, 8)] <- c("Station", "ppt", "Tmin", "Tmax")
 
 #Remove unnecessary columns
 PSRP = select(PSRP, c("Station", "Date", "ppt", "Tmin", "Tmax"))
+
 #Pivot PP so that each station becomes a separate column
 PSRP <- pivot_wider(PSRP, id_cols = Date, names_from = Station, 
                     values_from = c("ppt", "Tmin", "Tmax"))
