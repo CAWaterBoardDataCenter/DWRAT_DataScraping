@@ -125,10 +125,11 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
         # anonymous function that's not defined explicity
         # 3) column names to produce, ".names argument)
 
-# Compute row sums of flag_columns
-  row_sums = Dat_SRP_Merged_Precip_Flags %>%
-    select(ends_with("_flag")) %>%
-    rowSums
+    # Compute row sums of flag columns and add as a new column
+    Dat_SRP_Merged_Precip_Flags <- Dat_SRP_Merged_Precip_Flags %>%
+            mutate(row_sums = select(., ends_with("_flag")) %>% 
+            rowSums())
+
     
   #Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
   # Add row_sums as a column to the dataset
@@ -137,7 +138,7 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
   
   # Filter Dat_SRP_Merged_Precip_Flags based on row_sums exceeding 0
   negative_precip_dates <- Dat_SRP_Merged_Precip_Flags %>%
-    filter(row_sums > 0) # Returns 0 records with negative precipitation values
+    filter(row_sums > 0)
   
 ## Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
 if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {
