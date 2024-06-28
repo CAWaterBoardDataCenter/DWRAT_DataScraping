@@ -29,15 +29,13 @@ Flag_GIS_Preprocessing <- function () {
   
   
   # After that, import a full list of PODs from eWRIMS
-  # (1) To do that, get the most recent "Flat_File_eWRIMS_[DATE].csv" file in the "IntermediateData" folder
+  # (1) To do that, read in the POD flat file
   # (2) Every column is read in as a character column by default
   #     Make new columns for "LATITUDE" and "LONGITUDE" that are numeric 
   # (3) Then, make 'pod_points_statewide' into a GIS layer
   #     Use the numeric "LATITUDE" and "LONGITUDE" layers as coordinates
   #     (The data in these columns will not be easily accessible afterwards, so that's why copies were used)
-  pod_points_statewide <- list.files("IntermediateData/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
-    sort() %>% tail(1) %>%
-    read_csv(show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+  pod_points_statewide <- read_csv("RawData/Snowflake_ewrims_flat_file_pod.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
     mutate(LONGITUDE2 = as.numeric(LONGITUDE), LATITUDE2 = as.numeric(LATITUDE)) %>%
     filter(!is.na(LONGITUDE2)) %>% 
     unique() %>%

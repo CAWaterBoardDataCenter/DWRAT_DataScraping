@@ -14,7 +14,7 @@ cat("Starting '[Data_Filtering]_Initial_POD_List.R'...\n")
 
 
 # Read in the POD flat file
-Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
+Flat_File_PODs <- read.csv("RawData/Snowflake_ewrims_flat_file_pod.csv")
 
 
 
@@ -112,8 +112,7 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
 
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
-write_csv(Flat_File_eWRIMS,
-          paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
+write_csv(Flat_File_eWRIMS, "RawData/Snowflake_ewrims_flat_file_pod.csv")
 
 
 

@@ -78,7 +78,7 @@ res <- dbFetch(query)
 
 
 # Write 'res' to a file
-write_csv(res, "RawData/water_use_report_extended.csv")
+write_csv(res, "RawData/Snowflake_water_use_report_extended.csv")
 
 
 
@@ -98,7 +98,7 @@ res <- dbFetch(query)
 
 
 # Write 'res' to a file
-write_csv(res, "RawData/ewrims_flat_file_pod.csv")
+write_csv(res, "RawData/Snowflake_ewrims_flat_file_pod.csv")
 
 
 

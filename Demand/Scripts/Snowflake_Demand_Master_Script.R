@@ -18,8 +18,7 @@ require(writexl)
 
 #### Data Acquisition ####
 
-# Download eWRIMS Flat Files (VPN Required)
-# (Script pending Snowflake integration)
+# Download eWRIMS Flat Files (Snowflake connection required)
 source("Scripts/[Data_Acquisition]_Flat_File_Download.R")
 
 #### Data Filtering ####
