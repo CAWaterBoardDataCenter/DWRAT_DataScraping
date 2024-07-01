@@ -113,8 +113,163 @@ DAT_Merged <- DAT_Initial %>%
   bind_rows(Meteorological) %>%
   arrange(Date)
 
+# QAQC steps----
+
+## Identify negative precipitation values----
+
+# Identify precipitation columns
+precip_columns <- names(DAT_Merged)[grepl("PRECIP", names(DAT_Merged))]
+
+# Create negative precipitation flag columns
+Dat_Merged_Precip_Flags <- DAT_Merged %>%
+  mutate(across(all_of(precip_columns), ~. < 0, .names = "{.col}_flag"))
+    # across applies the mutate function to multiple columns; relies on helper
+    # functions like all_of(), any_of(), starts_with()
+    # across takes 3 arguments, must be defined and run inside mutate, else will fail
+        # 1) dataset to apply it to, all_of(precip_columns)
+        # 2) conditional statement, ~. < 0; the tilde allows you to create an 
+        # an anonymous function that's not defined explicitly
+        # 3) column names to produce, ".names argument)
+
+# Compute row sums of flag columns
+row_sums <- Dat_Merged_Precip_Flags %>%
+  select(ends_with("_flag")) %>%
+  rowSums()
 
 
+# Filter Dat_Merged_Flags based on row sums exceeding 0
+negative_precip_dates <- Dat_Merged_Precip_Flags %>%
+  filter(row_sums > 0)
+
+#stopifnot(length(negative_precip_dates) == 0)
+print(negative_precip_dates) # returns 0 records on 6/25/2024
+
+## Identify extreme temperature values----
+  
+  # 1) TMIN > TMAX
+
+# Identify temperature columns
+temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
+
+Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+
+# Create TDIFF columns
+for (i in 1:8) {
+  tmax_col <- temperature_columns[i]
+  tmin_col <- temperature_columns[i + 8]
+  tdiff_col <- paste0("TDIFF", i)
+  Dat_Merged_Temp[[tdiff_col]] = Dat_Merged_Temp[[tmax_col]] - Dat_Merged_Temp[[tmin_col]]
+}
+
+# Filter rows where any TDIFF is negative
+negative_tdiff_rows <- rowSums(Dat_Merged_Temp[, paste0("TDIFF", 1:8)] < 0) > 0
+tmin_exceedance_dates <- Dat_Merged_Temp[negative_tdiff_rows, ]
+
+
+# Print or use tmin_exceedance_dates as needed
+print(tmin_exceedance_dates)
+
+  # 2) TMIN < average(TMIN) - 5 * standard deviations AND
+  # 3) TMIN > average(TMIN) + 5 * standard deviations
+
+    Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+    
+    # Initialize a vector to store flag column names
+    flag_columns <- character(length = 8)  # Assuming 8 TMIN columns
+    
+    # Loop through each TMIN column
+    for (i in 1:8) {
+      tmin_col <- temperature_columns[i + 8]
+      
+      # Calculate average and standard deviation for TMIN_i
+      avg_tmin_i <- mean(Dat_Merged_Temp[[tmin_col]], na.rm = TRUE)
+      sd_tmin_i <- sd(Dat_Merged_Temp[[tmin_col]], na.rm = TRUE)
+      
+      # Create flag column names
+      flag_tmin_i_lt <- paste0("flag_", tmin_col, "_lt")
+      flag_tmin_i_gt <- paste0("flag_", tmin_col, "_gt")
+      flag_columns[i] <- flag_tmin_i_lt  # Store one flag column name for each TMIN column
+      
+      # Create flag columns where TMIN_i < avg(TMIN_i) - 5 * sd(TMIN_i)
+      Dat_Merged_Temp[[flag_tmin_i_lt]] <- Dat_Merged_Temp[[tmin_col]] < avg_tmin_i - 5 * sd_tmin_i
+      
+      # Create flag columns where TMIN_i > avg(TMIN_i) + 5 * sd(TMIN_i)
+      Dat_Merged_Temp[[flag_tmin_i_gt]] <- Dat_Merged_Temp[[tmin_col]] > avg_tmin_i + 5 * sd_tmin_i
+    }
+    
+    # Filter to rows where any flag column is TRUE
+    tmin_absurd <- Dat_Merged_Temp %>%
+      filter(rowSums(select(., starts_with("flag"))) > 0)
+    
+    # Print or use tmin_absurd as needed
+    print(tmin_absurd) # Returns 1 record on 6/26/2024
+
+
+ 
+  # 4) TMAX < average(TMAX) - 5 * standard deviations
+  # 5) TMAX > average(TMAX) + 5 * standard deviations
+    # Assuming temperature_columns contains both TMAX and TMIN columns
+    Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+    
+    # Initialize a vector to store flag column names
+    flag_columns <- character(length = 8)  # Assuming 8 TMAX columns
+    
+    # Loop through each TMAX column
+    for (i in 1:8) {
+      tmax_col <- temperature_columns[i]  # Adjust the index to select TMAX columns
+      
+      # Calculate average and standard deviation for TMAX_i
+      avg_tmax_i <- mean(Dat_Merged_Temp[[tmax_col]], na.rm = TRUE)
+      sd_tmax_i <- sd(Dat_Merged_Temp[[tmax_col]], na.rm = TRUE)
+      
+      # Create flag column names
+      flag_tmax_i_lt <- paste0("flag_", tmax_col, "_lt")
+      flag_tmax_i_gt <- paste0("flag_", tmax_col, "_gt")
+      flag_columns[i] <- flag_tmax_i_lt  # Store one flag column name for each TMAX column
+      
+      # Create flag columns where TMAX_i < avg(TMAX_i) - 5 * sd(TMAX_i)
+      Dat_Merged_Temp[[flag_tmax_i_lt]] <- Dat_Merged_Temp[[tmax_col]] < avg_tmax_i - 5 * sd_tmax_i
+      
+      # Create flag columns where TMAX_i > avg(TMAX_i) + 5 * sd(TMAX_i)
+      Dat_Merged_Temp[[flag_tmax_i_gt]] <- Dat_Merged_Temp[[tmax_col]] > avg_tmax_i + 5 * sd_tmax_i
+    }
+    
+    # Filter to rows where any flag column is TRUE
+    tmax_absurd <- Dat_Merged_Temp %>%
+      filter(rowSums(select(., starts_with("flag"))) > 0)
+    
+    # Print or use tmax_absurd as needed
+    print(tmax_absurd) #Returns 0 records on 6/26/2026
+    
+# Export QAQC Flags to Excel spreadsheet----
+    library(openxlsx)
+    
+  # Define the full file_path for the spreadsheet
+    spreadsheet_name = paste0("Dat_PRMS_QAQC_Flags_", Sys.Date(), ".xlsx")
+    folder_path <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints") 
+    
+    file_path = file.path(folder_path, spreadsheet_name)
+    print(file_path)
+    
+  # Create a new workbook
+    wb = createWorkbook()
+    
+  # Add each dataframe as a sheet
+    addWorksheet(wb, "Negative Precipitation")
+    writeData(wb, sheet = "Negative Precipitation", x= negative_precip_dates)
+    
+    addWorksheet(wb,"TMIN Exceedance")
+    writeData(wb, sheet = "TMIN Exceedance", x = tmin_exceedance_dates)
+    
+    addWorksheet(wb,"TMAX absurd")
+    writeData(wb, sheet = "TMAX absurd", x = tmax_absurd)
+    
+    addWorksheet(wb,"TMIN absurd")
+    writeData(wb, sheet = "TMIN absurd", x = tmin_absurd)
+    
+    # Save the workbook
+    saveWorkbook(wb, file = file_path, overwrite = TRUE)
+    
 # Water Year Forecast data----
 # The next step is to append forecasted data for the rest of the water year
 
