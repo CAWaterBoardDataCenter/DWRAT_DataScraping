@@ -1,7 +1,6 @@
 #Install and load libraries----
 library(dplyr)
 library(tidyverse)
-library(here)
 library(lubridate) #for make_date function
 library(data.table) #for fread function
 
@@ -623,17 +622,6 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
 
 
 
-
-# For each precipitation column, 
-names(Meteorological)
-
-
-
-
-
-
-
-
 # Round the numeric values in 'DAT_Merged'
 # (Keeping at most one decimal place)
 DAT_Merged <- DAT_Merged %>%
@@ -681,4 +669,4 @@ remove(DAT_Initial, DAT_Merged, DAT_Predictions,
 
 
 
-print("Dat PRMS script has finished running!")
+print("The 'Dat_PRMS.R' script has finished running!")
