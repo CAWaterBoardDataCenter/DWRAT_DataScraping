@@ -147,7 +147,7 @@ print(negative_precip_dates) # returns 0 records on 6/25/2024
 
 ## Identify extreme temperature values----
   
-  # 1) TMIN > TMAX
+  ### 1) TMIN > TMAX ----
 
 # Identify temperature columns
 temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
@@ -170,7 +170,7 @@ tmin_exceedance_dates <- Dat_Merged_Temp[negative_tdiff_rows, ]
 # Print or use tmin_exceedance_dates as needed
 print(tmin_exceedance_dates)
 
-  # 2) TMIN < average(TMIN) - 5 * standard deviations AND
+  ### 2) TMIN < average(TMIN) - 5 * standard deviations AND ----
   # 3) TMIN > average(TMIN) + 5 * standard deviations
 
     Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
@@ -206,8 +206,8 @@ print(tmin_exceedance_dates)
 
 
 
-  # 4) TMAX < average(TMAX) - 5 * standard deviations
-  # 5) TMAX > average(TMAX) + 5 * standard deviations
+  ### 4) TMAX < average(TMAX) - 5 * standard deviations ----
+  ### 5) TMAX > average(TMAX) + 5 * standard deviations
     # Assuming temperature_columns contains both TMAX and TMIN columns
     Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
     
@@ -270,8 +270,103 @@ print(tmin_exceedance_dates)
     } else {
       print("negative_precip_dates has no records--there are no negative precipitation values to correct!")
     }
+  
+    ### Tmin Exceedance Records ---- 
+    if (nrow(tmin_exceedance_dates) > 0) {
+      
+      # Ensure that the Date fields have the same data type and format
+      tmin_exceedance_dates$Date = as.Date(tmin_exceedance_dates$Date, format = "%Y-%m-%d")
+      Prism_Processed$Date = as.Date(Prism_Processed$Date,  format = "%Y-%m-%d")
+      
+      # Perform an inner join to combine tmin_exceedance_date and Prism_Processed on the Date column
+      tmin_exceedance_corrections <- inner_join(x = tmin_exceedance_dates, 
+                                                y = Prism_Processed,
+                                                by = "Date")
+      
+      # Whenever TDIFF_i < 0, replace TMAX_i and TMIN_i with PT_TMAX_i and PT_TMIN_i, respectively
+      for (i in 1:8) {
+        # Define column names dynamically
+        tdiff_col <- paste0("TDIFF", i)
+        tmax_col <- temperature_columns[i]
+        tmin_col <- temperature_columns[i + 8]
+        pt_tmax_col <- paste0("PT_TMAX", i)
+        pt_tmin_col <- paste0("PT_TMIN", i)
+        
+        # Replace observed values with PRISM data where TDIFF < 0
+        tmin_exceedance_corrections[[tmax_col]][tmin_exceedance_corrections[[tdiff_col]] < 0] <- tmin_exceedance_corrections[[pt_tmax_col]][tmin_exceedance_corrections[[tdiff_col]] < 0]
+        tmin_exceedance_corrections[[tmin_col]][tmin_exceedance_corrections[[tdiff_col]] < 0] <- tmin_exceedance_corrections[[pt_tmin_col]][tmin_exceedance_corrections[[tdiff_col]] < 0]
+      }
+      
+    } else {
+      print("tmin_exceedance_corrections has no records--there are no instances where tmin exceeds tmax for any station during the entire timeframe.")
+    }
+  
+  #### Replace original values in DAT_PRMS with corrected temperature values----
     
+    # Left Join DAT_Merged to Tmin_Exceedance_Corrections
+    Dat_Merged_Update <- left_join (x = DAT_Merged,
+                             y = tmin_exceedance_corrections,
+                             by = "Date",
+                             suffix = c("", "_new")
+                             )
     
+ # Replace values in the temperature columns using coalesce
+    Dat_Merged_Update <- Dat_Merged_Update %>%
+      mutate(across(all_of(temperature_columns),
+                    ~  coalesce(get(paste0(cur_column(),"_new")),.)))
+    
+  # Keep only the 60 columns that originally existed in DAT_Initial
+  Dat_Merged_Update = Dat_Merged_Update[,names(DAT_Initial)]
+    
+    ###  Tmin_absurd ----
+    
+    if (nrow(tmin_absurd) > 0) {
+      
+      # Ensure that the Date fields for tmin_absurd and Prism_Processed have the same type and format
+      tmin_absurd$Date <- as.Date(tmin_absurd$Date, format = "%Y-%m-%d")
+      Prism_Processed$date <- as.Date(Prism_Processed$Date, format = "%Y-%m-%d")
+      
+      # Perform an inner join to combine tmin_absurd and Prism_Processed on the Date column
+      tmin_absurd <- inner_join(
+        x = tmin_absurd, 
+        y = Prism_Processed,
+        by = "Date"
+      )
+      
+      # Define for loop for the 8 observed and PRISM TMIN stations
+      for (i in 1:8) {
+        # Define column names dynamically
+        tmin_col <- temperature_columns[i + 8]
+        tmax_col <- temperature_columns[i]
+        pt_tmin_col <- paste0("PT_TMIN", i)
+        pt_tmax_col <-paste0("PT_TMAX", i)
+        
+        # Replace tmin_absurd values with the corresponding PRISM data on the same date
+        tmin_absurd[[tmin_col]] <- tmin_absurd[[pt_tmin_col]]
+        tmin_absurd[[tmax_col]] <-tmin_absurd[[pt_tmax_col]]
+      }
+      
+    } else {
+      print("tmin_absurd has no records--there are no absurd minimum temperature for any station during the entire timeframe.")
+    }
+    
+    #### Replace original values in DAT_PRMS with corrected temperatures----
+  
+    # Left Join Dat_Merged_Update to tmin_absurd
+    Dat_Merged_Update <- left_join (x = Dat_Merged_Update,
+                                    y = tmin_absurd,
+                                    by = "Date",
+                                    suffix = c("", "_new"))
+  
+  # Replace values in the temperature columns using coalesce
+  Dat_Merged_Update <- Dat_Merged_Update %>%
+    mutate(across(all_of(temperature_columns),
+                  ~  coalesce(get(paste0(cur_column(),"_new")),.)))
+  
+  # Restore original columns to Dat_Merged_Update
+  Dat_Merged_Update = Dat_Merged_Update[, names(DAT_Initial)]
+  
+    ### Tmax_absurd----
 # Export QAQC Flags to Excel spreadsheet----
     library(openxlsx)
     
