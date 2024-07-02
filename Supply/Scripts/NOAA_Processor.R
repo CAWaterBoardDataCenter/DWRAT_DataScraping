@@ -81,109 +81,84 @@ fileAdjustment <- function () {
   
   
   # Define a data frame for the alternative format
-  # The number of columns is equal to the number of rows in 'stationDF' (plus one for the "Date" column)
+  # Right now, it will only contain a column of dates
+  # Eventually, the number of columns will equal the number of rows in 'stationDF' 
+  # (plus one for the "Date" column)
   # The number of rows is equal to the number of unique dates in 'noaaDF'
-  newDF <- matrix(NA_real_, ncol = nrow(stationDF) + 1, nrow = length(unique(noaaDF$DATE))) %>%
-    as.data.frame() %>%
-    set_names(c("Date", stationDF$`DAT_File Field Name`))
+  newDF <- noaaDF %>%
+    select(DATE) %>%
+    unique() %>% arrange() %>%
+    rename(Date = DATE)
   
   
   
-  # Assign the dates in 'noaaDF' to 'newDF'
-  newDF$Date <- noaaDF$DATE %>%
-    unique() %>% sort()
-  
-  
-  
-  # Iterate through 'noaaDF' and input its values into 'newDF'
-  for (i in 1:nrow(noaaDF)) {
+  # Iterate through the NOAA stations
+  for (i in 1:nrow(stationDF)) {
     
-    # Each row contains precipitation, minimum temperature, and maximum temperature data
-    # Assign each of the values in this row of 'noaaDF' to the corresponding column
+    # Filter 'noaaDF' to only data from this station
+    subsetDF <- noaaDF %>%
+      filter(STATION == stationDF$`Full Station ID`[i])
     
     
     
-    # Create a temporary variable containing rows in 'stationDF' whose Station ID
-    # match the ID contained in this row of 'noaaDF'
-    stationSubset <- stationDF %>%
-      filter(`Full Station ID` == noaaDF$STATION[i])
-    
-    
-    # Error Check
-    stopifnot(nrow(stationSubset) > 0)
-    
-    
-    
-    # Then, get the row index
-    # The row index will be the value in 'newDF' that corresponds to this row's date
-    rowIndex <- which(newDF$Date == noaaDF$DATE[i])
-    
-    
-    
-    # Check if 'stationSubset' contains a precipitation column
-    # (That means that precipitation data will be extracted from 'noaaDF')
-    if (sum(grepl("PRECIP", stationSubset$Rank)) > 0) {
+    # Then, based on the station data type (precipitation, tmax, or tmin),
+    # take a subset of columns in 'subsetDF'
+    # Keep only that field and the date column (renamed as "Date" to match 'newDF')
+    if (grepl("PRECIP", stationDF$`DAT_File Field Name`[i])) {
       
-      # Find the location of this station's precipitation column in 'newDF'
-      colIndex <- findIndex("PRECIP", noaaDF$STATION[i], stationDF, newDF)
+      subsetDF <- subsetDF %>%
+        select(DATE, PRCP) %>%
+        rename(!! stationDF$`DAT_File Field Name`[i] := PRCP,
+               Date = DATE) %>%
+        unique()
       
+    } else if (grepl("TMAX", stationDF$`DAT_File Field Name`[i])) {
       
+      subsetDF <- subsetDF %>%
+        select(DATE, TMAX) %>%
+        rename(!! stationDF$`DAT_File Field Name`[i] := TMAX,
+               Date = DATE) %>%
+        unique()
       
-      # Update 'newDF' with this iteration's precipitation value
-      # The precipitation data was downloaded as inches
-      # Therefore, it must also be converted into millimeters
-      # (25.4 mm per in)
-      newDF[rowIndex, colIndex] <- noaaDF$PRCP[i] * 25.4
+    } else if (grepl("TMIN", stationDF$`DAT_File Field Name`[i])) {
+      
+      subsetDF <- subsetDF %>%
+        select(DATE, TMIN) %>%
+        rename(!! stationDF$`DAT_File Field Name`[i] := TMIN,
+               Date = DATE) %>%
+        unique()
+      
+    } else {
+      
+      stop(paste0("Unknown DAT field name: ", stationDF$`DAT_File Field Name`[i]))
       
     }
     
     
     
-    # Following similar steps, check if 'stationSubset' contains a max temp column
-    # (That means that tmax data will be extracted from 'noaaDF')
-    if (sum(grepl("TMAX", stationSubset$Rank)) > 0) {
-      
-      # Find the location of this station's max temp column in 'newDF'
-      colIndex <- findIndex("TMAX", noaaDF$STATION[i], stationDF, newDF)
-      
-      
-      
-      # Update 'newDF' with this iteration's maximum temperature value
-      # The temperature data was downloaded as Fahrenheit
-      # Therefore, it must also be converted into Celsius
-      # deg-C = (deg-F - 32) * 5/9
-      newDF[rowIndex, colIndex] <- (noaaDF$TMAX[i] - 32) * 5/9
-      
-    }
+    # Add that station's column to 'newDF' through a join with 'subsetDF'
+    newDF <- newDF %>%
+      left_join(subsetDF, by = "Date", relationship = "one-to-one")
     
-    
-    
-    # Finally, check if 'stationSubset' contains a min temp column
-    # (That means that tmin data will be extracted from 'noaaDF')
-    if (sum(grepl("TMIN", stationSubset$Rank)) > 0) {
-      
-      # Find the location of this station's min temp column in 'newDF'
-      colIndex <- findIndex("TMIN", noaaDF$STATION[i], stationDF, newDF)
-      
-      
-      
-      # Update 'newDF' with this iteration's minimum temperature value
-      # The temperature data was downloaded as Fahrenheit
-      # Therefore, it must also be converted into Celsius
-      # deg-C = (deg-F - 32) * 5/9
-      newDF[rowIndex, colIndex] <- (noaaDF$TMIN[i] - 32) * 5/9
-      
-    }
-    
-  } # End of for loop through 'noaaDF'
+  }
+
+  
+  
+  # Another important step is to convert the units of the dataset
+  # The data was downloaded in standard units, but metric units should be used
+  # Convert precipitation from "in" to "mm" (25.4 mm per in)
+  # Convert temperature from "Fahrenheit" to "Celsius" (deg-C = (deg-F - 32) * 5/9)
+  newDF[, grep("PRECIP", names(newDF))] <- newDF[, grep("PRECIP", names(newDF))] * 25.4
+  newDF[, grep("_T", names(newDF))] <- (newDF[, grep("_T", names(newDF))] - 32) * 5/9
   
   
   
   # After that, sort the columns in 'newDF' 
-  # (but with "Date" as the first column)
+  # (with "Date" as the first column)
   newDF <- newDF %>%
     select(sort(colnames(newDF))) %>%
-    relocate(Date)
+    relocate(Date) %>%
+    arrange(Date)
   
   
   
@@ -246,7 +221,7 @@ findIndex <- function (colType, stationID, stationDF, newDF) {
 
 prismFill <- function (StartDate, EndDate) {
   
-  # If the downloaded NOAA dataset does not have date up to 'EndDate', later scripts will fail
+  # If the downloaded NOAA dataset does not have data up to 'EndDate', later scripts will fail
   # Substitute missing entries with data from PRISM
   
   
@@ -289,6 +264,32 @@ prismFill <- function (StartDate, EndDate) {
   
   
   
+  # Check each column of 'noaaDF'
+  # (The first column is "Date", so that can be skipped)
+  for (j in 2:ncol(noaaDF)) {
+    
+    # Get the dates where this iteration's column is -999
+    emptyDates <- noaaDF %>%
+      filter(!! sym(names(noaaDF)[j]) == -999) %>%
+      select(Date)
+    
+    
+    
+    # If there are no missing entries, skip the rest of this loop
+    if (nrow(emptyDates) == 0) {
+      next
+    }
+    
+    
+    
+    
+    
+    
+    
+  }
+  
+  
+  
   # Use a nested loop to check every entry in 'noaaDF'
   for (i in 1:nrow(noaaDF)) {
     
@@ -299,7 +300,6 @@ prismFill <- function (StartDate, EndDate) {
       if (!is.na(noaaDF[i, j]) && noaaDF[i, j] != -999) {
         next
       }
-      
       
       
       # Find the corresponding column and row in 'prismDF'

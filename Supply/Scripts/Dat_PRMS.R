@@ -1,7 +1,6 @@
 #Install and load libraries----
 library(dplyr)
 library(tidyverse)
-library(here)
 library(lubridate) #for make_date function
 library(data.table) #for fread function
 
@@ -114,8 +113,288 @@ DAT_Merged <- DAT_Initial %>%
   bind_rows(Meteorological) %>%
   arrange(Date)
 
+# QAQC steps----
+
+## Identify negative precipitation values----
+
+# Identify precipitation columns
+precip_columns <- names(DAT_Merged)[grepl("PRECIP", names(DAT_Merged))]
+
+# Create negative precipitation flag columns
+Dat_Merged_Precip_Flags <- DAT_Merged %>%
+  mutate(across(all_of(precip_columns), ~. < 0, .names = "{.col}_flag"))
+    # across applies the mutate function to multiple columns; relies on helper
+    # functions like all_of(), any_of(), starts_with()
+    # across takes 3 arguments, must be defined and run inside mutate, else will fail
+        # 1) dataset to apply it to, all_of(precip_columns)
+        # 2) conditional statement, ~. < 0; the tilde allows you to create an 
+        # an anonymous function that's not defined explicitly
+        # 3) column names to produce, ".names argument)
+
+# Compute row sums of flag columns
+row_sums <- Dat_Merged_Precip_Flags %>%
+  select(ends_with("_flag")) %>%
+  rowSums()
 
 
+# Filter Dat_Merged_Flags based on row sums exceeding 0
+negative_precip_dates <- Dat_Merged_Precip_Flags %>%
+  filter(row_sums > 0)
+
+#stopifnot(length(negative_precip_dates) == 0)
+print(negative_precip_dates) # returns 0 records on 6/25/2024
+
+## Identify extreme temperature values----
+  
+  ### 1) TMIN > TMAX ----
+
+# Identify temperature columns
+temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
+
+Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+
+# Create TDIFF columns
+for (i in 1:8) {
+  tmax_col <- temperature_columns[i]
+  tmin_col <- temperature_columns[i + 8]
+  tdiff_col <- paste0("TDIFF", i)
+  Dat_Merged_Temp[[tdiff_col]] = Dat_Merged_Temp[[tmax_col]] - Dat_Merged_Temp[[tmin_col]]
+}
+
+# Filter rows where any TDIFF is negative
+negative_tdiff_rows <- rowSums(Dat_Merged_Temp[, paste0("TDIFF", 1:8)] < 0) > 0
+tmin_exceedance_dates <- Dat_Merged_Temp[negative_tdiff_rows, ]
+
+
+# Print or use tmin_exceedance_dates as needed
+print(tmin_exceedance_dates)
+
+  ### 2) TMIN < average(TMIN) - 5 * standard deviations AND ----
+  # 3) TMIN > average(TMIN) + 5 * standard deviations
+
+    Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+    
+    # Initialize a vector to store flag column names
+    
+    # Loop through each TMIN column
+    for (i in 1:8) {
+      tmin_col <- temperature_columns[i + 8]
+      
+      # Calculate average and standard deviation for TMIN_i
+      avg_tmin_i <- mean(Dat_Merged_Temp[[tmin_col]], na.rm = TRUE)
+      sd_tmin_i <- sd(Dat_Merged_Temp[[tmin_col]], na.rm = TRUE)
+    
+      # Create flag column names
+      flag_tmin_i_lt <- paste0("flag_", tmin_col, "_lt")
+      flag_tmin_i_gt <- paste0("flag_", tmin_col, "_gt")
+
+      # Create flag columns where TMIN_i < avg(TMIN_i) - 3.5* sd(TMIN_i)
+      Dat_Merged_Temp[[flag_tmin_i_lt]] <- Dat_Merged_Temp[[tmin_col]] < avg_tmin_i - 3.5 * sd_tmin_i
+      
+      # Create flag columns where TMIN_i > avg(TMIN_i) + 3.5 * sd(TMIN_i)
+      Dat_Merged_Temp[[flag_tmin_i_gt]] <- Dat_Merged_Temp[[tmin_col]] > avg_tmin_i + 3.5 * sd_tmin_i
+    }
+    
+    # Filter to rows where any flag column is TRUE
+    tmin_absurd <- Dat_Merged_Temp %>%
+      filter(rowSums(select(., starts_with("flag"))) > 0)
+    
+    # Print or use tmin_absurd as needed
+    print(tmin_absurd) # Returns 1 record on 6/26/2024
+    # Returns 37 records on 7/1/2024 for 3.5 sd
+
+
+
+  ### 4) TMAX < average(TMAX) - 5 * standard deviations ----
+  ### 5) TMAX > average(TMAX) + 5 * standard deviations
+    # Assuming temperature_columns contains both TMAX and TMIN columns
+    Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
+    
+    
+    # Loop through each TMAX column
+    for (i in 1:8) {
+      tmax_col <- temperature_columns[i]  # Adjust the index to select TMAX columns
+      
+      # Calculate average and standard deviation for TMAX_i
+      avg_tmax_i <- mean(Dat_Merged_Temp[[tmax_col]], na.rm = TRUE)
+      sd_tmax_i <- sd(Dat_Merged_Temp[[tmax_col]], na.rm = TRUE)
+      
+      # Create flag column names
+      flag_tmax_i_lt <- paste0("flag_", tmax_col, "_lt")
+      flag_tmax_i_gt <- paste0("flag_", tmax_col, "_gt")
+     
+      # Create flag columns where TMAX_i < avg(TMAX_i) - 3.5 * sd(TMAX_i)
+      Dat_Merged_Temp[[flag_tmax_i_lt]] <- Dat_Merged_Temp[[tmax_col]] < avg_tmax_i - 3.5 * sd_tmax_i
+      
+      # Create flag columns where TMAX_i > avg(TMAX_i) + 3.5 * sd(TMAX_i)
+      Dat_Merged_Temp[[flag_tmax_i_gt]] <- Dat_Merged_Temp[[tmax_col]] > avg_tmax_i + 3.5 * sd_tmax_i
+    }
+    
+    # Filter to rows where any flag column is TRUE
+    tmax_absurd <- Dat_Merged_Temp %>%
+      filter(rowSums(select(., starts_with("flag"))) > 0)
+    
+    # Print or use tmax_absurd as needed
+    print(tmax_absurd) #Returns 0 records on 6/26/2024 for sd * 5
+    # Returns 3 records on 7/1/2024 for sd * 3.5
+    
+  # Import PRISM data to replace absurd values----
+    # To be super conservative, set the start and end dates to  match the full Dat PRMS timeframe
+  Prism_Processed = read.csv("ProcessedData/Prism_Processed.csv")
+   
+  ## Remediate the Dat PRMS File ---- 
+    ### Negative Precipitation Records ----
+    
+    # Check if negative_precip_dates has any records
+    if (nrow(negative_precip_dates) > 0) {
+      # Convert the Date column to Date type if they are not already
+      Prism_Processed$Date <- as.Date(Prism_Processed$Date, format = "%Y-%m-%d")
+      negative_precip_dates$Date <- as.Date(negative_precip_dates$Date, format = "%Y-%m-%d")
+      
+      # Perform an inner join to combine the dataframes on the Date column
+      precip_corrections <- inner_join(negative_precip_dates, Prism_Processed, by = "Date", suffix = c("_neg", ""))
+      
+      # Replace the precip columns using the precip_columns vector
+      for (i in 1:length(precip_columns)) {
+        precip_corrections[[precip_columns[i]]] <- precip_corrections[[paste0("PP_PRECIP", i)]]
+      }
+      
+      # Remove unnecessary PP_PRECIP columns from the precip_corrections dataframe
+      precip_corrections <- precip_corrections %>%
+        select(-starts_with("PP_PRECIP")) %>%
+        select(-starts_with("PT"))
+      
+      # Display the first few rows of the updated dataframe
+      head(precip_corrections)
+    } else {
+      print("negative_precip_dates has no records--there are no negative precipitation values to correct!")
+    }
+  
+    ### Tmin Exceedance Records ---- 
+    if (nrow(tmin_exceedance_dates) > 0) {
+      
+      # Ensure that the Date fields have the same data type and format
+      tmin_exceedance_dates$Date = as.Date(tmin_exceedance_dates$Date, format = "%Y-%m-%d")
+      Prism_Processed$Date = as.Date(Prism_Processed$Date,  format = "%Y-%m-%d")
+      
+      # Perform an inner join to combine tmin_exceedance_date and Prism_Processed on the Date column
+      tmin_exceedance_corrections <- inner_join(x = tmin_exceedance_dates, 
+                                                y = Prism_Processed,
+                                                by = "Date")
+      
+      # Whenever TDIFF_i < 0, replace TMAX_i and TMIN_i with PT_TMAX_i and PT_TMIN_i, respectively
+      for (i in 1:8) {
+        # Define column names dynamically
+        tdiff_col <- paste0("TDIFF", i)
+        tmax_col <- temperature_columns[i]
+        tmin_col <- temperature_columns[i + 8]
+        pt_tmax_col <- paste0("PT_TMAX", i)
+        pt_tmin_col <- paste0("PT_TMIN", i)
+        
+        # Replace observed values with PRISM data where TDIFF < 0
+        tmin_exceedance_corrections[[tmax_col]][tmin_exceedance_corrections[[tdiff_col]] < 0] <- tmin_exceedance_corrections[[pt_tmax_col]][tmin_exceedance_corrections[[tdiff_col]] < 0]
+        tmin_exceedance_corrections[[tmin_col]][tmin_exceedance_corrections[[tdiff_col]] < 0] <- tmin_exceedance_corrections[[pt_tmin_col]][tmin_exceedance_corrections[[tdiff_col]] < 0]
+      }
+      
+    } else {
+      print("tmin_exceedance_corrections has no records--there are no instances where tmin exceeds tmax for any station during the entire timeframe.")
+    }
+  
+  #### Replace original values in DAT_PRMS with corrected temperature values----
+    
+    # Left Join DAT_Merged to Tmin_Exceedance_Corrections
+    Dat_Merged_Update <- left_join (x = DAT_Merged,
+                             y = tmin_exceedance_corrections,
+                             by = "Date",
+                             suffix = c("", "_new")
+                             )
+    
+ # Replace values in the temperature columns using coalesce
+    Dat_Merged_Update <- Dat_Merged_Update %>%
+      mutate(across(all_of(temperature_columns),
+                    ~  coalesce(get(paste0(cur_column(),"_new")),.)))
+    
+  # Keep only the 60 columns that originally existed in DAT_Initial
+  Dat_Merged_Update = Dat_Merged_Update[,names(DAT_Initial)]
+    
+    ###  Tmin_absurd ----
+    
+    if (nrow(tmin_absurd) > 0) {
+      
+      # Ensure that the Date fields for tmin_absurd and Prism_Processed have the same type and format
+      tmin_absurd$Date <- as.Date(tmin_absurd$Date, format = "%Y-%m-%d")
+      Prism_Processed$date <- as.Date(Prism_Processed$Date, format = "%Y-%m-%d")
+      
+      # Perform an inner join to combine tmin_absurd and Prism_Processed on the Date column
+      tmin_absurd <- inner_join(
+        x = tmin_absurd, 
+        y = Prism_Processed,
+        by = "Date"
+      )
+      
+      # Define for loop for the 8 observed and PRISM TMIN stations
+      for (i in 1:8) {
+        # Define column names dynamically
+        tmin_col <- temperature_columns[i + 8]
+        tmax_col <- temperature_columns[i]
+        pt_tmin_col <- paste0("PT_TMIN", i)
+        pt_tmax_col <-paste0("PT_TMAX", i)
+        
+        # Replace tmin_absurd values with the corresponding PRISM data on the same date
+        tmin_absurd[[tmin_col]] <- tmin_absurd[[pt_tmin_col]]
+        tmin_absurd[[tmax_col]] <-tmin_absurd[[pt_tmax_col]]
+      }
+      
+    } else {
+      print("tmin_absurd has no records--there are no absurd minimum temperature for any station during the entire timeframe.")
+    }
+    
+    #### Replace original values in DAT_PRMS with corrected temperatures----
+  
+    # Left Join Dat_Merged_Update to tmin_absurd
+    Dat_Merged_Update <- left_join (x = Dat_Merged_Update,
+                                    y = tmin_absurd,
+                                    by = "Date",
+                                    suffix = c("", "_new"))
+  
+  # Replace values in the temperature columns using coalesce
+  Dat_Merged_Update <- Dat_Merged_Update %>%
+    mutate(across(all_of(temperature_columns),
+                  ~  coalesce(get(paste0(cur_column(),"_new")),.)))
+  
+  # Restore original columns to Dat_Merged_Update
+  Dat_Merged_Update = Dat_Merged_Update[, names(DAT_Initial)]
+  
+    ### Tmax_absurd----
+# Export QAQC Flags to Excel spreadsheet----
+    library(openxlsx)
+    
+  # Define the full file_path for the spreadsheet
+    spreadsheet_name = paste0("Dat_PRMS_QAQC_Flags_", Sys.Date(), ".xlsx")
+    folder_path <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints") 
+    
+    file_path = file.path(folder_path, spreadsheet_name)
+    print(file_path)
+    
+  # Create a new workbook
+    wb = createWorkbook()
+    
+  # Add each dataframe as a sheet
+    addWorksheet(wb, "Negative Precipitation")
+    writeData(wb, sheet = "Negative Precipitation", x= negative_precip_dates)
+    
+    addWorksheet(wb,"TMIN Exceedance")
+    writeData(wb, sheet = "TMIN Exceedance", x = tmin_exceedance_dates)
+    
+    addWorksheet(wb,"TMAX absurd")
+    writeData(wb, sheet = "TMAX absurd", x = tmax_absurd)
+    
+    addWorksheet(wb,"TMIN absurd")
+    writeData(wb, sheet = "TMIN absurd", x = tmin_absurd)
+    
+    # Save the workbook
+    saveWorkbook(wb, file = file_path, overwrite = TRUE)
+    
 # Water Year Forecast data----
 # The next step is to append forecasted data for the rest of the water year
 
@@ -343,17 +622,6 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
 
 
 
-
-# For each precipitation column, 
-names(Meteorological)
-
-
-
-
-
-
-
-
 # Round the numeric values in 'DAT_Merged'
 # (Keeping at most one decimal place)
 DAT_Merged <- DAT_Merged %>%
@@ -401,4 +669,4 @@ remove(DAT_Initial, DAT_Merged, DAT_Predictions,
 
 
 
-print("Dat PRMS script has finished running!")
+print("The 'Dat_PRMS.R' script has finished running!")
