@@ -1,8 +1,16 @@
+# This script is a relic from the old SDA process which relied on CNRFC forecast data. 
+# It aggregates the CNRC precipitation data into daily sums and the CNRFC temperature
+# data into daily minima and maxima for each station. The data is then formatted for easy
+# appending to the raw observed datasets from RAWS, CIMIA, and NOAA. Note that an
+# analogous but independent script, CNRFC_SRP_Processor.R exists for the SRP model, but only relies
+# on 2 CNRFC stations.
+
 #Load libraries
 library(here)
 library(dplyr)
 library(tidyr)
 library(stringr)
+
 #Bulk Import CNRFC Temp CSVS----
 filenames <- list.files(path = here("WebData"), pattern = "temperaturePlot.*\\csv$")
 

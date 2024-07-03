@@ -1,10 +1,7 @@
-# FLAGGING SCRIPT that produces 4 different flags
+# Flag rights with a POD that appears to operate within the watershed
+# Four different flags are used to identify these PODs
 
-# Perform the steps to identify PODs within a watershed
-# (A manual review will be needed on the output)
-
-# This script automates the procedure described in "GIS Pre-Processing SDU Manual.docx"
-
+# A manual review is required to analyze these PODs
 
 #### Dependencies ####
 
@@ -14,14 +11,15 @@ require(openxlsx)
 
 #### Functions ####
 
-mainProcedure <- function () {
+Flag_GIS_Preprocessing <- function () {
   
   # Given the watershed in 'ws', perform the GIS pre-processing steps
   source("Scripts/Watershed_Selection.R")
+  source("Scripts/Dataset_Year_Range.R")
   
   
   
-  # Based on the value of "NAME" in 'ws', read in a different boundary layer
+  # Based on the selection made for 'ws', read in a different boundary layer
   # (The assigned variable name should always be 'wsBound')
   wsBound <- getGIS(ws = ws, 
                     GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
@@ -31,15 +29,13 @@ mainProcedure <- function () {
   
   
   # After that, import a full list of PODs from eWRIMS
-  # (1) To do that, get the most recent "Flat_File_eWRIMS_[DATE].csv" file in the "IntermediateData" folder
+  # (1) To do that, read in the POD flat file
   # (2) Every column is read in as a character column by default
   #     Make new columns for "LATITUDE" and "LONGITUDE" that are numeric 
   # (3) Then, make 'pod_points_statewide' into a GIS layer
   #     Use the numeric "LATITUDE" and "LONGITUDE" layers as coordinates
   #     (The data in these columns will not be easily accessible afterwards, so that's why copies were used)
-  pod_points_statewide <- list.files("IntermediateData/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
-    sort() %>% tail(1) %>%
-    read_csv(show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+  pod_points_statewide <- read_csv("RawData/Snowflake_ewrims_flat_file_pod.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
     mutate(LONGITUDE2 = as.numeric(LONGITUDE), LATITUDE2 = as.numeric(LATITUDE)) %>%
     filter(!is.na(LONGITUDE2)) %>% 
     unique() %>%
@@ -53,7 +49,8 @@ mainProcedure <- function () {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  PLSS_Sections_Fill <- "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson" %>%
+    makeSharePointPath() %>% st_read()
   
   
   
@@ -65,16 +62,12 @@ mainProcedure <- function () {
   
   
   
-  # There are four different tasks that will be completed:
+  # There are four different flags that will be appended:
   
   # (1) Get PODs with a MTRS or FFMTRS that lies within the watershed boundaries
   # (Based on PLSS overlap with watershed polygon)
   
-  # (2) Get all PODs within one mile of the boundary
-  # (This action is currently not being performed; the code is there, but it is commented out)
-  # (This can add a lot of extra work for very little gain)
-  
-  # NEW (2) Get all PODs within one mile of the boundary (on the inside only)
+  # (2) Get all PODs within one mile of the boundary (on the inside only)
   
   # (3) Get all PODs that intersect with the watershed polygon
   
@@ -199,25 +192,12 @@ mainProcedure <- function () {
     filter(grepl(ws$WATERSHED_COLUMN_SEARCH_STRING, WATERSHED, ignore.case = TRUE) |
              grepl(ws$SOURCE_NAME_COLUMN_SEARCH_STRING, SOURCE_NAME, ignore.case = TRUE) |
              grepl(ws$TRIB_DESC_COLUMN_SEARCH_STRING, TRIB_DESC, ignore.case = TRUE))
-
-  
-  
-  # Additional watershed-specific searches can be added here as needed
-  # For example:
-  # if (ws$ID == "NV") {
-  #   wsMention <- bind_rows(wsMention,
-  #                          pod_points_statewide_spatial %>%
-  #                            filter(grepl(???, WATERSHED, ignore.case = TRUE))) %>%
-  #    unique()
-  # }
   
   
   
   # Output the four variables to a spreadsheet for further analysis
   # ('WS_pod_points_Merge', 'wsLine_Buffer_Intersect', 'wsBound_Inner_Intersect', and 'wsMention')
-  #outputResults(ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
-  #outputResults_NoTask2(ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
-  outputResults(ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention)
+  outputResults(ws, yearRange, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention)
   
   
   
@@ -317,7 +297,7 @@ deleteIdentical <- function (gisDF, colName) {
 
 
 
-outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention) {
+outputResults <- function (ws, yearRange, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention) {
   
   # Write the four output variables to a spreadsheet
   # (Create a shapefile as well)
@@ -520,219 +500,76 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
+  # Use 'combinedDF' to update the flagging table as well
+  updateFlagTable(combinedDF, ws, yearRange)
+  
+  
+  
   # Return nothing
   return(invisible(NULL))
-  
   
 }
 
 
 
-# outputResults_NoTask2 <- function (ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention) {
-#   
-#   # Write the four output variables to a spreadsheet
-#   # (Create a shapefile as well)
-#   
-#   
-#   
-#   # Initialize the workbook
-#   wb <- createWorkbook()
-#   
-#   
-#   
-#   # Create a combined version of all three variables
-#   allDF <- wsBound_Inner_Intersect %>%
-#     bind_rows(WS_pod_points_Merge, wsMention) %>%
-#     unique() %>%
-#     arrange(APPLICATION_NUMBER, POD_ID) %>%
-#     deleteIdentical("POD_ID")
-#   
-#   
-#   
-#   # Write 'allDF' to a GeoJSON file
-#   # (But first remove the older version, if it exists in the directory)
-#   if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("OutputData")) {
-#     
-#     #system("rm OutputData/NV_PODS_of_Interest.GeoJSON", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
-#     invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON")))
-#     
-#   }
-#   
-#   
-#   
-#   # Check for fields with identical names (they create errors when writing the dataset)
-#   if (length(names(allDF)) != length(unique(toupper(names(allDF))))) {
-#     
-#     # Get a list of names that appear more than once
-#     multiNames <- names(table(toupper(names(allDF)))[table(toupper(names(allDF))) > 1])
-#     
-#     
-#     
-#     # Iterate through the names in 'multiNames'
-#     for (i in 1:length(multiNames)) {
-#       
-#       # Get the indices where these duplicate names occur
-#       multiIndex <- which(toupper(names(allDF)) == multiNames[i])
-#       
-#       
-#       # Append a number to these names (from the second instance onwards)
-#       for (j in 2:length(multiIndex)) {
-#         
-#         names(allDF)[multiIndex[j]] <- paste0(names(allDF)[multiIndex[j]], "_", j)
-#         
-#       }
-#       
-#     }
-#     
-#   }
-#   
-#   
-#   
-#   st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
-#   
-#   
-#   
-#   # Drop the coordinate data from 'allDF' (making it just a tibble)
-#   # (This is necessary for writing the data in a tabular format)
-#   # (This is also why duplicated latitude and longitude columns were used)
-#   allDF <- allDF %>%
-#     st_drop_geometry()
-#   
-#   
-#   
-#   # Add a worksheet for the manual review that contains a portion of the columns in this variable
-#   addWorksheet(wb, "Review")
-#   
-#   writeData(wb, "Review",
-#             allDF %>%
-#               select(APPLICATION_NUMBER, POD_ID, WATER_RIGHT_TYPE, URL, COUNTY,
-#                      FFMTRS, MTRS, MTRS_Match, PARCEL_NUMBER, 
-#                      LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD,
-#                      SOURCE_NAME, TRIB_DESC) %>%
-#               unique() %>%
-#               mutate(ERROR_CASE = NA_character_,
-#                      ERROR_RESOLVED = NA,
-#                      NEW_LATITUDE = NA_real_,
-#                      NEW_LONGITUDE = NA_real_,
-#                      NEW_MTRS = NA_character_,
-#                      NOTES = NA_character_,
-#                      REVIEWED_BY = NA_character_))
-#   
-#   
-#   
-#   # Add a separate worksheet to hold 'allDF' with all of its columns
-#   addWorksheet(wb, "Combined")
-#   
-#   
-#   writeData(wb, "Combined", allDF)
-#   
-#   
-#   
-#   # Have separate worksheets for each variable too
-#   addWorksheet(wb, "MTRS_and_FFMTRS")
-#   
-#   writeData(wb, "MTRS_and_FFMTRS", WS_pod_points_Merge %>% st_drop_geometry())
-#   
-#   
-#   
-#   addWorksheet(wb, "One_Mile_or_More_Inside_WS")
-#   
-#   writeData(wb, "One_Mile_or_More_Inside_WS", wsBound_Inner_Intersect %>% st_drop_geometry())
-#   
-#   
-#   
-#   addWorksheet(wb, "Mentions_WS")
-#   
-#   writeData(wb, "Mentions_WS", wsMention %>% st_drop_geometry())
-#   
-#   
-#   
-#   # After that, create a summary table that identifies which task each POD was gathered from
-#   task1 <- WS_pod_points_Merge %>%
-#     st_drop_geometry() %>%
-#     select(APPLICATION_NUMBER, POD_ID) %>%
-#     mutate(MATCHING_MTRS_OR_FFMTRS = TRUE)
-#   
-#   
-#   
-#   task3 <- wsBound_Inner_Intersect %>%
-#     st_drop_geometry() %>%
-#     select(APPLICATION_NUMBER, POD_ID) %>%
-#     mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = TRUE)
-#   
-#   
-#   
-#   task4 <- wsMention %>%
-#     st_drop_geometry() %>%
-#     select(APPLICATION_NUMBER, POD_ID) %>%
-#     mutate(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = TRUE)
-#   
-#   
-#   
-#   # Join all four variables together
-#   combinedDF <- task1 %>%
-#     full_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
-#     full_join(task4, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
-#     arrange(APPLICATION_NUMBER, POD_ID) %>%
-#     mutate(MATCHING_MTRS_OR_FFMTRS = replace_na(MATCHING_MTRS_OR_FFMTRS, FALSE),
-#            ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
-#            MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = replace_na(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION, FALSE))
-#   
-#   
-#   
-#   # Add that variable to the spreadsheet
-#   addWorksheet(wb, "POD_Selection_Info")
-#   
-#   writeData(wb, "POD_Selection_Info", combinedDF)
-#   
-#   
-#   
-#   # Also, make it the second sheet in the workbook
-#   worksheetOrder(wb) <- c(worksheetOrder(wb)[1],
-#                           tail(worksheetOrder(wb), 1),
-#                           worksheetOrder(wb)[-c(1, tail(worksheetOrder(wb), 1))])
-#   
-#   
-#   
-#   # As a final step, add a second review sheet focused on plotting points via Stream Stats ('POD_StreamStats_Analysis.R')
-#   addWorksheet(wb, "R_Review")
-#   
-#   writeData(wb, "R_Review",
-#             allDF %>%
-#               left_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
-#               select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
-#               mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
-#                      REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
-#                      REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
-#                      REPORT_SECTION = NA, REPORT_TOWNSHIP = NA, REPORT_RANGE = NA, REPORT_DATUM = NA, MULTI_OPTIONS_CHOICE = NA_integer_, `ANY_VAL?` = FALSE, NOTES2 = "--") %>%
-#               mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
-#                      `MANUAL_OVERRIDE: KEEP POD` = NA,
-#                      `MANUAL_OVERRIDE: REMOVE POD` = NA) %>%
-#               unique())
-#   
-#   
-#   
-#   # Save 'wb' to a file
-#   saveWorkbook(wb, 
-#                paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
-#   
-#   
-#   
-#   # Return nothing
-#   return(invisible(NULL))
-#   
-# }
-# 
+updateFlagTable <- function (combinedDF, ws, yearRange) {
+  
+  # Update the flagging table based on the results of the analysis
+  # Four new columns will be added to the table
+  # (One for each GIS flag)
+  
+  
+  
+  flagDF <- paste0("OutputData/", ws$ID, "_", 
+                   yearRange[1], "_", yearRange[2], 
+                   "_Flag_Table.csv") %>%
+    read_csv(show_col_types = FALSE)
+  
+  
+  
+  # Check all of the POD records for each water right
+  # If at least one of their PODs has "TRUE" in a flag column, 
+  # set "TRUE" for the water right's corresponding flag column
+  gisResults <- combinedDF %>%
+    group_by(APPLICATION_NUMBER) %>%
+    summarize(WATERSHED_POD_CANDIDATE_MATCHING_MTRS_OR_FFMTRS = TRUE %in% MATCHING_MTRS_OR_FFMTRS,
+              WATERSHED_POD_CANDIDATE_LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY = TRUE %in% LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY,
+              WATERSHED_POD_CANDIDATE_ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = TRUE %in% ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY,
+              WATERSHED_POD_CANDIDATE_MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = TRUE %in% MENTIONS_WATERSHED_IN_SOURCE_INFORMATION, 
+              .groups = "drop")
+  
+  
+  
+  # Append 'gisResults' to 'flagDF'
+  flagDF <- flagDF %>%
+    left_join(gisResults, by = "APPLICATION_NUMBER", 
+              relationship = "many-to-one")
+  
+  
+  
+  # Write 'flagDF' back to a CSV file
+  flagDF %>%
+    write_csv(paste0("OutputData/", ws$ID, "_", 
+                     yearRange[1], "_", yearRange[2], 
+                     "_Flag_Table.csv"))
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
 
 
 
 #### Script Execution ####
 
 
-print("Starting 'GIS_Preprocessing.R'...")
+print("Starting '[Flagging]_GIS_Identify_Watershed_PODs'...")
 
 
-mainProcedure()
+Flag_GIS_Preprocessing()
 
 
-remove(mainProcedure, confirmCS, deleteIdentical, outputResults)#, outputResults_NoTask2)
+remove(Flag_GIS_Preprocessing, confirmCS, deleteIdentical, outputResults, updateFlagTable)

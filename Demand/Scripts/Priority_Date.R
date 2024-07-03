@@ -1,3 +1,6 @@
+# FLAGGING SCRIPT that also serves as a DWRAT COMPLIANCE SCRIPT-- DWRAT requires
+# ASSIGNED_PRIORITY_DATE as a field so that it can allocate water based on seniority
+
 # Classify different water right types and assign priority dates
 
 
@@ -58,7 +61,7 @@ mainProcedure <- function () {
   # is found in the "SUB_TYPE" column (meaning that "PRE_1914" is listed there)
   # Otherwise, it is an empty string ("")
   priorityDateCSV <- priorityDateCSV %>%
-    mutate(PRE_1914_1 = if_else(grepl("14", SUB_TYPE), "PRE_1914", ""))
+    mutate(PRE_1914_1 = if_else(!is.na(SUB_TYPE) & grepl("14", SUB_TYPE), "PRE_1914", ""))
   
   
   # (2)  PRE14_DIV_COMMENCED
@@ -107,10 +110,8 @@ mainProcedure <- function () {
   # this column will be "APPROPRIATIVE"
   # Otherwise, this column is empty
   priorityDateCSV <- priorityDateCSV %>%
-    mutate(APPROPRIATIVE = if_else(WATER_RIGHT_TYPE != "Federal Claims",
-                                   if_else(WATER_RIGHT_TYPE != "Statement of Div and Use",
-                                           "APPROPRIATIVE", 
-                                           ""),
+    mutate(APPROPRIATIVE = if_else(WATER_RIGHT_TYPE != "Federal Claims" & WATER_RIGHT_TYPE != "Statement of Div and Use",
+                                   "APPROPRIATIVE", 
                                    ""))
   
   
@@ -227,7 +228,7 @@ mainProcedure <- function () {
   # Otherwise, it has a value of "NO_PRIORITY_DATE_INFORMATION"
   priorityDateCSV <- priorityDateCSV %>%
     mutate(APPROPRIATIVE_DATE_SOURCE = if_else(APPROPRIATIVE == "APPROPRIATIVE",
-                                               if_else(PRIORITY_DATE == "", 
+                                               if_else(is.na(PRIORITY_DATE) | PRIORITY_DATE == "", 
                                                        if_else(is.na(APPLICATION_RECD_DATE),
                                                                if_else(is.na(APPLICATION_ACCEPTANCE_DATE),
                                                                        "NO_PRIORITY_DATE_INFORMATION",
