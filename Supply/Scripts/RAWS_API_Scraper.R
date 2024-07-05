@@ -430,6 +430,11 @@ prismSub <- function (rawsTable) {
   
   
   
+  print(paste0("Replacing ", sum(rawsTable == -999), " elements (out of ",
+               nrow(rawsTable) * ncol(rawsTable), " records) with PRISM data"))
+  
+  
+  
   # Read in the PRISM data file
   Prism_Processed <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
   

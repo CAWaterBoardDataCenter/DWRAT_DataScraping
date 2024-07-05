@@ -314,6 +314,59 @@ stopifnot(sum(grepl("\\-99", DAT_Merged)) == 0)
 
 
 
+#### Substitute Temperature with PRISM Data ####
+
+# Substitute all temperature columns with corresponding PRISM data
+
+
+
+# Read in the PRISM data
+prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
+
+
+
+# Make sure both 'prismDF' and 'DAT_Merged' are sorted by date
+DAT_Merged <- DAT_Merged %>%
+  arrange(Date)
+
+
+
+prismDF <- prismDF %>%
+  arrange(Date)
+
+
+
+# Make sure every date in 'prismDF' appears in 'DAT_Merged'
+# Also, there should be no repeats in either variable
+stopifnot(sum(prismDF$Date %in% DAT_Merged$Date) == nrow(prismDF))
+stopifnot(length(prismDF$Date) == length(unique(prismDF$Date)))
+stopifnot(length(DAT_Merged$Date) == length(unique(DAT_Merged$Date)))
+
+
+
+# Iterate through the columns in 'temperature_columns'
+for (i in 1:length(temperature_columns)) {
+  
+  # Find the corresponding temperature column in 'prismDF'
+  prismCol <- temperature_columns[i] %>%
+    str_remove("^.+_") %>%
+    paste0(., "$") %>%
+    grep(names(prismDF), value = TRUE)
+  
+  
+  
+  stopifnot(length(prismCol) == 1)
+  
+  
+  
+  # Replace data in 'DAT_Merged' with data from this column of 'prismDF'
+  DAT_Merged[[temperature_columns[i]]][DAT_Merged$Date %in% prismDF$Date] <- prismDF[[prismCol]]
+  
+}
+
+
+
+
 # Water Year Forecast data 2----
 
 
