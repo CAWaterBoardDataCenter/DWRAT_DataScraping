@@ -259,34 +259,66 @@ prismFill <- function (StartDate, EndDate) {
   
   
   
+  print(paste0("Replacing ", sum(noaaDF == -999), " elements (out of ",
+               nrow(noaaDF) * ncol(noaaDF), " records) with PRISM data"))
+  
+  
+  
   # Read in "Prism_Processed.csv"
   prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
   
   
   
-  # Check each column of 'noaaDF'
-  # (The first column is "Date", so that can be skipped)
-  for (j in 2:ncol(noaaDF)) {
-    
-    # Get the dates where this iteration's column is -999
-    emptyDates <- noaaDF %>%
-      filter(!! sym(names(noaaDF)[j]) == -999) %>%
-      select(Date)
-    
-    
-    
-    # If there are no missing entries, skip the rest of this loop
-    if (nrow(emptyDates) == 0) {
-      next
-    }
-    
-    
-    
-    
-    
-    
-    
-  }
+  # # Make sure both data frames are properly sorted by date
+  # noaaDF <- noaaDF %>%
+  #   arrange(Date)
+  # 
+  # 
+  # 
+  # prismDF <- prismDF %>%
+  #   arrange(Date)
+  # 
+  # 
+  # 
+  # # Check each column of 'noaaDF'
+  # # (The first column is "Date", so that can be skipped)
+  # for (j in 2:ncol(noaaDF)) {
+  #   
+  #   # Get the dates where this iteration's column is -999
+  #   emptyDates <- noaaDF %>%
+  #     filter(!! sym(names(noaaDF)[j]) == -999) %>%
+  #     select(Date)
+  #   
+  #   
+  #   
+  #   # If there are no missing entries, skip the rest of this loop
+  #   if (nrow(emptyDates) == 0) {
+  #     next
+  #   }
+  #   
+  #   
+  #   
+  #   # Otherwise, get the PRISM data that corresponds to this station and these dates
+  #   prismSubset <- prismDF %>%
+  #     filter(Date %in% emptyDates$Date) %>%
+  #     select(Date,
+  #            names(noaaDF)[j] %>%
+  #              str_extract("_.+$") %>%
+  #              paste0(., "$") %>%
+  #              grep(names(prismDF), value = TRUE))
+  #   
+  #   
+  #   
+  #   # It should only contain two columns of data
+  #   stopifnot(ncol(prismSubset) == 2)
+  #   
+  #   
+  #   
+  #   # Substitute the missing data in this column of 'noaaDF' with 'prismSubset'
+  #   # This code works because both data frames are sorted
+  #   noaaDF[noaaDF$Date %in% emptyDates$Date, j] <- prismSubset[prismSubset$Date %in% emptyDates$Date, 2]
+  #   
+  # }
   
   
   

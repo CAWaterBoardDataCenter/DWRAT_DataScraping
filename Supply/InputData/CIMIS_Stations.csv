@@ -1,4 +1,5 @@
-Station,Alias
-Windsor 103,WINDSOR.A
-Sanel Valley 106,HOPLAND2.A
-Santa Rosa 83,SNTAROSA.A
+ID,Station,Alias
+103,Windsor 103,WINDSOR.A
+106,Sanel Valley 106,HOPLAND2.A
+83,Santa Rosa 83,SNTAROSA.A
+85, Hopland 85, HOPLAND.A

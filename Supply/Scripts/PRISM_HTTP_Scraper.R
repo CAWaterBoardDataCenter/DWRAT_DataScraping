@@ -245,6 +245,11 @@ getPRISM <- function (bodyList, writePath) {
   
   
   
+  # Wait
+  Sys.sleep(1.2)
+  
+  
+  
   # Access that file and save it to a file
   paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) %>%
     read_lines() %>%
