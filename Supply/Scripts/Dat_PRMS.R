@@ -1,7 +1,6 @@
 #Install and load libraries----
 library(dplyr)
 library(tidyverse)
-library(here)
 library(lubridate) #for make_date function
 library(data.table) #for fread function
 
@@ -113,6 +112,8 @@ if (DAT_Initial %>% filter(Date %in% Meteorological$Date) %>% nrow() > 0) {
 DAT_Merged <- DAT_Initial %>%
   bind_rows(Meteorological) %>%
   arrange(Date)
+
+DAT_Merged <- DAT_Merged %>%  relocate(Date, .after = 6)
 
 # QAQC steps----
 
@@ -366,7 +367,72 @@ print(tmin_exceedance_dates)
   # Restore original columns to Dat_Merged_Update
   Dat_Merged_Update = Dat_Merged_Update[, names(DAT_Initial)]
   
-    ### Tmax_absurd----
+  ###  Tmax_absurd ----
+  
+  if (nrow(tmax_absurd) > 0) {
+    
+    # Ensure that the Date fields for tmin_absurd and Prism_Processed have the same type and format
+    tmax_absurd$Date <- as.Date(tmax_absurd$Date, format = "%Y-%m-%d")
+    Prism_Processed$date <- as.Date(Prism_Processed$Date, format = "%Y-%m-%d")
+    
+    # Perform an inner join to combine tmin_absurd and Prism_Processed on the Date column
+    tmax_absurd <- inner_join(
+      x = tmax_absurd, 
+      y = Prism_Processed,
+      by = "Date"
+    )
+    
+    # Define for loop for the 8 observed and PRISM TMAX stations
+    for (i in 1:8) {
+      # Define column names dynamically
+      tmin_col <- temperature_columns[i + 8]
+      tmax_col <- temperature_columns[i]
+      pt_tmin_col <- paste0("PT_TMIN", i)
+      pt_tmax_col <-paste0("PT_TMAX", i)
+      
+      # Replace tmax_absurd values with the corresponding PRISM data on the same date
+      tmax_absurd[[tmin_col]] <- tmax_absurd[[pt_tmin_col]]
+      tmax_absurd[[tmax_col]] <-tmax_absurd[[pt_tmax_col]]
+    }
+    
+  } else {
+    print("tmax_absurd has no records--there are no absurd maximum temperature for any station during the entire timeframe.")
+  }
+  
+  #### Replace original values in DAT_PRMS with corrected temperatures----
+  
+  # Left Join Dat_Merged_Update to tmax_absurd
+  Dat_Merged_Update <- left_join (x = Dat_Merged_Update,
+                                  y = tmax_absurd,
+                                  by = "Date",
+                                  suffix = c("", "_new"))
+  
+  # Replace values in the temperature columns using coalesce
+  Dat_Merged_Update <- Dat_Merged_Update %>%
+    mutate(across(all_of(temperature_columns),
+                  ~  coalesce(get(paste0(cur_column(),"_new")),.)))
+  
+  # Restore original columns to Dat_Merged_Update
+  Dat_Merged_Update = Dat_Merged_Update[, names(DAT_Initial)]
+  
+  Dat_Merged_Update <- Dat_Merged_Update %>%  relocate(Date, .after = 6)
+  
+  spreadsheet_name = paste0("Dat_PRMS_Remediation_", Sys.Date(), ".xlsx")
+  folder_path <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints") 
+  
+  file_path = file.path(folder_path, spreadsheet_name)
+  print(file_path)
+  
+  library(openxlsx)
+  
+  wb = createWorkbook()
+  
+  addWorksheet(wb, "Dat_PRMS_Remediated")
+  
+  writeData(wb, sheet = "Dat_PRMS_Remediated", x= Dat_Merged_Update)
+  
+  saveWorkbook(wb, file = file_path, overwrite = TRUE)
+  
 # Export QAQC Flags to Excel spreadsheet----
     library(openxlsx)
     
@@ -437,6 +503,59 @@ if (dateSeq[!(dateSeq %in% DAT_Merged$Date)] %>% length() > 0) {
 # Make sure there are no NA values or missing values in the dataset
 stopifnot(!anyNA(DAT_Merged))
 stopifnot(sum(grepl("\\-99", DAT_Merged)) == 0)
+
+
+
+#### Substitute Temperature with PRISM Data ####
+
+# Substitute all temperature columns with corresponding PRISM data
+
+
+
+# Read in the PRISM data
+prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
+
+
+
+# Make sure both 'prismDF' and 'DAT_Merged' are sorted by date
+DAT_Merged <- DAT_Merged %>%
+  arrange(Date)
+
+
+
+prismDF <- prismDF %>%
+  arrange(Date)
+
+
+
+# Make sure every date in 'prismDF' appears in 'DAT_Merged'
+# Also, there should be no repeats in either variable
+stopifnot(sum(prismDF$Date %in% DAT_Merged$Date) == nrow(prismDF))
+stopifnot(length(prismDF$Date) == length(unique(prismDF$Date)))
+stopifnot(length(DAT_Merged$Date) == length(unique(DAT_Merged$Date)))
+
+
+
+# Iterate through the columns in 'temperature_columns'
+for (i in 1:length(temperature_columns)) {
+  
+  # Find the corresponding temperature column in 'prismDF'
+  prismCol <- temperature_columns[i] %>%
+    str_remove("^.+_") %>%
+    paste0(., "$") %>%
+    grep(names(prismDF), value = TRUE)
+  
+  
+  
+  stopifnot(length(prismCol) == 1)
+  
+  
+  
+  # Replace data in 'DAT_Merged' with data from this column of 'prismDF'
+  DAT_Merged[[temperature_columns[i]]][DAT_Merged$Date %in% prismDF$Date] <- prismDF[[prismCol]]
+  
+}
+
 
 
 
@@ -623,17 +742,6 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
 
 
 
-
-# For each precipitation column, 
-names(Meteorological)
-
-
-
-
-
-
-
-
 # Round the numeric values in 'DAT_Merged'
 # (Keeping at most one decimal place)
 DAT_Merged <- DAT_Merged %>%
@@ -681,4 +789,4 @@ remove(DAT_Initial, DAT_Merged, DAT_Predictions,
 
 
 
-print("Dat PRMS script has finished running!")
+print("The 'Dat_PRMS.R' script has finished running!")
