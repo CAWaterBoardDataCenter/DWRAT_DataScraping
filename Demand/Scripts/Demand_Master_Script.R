@@ -36,6 +36,7 @@ source("Scripts/GIS_Preprocessing.R") # FLAGGING SCRIPT
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
 # to identify which PODs flow into the watershed (via USGS StreamStats), skipped on 5/7/2024 by Payman
+source("Scripts/POD_StreamStats_Analysis.R")
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
@@ -96,6 +97,9 @@ source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 # POD Sub-basin Assignment
 #Skipped by Payman on 5/2/2024
 source("Scripts/Assign_Subbasin_to_POD.R")
+#source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
+# ^ Alternative script that uses connectivity matrix for sub-basin assignment
+
 
 
 # QA/QC Working File Module*
