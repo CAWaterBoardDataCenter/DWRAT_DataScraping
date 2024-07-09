@@ -25,14 +25,14 @@ mainProcedure <- function (StartDate, EndDate) {
   # Prepare the request content
   bodyList <- list(call = "pp/daily_timeseries_mp",
                    proc = "gridserv",
-                   lons = statDF$X2 %>% paste0(collapse = "|"),
-                   lats = statDF$X1 %>% paste0(collapse = "|"),
-                   names = statDF$X3 %>% paste0(collapse = "|"),
-                   spares = "4km",
-                   interp = "idw",
-                   stats = "ppt",
-                   units = "si",
-                   range = "daily",
+                   lons = statDF$X2 %>% paste0(collapse = "|"),  # Latitude
+                   lats = statDF$X1 %>% paste0(collapse = "|"),  # Longitude
+                   names = statDF$X3 %>% paste0(collapse = "|"), # Station Names
+                   spares = "4km",   # Resolution
+                   interp = "idw",   # Interpolate grid cell values ("0" if no)
+                   stats = "ppt",    # Precipitation
+                   units = "si",     # Metric units
+                   range = "daily",  # Daily values
                    start = paste0(StartDate$year, twoDigitText(StartDate$month), twoDigitText(StartDate$day)),
                    end = paste0(EndDate$year, twoDigitText(EndDate$month), twoDigitText(EndDate$day)),
                    stability = "provisional")
@@ -65,7 +65,7 @@ mainProcedure <- function (StartDate, EndDate) {
                    names = statDF$X3 %>% paste0(collapse = "|"),
                    spares = "4km",
                    interp = "idw",
-                   stats = "tmin tmax",
+                   stats = "tmin tmax", # Minimum and maximum temperatures
                    units = "si",
                    range = "daily",
                    start = paste0(StartDate$year, twoDigitText(StartDate$month), twoDigitText(StartDate$day)),
@@ -103,7 +103,7 @@ mainProcedure <- function (StartDate, EndDate) {
                    spares = "4km",
                    interp = "idw",
                    stats = "ppt tmin tmax",
-                   units = "eng",
+                   units = "eng",   # US Customary units
                    range = "daily",
                    start = paste0(StartDate$year, twoDigitText(StartDate$month), twoDigitText(StartDate$day)),
                    end = paste0(EndDate$year, twoDigitText(EndDate$month), twoDigitText(EndDate$day)),
@@ -242,6 +242,11 @@ getPRISM <- function (bodyList, writePath) {
       str_remove("^csv.: .")
     
   }
+  
+  
+  
+  # Wait
+  Sys.sleep(1.2)
   
   
   
