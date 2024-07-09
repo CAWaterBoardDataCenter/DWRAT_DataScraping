@@ -16,11 +16,10 @@ require(writexl)
 # (This should be either "TRUE" or "FALSE")
 includeForecast <- FALSE
 
-
 # set start and end dates -------------------------------------------------
 ## Set start dates----
 
-StartDate <- as.Date("2022-06-17") # start of the water year
+StartDate <- as.Date("1990-01-01") # start of the water year
 Hydro_StartDate = as.Date("2023-10-01", format = "%Y-%m-%d") #, start of the current water year,
 # serves as the start date of the hydro simulation, 
 
