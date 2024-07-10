@@ -21,3 +21,5 @@ party_info = res %>% select(APPLICATION_PRIMARY_OWNER, PARTY_ID) %>%
                      unique() %>%
                      group_by(APPLICATION_PRIMARY_OWNER, PARTY_ID) %>%
                      summarise(OwnerCount = n()) %>% arrange(desc(OwnerCount))
+
+# No owner has more than 1 party ID--that's good, as of 7/10/2024
