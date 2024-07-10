@@ -76,7 +76,7 @@ sameYearDiffOwners <- function (ws, yearRange) {
     group_by(APPLICATION_NUMBER, YEAR) %>%
     summarize(PARTY_COUNTS = n(), .groups = "drop")
   
-  
+  # Returned no PARTY_COUNTS exceeding 1 on 7/10/2024 when Payman ran it, that's good
   
   # Create a flagging column related to whether "PARTY_COUNTS" is greater than 1
   # Append this column to 'flagDF'
@@ -87,7 +87,9 @@ sameYearDiffOwners <- function (ws, yearRange) {
               by = c("APPLICATION_NUMBER", "YEAR"), 
               relationship = "many-to-one")
   
-  
+  # Zero instances of TRUE for DIFFERENT_OWNERS_SUBMITTED_FOR_THE_SAME_RIGHT_AND_YEAR field; same 
+  # result occurs when we use ReportManager as the source instead of Snowflake, 
+  # As of 7/10/2024 run by Payman
   
   # Update the flag CSV file
   write_csv(flagDF,
@@ -234,7 +236,7 @@ sameTotalDiffRights <- function (ws, yearRange) {
 # 
 # 
 # writexl::write_xlsx(x= Duplicate_Reports, path = paste0("OutputData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
-
+flagDuplicateReports()
 print("The Multiple_Owner_Analysis.R script is done running!")
 
 
