@@ -68,9 +68,12 @@ sf_con <- DBI::dbConnect(drv = odbc::odbc(),
 
 # First send the query to Snowflake
 # Select all unique rows for the water use extended report table
-query <- dbSendQuery(sf_con, "SELECT DISTINCT * FROM DWR_DEV.DEMAND_DATA_FLAGS.WATER_USE_REPORT_EXTENDED_TABLE")
+query <- dbSendQuery(sf_con, "SELECT DISTINCT * 
+                     FROM DWR_DEV.DEMAND_DATA_FLAGS.VW_WATER_USE_REPORT_EXTENDED")
+# Returns 6.96 million records on 7/10/2024 in both Snowflake and ReportManager, run by Payman
 
-
+# query <- dbSendQuery(sf_con, "SELECT DISTINCT * FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED")
+# Returns 12.73 million records on 7/10/2024, 177 columns, don't run, takes a long time and unneeded
 
 # Load the results into R next
 res <- dbFetch(query)
