@@ -13,6 +13,106 @@ require(httr)
 mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   
+  # Use the ipm.ucanr URL to get station data
+  # (Daily minimum temperature, maximum temperature, and precipitation)
+  combinedDF <- urlBasedCall(StartDate, EndDate)
+  
+  
+  
+  # Select a subset of 'combinedDF' (basically removing the station name columns)
+  combinedDF <- combinedDF %>%
+    select(Date, CIMIS_PRECIP6, CIMIS_PRECIP12, CIMIS_TMAX3,
+           CIMIS_TMAX4,CIMIS_TMIN3, CIMIS_TMIN4)
+  
+  
+  
+  #Replace all missing values with -999
+  combinedDF[combinedDF == ""] = -999
+  
+  
+  
+  # The next steps rely on the outputs of 
+  # "PRISM_Processor.R"," CNRFC_Scraper.R", and "CNRFC_Processor.R"
+  
+  
+  
+  print(paste0("Replacing ", sum(combinedDF == -999), " elements (out of ",
+               nrow(combinedDF) * ncol(combinedDF), " records) with PRISM data"))
+  
+  
+  
+  # Replace missing values with data from PRISM
+  prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE) %>%
+    select(Date, PP_PRECIP6, PP_PRECIP12, PT_TMAX3, PT_TMAX4, PT_TMIN3, PT_TMIN4)
+  
+  
+  
+  # Before substituting the missing values, ensure that 'combinedDF' and 'prismDF' are data frames
+  combinedDF <- as.data.frame(combinedDF)
+  prismDF <- as.data.frame(prismDF)
+  
+  
+  
+  # After that, assign values from 'prismDF' to 'combinedDF'
+  combinedDF[combinedDF == -999] <- prismDF[combinedDF == -999]
+  
+  
+  
+  # Verify that the "Date" column is set to the required format for DAT_Shell
+  combinedDF$Date <- combinedDF$Date %>%
+    as.character() %>%
+    as.Date(format = "%Y%m%d")
+  
+  
+  
+  # The next step is to append CNRFC data to 'combinedDF'
+  # (If 'includeForecast' is TRUE)
+  if (includeForecast) {
+    
+    # Read in "CNRFC_Processed.csv", take a subset of the columns,
+    # and rename them to match the column names in 'combinedDF'
+    cnrfcDF <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE) %>%
+      select(Date, 
+             PRECIP6_HOPC1, PRECIP12_MWEC1,
+             TMAX3_CDLC1, TMIN3_CDLC1, TMAX4_LSEC1, TMIN4_LSEC1) %>%
+      rename(CIMIS_PRECIP6 = PRECIP6_HOPC1, CIMIS_PRECIP12 = PRECIP12_MWEC1,
+             CIMIS_TMAX3 = TMAX3_CDLC1, CIMIS_TMIN3 = TMIN3_CDLC1, 
+             CIMIS_TMAX4 = TMAX4_LSEC1, CIMIS_TMIN4 = TMIN4_LSEC1)
+    
+    
+    
+    # Bind 'cnrfcDF' to 'combinedDF'
+    combinedDF <- combinedDF %>%
+      rbind(cnrfcDF)
+    
+  }
+  
+  
+  
+  # Write 'combinedDF' to a file
+  combinedDF %>%
+    write_csv("ProcessedData/CIMIS_Processed.csv")
+  
+  
+  
+  # Output a completion message
+  cat("Done!\n")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+urlBasedCall <- function (StartDate, EndDate) {
+  
+  # This procedure for getting CIMIS data relies on a URL
+  # The parameters in the URL are modified to get data for the desired stations
+  
+  
+  
   # Read in the list of stations
   stationDF <- read_csv("InputData/CIMIS_Stations.csv", show_col_types = FALSE)
   
@@ -20,6 +120,13 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   # Iterate through 'stationDF'
   for (i in 1:nrow(stationDF)) {
+    
+    
+    # Skip the Hopland station in this procedure
+    if (stationDF$ID[i] == 85) {
+      next
+    }
+    
     
     
     # Construct the URL to retrieve data for this iteration's station
@@ -176,84 +283,99 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   
   
-  # Select a subset of 'combinedDF' (basically removing the station name columns)
-  combinedDF <- combinedDF %>%
-    select(Date, CIMIS_PRECIP6, CIMIS_PRECIP12, CIMIS_TMAX3,
-           CIMIS_TMAX4,CIMIS_TMIN3, CIMIS_TMIN4)
+  return(combinedDF)
+  
+}
+
+
+
+apiBasedCall <- function (StartDate, EndDate) {
+  
+  # Make a call to CIMIS's dedicated API
+  # Get precipitation and temperature data for each station
   
   
   
-  #Replace all missing values with -999
-  combinedDF[combinedDF == ""] = -999
+  # Read in a list of stations
+  stationDF <- read_csv("InputData/CIMIS_Stations.csv", show_col_types = FALSE)
+
+  
+  
+  # Create the request URL
+  requestURL <- paste0("http://et.water.ca.gov/api/data?",
+                       # State the API Key (CIMIS account required to get these)
+                       # This key is tied to an account that uses Aakash's SWRCB email
+                       "appKey=", "b0173b26-6de4-48e8-be98-cc21a18dc20a",
+                       # Station IDs (comma-separated)
+                       "&targets=", stationDF$ID %>% paste0(collapse = ","),
+                       # Dataset Start Date
+                       "&startDate=", StartDate$date,
+                       # Dataset End Date
+                       "&endDate=", EndDate$date,
+                       # Requesting Daily TMIN, TMAX, and PRECIP
+                       "&dataItems=day-air-tmp-min,day-air-tmp-max,day-precip",
+                       # Metric units
+                       "&unitOfMeasure=M")
   
   
   
-  # The next steps rely on "PRISM_Processor.R"," CNRFC_Scraper.R", and "CNRFC_Processor.R"
+  # Ask for a JSON-formatted response
+  res <- GET(requestURL,
+              add_headers("Accept" = "application/json"))
   
   
   
-  # Replace missing values with data from PRISM
-  prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE) %>%
-    select(Date, PP_PRECIP6, PP_PRECIP12, PT_TMAX3, PT_TMAX4, PT_TMIN3, PT_TMIN4)
+  # Wait a while after making the request
+  Sys.sleep(runif(1, min = 1.3, max = 1.8))
   
   
   
-  # Before substituting the missing values, ensure that 'combinedDF' and 'prismDF' are data frames
-  combinedDF <- as.data.frame(combinedDF)
-  prismDF <- as.data.frame(prismDF)
+  # Check the content of the response
+  res <- content(res)
   
   
   
-  # After that, assign values from 'prismDF' to 'combinedDF'
-  combinedDF[combinedDF == -999] <- prismDF[combinedDF == -999]
+  # The content of 'res' should be a JSON from CIMIS
+  # There should be one entry in the "Providers" sub-list (CIMIS)
+  stopifnot(res[["Data"]][["Providers"]] %>% length() == 1)
+  stopifnot(tolower(res[["Data"]][["Providers"]][[1]][["Name"]]) == "cimis")
   
   
   
-  # Verify that the "Date" column is set to the required format for DAT_Shell
-  combinedDF$Date <- combinedDF$Date %>%
-    as.character() %>%
-    as.Date(format = "%Y%m%d")
+  compiledDF <- tibble(DATE = Date(0),
+                       STATION_ID = numeric(0),
+                       TMIN = numeric(0),
+                       TMAX = numeric(0),
+                       PRECIP = numeric(0),
+                       TMIN_QC = character(0),
+                       TMAX_QC = character(0),
+                       PRECIP_QC = character(0))
   
   
   
-  # The next step is to append CNRFC data to 'combinedDF'
-  # (If 'includeForecast' is TRUE)
-  if (includeForecast) {
+  # Iterate through the records returned by CIMIS
+  for (i in 1:length(res$Data$Providers[[1]]$Records)) {
     
-    # Read in "CNRFC_Processed.csv", take a subset of the columns,
-    # and rename them to match the column names in 'combinedDF'
-    cnrfcDF <- read_csv("ProcessedData/CNRFC_Processed.csv", show_col_types = FALSE) %>%
-      select(Date, 
-             PRECIP6_HOPC1, PRECIP12_MWEC1,
-             TMAX3_CDLC1, TMIN3_CDLC1, TMAX4_LSEC1, TMIN4_LSEC1) %>%
-      rename(CIMIS_PRECIP6 = PRECIP6_HOPC1, CIMIS_PRECIP12 = PRECIP12_MWEC1,
-             CIMIS_TMAX3 = TMAX3_CDLC1, CIMIS_TMIN3 = TMIN3_CDLC1, 
-             CIMIS_TMAX4 = TMAX4_LSEC1, CIMIS_TMIN4 = TMIN4_LSEC1)
-    
-    
-    
-    # Bind 'cnrfcDF' to 'combinedDF'
-    combinedDF <- combinedDF %>%
-      rbind(cnrfcDF)
+    compiledDF <- compiledDF %>%
+      rbind(tibble(DATE = as.Date(res$Data$Providers[[1]]$Records[[i]]$Date, format = "%Y-%m-%d"),
+                   STATION_ID = as.numeric(res$Data$Providers[[1]]$Records[[i]]$Station),
+                   TMIN = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMin$Value,
+                   TMAX = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMax$Value,
+                   PRECIP = res$Data$Providers[[1]]$Records[[i]]$DayPrecip$Value,
+                   TMIN_QC = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMin$Qc,
+                   TMAX_QC = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMax$Qc,
+                   PRECIP_QC = res$Data$Providers[[1]]$Records[[i]]$DayPrecip$Qc))
     
   }
   
   
   
-  # Write 'combinedDF' to a file
-  combinedDF %>%
-    write_csv("ProcessedData/CIMIS_Processed.csv")
+  stop("This function has not been completed")
   
   
-  
-  # Output a completion message
-  cat("Done!\n")
-  
-  
-  # Return nothing
-  return(invisible(NULL))
   
 }
+
 
 
 #### Script Execution ####
@@ -265,4 +387,4 @@ cat("Starting 'CIMIS_Static_Scraper.R'...")
 mainProcedure(StartDate, EndDate, includeForecast)
 
 
-remove(mainProcedure)
+remove(mainProcedure, urlBasedCall, apiBasedCall)
