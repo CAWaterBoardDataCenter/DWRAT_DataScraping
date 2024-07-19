@@ -795,7 +795,7 @@ remove(DAT_Initial, DAT_Merged, DAT_Predictions,
 
 # Calculate Run Time and Print Completion Statement
 
-  # End timing
+  # End timer
   end_time <- Sys.time()
   
   # Calculate and print the duration
