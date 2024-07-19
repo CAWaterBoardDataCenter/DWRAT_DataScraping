@@ -269,7 +269,7 @@ mainProcedure <- function () {
   
   
   # Send a completion message to the console
-  cat("Done!\n")
+  cat("The Pirority_Date.R script is done running!\n")
   
   
   
