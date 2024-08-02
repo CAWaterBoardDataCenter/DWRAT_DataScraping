@@ -30,7 +30,8 @@ water_use_report <- fread(file = "RawData/water_use_report_extended.csv",
 
 
 
-# Perform an inner join (it is a one-to-many relationship)
+# Perform an inner join (it is a one-to-many relationship) of Application_Number to water_use_report; this whittles 
+# down the dataset to just the application_numbers in your watershed of interest
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
                                        relationship = "one-to-many")
 
