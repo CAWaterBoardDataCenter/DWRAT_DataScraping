@@ -357,7 +357,7 @@ outputResults <- function (ws, yearRange, WS_pod_points_Merge, wsBound_OneMile_I
   
   
   
-  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
+  #st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
   
   
   
@@ -495,8 +495,8 @@ outputResults <- function (ws, yearRange, WS_pod_points_Merge, wsBound_OneMile_I
   
   
   # Save 'wb' to a file
-  saveWorkbook(wb, 
-               paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
+  # saveWorkbook(wb, 
+  #              paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
   
   
   
