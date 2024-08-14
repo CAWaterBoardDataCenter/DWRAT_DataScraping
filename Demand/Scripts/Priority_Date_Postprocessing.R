@@ -137,8 +137,8 @@ ewrims_flat_file_use_season_Combined <- inner_join(Application_Number, ewrims_fl
 
 
 # Remove rows where "APPLICATION_NUMBER" starts with "S" (statements of diversion and use)
-ewrims_flat_file_use_season_Combined <- ewrims_flat_file_use_season_Combined %>%
-  filter(!grepl("^S", APPLICATION_NUMBER)) 
+# ewrims_flat_file_use_season_Combined <- ewrims_flat_file_use_season_Combined %>%
+#   filter(!grepl("^S", APPLICATION_NUMBER)) 
 
 
 # Filter by use status next

@@ -1,10 +1,7 @@
-# Looking for potential unit conversion errors based on ratios related to the
-# face-value amount or initial diversion amount
+# Looking for potential unit conversion errors based on ratios between each water
+# right's annual total and their face-value amount or initial diversion amount
+# Also, compare the annual total to the average and median annual total for each right
 
-
-
-# This script is based on the Excel module called:
-# "ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics.xlsx"
 
 
 #### Dependencies ####
@@ -41,14 +38,6 @@ flagUnitErrors <- function () {
     select(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE, AMOUNT, PARTY_ID) %>%
     unique()
   
-  
-  
-  # Also, from the extended CSV, get the face value information
-  # (And initial diversion amounts for statements)
-  fvDF <- fread("RawData/Snowflake_water_use_report_extended.csv",
-                select = c("APPLICATION_NUMBER", "INI_REPORTED_DIV_AMOUNT", "INI_REPORTED_DIV_UNIT",
-                           "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS")) %>%
-    unique()
   
   
   
@@ -88,15 +77,172 @@ flagUnitErrors <- function () {
   # Next, add a calendar/water year sum of "ANNUAL_DIRECT" and "ANNUAL_STORAGE"
   monthlyDF <- monthlyDF %>%
     mutate(YEAR_TOTAL = if_else(is.na(ANNUAL_DIRECT),
-                                         if_else(is.na(ANNUAL_STORAGE), NA_real_, ANNUAL_STORAGE),
-                                         ANNUAL_DIRECT))
+                                ANNUAL_STORAGE,
+                                if_else(is.na(ANNUAL_STORAGE), ANNUAL_DIRECT, ANNUAL_DIRECT + ANNUAL_STORAGE)))
+  
+  
+  
+  # The first set of flags will be based on the face value and initial diversion amounts
+  # These unit conversion error flags will be added to 'flagDF' in a separate function
+  flagDF <- flagDF %>%
+    faceValAndIniDivFlags(monthlyDF)
+  
+  
+  
+  # The next set of unit conversion error flags will be based on the average and median
+  # annual volume for each water right
+  # There is a separate function for that procedure as well
+  flagDF <- flagDF %>%
+    avgAndMedFlags(monthlyDF)
+  
+  
+  
+  # Save the updated 'flagDF'
+  write_csv(flagDF,
+            paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Flag_Table.csv"))  
+  
+  
+  
+  # Save 'monthlyDF' to a file too for use in other scripts
+  write_csv(monthlyDF,
+            paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Intermediate_Flow_Volumes.csv"))
+  
+  
+  
+  # Output a message to the console
+  cat("Done!\n")
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+monthlyUseValues <- function (statDF) {
+  
+  # Create a data frame with a water volume specified for each use type and month
+  
+  
+  # Define variables that contain the different months and use types
+  # (Note: The use type "Combined (Direct + Storage)" is ignored in this module)
+  monthNames <- month.abb %>% toupper()
+  
+  useTypes <- unique(statDF$DIVERSION_TYPE) %>%
+    sort() %>%
+    str_subset("Combined ", negate = TRUE) %>%
+    str_replace("^USE$", "REPORTED_USE")
+  
+  
+  
+  # Iterate through the use types and months
+  # Create a new data frame with this volume information
+  for (i in 1:length(useTypes)) {
+    
+    for (j in 1:length(monthNames)) {
+      
+      # Filter 'statDF' to this iteration's month and use type
+      # Then, sum the values in the "AMOUNT" column
+      # Save that result to a temporary data frame
+      tempDF <- statDF %>%
+        filter(DIVERSION_TYPE == useTypes[i] & MONTH == j) %>%
+        select(APPLICATION_NUMBER, YEAR, AMOUNT) %>%
+        group_by(APPLICATION_NUMBER, YEAR) %>%
+        summarize(!! paste0(monthNames[j], "_",
+                            useTypes[i], "_DIVERSION") :=
+                    sum(AMOUNT, na.rm = TRUE), .groups = "keep")
+      
+      
+      # NOTE
+      # The use of "!!" and ":=" inside summarize() allows a string to be used
+      # as a column name
+      
+      
+      # If this is the first iteration of the loops
+      if (i == 1 && j == 1) {
+        
+        # Define the main table DF with 'tempDF'
+        useDF <- tempDF
+        
+        
+        # Otherwise, join 'tempDF' to 'useDF'
+      } else {
+        
+        useDF <- useDF %>%
+          full_join(tempDF, by = c("APPLICATION_NUMBER", "YEAR"),
+                    relationship = "one-to-one")
+        
+      }
+      
+    } # End of loop j
+    
+  } # End of loop i
+  
+  
+  
+  # Return 'useDF'
+  return(useDF)
+  
+}
+
+
+
+valAdd <- function (...) {
+  
+  # Add together a variable number of values (denoted by "...")
+  # This function is a wrapper of sum() that includes a special exception
+  # If every value provided to 'valAdd' is NA, then NA will be returned
+  # Otherwise, sum() will be used as normal
+  
+  
+  
+  # Place all values together in a single vector
+  vec <- c(...)
+  
+  
+  
+  # If every value in 'vec' is NA, return NA
+  if (sum(is.na(vec)) == length(vec)) {
+    return(NA_real_)
+  }
+  
+  
+  
+  # Error Check
+  stopifnot(is.numeric(vec))
+  
+  
+  
+  # If there are non-NA values in 'vec', sum together the elements in 'vec'
+  # (while removing NA elements)
+  return(sum(vec, na.rm = TRUE))
+  
+}
+
+
+
+faceValAndIniDivFlags <- function (flagDF, monthlyDF) {
+  
+  # Create unit conversion error flags based on the face value and initial diversion volumes
+  # 'flagDF' will have new columns added for these flags
+  
+  
+  
+  # From the extended CSV, get the face value information
+  # (And initial diversion amounts for statements)
+  fvDF <- fread("RawData/Snowflake_water_use_report_extended.csv",
+                select = c("APPLICATION_NUMBER", "INI_REPORTED_DIV_AMOUNT", "INI_REPORTED_DIV_UNIT",
+                           "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS")) %>%
+    unique()
   
   
   
   # After that, link the data in 'fvDF' to 'monthlyDF'
   # The join will be based on "APPLICATION_NUMBER" 
   # Each application number should appear only once in 'fvDF' 
-  # (and 'monthlyDF' will have multiple rows per number)
+  # (and 'monthlyDF' will have multiple rows per application number)
   monthlyDF <- monthlyDF %>%
     left_join(fvDF, by = "APPLICATION_NUMBER", relationship = "many-to-one")
   
@@ -247,142 +393,82 @@ flagUnitErrors <- function () {
   
   
   
-  # Save the updated 'flagDF'
-  write_csv(flagDF,
-            paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Flag_Table.csv"))  
-  
-  
-  # After that, save another spreadsheet with just columns related to assessing unit conversion errors
-  # monthlyDF %>%
-  #   select(APPLICATION_NUMBER, YEAR,
-  #          YEAR_TOTAL, 
-  #          FACE_VALUE_AMOUNT, IniDiv_Converted_to_AF,
-  #          Diversion_as_Percent_of_FV, Diversion_as_Percent_of_IniDiv,
-  #          Annual_Diversion_if_reported_in_Gallons, Gallons_as_percent_of_FV,
-  #          Gallons_as_percent_of_IniDiv,
-  #          Annual_Diversion_if_reported_in_GPM, GPM_as_percent_of_FV, GPM_as_percent_of_IniDiv,
-  #          Annual_Diversion_if_reported_in_GPD, GPD_as_percent_of_FV, GPD_as_percent_of_IniDiv,
-  #          Annual_Diversion_if_reported_in_CFS, CFS_as_percent_of_FV, CFS_as_percent_of_IniDiv,
-  #          QAQC_Action_Taken, QAQC_Reason) %>%
-  #   filter((Diversion_as_Percent_of_FV > 100 & FACE_VALUE_AMOUNT > 0) | 
-  #            (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
-  #            (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
-  #            (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
-  #   write.xlsx(paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
-  
-  
-  
-  # Output a message to the console
-  cat("Done!\n")
-  
-  
-  
-  # Return nothing
-  return(invisible(NULL))
+  # Return 'flagDF'
+  return(flagDF)
   
 }
 
 
 
-monthlyUseValues <- function (statDF) {
-  
-  # Create a data frame with a water volume specified for each use type and month
-  
-  
-  # Define variables that contain the different months and use types
-  # (Note: The use type "Combined (Direct + Storage)" is ignored in this module)
-  monthNames <- month.abb %>% toupper()
-  
-  useTypes <- unique(statDF$DIVERSION_TYPE) %>%
-    sort() %>%
-    str_subset("Combined ", negate = TRUE) %>%
-    str_replace("^USE$", "REPORTED_USE")
+avgAndMedFlags <- function (flagDF, monthlyDF) {
   
   
   
-  # Iterate through the use types and months
-  # Create a new data frame with this volume information
-  for (i in 1:length(useTypes)) {
-    
-    for (j in 1:length(monthNames)) {
-      
-      # Filter 'statDF' to this iteration's month and use type
-      # Then, sum the values in the "AMOUNT" column
-      # Save that result to a temporary data frame
-      tempDF <- statDF %>%
-        filter(DIVERSION_TYPE == useTypes[i] & MONTH == j) %>%
-        select(APPLICATION_NUMBER, YEAR, AMOUNT) %>%
-        group_by(APPLICATION_NUMBER, YEAR) %>%
-        summarize(!! paste0(monthNames[j], "_",
-                            useTypes[i], "_DIVERSION") :=
-                    sum(AMOUNT, na.rm = TRUE), .groups = "keep")
-      
-      
-      # NOTE
-      # The use of "!!" and ":=" inside summarize() allows a string to be used
-      # as a column name
-      
-      
-      # If this is the first iteration of the loops
-      if (i == 1 && j == 1) {
-        
-        # Define the main table DF with 'tempDF'
-        useDF <- tempDF
-        
-        
-        # Otherwise, join 'tempDF' to 'useDF'
-      } else {
-        
-        useDF <- useDF %>%
-          full_join(tempDF, by = c("APPLICATION_NUMBER", "YEAR"),
-                    relationship = "one-to-one")
-        
-      }
-      
-    } # End of loop j
-    
-  } # End of loop i
+  # Create a summary tibble with median and average values of "YEAR_TOTAL" 
+  # for each unique "APPLICATION_NUMBER"
+  summaryDF <- monthlyDF %>%
+    group_by(APPLICATION_NUMBER) %>%
+    summarize(MEDIAN_TOTAL_AF = median(YEAR_TOTAL, na.rm = TRUE),
+              Q1_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[2], # Not used currently for analysis
+              IQR_TOTAL_AF = IQR(YEAR_TOTAL, na.rm = TRUE), # Not used currently for analysis
+              Q3_TOTAL_AF = quantile(YEAR_TOTAL, na.rm = TRUE)[4], # Not used currently for analysis
+              AVG_TOTAL_AF = mean(YEAR_TOTAL, na.rm = TRUE),
+              SD_TOTAL_AF = sd(YEAR_TOTAL, na.rm = TRUE))
   
   
   
-  # Return 'useDF'
-  return(useDF)
-  
-}
-
-
-
-valAdd <- function (...) {
-  
-  # Add together a variable number of values (denoted by "...")
-  # This function is a wrapper of sum() that includes a special exception
-  # If every value provided to 'valAdd' is NA, then NA will be returned
-  # Otherwise, sum() will be used as normal
+  # Append these values back to 'monthlyDF'
+  monthlyDF <- monthlyDF %>%
+    left_join(summaryDF, by = "APPLICATION_NUMBER", relationship = "many-to-one")
   
   
   
-  # Place all values together in a single vector
-  vec <- c(...)
+  # Calculate ratios between "YEAR_TOTAL" and both "MEDIAN_TOTAL_AF" and "AVG_TOTAL_AF"
+  # Keep records that are more than 100 times away from the median/average (in either direction)
+  # Also, records with an absolute distance of more than 100 AF from their median/average will be flagged
+  monthlyDF <- monthlyDF %>%
+    mutate(YEAR_TOTAL_MORE_THAN_100_TIMES_GREATER_THAN_MEDIAN_TOTAL = MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF > 100,
+           YEAR_TOTAL_MORE_THAN_100_TIMES_SMALLER_THAN_MEDIAN_TOTAL = MEDIAN_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / MEDIAN_TOTAL_AF < 1/100,
+           YEAR_TOTAL_MORE_THAN_100_AF_DIFFERENCE_FROM_MEDIAN_TOTAL = YEAR_TOTAL > 0 & abs(YEAR_TOTAL - MEDIAN_TOTAL_AF) > 100,
+           YEAR_TOTAL_MORE_THAN_100_TIMES_GREATER_THAN_AVERAGE_TOTAL = AVG_TOTAL_AF > 0 & YEAR_TOTAL / AVG_TOTAL_AF > 100,
+           YEAR_TOTAL_MORE_THAN_100_TIMES_SMALLER_THAN_AVERAGE_TOTAL = AVG_TOTAL_AF > 0 & YEAR_TOTAL > 0 & YEAR_TOTAL / AVG_TOTAL_AF < 1/100,
+           YEAR_TOTAL_MORE_THAN_100_AF_DIFFERENCE_FROM_AVERAGE_TOTAL = YEAR_TOTAL > 0 & abs(YEAR_TOTAL - AVG_TOTAL_AF) > 100)
   
   
   
-  # If every value in 'vec' is NA, return NA
-  if (sum(is.na(vec)) == length(vec)) {
-    return(NA_real_)
-  }
+  # Write 'monthlyDF' to a spreadsheet
+  # write.xlsx(monthlyDF %>%
+  #              mutate(QAQC_Action_Taken = NA,
+  #                     QAQC_Reason = NA),
+  #            paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
   
   
   
-  # Error Check
-  stopifnot(is.numeric(vec))
+  # Take a subset of 'monthlyDF'
+  monthlyDF <- monthlyDF %>%
+    select(APPLICATION_NUMBER, YEAR, 
+           YEAR_TOTAL_MORE_THAN_100_TIMES_GREATER_THAN_MEDIAN_TOTAL,
+           YEAR_TOTAL_MORE_THAN_100_TIMES_SMALLER_THAN_MEDIAN_TOTAL,
+           YEAR_TOTAL_MORE_THAN_100_AF_DIFFERENCE_FROM_MEDIAN_TOTAL,
+           YEAR_TOTAL_MORE_THAN_100_TIMES_GREATER_THAN_AVERAGE_TOTAL,
+           YEAR_TOTAL_MORE_THAN_100_TIMES_SMALLER_THAN_AVERAGE_TOTAL,
+           YEAR_TOTAL_MORE_THAN_100_AF_DIFFERENCE_FROM_AVERAGE_TOTAL)
   
   
   
-  # If there are non-NA values in 'vec', sum together the elements in 'vec'
-  # (while removing NA elements)
-  return(sum(vec, na.rm = TRUE))
+  # Join 'monthlyDF' to 'flagDF'
+  flagDF <- flagDF %>%
+    left_join(monthlyDF, by = c("APPLICATION_NUMBER", "YEAR"),
+              relationship = "many-to-one")
+  
+  
+  
+  # Return 'flagDF'
+  return(flagDF)
   
 }
+
+
 
 
 
