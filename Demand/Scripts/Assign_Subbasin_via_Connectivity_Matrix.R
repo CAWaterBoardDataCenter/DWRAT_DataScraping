@@ -91,34 +91,13 @@ mainProcedure <- function () {
   
   
   # The next step is to export 'podTable' to a file
-  # If a manual review is needed for this watershed, add an extra worksheet to the file
-  if ("MULTIPLE_SUBBASINS_ASSIGNED" %in% names(podTable)) {
-    
-    # Develop the manual review table in another variable
-    reviewTable <- podTable %>%
-      filter(MULTIPLE_SUBBASINS_ASSIGNED == TRUE) %>%
-      select(APPLICATION_NUMBER) %>%
-      unique()
-    
-    
-    
-    # Add columns for the field names that need to be specified
-    reviewTable[fieldNames] <- NA_character_
-    
-    
-    
-    # Write both 'reviewTable' and 'podTable' to a file
-    write_xlsx(list("Review" = reviewTable, 
-                    "POD_Table" = podTable),
-               paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
-    
-  } else {
-    
-    # Otherwise, just export 'podTable' to a file
-    podTable %>%
-      write_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx")) 
-    
-  }
+  podTable %>%
+    write_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
+  
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }
 
@@ -362,12 +341,6 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
     }
     
   } # End of 'i' loop
-  
-  
-  
-  # Add a column to 'podTable' that specifies whether the row will need to be reviewed
-  podTable <- podTable %>%
-    mutate(MULTIPLE_SUBBASINS_ASSIGNED = APPLICATION_NUMBER %in% appRecords$APPLICATION_NUMBER)
   
   
   
@@ -632,4 +605,4 @@ cat("Done!\n")
 
 # Remove the functions from the workspace
 remove(mainProcedure, checkOverlap, checkForMultiBasinRights, subbasinUpdate,
-       splitWaterRight, createSubbasinCombinations)
+       splitWaterRight, createSubbasinCombinations, identifyMinimumSubbasinCombination)
