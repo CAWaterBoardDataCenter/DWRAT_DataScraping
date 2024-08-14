@@ -1,3 +1,5 @@
+# FLAGGING SCRIPT
+
 #Install if you do not have in your current packages or are not up to date.----
 # install.packages("tidyverse")
 #Load Packages- This step must be done each time the project is opened. ----
@@ -60,4 +62,4 @@ remove(Priority_Date, Priority_Date_FINAL, ewrims_flat_file, ewrims_flat_file_Co
 
 
 # Output a completion message to the console
-cat("Done!\n")
+cat("The Priority_Date_Processing.R script is done running!\n")

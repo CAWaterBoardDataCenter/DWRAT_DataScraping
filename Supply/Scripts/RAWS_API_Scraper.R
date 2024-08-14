@@ -21,6 +21,10 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
   # Iterate through the list of stations and collect data from the RAWS website
   for (i in 1:nrow(stationDF)) {
     
+    print(paste0("Station ", i, " of ", nrow(stationDF), " (", stationDF$Alias[i], ")"))
+    
+    
+    
     # Make a POST request to the API and collect a data frame from the returned content
     resTable <- requestTable(stationDF$Station[i], StartDate, EndDate)
     
@@ -65,6 +69,12 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
            RAWS_PRECIP4, RAWS_PRECIP7, RAWS_PRECIP9,
            RAWS_TMAX5, RAWS_TMAX7, RAWS_TMAX8, 
            RAWS_TMIN5, RAWS_TMIN7, RAWS_TMIN8)
+  
+  
+  
+  # Add rows to 'combinedTable' if there are any missing dates
+  combinedTable <- combinedTable %>%
+    addMissingDates(StartDate, EndDate)
   
   
   
@@ -119,6 +129,38 @@ requestTable <- function (stationName, StartDate, EndDate) {
   adjStart$day <- day(adjStart$date)
   adjStart$month <- month(adjStart$date)
   adjStart$year <- year(adjStart$date)
+  
+  
+  
+  # Next, double check the bounds for the dataset
+  # RAWS will throw an error if 'adjStart' is earlier than the dataset start date
+  # ('EndDate' can be later than the dataset end date without any issue)
+  datasetStart <- getDatasetStartDate(stationName)
+  
+  
+  
+  # Between 'adjStart' and 'datasetStart', choose the date that appears later
+  # Only update 'adjStart' if 'datasetStart' is a more recent date
+  if (datasetStart > adjStart$date) {
+    
+    
+    # Update 'adjStart' and its columns
+    adjStart$date <- datasetStart
+    adjStart$day <- day(adjStart$date)
+    adjStart$month <- month(adjStart$date)
+    adjStart$year <- year(adjStart$date)
+    
+    
+    
+    # Verify that 'EndDate' is still a later date than the new 'adjStart' value
+    # If not, update 'EndDate' to equal 'adjStart'
+    if (EndDate$date < adjStart$date) {
+      
+      EndDate <- adjStart
+      
+    }
+    
+  }
   
   
   
@@ -187,6 +229,81 @@ requestTable <- function (stationName, StartDate, EndDate) {
   
   # Return 'htmlTable'
   return(htmlTable)
+  
+}
+
+
+
+getDatasetStartDate <- function (stationName) {
+  
+  # For this station, extract its start date from the "Daily Time Series" webpage
+  # Towards the beginning of the page, 
+  # there is a line that says "Earliest available data: [MONTH] [YEAR]"
+  # Use that to determine the start date
+   
+  
+  
+  # Use 'stationName' to access the webpage
+  pageContent <- paste0("https://wrcc.dri.edu/cgi-bin/wea_dysimts.pl?ca", stationName) %>%
+    read_lines()
+  
+  
+  
+  # Wait a bit before continuing
+  Sys.sleep(runif(1, min = 1, max = 1.3))
+  
+  
+  
+  # Find the text that says "Earliest available data"
+  # Extract the month and year from that name
+  startDateString <- grep("Earliest available data:", pageContent, 
+                          ignore.case = TRUE, value = TRUE) %>%
+    str_extract(" [A-Za-z]+ [0-9]+\\.?$") %>%
+    trimws()
+  
+  
+  
+  # Make sure 'startDateString' was successfully extracted
+  stopifnot(length(startDateString) == 1)
+  stopifnot(!is.na(startDateString))
+  
+  
+  
+  # Get the month and year from 'startDateString'
+  startMonth <- startDateString %>% str_extract("^[A-Za-z]+")
+  startYear <- startDateString %>% str_extract("[0-9]+")
+  
+  
+  
+  # Make sure that the extraction was successful
+  stopifnot(length(startMonth) == 1)
+  stopifnot(length(StartYear) == 1)
+  
+  stopifnot(!is.na(startMonth))
+  stopifnot(!is.na(StartYear))
+  
+  
+  
+  # 'startMonth' should be a valid month name
+  # (It should appear in the global variable 'month.name')
+  stopifnot(startMonth %in% month.name)
+  
+  
+  
+  # Use 'month.name' to convert 'startMonth' into a number
+  startMonth <- which(startMonth == month.name)
+  
+  
+  
+  # Create a date string with these values ("YYYY-MM-DD")
+  # (The day will be set to the first of the month)
+  datasetStartDate <- paste0(startYear, "-", startMonth, "-01") %>%
+    as.Date()
+  
+  
+  
+  # Return 'datasetStartDate'
+  return(datasetStartDate)
   
 }
 
@@ -267,10 +384,54 @@ columnRename <- function (stationID, dataTable) {
 
 
 
+addMissingDates <- function (rawsTable, StartDate, EndDate) {
+  
+  
+  # Using 'StartDate' and 'EndDate', create a vector of dates
+  # Each date in this vector is expected to appear in 'rawsTable'
+  dateVec <- seq(from = StartDate$date, to = EndDate$date, by = "day")
+  
+  
+  
+  # Create a vector of missing dates in 'rawsTable'
+  missingDates <- dateVec[!(dateVec %in% rawsTable$Date)]
+  
+  
+  
+  # If there are missing dates, add empty rows to 'rawsTable' for each date
+  if (length(missingDates) > 0) {
+    
+    # Convert 'missingDates' into a data frame with column name "Date"
+    # Bind it to 'rawsTable' (and then sort the data frame by date)
+    rawsTable <- bind_rows(rawsTable,
+                        data.frame(Date = missingDates)) %>%
+      arrange(Date)
+    
+    
+    
+    # Replace 'NA' in 'rawsTable' with "-999"
+    rawsTable[is.na(rawsTable)] <- -999
+    
+  }
+  
+  
+  
+  # Regardless of whether changes are made, return 'rawsTable'
+  return(rawsTable)
+  
+}
+
+
+
 prismSub <- function (rawsTable) {
   
   # In 'rawsTable', missing data is written as "-999"
   # Substitute those entries with data from "Prism_Processed.csv"
+  
+  
+  
+  print(paste0("Replacing ", sum(rawsTable == -999), " elements (out of ",
+               nrow(rawsTable) * ncol(rawsTable), " records) with PRISM data"))
   
   
   
@@ -348,4 +509,5 @@ cat("Starting 'RAWS_API_Scraper.R'...\n")
 mainProcedure(StartDate, EndDate, includeForecast)
 
 
-remove(mainProcedure, requestTable, columnRemoval, columnRename, prismSub, addCNRFC)
+remove(mainProcedure, requestTable, columnRemoval, columnRename, 
+       prismSub, addCNRFC, getDatasetStartDate, addMissingDates)

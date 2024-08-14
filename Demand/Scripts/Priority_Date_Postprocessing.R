@@ -19,6 +19,7 @@ source("Scripts/Dataset_Year_Range.R")
 
 # Each of the spreadsheets that use the water use report need different filters so only the date is filtered here 
 
+# FLAGGING BLOCK----
 
 # Read in the (very large) water use report extended flat file
 # Import only certain columns
@@ -29,7 +30,8 @@ water_use_report <- fread(file = "RawData/water_use_report_extended.csv",
 
 
 
-# Perform an inner join (it is a one-to-many relationship)
+# Perform an inner join (it is a one-to-many relationship) of Application_Number to water_use_report; this whittles 
+# down the dataset to just the application_numbers in your watershed of interest
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
                                        relationship = "one-to-many")
 
@@ -81,7 +83,7 @@ if (yearRange[2] >= 2022) {
 
 # Import functions for updates to the dataset
 
-
+# REMEDIATION BLOCK----
 # QA/QC functions for correcting unit conversion errors and duplicate reporting
 source("Scripts/QAQC_Functions.R")
 
@@ -124,6 +126,7 @@ remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Comb
 
 ######################################################################## Break ####################################################################################
 
+# FLAGGING BLOCK ----
 # Read the use season flat file next
 ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv")
 

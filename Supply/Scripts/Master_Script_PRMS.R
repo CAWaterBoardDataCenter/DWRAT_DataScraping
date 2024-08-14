@@ -16,12 +16,20 @@ require(writexl)
 # (This should be either "TRUE" or "FALSE")
 includeForecast <- FALSE
 
+# Include flagging and remediation blocks in Dat_PRMS.R? 
+#  Set to TRUE or FALSE after consulting with SDU management for that month's runs. TRUE means
+# that the flagging and remediation code blocks in the Dat_PRMS.R script will be executed. FALSE
+# means that those blocks will be skipped;
+
+includeFlagging <- TRUE
+includeRemediation <- TRUE
 
 # set start and end dates -------------------------------------------------
 ## Set start dates----
 
-StartDate <- as.Date("2023-10-01") # 1-2 months before previous end date; serves as the metereological start date
-Hydro_StartDate = as.Date("2023-10-01", format = "%Y-%m-%d") #serves as the start date of the hydro simulation, 
+StartDate <- as.Date("2023-10-01") # start of the water year
+Hydro_StartDate = as.Date("2023-10-01", format = "%Y-%m-%d") #, start of the current water year,
+# serves as the start date of the hydro simulation, 
 
   #usually the 1st day of the following month
 
@@ -36,7 +44,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-03-31")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2024-07-16")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -47,7 +55,7 @@ print(EndDate)
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
 End_Date <- as.Date("2024-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2024-03-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2024-09-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
 
   # usually the last day of the next month
 
@@ -82,11 +90,10 @@ source(here("Scripts/PRISM_SRP_Processor.R")) #Formats already downloaded PRISM 
 source(here("Scripts/Dat_SRP.R"))
 
 
-
 # Model Post-Processing ------------------------------------------------
 
 # PRMS Post-Processing Script
-source(here("Scripts/CNRFC_PRMS_Processor.R"))
+source(here("Scripts/PRMS_Processor.R"))
 
 
 # SRP Post-Processing Script

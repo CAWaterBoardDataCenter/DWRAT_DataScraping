@@ -1,3 +1,5 @@
+# CATEGORY 1 Script: Flagging Script
+
 # Functions that are used across multiple scripts
 
 makeSharePointPath <- function (filePathFragment) {
