@@ -91,7 +91,7 @@ dbClearResult(query)
 
 
 # Next, perform similar operations for the POD flat file
-query <- dbSendQuery(sf_con, "SELECT DISTINCT * FROM DWR_DEV.DEMAND_DATA_FLAGS.POD_FLAT_FILE_ACTIVE")
+query <- dbSendQuery(sf_con, "SELECT DISTINCT * FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_POD")
 
 
 

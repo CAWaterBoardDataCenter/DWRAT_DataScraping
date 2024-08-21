@@ -17,7 +17,7 @@ if (!exists("includeFlagging")) {
 }
 
 if (!exists("includeRemediation")) {
-  includeFlagging <- FALSE
+  includeRemediation <- FALSE
 }
 
 

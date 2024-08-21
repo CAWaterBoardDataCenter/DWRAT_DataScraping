@@ -115,7 +115,7 @@ mainProcedure <- function () {
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  plssDF <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -1150,7 +1150,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   # First read in that dataset
   # (It will appear as a variable called 'plssSub')
-  load(makeSharePointPath(filePathFragment ="Watershed Folders/Navarro/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
+  load(makeSharePointPath(filePathFragment ="Watershed Folders/Navarro River/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
   
   
   
