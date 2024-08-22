@@ -17,6 +17,8 @@ require(readxl)
 require(writexl)
 require(httr)
 
+options(viewer = NULL) # For mapview and R version 4.4.0
+
 #### Functions ####
 
 mainProcedure <- function () {
