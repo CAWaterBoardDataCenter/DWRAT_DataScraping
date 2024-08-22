@@ -250,6 +250,7 @@ mainProcedure <- function () {
     
     # Then write 'naDF' to a file
     naDF %>%
+      mutate(Staff = NA_character_) %>%
       write_xlsx(paste0("OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx"))
     
   }
