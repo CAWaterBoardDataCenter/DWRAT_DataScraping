@@ -12,6 +12,9 @@ require(readxl)
 require(janitor)
 require(writexl)
 
+options(viewer = NULL) # For mapview
+
+
 # There are several different coding blocks, which the SDA Demand QAQC Flags document 
   # in the SOPs and Documentation\1. Demand Data\SDU Methodology folder describes
   # in detail, but we have stamped them in the Demand Scripts 
