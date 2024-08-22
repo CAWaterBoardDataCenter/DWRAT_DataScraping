@@ -205,7 +205,8 @@ if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
 # Write 'expDemand' to a spreadsheet
 write.xlsx(expDemand %>%
              mutate(QAQC_Action_Taken = NA,
-                    QAQC_Reason = NA),
+                    QAQC_Reason = NA,
+                    Staff = NA),
            paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 
 
