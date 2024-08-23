@@ -5,7 +5,7 @@
 
 
 require(tidyverse)
-require(openxlsx)
+require(readxl)
 
 
 # Generic functions that are used in multiple scripts
