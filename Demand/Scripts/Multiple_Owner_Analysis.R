@@ -178,7 +178,8 @@ if (!is.na(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH)) {
 # Add review columns as well
 Duplicate_Reports <- Duplicate_Reports %>%
   mutate(QAQC_Action_Taken = NA_character_,
-         QAQC_Reason = NA_character_)
+         QAQC_Reason = NA_character_,
+         Staff = NA_character_)
 
 
 

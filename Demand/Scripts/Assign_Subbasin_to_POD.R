@@ -107,7 +107,8 @@ mainProcedure <- function () {
     
     
     # Write both 'reviewTable' and 'podTable' to a file
-    write_xlsx(list("Review" = reviewTable, 
+    write_xlsx(list("Review" = reviewTable %>%
+                      mutate(Staff = NA_character_), 
                     "POD_Table" = podTable),
                paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
     
