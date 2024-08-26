@@ -79,10 +79,6 @@ source("Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
 #skipped by Payman on 5/2/2024
 source("Scripts/Check_Empty_Reports.R") # FLAGGING AND REMEDIATION SCRIPT
 
-# Demand Dataset PowerBI Prepper; not required for generating MDT, can be skipped
-  #As of 5/7/2024, only applicable to RR watershed
-source("Scripts/Demand_Dataset_PowerBI_Prepper.R") # Miscellaneous Script; not 1 of 5 main categories
-
 # Beneficial Use, Return Flow Module
 #skipped by Payman on 5/2/2024
 source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
