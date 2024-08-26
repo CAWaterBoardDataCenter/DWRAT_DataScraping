@@ -14,7 +14,7 @@ structural integrity.
 **Supply**  
 This folder contains the files necessary for automating the Santa Rosa
 Plains (SRP) GS Flow and PRMS (Precipitation-Runoff Modeling System)
-hydrology models. As of 2024-04-24 this folder has 5 subfolders. The
+hydrology models. As of 2024-08-26 this folder has 5 subfolders. The
 pre-processing and post-processing of the *PRMS*  and *SRP* models have been nearly
 entirely automated.
 
