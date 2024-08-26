@@ -1,4 +1,8 @@
 #Install and load libraries----
+
+# Start timer
+start_time <- Sys.time()
+
 library(dplyr)
 library(tidyverse)
 library(lubridate) #for make_date function
@@ -7,6 +11,14 @@ library(data.table) #for fread function
 # Rely on the shared functions from the Demand scripts
 source("../Demand/Scripts/Shared_Functions_Demand.R")
 
+# Safety Check for includeFlagging variable
+if (!exists("includeFlagging")) {
+  includeFlagging <- FALSE
+}
+
+if (!exists("includeRemediation")) {
+  includeRemediation <- FALSE
+}
 
 
 # Use the Dat component files located on SharePoint
@@ -117,7 +129,9 @@ DAT_Merged <- DAT_Merged %>%  relocate(Date, .after = 6)
 
 # QAQC steps----
 
-## Identify negative precipitation values----
+ ## FLAGGING BLOCK ----
+if (includeFlagging) {
+### Identify negative precipitation values----
 
 # Identify precipitation columns
 precip_columns <- names(DAT_Merged)[grepl("PRECIP", names(DAT_Merged))]
@@ -146,9 +160,9 @@ negative_precip_dates <- Dat_Merged_Precip_Flags %>%
 #stopifnot(length(negative_precip_dates) == 0)
 print(negative_precip_dates) # returns 0 records on 6/25/2024
 
-## Identify extreme temperature values----
+### Identify extreme temperature values----
   
-  ### 1) TMIN > TMAX ----
+  #### 1) TMIN > TMAX ----
 
 # Identify temperature columns
 temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
@@ -171,7 +185,7 @@ tmin_exceedance_dates <- Dat_Merged_Temp[negative_tdiff_rows, ]
 # Print or use tmin_exceedance_dates as needed
 print(tmin_exceedance_dates)
 
-  ### 2) TMIN < average(TMIN) - 5 * standard deviations AND ----
+  #### 2) TMIN < average(TMIN) - 5 * standard deviations AND ----
   # 3) TMIN > average(TMIN) + 5 * standard deviations
 
     Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
@@ -207,7 +221,7 @@ print(tmin_exceedance_dates)
 
 
 
-  ### 4) TMAX < average(TMAX) - 5 * standard deviations ----
+  #### 4) TMAX < average(TMAX) - 5 * standard deviations ----
   ### 5) TMAX > average(TMAX) + 5 * standard deviations
     # Assuming temperature_columns contains both TMAX and TMIN columns
     Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
@@ -239,12 +253,14 @@ print(tmin_exceedance_dates)
     # Print or use tmax_absurd as needed
     print(tmax_absurd) #Returns 0 records on 6/26/2024 for sd * 5
     # Returns 3 records on 7/1/2024 for sd * 3.5
-    
-  # Import PRISM data to replace absurd values----
+}
+
+  ## REMEDIATION BLOCK ---- 
+if(includeRemediation) {
+    # Import PRISM data to replace absurd values
     # To be super conservative, set the start and end dates to  match the full Dat PRMS timeframe
-  Prism_Processed = read.csv("ProcessedData/Prism_Processed.csv")
-   
-  ## Remediate the Dat PRMS File ---- 
+    Prism_Processed = read.csv("ProcessedData/Prism_Processed.csv")
+    
     ### Negative Precipitation Records ----
     
     # Check if negative_precip_dates has any records
@@ -302,7 +318,7 @@ print(tmin_exceedance_dates)
       print("tmin_exceedance_corrections has no records--there are no instances where tmin exceeds tmax for any station during the entire timeframe.")
     }
   
-  #### Replace original values in DAT_PRMS with corrected temperature values----
+  #### Correct Dat_PRMS----
     
     # Left Join DAT_Merged to Tmin_Exceedance_Corrections
     Dat_Merged_Update <- left_join (x = DAT_Merged,
@@ -351,7 +367,7 @@ print(tmin_exceedance_dates)
       print("tmin_absurd has no records--there are no absurd minimum temperature for any station during the entire timeframe.")
     }
     
-    #### Replace original values in DAT_PRMS with corrected temperatures----
+    #### Correct DAT_PRMS----
   
     # Left Join Dat_Merged_Update to tmin_absurd
     Dat_Merged_Update <- left_join (x = Dat_Merged_Update,
@@ -399,7 +415,7 @@ print(tmin_exceedance_dates)
     print("tmax_absurd has no records--there are no absurd maximum temperature for any station during the entire timeframe.")
   }
   
-  #### Replace original values in DAT_PRMS with corrected temperatures----
+  #### Correct DAT_PRMS----
   
   # Left Join Dat_Merged_Update to tmax_absurd
   Dat_Merged_Update <- left_join (x = Dat_Merged_Update,
@@ -433,7 +449,7 @@ print(tmin_exceedance_dates)
   
   saveWorkbook(wb, file = file_path, overwrite = TRUE)
   
-# Export QAQC Flags to Excel spreadsheet----
+## Export QAQC Flags to Excel spreadsheet----
     library(openxlsx)
     
   # Define the full file_path for the spreadsheet
@@ -461,17 +477,20 @@ print(tmin_exceedance_dates)
     
     # Save the workbook
     saveWorkbook(wb, file = file_path, overwrite = TRUE)
-    
+}
+       
 # Water Year Forecast data----
-# The next step is to append forecasted data for the rest of the water year
-
-
+    
+# In most cases, you will skip the entire QAQC Steps block (all flagging
+# and remediation) and come here after you run the "Create_Dat_Final_PRMS" block. 
+# You only run the QAQC Steps block if the flagging and remediation functions are set to yes
+# in the Master_Script_PRMS.R
+# This step appends forecasted data for the rest of the current water year to DAT_Merged
 
 # Filter 'DAT_Predictions' to dates that do not appear in 'DAT_Merged'
 DAT_Predictions <- DAT_Predictions %>%
   mutate(Date = as.Date(paste0(Year, "/", month, "/", day), format = "%Y/%m/%d")) %>%
   filter(Date > max(DAT_Merged$Date))
-
 
 
 if (nrow(DAT_Predictions) > 0) {
@@ -482,13 +501,10 @@ if (nrow(DAT_Predictions) > 0) {
 }
 
 
-
-# Check for errors----
+# Check for errors in DAT_Merged----
 
 # Check to make sure that no dates are missing data between the beginning and end of 'DAT_Merged'
 dateSeq <- seq(from = min(DAT_Merged$Date), to = max(DAT_Merged$Date), by = "day")
-
-
 
 if (dateSeq[!(dateSeq %in% DAT_Merged$Date)] %>% length() > 0) {
   
@@ -498,34 +514,25 @@ if (dateSeq[!(dateSeq %in% DAT_Merged$Date)] %>% length() > 0) {
   
 }
 
-
-
 # Make sure there are no NA values or missing values in the dataset
 stopifnot(!anyNA(DAT_Merged))
 stopifnot(sum(grepl("\\-99", DAT_Merged)) == 0)
 
 
 
-#### Substitute Temperature with PRISM Data ####
+# Substitute Temperature with PRISM Data ####
 
 # Substitute all temperature columns with corresponding PRISM data
 
-
-
 # Read in the PRISM data
 prismDF <- read_csv("ProcessedData/Prism_Processed.csv", show_col_types = FALSE)
-
-
 
 # Make sure both 'prismDF' and 'DAT_Merged' are sorted by date
 DAT_Merged <- DAT_Merged %>%
   arrange(Date)
 
-
-
 prismDF <- prismDF %>%
   arrange(Date)
-
 
 
 # Make sure every date in 'prismDF' appears in 'DAT_Merged'
@@ -533,8 +540,6 @@ prismDF <- prismDF %>%
 stopifnot(sum(prismDF$Date %in% DAT_Merged$Date) == nrow(prismDF))
 stopifnot(length(prismDF$Date) == length(unique(prismDF$Date)))
 stopifnot(length(DAT_Merged$Date) == length(unique(DAT_Merged$Date)))
-
-
 
 # Iterate through the columns in 'temperature_columns'
 for (i in 1:length(temperature_columns)) {
@@ -788,5 +793,11 @@ remove(DAT_Initial, DAT_Merged, DAT_Predictions,
        getGIS, getXLSX, makeSharePointPath)
 
 
+# Calculate Run Time and Print Completion Statement
 
-print("The 'Dat_PRMS.R' script has finished running!")
+  # End timer
+  end_time <- Sys.time()
+  
+  # Calculate and print the duration
+  duration <- end_time - start_time
+  cat("The 'Dat_PRMS.R' script has finished running!\nRun-time:", duration, "seconds", "\n")

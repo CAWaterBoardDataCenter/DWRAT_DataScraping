@@ -33,7 +33,7 @@ source("Scripts/Dataset_Year_Range.R")
 
 # Initial POD Selection
 # (This is done in Snowflake now)
-#source("Scripts/[Data_Filtering]_Initial_POD_List.R")
+ source("Scripts/[Data_Filtering]_Initial_POD_List.R")
 
 #### Flagging ####
 
@@ -55,7 +55,21 @@ source("Scripts/[Flagging]_GIS_Identify_Watershed_PODs.R")
 # in the same reporting year
 source("Scripts/[Flagging]_Duplicate_Reporting.R")
 
+# Unit Conversion Error Flags
+# Compare annual total volumes to rights' face value amounts or initial diversion volumes
+# Annual totals that are at least 100 times larger or 100 times smaller are flagged
+# (Rights that have no face value amount and no initial diversion amount are 
+# also flagged as a potential error in the dataset)
+# The script then compares annual totals to rights' average and median totals
+# Total volumes that are at least 100 times larger or 100 times smaller than the
+# average/median volumes are flagged
+# Similarly, the annual total is flagged if it is more than 100 AF away from the 
+# average/median
+source("Scripts/[Flagging]_Unit_Conversion_Errors.R")
 
+# Empty Reports
+
+source("Scripts/[Flagging]_NA_Reports.R")
 
 
 

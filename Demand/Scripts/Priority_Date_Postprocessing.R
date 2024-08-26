@@ -30,7 +30,8 @@ water_use_report <- fread(file = "RawData/water_use_report_extended.csv",
 
 
 
-# Perform an inner join (it is a one-to-many relationship)
+# Perform an inner join (it is a one-to-many relationship) of Application_Number to water_use_report; this whittles 
+# down the dataset to just the application_numbers in your watershed of interest
 water_use_report_Combined <- inner_join(Application_Number, water_use_report, by = "APPLICATION_NUMBER",
                                        relationship = "one-to-many")
 
@@ -136,8 +137,8 @@ ewrims_flat_file_use_season_Combined <- inner_join(Application_Number, ewrims_fl
 
 
 # Remove rows where "APPLICATION_NUMBER" starts with "S" (statements of diversion and use)
-ewrims_flat_file_use_season_Combined <- ewrims_flat_file_use_season_Combined %>%
-  filter(!grepl("^S", APPLICATION_NUMBER)) 
+# ewrims_flat_file_use_season_Combined <- ewrims_flat_file_use_season_Combined %>%
+#   filter(!grepl("^S", APPLICATION_NUMBER)) 
 
 
 # Filter by use status next

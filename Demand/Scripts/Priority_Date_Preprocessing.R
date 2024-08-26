@@ -62,4 +62,4 @@ remove(Priority_Date, Priority_Date_FINAL, ewrims_flat_file, ewrims_flat_file_Co
 
 
 # Output a completion message to the console
-cat("Done!\n")
+cat("The Priority_Date_Processing.R script is done running!\n")

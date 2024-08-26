@@ -16,6 +16,11 @@
 # Save the SRP_Dat file for a specific month to the ProcessedData folder with a timestamp. The timestamp is the EndDate;
 # EndDate is the last day of the observed data range. 
 
+
+# Start Timer
+# Start timer
+start_time <- Sys.time()
+
 # Load libraries and custom functions----
 library(dplyr)
 library(tidyverse)
@@ -107,7 +112,8 @@ print("No errors exist because SRP_Preprocessed and Pre2023_SRP have no
 Dat_SRP_Merged = bind_rows(Pre2023_SRP, SRP_Processed) %>%
   arrange(Date)
 
-## QAQC Flags -----
+## FLAGGING BLOCK -----
+if (includeFlagging) {
 
 ### Identify negative precipitation values---
 
@@ -259,8 +265,9 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
     
     # Save the workbook
     saveWorkbook(wb, file = file_path, overwrite = TRUE)
-  
-## Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
+}
+
+# Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
 if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {
   
   print(c("The scraped SRP meteorological dataset contains rows for dates that appear 
@@ -370,3 +377,13 @@ Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
 write.table(x = Dat_SRP_Final,
             file = paste0("ProcessedData/Dat_SRP_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
+
+
+# Calculate Run Time and Print Completion Statement
+
+# End timer
+  end_time <- Sys.time()
+  
+  # Calculate and print the duration
+  duration <- end_time - start_time
+  cat("The 'Dat_PRMS.R' script has finished running!\nRun-time:", duration, "seconds", "\n")
