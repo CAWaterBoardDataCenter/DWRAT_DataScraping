@@ -12,6 +12,9 @@ require(readxl)
 require(janitor)
 require(writexl)
 
+options(viewer = NULL) # For mapview
+
+
 # There are several different coding blocks, which the SDA Demand QAQC Flags document 
   # in the SOPs and Documentation\1. Demand Data\SDU Methodology folder describes
   # in detail, but we have stamped them in the Demand Scripts 
@@ -75,10 +78,6 @@ source("Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
 # Try to fix reports with NA values for all months and diversion types
 #skipped by Payman on 5/2/2024
 source("Scripts/Check_Empty_Reports.R") # FLAGGING AND REMEDIATION SCRIPT
-
-# Demand Dataset PowerBI Prepper; not required for generating MDT, can be skipped
-  #As of 5/7/2024, only applicable to RR watershed
-source("Scripts/Demand_Dataset_PowerBI_Prepper.R") # Miscellaneous Script; not 1 of 5 main categories
 
 # Beneficial Use, Return Flow Module
 #skipped by Payman on 5/2/2024

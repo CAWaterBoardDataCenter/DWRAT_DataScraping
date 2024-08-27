@@ -346,7 +346,8 @@ mainProcedure <- function () {
            GPD_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_GPD / IniDiv_Converted_to_AF,
            CFS_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_CFS / IniDiv_Converted_to_AF,
            QAQC_Action_Taken = NA_character_,
-           QAQC_Reason = NA_character_)
+           QAQC_Reason = NA_character_,
+           Staff = NA_character_)
   
   
   
@@ -360,7 +361,8 @@ mainProcedure <- function () {
            GPD_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_GPD / IniDiv_Converted_to_AF,
            CFS_as_percent_of_IniDiv = Annual_Diversion_if_reported_in_CFS / IniDiv_Converted_to_AF,
            QAQC_Action_Taken = NA_character_,
-           QAQC_Reason = NA_character_)
+           QAQC_Reason = NA_character_,
+           Staff = NA_character_)
   
   
   
@@ -717,7 +719,7 @@ mainProcedure <- function () {
            Annual_Diversion_if_reported_in_GPM, GPM_as_percent_of_FV, GPM_as_percent_of_IniDiv,
            Annual_Diversion_if_reported_in_GPD, GPD_as_percent_of_FV, GPD_as_percent_of_IniDiv,
            Annual_Diversion_if_reported_in_CFS, CFS_as_percent_of_FV, CFS_as_percent_of_IniDiv,
-           QAQC_Action_Taken, QAQC_Reason) %>%
+           QAQC_Action_Taken, QAQC_Reason, Staff) %>%
     filter((Diversion_as_Percent_of_FV > 100 & FACE_VALUE_AMOUNT > 0) | 
              (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
              (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 

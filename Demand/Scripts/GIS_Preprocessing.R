@@ -53,7 +53,7 @@ mainProcedure <- function () {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -502,7 +502,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   writeData(wb, "R_Review",
             allDF %>%
               left_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
-              select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
+              select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, WATERSHED, SOURCE_NAME, TRIB_DESC, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
               mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
                      REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
                      REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
