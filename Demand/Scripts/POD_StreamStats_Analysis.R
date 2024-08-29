@@ -1160,7 +1160,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   # Start with the meridian
   if (meridian == "MDM") {
     plssSub <- plssSub %>%
-      filter(PRINMER == "Mount Diablo Meridian")
+      filter(PRINMER %in% c("Mount Diablo Meridian", "Mount Diablo"))
   } else {
     stop(paste0("Unknown meridian ", meridian))
   }
