@@ -52,6 +52,10 @@ mainProcedure <- function () {
   
   
   
+  #### IMPORTANT NOTE ####
+  # THESE PLSS SECTIONS SHOULD BE UPDATED EVENTUALLY
+  
+  
   # Import PLSS Sections for the entire state
   PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
@@ -90,7 +94,7 @@ mainProcedure <- function () {
   #### Task 1 (MTRS and FFMTRS) ####
   
   # Gather PODs based on their stated "MTRS" and/or "FFMTRS" values
-  
+
   
   
   # Join 'pod_points_statewide' and 'PLSS_Sections_Fill' (their 'FFMTRS' and 'MTRS' will be compared)
@@ -121,7 +125,8 @@ mainProcedure <- function () {
   # Get the points in 'pod_points_statewide_spatial' that have a "MTRS" value in 'WS_Section_Intersect'
   # Check both the "MTRS" and "FFMTRS" columns for matches
   WS_pod_points_Merge <- pod_points_statewide_spatial %>%
-    filter(MTRS %in% WS_Section_Intersect$MTRS | MTRS %in% WS_Section_Intersect$FFMTRS)
+    filter(MTRS %in% WS_Section_Intersect$MTRS | MTRS %in% WS_Section_Intersect$FFMTRS |
+             FFMTRS %in% WS_Section_Intersect$MTRS | FFMTRS %in% WS_Section_Intersect$FFMTRS)
   
   
   

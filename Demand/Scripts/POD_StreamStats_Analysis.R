@@ -369,7 +369,7 @@ mainProcedure <- function () {
     select(-KEY) %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     filter(AT_LEAST_ONE_EXIT == TRUE | 
-             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
+             #ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
              !is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
     filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
   
