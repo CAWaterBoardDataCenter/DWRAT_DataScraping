@@ -369,17 +369,17 @@ mainProcedure <- function () {
     select(-KEY) %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     filter(AT_LEAST_ONE_EXIT == TRUE | 
-             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
+             #ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
              !is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
     filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
   
   
   
-  # Write 'finalDF' to a GeoJSON file
+  # Write 'finalDF' to a geopackage file
   # (Make sure that file doesn't already exist first)
-  if (paste0(ws$ID, "_PODs_Final_List.GeoJSON") %in% list.files("OutputData")) {
+  if (paste0(ws$ID, "_PODs_Final_List.gpkg") %in% list.files("OutputData")) {
     
-    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON")))
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.gpkg")))
     
   }
   
@@ -387,7 +387,7 @@ mainProcedure <- function () {
   
   st_write(finalDF %>%
              st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83"), 
-           paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON"), delete_dsn = TRUE)
+           paste0("OutputData/", ws$ID, "_PODs_Final_List.gpkg"), layer = "Final_POD_List", delete_dsn = TRUE)
   
   
   
@@ -1161,6 +1161,12 @@ getSubPLSS <- function (section, township, range, meridian) {
   if (meridian == "MDM") {
     plssSub <- plssSub %>%
       filter(PRINMER %in% c("Mount Diablo Meridian", "Mount Diablo"))
+  } else if (meridian == "SBM") {
+    plssSub <- plssSub %>%
+      filter(PRINMER == "San Bernardino Meridian")
+  } else if (meridian == "HM") {
+    plssSub <- plssSub %>%
+      filter(PRINMER == "Humboldt Meridian")
   } else {
     stop(paste0("Unknown meridian ", meridian))
   }
