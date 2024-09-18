@@ -52,6 +52,10 @@ mainProcedure <- function () {
   
   
   
+  #### IMPORTANT NOTE ####
+  # THESE PLSS SECTIONS SHOULD BE UPDATED EVENTUALLY
+  
+  
   # Import PLSS Sections for the entire state
   PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
@@ -88,7 +92,7 @@ mainProcedure <- function () {
   #### Task 1 (MTRS and FFMTRS) ####
   
   # Gather PODs based on their stated "MTRS" and/or "FFMTRS" values
-  
+
   
   
   # Join 'pod_points_statewide' and 'PLSS_Sections_Fill' (their 'FFMTRS' and 'MTRS' will be compared)
@@ -119,7 +123,8 @@ mainProcedure <- function () {
   # Get the points in 'pod_points_statewide_spatial' that have a "MTRS" value in 'WS_Section_Intersect'
   # Check both the "MTRS" and "FFMTRS" columns for matches
   WS_pod_points_Merge <- pod_points_statewide_spatial %>%
-    filter(MTRS %in% WS_Section_Intersect$MTRS | MTRS %in% WS_Section_Intersect$FFMTRS)
+    filter(MTRS %in% WS_Section_Intersect$MTRS | MTRS %in% WS_Section_Intersect$FFMTRS |
+             FFMTRS %in% WS_Section_Intersect$MTRS | FFMTRS %in% WS_Section_Intersect$FFMTRS)
   
   
   
@@ -327,7 +332,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
-  # Create a combined version of all three variables
+  # Create a combined version of all four variables
   allDF <- wsBound_Inner_Intersect %>%
     bind_rows(wsBound_OneMile_Intersect, WS_pod_points_Merge, wsMention) %>%
     unique() %>%
@@ -336,12 +341,21 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
-  # Write 'allDF' to a GeoJSON file
+  # Add fields to 'allDF' that help distinguish where PODs were flagged
+  allDF <- allDF %>%
+    mutate(MATCHING_MTRS_OR_FFMTRS = POD_ID %in% WS_pod_points_Merge$POD_ID,
+           LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY = POD_ID %in% wsBound_OneMile_Intersect$POD_ID,
+           ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = POD_ID %in% wsBound_Inner_Intersect$POD_ID,
+           MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = POD_ID %in% wsMention$POD_ID)
+  
+  
+  
+  # Write 'allDF' to a gpkg
   # (But first remove the older version, if it exists in the directory)
-  if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("OutputData")) {
+  if (paste0(ws$ID, "_PODs_of_Interest.gpkg") %in% list.files("OutputData")) {
     
-    #system("rm OutputData/NV_PODS_of_Interest.GeoJSON", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
-    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON")))
+    #system("rm OutputData/NV_PODS_of_Interest.gpkg", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.gpkg")))
     
   }
   
@@ -375,7 +389,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
-  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
+  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.gpkg"), layer = "Flagged_PODs", delete_dsn = TRUE)
   
   
   
@@ -408,34 +422,34 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   # Add a separate worksheet to hold 'allDF' with all of its columns
-  addWorksheet(wb, "Combined")
-  
-  
-  writeData(wb, "Combined", allDF)
-  
-  
-  
-  # Have separate worksheets for each variable too
-  addWorksheet(wb, "MTRS_and_FFMTRS")
-  
-  writeData(wb, "MTRS_and_FFMTRS", WS_pod_points_Merge %>% st_drop_geometry())
-  
-  
-  addWorksheet(wb, "Up_to_One_Mile_Inside_WS")
-  
-  writeData(wb, "Up_to_One_Mile_Inside_WS", wsBound_OneMile_Intersect %>% st_drop_geometry())
-  
-  
-  addWorksheet(wb, "One_Mile_or_More_Inside_WS")
-  
-  writeData(wb, "One_Mile_or_More_Inside_WS", wsBound_Inner_Intersect %>% st_drop_geometry())
-  
-  
-  
-  addWorksheet(wb, "Mentions_WS")
-  
-  writeData(wb, "Mentions_WS", wsMention %>% st_drop_geometry())
-  
+  # addWorksheet(wb, "Combined")
+  # 
+  # 
+  # writeData(wb, "Combined", allDF)
+  # 
+  # 
+  # 
+  # # Have separate worksheets for each variable too
+  # addWorksheet(wb, "MTRS_and_FFMTRS")
+  # 
+  # writeData(wb, "MTRS_and_FFMTRS", WS_pod_points_Merge %>% st_drop_geometry())
+  # 
+  # 
+  # addWorksheet(wb, "Up_to_One_Mile_Inside_WS")
+  # 
+  # writeData(wb, "Up_to_One_Mile_Inside_WS", wsBound_OneMile_Intersect %>% st_drop_geometry())
+  # 
+  # 
+  # addWorksheet(wb, "One_Mile_or_More_Inside_WS")
+  # 
+  # writeData(wb, "One_Mile_or_More_Inside_WS", wsBound_Inner_Intersect %>% st_drop_geometry())
+  # 
+  # 
+  # 
+  # addWorksheet(wb, "Mentions_WS")
+  # 
+  # writeData(wb, "Mentions_WS", wsMention %>% st_drop_geometry())
+  # 
   
   
   # After that, create a summary table that identifies which task each POD was gathered from
@@ -499,14 +513,13 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   writeData(wb, "R_Review",
             allDF %>%
-              left_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
-              select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, WATERSHED, SOURCE_NAME, TRIB_DESC, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
+              select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, WATERSHED, SOURCE_NAME, TRIB_DESC, MATCHING_MTRS_OR_FFMTRS,
+                     LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, MENTIONS_WATERSHED_IN_SOURCE_INFORMATION) %>%
               mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
                      REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
                      REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
                      REPORT_SECTION = NA, REPORT_TOWNSHIP = NA, REPORT_RANGE = NA, REPORT_DATUM = NA, MULTI_OPTIONS_CHOICE = NA_integer_, NOTES2 = "--") %>%
-              mutate(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
-                     `MANUAL_OVERRIDE: KEEP POD` = NA,
+              mutate(`MANUAL_OVERRIDE: KEEP POD` = NA,
                      `MANUAL_OVERRIDE: REMOVE POD` = NA) %>%
               unique())
   

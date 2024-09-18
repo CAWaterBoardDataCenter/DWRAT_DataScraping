@@ -1,0 +1,48 @@
+let
+    Source = Csv.Document(File.Contents("C:\Users\palemi\Water Boards\Supply and Demand Assessment - Documents\Watershed Folders\Test_Russian\Data\GIS_Preprocessing\RR_pods_manual_review.csv"),[Delimiter=",", Columns=54, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+    Promoted_Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    Changed_Type = Table.TransformColumnTypes(Promoted_Headers,{{"Join_Count", Int64.Type}, {"TARGET_FID", Int64.Type}, {"APPLICATION_NUMBER", type text}, {"COUNTY", type text}, {"LATITUDE", type number}, {"LONGITUDE", type number}, {"POD_ID", Int64.Type}, {"FFMTRS", type text}, {"Range", type text}, {"Section", Int64.Type}, {"TownshipRange", type text}}),
+    
+    // Keep only several critical columns
+    Keep_essential_columns = Table.SelectColumns(Changed_Type,{"APPLICATION_NUMBER", "COUNTY", "LATITUDE", "LONGITUDE", "POD_ID", "SOURCE_NAME", "WATERSHED", "FFMTRS", "MTRS", "TRIB_DESC"}),
+    
+    // Rename columns with the ewrims_prefix for consistency
+    Renamed_Columns = Table.RenameColumns(Keep_essential_columns, {
+        {"LATITUDE", "ewrims_latitude"}, 
+        {"LONGITUDE", "ewrims_longitude"}, 
+        {"SOURCE_NAME", "ewrims_SOURCE_NAME"}, 
+        {"TRIB_DESC", "ewrims_TRIB_DESC"}, 
+        {"WATERSHED", "ewrims_WATERSHED"},
+        {"COUNTY", "ewrims_County"}
+    }),
+    
+    // Add columns to the query
+    Added_Report_Latitude = Table.AddColumn(Renamed_Columns, "Report_Latitude", each ""),
+    Added_Report_Longitude = Table.AddColumn(Added_Report_Latitude, "Report_Longitude", each ""),
+    Added_Report_Northing = Table.AddColumn(Added_Report_Longitude, "Report_Northing", each ""),
+    Added_Report_Easting = Table.AddColumn(Added_Report_Northing, "Report_Easting", each ""),
+
+    Added_Report_County = Table.AddColumn(Added_Report_Easting, "Report_County", each ""),
+    Added_Report_Source_Creek = Table.AddColumn(Added_Report_County, "Report_Source_Creek", each ""),
+    Added_Report_Tributary = Table.AddColumn(Added_Report_Source_Creek, "Report_Tributary", each ""),
+    Added_Report_Thence = Table.AddColumn(Added_Report_Tributary, "Report_Thence", each ""),
+    Added_Report_APN = Table.AddColumn(Added_Report_Thence, "Report_APN", each ""),
+    Added_Report_Township = Table.AddColumn(Added_Report_APN, "Report_Township", each ""),
+    Added_Report_Range = Table.AddColumn(Added_Report_Township, "Report_Range", each ""),
+    Added_Report_Section = Table.AddColumn(Added_Report_Range, "Report_Section", each ""),
+    Added_Report_QSection = Table.AddColumn(Added_Report_Section, "Report_QSection", each ""),
+    Added_Report_QQSection = Table.AddColumn(Added_Report_QSection, "Report_QQSection", each ""),
+    Added_Report_POD_Information = Table.AddColumn(Added_Report_QQSection, "Report_POD_Information", each ""),
+    Added_Coordinates_Action = Table.AddColumn(Added_Report_POD_Information, "Coordinates_Action", each ""),
+    Added_Coordinates_Justification = Table.AddColumn(Added_Coordinates_Action, "Coordinates_Justification", each ""),
+    Added_Latitude = Table.AddColumn(Added_Coordinates_Justification, "LATITUDE", each ""),
+    Added_Longitude = Table.AddColumn(Added_Latitude, "LONGITUDE", each ""),
+    Added_StreamStats = Table.AddColumn(Added_Longitude, "StreamStats", each ""),
+    Added_Keep_POD = Table.AddColumn(Added_StreamStats, "Keep_POD", each ""),
+    Added_POD_Justification = Table.AddColumn(Added_Keep_POD, "POD_Justification", each ""),
+
+    // Reorder columns to ensure correct output order
+    Reordered_Columns = Table.ReorderColumns(Added_POD_Justification,{"APPLICATION_NUMBER", "POD_ID", "ewrims_latitude", "ewrims_longitude", "ewrims_County", "ewrims_SOURCE_NAME", "ewrims_TRIB_DESC", "ewrims_WATERSHED", "FFMTRS", "MTRS", "Report_Latitude", "Report_Longitude", "Report_Northing", "Report_Easting", "Report_County", "Report_Source_Creek", "Report_Tributary", "Report_Thence", "Report_APN", "Report_Township", "Report_Range", "Report_Section", "Report_QSection", "Report_QQSection", "Report_POD_Information", "Coordinates_Action", "Coordinates_Justification", "LATITUDE", "LONGITUDE", "StreamStats", "Keep_POD", "POD_Justification"})
+    
+in
+    Reordered_Columns
