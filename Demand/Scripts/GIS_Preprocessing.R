@@ -424,13 +424,13 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   # Add a separate worksheet to hold 'allDF' with all of its columns
-  # addWorksheet(wb, "Combined")
-  # 
-  # 
-  # writeData(wb, "Combined", allDF)
-  # 
-  # 
-  # 
+  addWorksheet(wb, "Combined")
+   
+   
+  writeData(wb, "Combined", allDF)
+  
+   
+   
   # # Have separate worksheets for each variable too
   # addWorksheet(wb, "MTRS_and_FFMTRS")
   # 
