@@ -74,11 +74,9 @@ mainProcedure <- function () {
   # (1) Get PODs with a MTRS or FFMTRS that lies within the watershed boundaries
   # (Based on PLSS overlap with watershed polygon)
   
-  # (2) Get all PODs within one mile of the boundary
-  # (This action is currently not being performed; the code is there, but it is commented out)
-  # (This can add a lot of extra work for very little gain)
-  
-  # NEW (2) Get all PODs within one mile of the boundary (on the inside only)
+  #(2) Gets all the PODS within 1 mile (on the inside only) of the watershed boundary polygon. 
+  # PODs within 1 mile of the boundary on the outside are not selected because this adds a 
+  # lot of extra work for very little gain.
   
   # (3) Get all PODs that intersect with the watershed polygon
   
