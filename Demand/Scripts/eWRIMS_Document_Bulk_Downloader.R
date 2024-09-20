@@ -2,6 +2,11 @@ library(tidyverse)
 library(here)
 library(data.table)
 
+
+# Import 'ws'
+source("Scripts/Watershed_Selection.R")
+
+
 # Import eWRIMS PODs for your watershed----
 Application_Number <- getXLSX(
   ws = ws,
@@ -49,7 +54,7 @@ for (i in 1:nrow(eWRIMS_List)) {
     # Download the document (permit, license, statement, registration, etc.)
     download.file(url = paste0("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/DocumentRetriever.jsp?appNum=",
                                eWRIMS_List$APPLICATION_NUMBER[i], "&wrType=",eWRIMS_List$WATER_RIGHT_TYPE[i], "&docType=DOCS"),
-                  destfile = paste0(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), eWRIMS_List$APPLICATION_NUMBER[i], ".pdf"),
+                  destfile = paste0(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), "/", eWRIMS_List$APPLICATION_NUMBER[i], ".pdf"),
                   mode = "wb") # Resolves download issues on Windows
   }, error = function(e) {
     # Handle the error or simply ignore it
