@@ -3,21 +3,8 @@
 #install.packages("tidyverse")
 
 #Load Packages- This step must be done each time the project is opened. ----
-require(tidyverse)
-require(odbc)
-require(DBI)
+library(tidyverse)
 
-# Repair function for corrupted flat files----
-
-# Jeff Yeazell and Damon Hess discovered in February 2024 that the flat files had been corrupted;
-# The October, November, and December 2021 reported values are being assigned to their respective 
-# months in 2022, and the 'missing ' 2021 values are then imputed as zeros. If diverters reported 
-# for water year 2023, the October, November, and December 2022 reported values are being assigned 
-# to their respective months in 2023. It looks like some sort of joining error where the year 
-# is not included with the month. It affects every water right and possibly every analysis 
-# performed on Water Year 2022 data or later where the error went unnoticed.
-
-# REMEDIATION CODING BLOCK
 
 fixData <- function(x) {
   
@@ -54,39 +41,53 @@ fixData <- function(x) {
   return(x)
 }
 
-# Downloading Flat Files Required by QAQC Process----
+
 
 # Download in advance all flat files that will be used in the procedures of this script and the other demand-related scripts
-# They will be downloaded directly from the ReportManager, 1542 SQL Server, Database ReportDB, which hosts all eWRIMS flat files. 
-# This database is accessible to all Division staff. (VPN Required)
-ReportManager <- dbConnect(odbc(),
-                           Driver = "SQL Server",
-                           Server = "reportmanager,1542",
-                           Trusted_Connection = "Yes",
-                           Database = "ReportDB")
+# They will be collected from *Internal URLs* that are updated daily; a Cal EPA network connection or VPN connection is required for this step
 
 
-# Save the POD flat file, ~73 MB as of 2/13/2024
-Flat_File_PODs <- dbGetQuery(ReportManager,
-                             "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod") %>%
-  write_csv("RawData/ewrims_flat_file_pod.csv")
+# Save the POD flat file
+download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_pod.csv", 
+              "RawData/ewrims_flat_file_pod.csv", mode = "wb", quiet = TRUE)
 
 
-# Get the master flat file as well, ~69 MB as of 2/13/2024
-flat_file <- dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file") %>% 
-  write_csv("RawData/ewrims_flat_file.csv")
+# Get the master flat file as well
+download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file.csv",
+              "RawData/ewrims_flat_file.csv", mode = "wb", quiet = TRUE)
 
 
-# Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
-water_use_report <- dbGetQuery(conn = ReportManager,
-           statement = "SELECT * from ReportDB.FLAT_FILE.ewrims_water_use_report
-           WHERE YEAR >= 2016 ")
+# Download the Water Rights Annual Water Use Report file next
+read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report.csv", show_col_types = FALSE) %>%
+  write_csv("RawData/water_use_report.csv")
+
+# Save the Water Rights Annual Water Use Extended Report file too
+# (This works, but it takes a long time, and the progress bar might not update)
+options(timeout = 10^9) # With this setting change, download.file() will now stop if the download takes more than a billion seconds (~31.7 years), about 15.7 GB
+download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "RawData/water_use_report_extended.csv", mode = "wb", quiet = FALSE)
+
+
+# Save the Water Rights Uses and Seasons flat file as well, ~96 MB
+read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+  write_csv("RawData/ewrims_flat_file_use_season.csv")
+
+
+# Get the Water Rights Parties flat file after that
+# (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
+read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_party.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+  write_csv("RawData/ewrims_flat_file_party.csv")
+
+
+
+# Fix a data issue in the two water use report flat files
+
+water_use_report <- fread("RawData/water_use_report.csv")
+
 
 # Convert the YEAR  column to numeric
 water_use_report$YEAR = as.numeric(water_use_report$YEAR)
-  
-  
+
+
 if (water_use_report %>% 
     filter(YEAR == max(water_use_report$YEAR) & as.numeric(MONTH) > 9) %>%
     nrow() > 0) {
@@ -102,24 +103,20 @@ if (water_use_report %>%
   
 }
 
-# DATA ACQUISITION CODING BLOCK
 
-# Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
-# (This works, but it takes a long time, and the progress bar might not update)
-water_use_report_extended = dbGetQuery(conn = ReportManager,
-           statement = "Select
-                                                  APPLICATION_NUMBER,YEAR,MONTH,
-                                                  AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
-                                                  FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
-                                                  EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
-                                                  WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
-                                                  STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
-                                                  STORAGE_SEASON_END,
-                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER
-                                                  
-                                                  FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
-                                                  WHERE YEAR >= 2016
-                                                  ")
+
+water_use_report_extended <- fread("RawData/water_use_report_extended.csv", 
+      select = c("APPLICATION_NUMBER", "YEAR", "MONTH",
+                 "AMOUNT", "DIVERSION_TYPE", "MAX_STORAGE",
+                 "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", 
+                 "EFFECTIVE_DATE", "EFFECTIVE_FROM_DATE",
+                 "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",
+                 "STORAGE_SEASON_START", "DIRECT_DIV_SEASON_END", 
+                 "STORAGE_SEASON_END",
+                 "PARTY_ID", "APPLICATION_PRIMARY_OWNER")) %>%
+  filter(YEAR >= 2016)
+
+
 
 if (water_use_report_extended %>% 
     filter(YEAR == max(as.numeric(water_use_report_extended$YEAR)) & as.numeric(MONTH) > 9) %>%
@@ -149,29 +146,10 @@ if (water_use_report_extended %>%
   
 }
 
-  
-# Save the Water Rights Uses and Seasons flat file as well, ~96 MB
-ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
-           statement = "Select * from 
-                                          ReportDB.FLAT_FILE.ewrims_flat_file_use_season") %>% 
-  write_csv("RawData/ewrims_flat_file_use_season.csv")
-
-
-# Get the Water Rights Parties flat file after that
-# (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
-ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
-  write_csv("RawData/ewrims_flat_file_party.csv")
 
 
 # Read the POD flat file
-# (This is already assigned earlier at the SQL query step)
-#Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
-
-
-# Disconnect from ReportDB Database
-dbDisconnect(conn = ReportManager)
-
+Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
 
 #Apply the proper filters----
 
@@ -246,41 +224,20 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS[, cols_to_keep, drop = FALSE]
 #Replace Meridian Names with Meridian Short Names----
 Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate(MERIDIAN = case_when(
-    MERIDIAN == " San Bernardino" ~ "SBM",
-    MERIDIAN == "Mount Diablo" ~ "MDM",
-    MERIDIAN == "Humboldt" ~ "HM",
+    MERIDIAN == " San Bernardino" ~"S",
+    MERIDIAN == "Mount Diablo" ~"M",
+    MERIDIAN == "Humboldt" ~"H",
     TRUE ~ MERIDIAN
   ))
 
 #Add the FFMTRS field----
-  #This field serves as the Flat File Mountain Township Range Section field
-  #This field concatenates the Meridian, Township Number, Township Direction, Range Number, Range Direction, and Section Number fields
-  #This field is used as a basis of comparison with the MTRS field in the PLSS_Sections_Fill shapefile
+#This field serves as the Flat File Mountain Township Range Section field
+#This field concatenates the Meridian, Township Number, Township Direction, Range Number, Range Direction, and Section Number fields
+#This field is used as a basis of comparison with the MTRS field in the PLSS_Sections_Fill shapefile
 
-Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, 
-                                 "-T",
-                                 if_else(is.na(Flat_File_eWRIMS$TOWNSHIP_NUMBER),
-                                         NA_character_,
-                                         if_else(Flat_File_eWRIMS$TOWNSHIP_NUMBER < 10, 
-                                                 paste0("0", Flat_File_eWRIMS$TOWNSHIP_NUMBER),
-                                                 as.character(Flat_File_eWRIMS$TOWNSHIP_NUMBER))),
-                                 Flat_File_eWRIMS$TOWNSHIP_DIRECTION, 
-                                 "-R",
-                                 if_else(is.na(Flat_File_eWRIMS$RANGE_NUMBER),
-                                         NA_character_,
-                                         if_else(Flat_File_eWRIMS$RANGE_NUMBER < 10, 
-                                                 paste0("0", Flat_File_eWRIMS$RANGE_NUMBER),
-                                                 as.character(Flat_File_eWRIMS$RANGE_NUMBER))),
-                                 Flat_File_eWRIMS$RANGE_DIRECTION, 
-                                 "-",
+Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, Flat_File_eWRIMS$TOWNSHIP_NUMBER, 
+                                 Flat_File_eWRIMS$TOWNSHIP_DIRECTION, Flat_File_eWRIMS$RANGE_NUMBER, Flat_File_eWRIMS$RANGE_DIRECTION,
                                  Flat_File_eWRIMS$SECTION_NUMBER)
-
-
-#### NOTE FOR LATER ####
-# THERE ARE ENTRIES IN THE FLAT FILE WITH "NA" MERIDIAN, BUT OTHERWISE VALID PLSS INFORMATION
-# THESE COULD BE FIXED WITH A ONE-TIME MANUAL REVIEW
-
-
 
 #Convert Coordinate Fields From Character Format to Numeric Format----
 Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
@@ -293,11 +250,11 @@ write_csv(Flat_File_eWRIMS,
 
 
 # Clear the environment----
-  # Get the name of all variables in the environment
+# Get the name of all variables in the environment
 all_vars = ls()
 
 
-  # Remove variables
+# Remove variables
 rm(list = all_vars)
 
 remove(all_vars)
