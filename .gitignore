@@ -19,6 +19,7 @@ Demand/ModuleAndScriptComparisons/*.xlsx
 Demand/OutputData/*.csv
 Demand/OutputData/*.xlsx
 Demand/OutputData/*.geoJSON
+Demand/OutputData/*.gpkg
 
 #Ignore Various R files
 .Rproj.user
