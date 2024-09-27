@@ -21,8 +21,8 @@ let
     Added_Report_Longitude = Table.AddColumn(Added_Report_Latitude, "Report_Longitude", each ""),
     Added_Report_Northing = Table.AddColumn(Added_Report_Longitude, "Report_Northing", each ""),
     Added_Report_Easting = Table.AddColumn(Added_Report_Northing, "Report_Easting", each ""),
-
-    Added_Report_County = Table.AddColumn(Added_Report_Easting, "Report_County", each ""),
+    Added_Report_Zone = Table.AddColumn(Added_Report_Easting, "Report_Zone", each ""),
+    Added_Report_County = Table.AddColumn(Added_Report_Zone, "Report_County", each ""),
     Added_Report_Source_Creek = Table.AddColumn(Added_Report_County, "Report_Source_Creek", each ""),
     Added_Report_Tributary = Table.AddColumn(Added_Report_Source_Creek, "Report_Tributary", each ""),
     Added_Report_Thence = Table.AddColumn(Added_Report_Tributary, "Report_Thence", each ""),
@@ -43,9 +43,8 @@ let
     Added_POD_Justification = Table.AddColumn(Added_Keep_POD, "POD_Justification", each ""),
 	Added_Staff = Table.AddColumn(Added_POD_Justification, "Staff", each ""),
 	Added_Review_Date = Table.AddColumn(Added_Staff, "Review_Date", each ""),
-
     // Reorder columns to ensure correct output order
-    Reordered_Columns = Table.ReorderColumns(Added_Review_Date,{"APPLICATION_NUMBER", "POD_ID", "ewrims_latitude", "ewrims_longitude", "ewrims_County", "ewrims_SOURCE_NAME", "ewrims_TRIB_DESC", "ewrims_WATERSHED", "FFMTRS", "MTRS", "Report_Latitude", "Report_Longitude", "Report_Northing", "Report_Easting", "Report_County", "Report_Source_Creek", "Report_Tributary", "Report_Thence", "Report_APN", "Report_Township", "Report_Range", "Report_Section", "Report_QSection", "Report_QQSection", "Report_POD_Information", "Coordinates_Action", "Coordinates_Justification", "LATITUDE", "LONGITUDE", "StreamStats", "Keep_POD", "POD_Justification"})
+    Reordered_Columns = Table.ReorderColumns(Added_Review_Date,{"APPLICATION_NUMBER", "POD_ID", "ewrims_latitude", "ewrims_longitude", "ewrims_County", "ewrims_SOURCE_NAME", "ewrims_TRIB_DESC", "ewrims_WATERSHED", "FFMTRS", "MTRS", "Report_Latitude", "Report_Longitude", "Report_Northing", "Report_Easting", "Report_Zone","Report_County", "Report_Source_Creek", "Report_Tributary", "Report_Thence", "Report_APN", "Report_Township", "Report_Range", "Report_Section", "Report_QSection", "Report_QQSection", "Report_POD_Information", "Coordinates_Action", "Coordinates_Justification", "LATITUDE", "LONGITUDE", "StreamStats", "Keep_POD", "POD_Justification"})
     
 in
     Reordered_Columns
