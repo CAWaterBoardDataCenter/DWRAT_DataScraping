@@ -302,7 +302,7 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   
   # Create the request URL
-  requestURL <- paste0("http://et.water.ca.gov/api/data?",
+  requestURL <- paste0("https://et.water.ca.gov/api/data?",
                        # State the API Key (CIMIS account required to get these)
                        # This key is tied to an account that uses Aakash's SWRCB email
                        "appKey=", "b0173b26-6de4-48e8-be98-cc21a18dc20a",
@@ -325,6 +325,15 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   
   
+  # NOTE: The above code can result in an error 
+  # (After hanging for a while, you get an error in 
+  # curl::curl_fetch_memory(url, handle = handle) that says 
+  # "Recv failure: Connection was reset")
+  # You may need to clear your browser cache/cookies to fix it 
+  # (This is a problem related to our network firewall and CIMIS cookies/cache)
+  
+  
+  
   # Wait a while after making the request
   Sys.sleep(runif(1, min = 1.3, max = 1.8))
   
@@ -342,31 +351,71 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   
   
-  compiledDF <- tibble(DATE = Date(0),
-                       STATION_ID = numeric(0),
-                       TMIN = numeric(0),
-                       TMAX = numeric(0),
-                       PRECIP = numeric(0),
-                       TMIN_QC = character(0),
-                       TMAX_QC = character(0),
-                       PRECIP_QC = character(0))
+  # Also make sure that the "Records" sublist is not empty
+  stopifnot(length(res$Data$Providers[[1]]$Records) > 0)
+  stopifnot("Date" %in% names(res$Data$Providers[[1]]$Records[[1]]))
+  stopifnot("Station" %in% names(res$Data$Providers[[1]]$Records[[1]]))
+  stopifnot("DayAirTmpMin" %in% names(res$Data$Providers[[1]]$Records[[1]]))
+  stopifnot("DayAirTmpMax" %in% names(res$Data$Providers[[1]]$Records[[1]]))
+  stopifnot("DayPrecip" %in% names(res$Data$Providers[[1]]$Records[[1]]))
   
   
   
-  # Iterate through the records returned by CIMIS
-  for (i in 1:length(res$Data$Providers[[1]]$Records)) {
-    
-    compiledDF <- compiledDF %>%
-      rbind(tibble(DATE = as.Date(res$Data$Providers[[1]]$Records[[i]]$Date, format = "%Y-%m-%d"),
-                   STATION_ID = as.numeric(res$Data$Providers[[1]]$Records[[i]]$Station),
-                   TMIN = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMin$Value,
-                   TMAX = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMax$Value,
-                   PRECIP = res$Data$Providers[[1]]$Records[[i]]$DayPrecip$Value,
-                   TMIN_QC = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMin$Qc,
-                   TMAX_QC = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMax$Qc,
-                   PRECIP_QC = res$Data$Providers[[1]]$Records[[i]]$DayPrecip$Qc))
-    
-  }
+  # Extract data from different columns within the records in 'res'
+  # Store that information in a tibble
+  compiledDF <- tibble(DATE = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["Date"]]) %>% as.Date(format = "%Y-%m-%d"),
+                       
+                       STATION_ID = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["Station"]]) %>% as.numeric(),
+                       
+                       TMIN = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["DayAirTmpMin"]][["Value"]]) %>% as.numeric(),
+                       
+                       TMAX = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["DayAirTmpMax"]][["Value"]]) %>% as.numeric(),
+                       
+                       PRECIP = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["DayPrecip"]][["Value"]]) %>% as.numeric(),
+                       
+                       TMIN_QC = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["DayAirTmpMin"]][["Qc"]]) %>% trimws(),
+                       
+                       TMAX_QC = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["DayAirTmpMax"]][["Qc"]]) %>% trimws(),
+                       
+                       PRECIP_QC = res$Data$Providers[[1]]$Records %>%
+                         map_chr(~ .[["DayPrecip"]][["Qc"]]) %>% trimws())
+                       
+
+  
+  # Slower procedure that uses a loop:
+  # 
+  # compiledDF <- tibble(DATE = Date(0),
+  #                      STATION_ID = numeric(0),
+  #                      TMIN = numeric(0),
+  #                      TMAX = numeric(0),
+  #                      PRECIP = numeric(0),
+  #                      TMIN_QC = character(0),
+  #                      TMAX_QC = character(0),
+  #                      PRECIP_QC = character(0))
+  # 
+  # 
+  # 
+  # # Iterate through the records returned by CIMIS
+  # for (i in 1:length(res$Data$Providers[[1]]$Records)) {
+  #   
+  #   compiledDF <- compiledDF %>%
+  #     rbind(tibble(DATE = as.Date(res$Data$Providers[[1]]$Records[[i]]$Date, format = "%Y-%m-%d"),
+  #                  STATION_ID = as.numeric(res$Data$Providers[[1]]$Records[[i]]$Station),
+  #                  TMIN = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMin$Value,
+  #                  TMAX = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMax$Value,
+  #                  PRECIP = res$Data$Providers[[1]]$Records[[i]]$DayPrecip$Value,
+  #                  TMIN_QC = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMin$Qc,
+  #                  TMAX_QC = res$Data$Providers[[1]]$Records[[i]]$DayAirTmpMax$Qc,
+  #                  PRECIP_QC = res$Data$Providers[[1]]$Records[[i]]$DayPrecip$Qc))
+  #   
+  # }
   
   
   
