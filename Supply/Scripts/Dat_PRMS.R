@@ -32,7 +32,7 @@ DAT_Metadata <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Bluepri
 
 # SBI predicted values for the rest of the water year
 # (Used when October-February data for the water year is not yet available)
-DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values_WY2024.dat") %>%
+DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values_WY2025.dat") %>%
   read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
   set_names(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Headers.txt") %>%
               read_lines())
@@ -40,7 +40,7 @@ DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blue
 
 
 # Read in the DAT file that contains data from 1990 up to the current water year
-DAT_Initial <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_PRMS_1990_to_WY2023.dat") %>%
+DAT_Initial <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_PRMS_1990_to_WY2024.dat") %>%
   read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
   set_names(makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Headers.txt") %>%
               read_lines())
