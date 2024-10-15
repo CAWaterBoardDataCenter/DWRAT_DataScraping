@@ -222,8 +222,8 @@ Flat_File_PODs_WR_Type <- Flat_File_PODs_Status[Flat_File_PODs_Status$WATER_RIGH
 
 ##Filter by Water Right Status----
 Flat_File_eWRIMS<- Flat_File_PODs_WR_Type[Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Active" | 
-                                            Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Claimed - Local Oversight"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Certified" | 
+                                            Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Claimed - Local Oversight"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Claimed"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Completed"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Licensed"|

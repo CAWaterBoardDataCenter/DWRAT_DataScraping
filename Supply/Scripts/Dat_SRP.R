@@ -268,7 +268,7 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
 }
 
 # Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
-if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {
+if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() > 0) {
   
   print(c("The scraped SRP meteorological dataset contains rows for dates that appear 
           in the SPI_Forecast_SRP dat file."))
@@ -320,6 +320,10 @@ print(rows_with_minus_99_values)
 # Check that 'EndDate' is within the proper bounds for this procedure
 if (EndDate$date >= paste0(EndDate$year, "-03-01") & 
     EndDate$date < paste0(EndDate$year, "-09-30")) {
+  
+  
+  warning(paste0("Substituting data from ", EndDate$date + 1, " to ", EndDate$year, "-09-30 ",
+                 "with corresponding values from 2020"))
   
   # This is a manual assignment
   # Based on the regression model generated on 5/17/2024,
