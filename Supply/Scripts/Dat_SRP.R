@@ -38,13 +38,15 @@ source("../Demand/Scripts/Shared_Functions_Demand.R")
 # Import Pre-2023 WY SRP CSV file
 SRP_Blueprints_Path = makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\")
 
-Pre2023_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2024.csv"))
+Pre2023_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2024.csv")) %>%
+  mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
 #Convert Date field from character to date format 
 Pre2023_SRP$Date = as.Date(Pre2023_SRP$Date, format = "%Y-%m-%d")
 
 # Import SPI WY 2023-2024 SRP CSV file
-SPI_Forecast_SRP = read.csv(paste0(SRP_Blueprints_Path, "SPI_SRP_WY2025.csv"))
+SPI_Forecast_SRP = read.csv(paste0(SRP_Blueprints_Path, "SPI_SRP_WY2025.csv")) %>%
+  mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
 # Convert 1st 6 columns to integer data type to match Pre2023_SRP
 SPI_Forecast_SRP = SPI_Forecast_SRP %>% 
