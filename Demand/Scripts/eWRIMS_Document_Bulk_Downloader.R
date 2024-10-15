@@ -60,6 +60,11 @@ for (i in 1:nrow(eWRIMS_List)) {
     # Handle the error or simply ignore it
     cat("Error occurred for AppNum:", AppNum[i], "\n")
   })
+  
+  
+  # Wait between downloads to avoid overwhelming the server
+  Sys.sleep(1.1)
+  
 }
 
 

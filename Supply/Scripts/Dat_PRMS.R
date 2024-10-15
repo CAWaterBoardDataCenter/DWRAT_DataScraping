@@ -735,6 +735,9 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
   # 
   
   
+  warning(paste0("Substituting data from ", EndDate$date + 1, " to ", EndDate$year, "-09-30 ",
+                 "with corresponding values from 2020"))
+  
   
   # This is a manual assignment
   # Based on the regression model generated on 5/17/2024,
