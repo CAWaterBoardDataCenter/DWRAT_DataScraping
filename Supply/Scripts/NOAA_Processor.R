@@ -259,7 +259,7 @@ prismFill <- function (StartDate, EndDate) {
   
   
   
-  print(paste0("Replacing ", sum(noaaDF == -999), " elements (out of ",
+  print(paste0("Replacing ", sum(noaaDF == -999, na.rm = TRUE), " elements (out of ",
                nrow(noaaDF) * ncol(noaaDF), " records) with PRISM data"))
   
   

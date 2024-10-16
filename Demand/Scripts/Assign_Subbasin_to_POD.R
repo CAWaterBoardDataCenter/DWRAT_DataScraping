@@ -29,6 +29,10 @@ mainProcedure <- function () {
                  FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
                  WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME") %>%
     select(APPLICATION_NUMBER, POD_ID, LONGITUDE, LATITUDE) %>% unique() %>%
+    filter(APPLICATION_NUMBER %in% getXLSX(ws = ws, 
+                                           SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_POD_APPLICATION_NUMBER_SPREADSHEET", 
+                                           FILEPATH = "POD_APPLICATION_NUMBER_SPREADSHEET_PATH", 
+                                           WORKSHEET_NAME ="POD_APPLICATION_NUMBER_WORKSHEET_NAME")[["APPLICATION_NUMBER"]]) %>%
     mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
     st_as_sf(coords = c("LONGITUDE2", "LATITUDE2"), crs = ws$POD_COORDINATES_REFERENCE_SYSTEM[1])
   
@@ -103,7 +107,8 @@ mainProcedure <- function () {
     
     
     # Write both 'reviewTable' and 'podTable' to a file
-    write_xlsx(list("Review" = reviewTable, 
+    write_xlsx(list("Review" = reviewTable %>%
+                      mutate(Staff = NA_character_), 
                     "POD_Table" = podTable),
                paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
     

@@ -258,7 +258,11 @@ if (anyNA(sumDF)) {
   # (In the master table, "PRIMARY_OWNER_ENTITY_TYPE" is called "PRIMARY_OWNER_TYPE")
 ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                             "_ewrims_flat_file_Working_File.csv")) %>%
-  rename(PRIMARY_OWNER_TYPE = PRIMARY_OWNER_ENTITY_TYPE)
+  rename(PRIMARY_OWNER_TYPE = PRIMARY_OWNER_ENTITY_TYPE) %>%
+  #filter(APPLICATION_NUMBER %in% diverDF$APPLICATION_NUMBER)
+  filter(APPLICATION_NUMBER %in% str_remove_all(diverDF$APPLICATION_NUMBER, "_[0-9]+$"))
+
+
 
 # Add in columns from the beneficial use module
 beneficialUse <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
@@ -336,35 +340,6 @@ ewrimsDF <- ewrimsDF %>%
   left_join(faceVars, by = "APPLICATION_NUMBER", relationship = "one-to-one") %>%
   left_join(nullVar, by = "APPLICATION_NUMBER", relationship = "one-to-one")
 
-
-# Add the diversion data to eWRIMSDF----
-ewrimsDF <- sumDF %>%
-  select(APPLICATION_NUMBER,
-         JAN_MEAN_DIV, FEB_MEAN_DIV, 
-         MAR_MEAN_DIV, APR_MEAN_DIV, 
-         MAY_MEAN_DIV, JUN_MEAN_DIV, 
-         JUL_MEAN_DIV, AUG_MEAN_DIV, 
-         SEP_MEAN_DIV, OCT_MEAN_DIV, 
-         NOV_MEAN_DIV, DEC_MEAN_DIV, 
-         TOTAL_ANNUAL_EXPECTED_DIVERSION, MAY_TO_SEPT_EXPECTED_DIVERSION) %>%
-  rename(TOTAL_EXPECTED_ANNUAL_DIVERSION = TOTAL_ANNUAL_EXPECTED_DIVERSION,
-         TOTAL_MAY_SEPT_DIV = MAY_TO_SEPT_EXPECTED_DIVERSION) %>%
-  right_join(ewrimsDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
-
-# Calculate two new columns: "PERCENT_FACE" and "ZERO_DEMAND"----
-  # The former will be the "TOTAL_EXPECTED_ANNUAL_DIVERSION" divided by the larger value
-  # between the "INI_REPORTED_DIV_AMOUNT_AF" and the "FACE_VALUE_AMOUNT_AF"
-  # The latter will be a Y/N column for whether "TOTAL_EXPECTED_ANNUAL_DIVERSION"
-  # is equal to 0
-ewrimsDF <- ewrimsDF %>%
-  mutate(TOTAL_EXPECTED_ANNUAL_DIVERSION = as.numeric(TOTAL_EXPECTED_ANNUAL_DIVERSION),
-         INI_REPORTED_DIV_AMOUNT_AF = as.numeric(INI_REPORTED_DIV_AMOUNT_AF),
-         FACE_VALUE_AMOUNT_AF = as.numeric(FACE_VALUE_AMOUNT_AF)) %>%
-  rowwise() %>%
-  mutate(PERCENT_FACE = 
-           TOTAL_EXPECTED_ANNUAL_DIVERSION / max(INI_REPORTED_DIV_AMOUNT_AF, FACE_VALUE_AMOUNT_AF, -Inf, na.rm = TRUE),
-         ZERO_DEMAND = if_else(TOTAL_EXPECTED_ANNUAL_DIVERSION == 0, "Y", "N")) %>%
-  ungroup()
 
 
 # Assign basin information to 'ewrimsDF' using information output by "Assign_Subbasin_to_POD.R"----
@@ -478,6 +453,94 @@ if (grepl("^Russian", ws$NAME)) {
 
 
 
+# Add the diversion data to eWRIMSDF----
+
+
+# If some rights were split, the information in 'ewrimsDF' will need to be adjusted
+
+
+
+if (sum(grepl("_[0-9]+$", sumDF$APPLICATION_NUMBER)) > 0) {
+  
+  
+  # Get a list of rights that have been split
+  splitRights <- sumDF$APPLICATION_NUMBER %>%
+    str_subset("_[0-9]+$") %>% str_remove_all("_[0-9]+$") %>% 
+    unique() %>% sort()
+  
+  
+  
+  # Iterate through the split rights
+  for (i in 1:length(splitRights)) {
+    
+    # Get the location of this water right in 'ewrimsDF' 
+    matchIndex <- grep(splitRights[i], ewrimsDF$APPLICATION_NUMBER)
+    
+    
+    stopifnot(length(matchIndex) == 1)
+    
+    
+    
+    # Get the number of sub-rights for this split right
+    splitCounts <- sumDF$APPLICATION_NUMBER %>%
+      str_subset(splitRights[i]) %>% length()
+    
+    
+    
+    # For each sub-right (other than the first one), 
+    # add a copy of the original row to 'ewrimsDF'
+    for (j in 2:splitCounts) {
+      
+      ewrimsDF <- ewrimsDF %>%
+        bind_rows(ewrimsDF[matchIndex, ] %>%
+                    mutate(APPLICATION_NUMBER == paste0(APPLICATION_NUMBER, "_", j)))
+      
+    } # End of 'j' loop
+    
+    
+    
+    # Finally, the first instance of this right in 'ewrimsDF' 
+    # will be updated to be the first sub-right
+    ewrimsDF$APPLICATION_NUMBER[matchIndex] <- paste0(ewrimsDF$APPLICATION_NUMBER[matchIndex],
+                                                      "_1")
+    
+  } # End of 'i' loop
+  
+}
+
+
+
+ewrimsDF <- sumDF %>%
+  select(APPLICATION_NUMBER,
+         JAN_MEAN_DIV, FEB_MEAN_DIV, 
+         MAR_MEAN_DIV, APR_MEAN_DIV, 
+         MAY_MEAN_DIV, JUN_MEAN_DIV, 
+         JUL_MEAN_DIV, AUG_MEAN_DIV, 
+         SEP_MEAN_DIV, OCT_MEAN_DIV, 
+         NOV_MEAN_DIV, DEC_MEAN_DIV, 
+         TOTAL_ANNUAL_EXPECTED_DIVERSION, MAY_TO_SEPT_EXPECTED_DIVERSION) %>%
+  rename(TOTAL_EXPECTED_ANNUAL_DIVERSION = TOTAL_ANNUAL_EXPECTED_DIVERSION,
+         TOTAL_MAY_SEPT_DIV = MAY_TO_SEPT_EXPECTED_DIVERSION) %>%
+  right_join(ewrimsDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
+
+# Calculate two new columns: "PERCENT_FACE" and "ZERO_DEMAND"----
+# The former will be the "TOTAL_EXPECTED_ANNUAL_DIVERSION" divided by the larger value
+# between the "INI_REPORTED_DIV_AMOUNT_AF" and the "FACE_VALUE_AMOUNT_AF"
+# The latter will be a Y/N column for whether "TOTAL_EXPECTED_ANNUAL_DIVERSION"
+# is equal to 0
+ewrimsDF <- ewrimsDF %>%
+  mutate(TOTAL_EXPECTED_ANNUAL_DIVERSION = as.numeric(TOTAL_EXPECTED_ANNUAL_DIVERSION),
+         INI_REPORTED_DIV_AMOUNT_AF = as.numeric(INI_REPORTED_DIV_AMOUNT_AF),
+         FACE_VALUE_AMOUNT_AF = as.numeric(FACE_VALUE_AMOUNT_AF)) %>%
+  rowwise() %>%
+  mutate(PERCENT_FACE = 
+           TOTAL_EXPECTED_ANNUAL_DIVERSION / max(INI_REPORTED_DIV_AMOUNT_AF, FACE_VALUE_AMOUNT_AF, -Inf, na.rm = TRUE),
+         ZERO_DEMAND = if_else(TOTAL_EXPECTED_ANNUAL_DIVERSION == 0, "Y", "N")) %>%
+  ungroup()
+
+
+
+
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
 write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
@@ -518,6 +581,4 @@ print("The MasterDemandTable.R script has finished running")
 
 
 
-remove(assignBasinData_RR, spreadsheetAdjustment, beneficialUse, diverDF,
-       ewrimsDF, expectedDF, faceVars, nullVar, priorityDF, sumDF, countyDF, podDF, i,
-       ws, makeSharePointPath, getGIS, getXLSX, colAdd, colMean, yearRange)
+remove(list = ls())

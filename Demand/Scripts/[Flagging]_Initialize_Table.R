@@ -29,7 +29,7 @@ podDF <- read_csv("RawData/Snowflake_ewrims_flat_file_pod.csv",
 # records that are between the desired year range
 # Then, save it to a file in the "OutputData" folder
 fread("RawData/Snowflake_water_use_report_extended.csv", 
-      select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% 
+      select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE", "PARTY_ID")) %>% 
   unique() %>%
   filter(APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER) %>%
   filter(YEAR >= yearRange[1] & YEAR <= yearRange[2]) %>%

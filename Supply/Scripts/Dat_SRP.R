@@ -16,6 +16,11 @@
 # Save the SRP_Dat file for a specific month to the ProcessedData folder with a timestamp. The timestamp is the EndDate;
 # EndDate is the last day of the observed data range. 
 
+
+# Start Timer
+# Start timer
+start_time <- Sys.time()
+
 # Load libraries and custom functions----
 library(dplyr)
 library(tidyverse)
@@ -33,13 +38,15 @@ source("../Demand/Scripts/Shared_Functions_Demand.R")
 # Import Pre-2023 WY SRP CSV file
 SRP_Blueprints_Path = makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\")
 
-Pre2023_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2023.csv"))
+Pre2023_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2024.csv")) %>%
+  mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
 #Convert Date field from character to date format 
 Pre2023_SRP$Date = as.Date(Pre2023_SRP$Date, format = "%Y-%m-%d")
 
 # Import SPI WY 2023-2024 SRP CSV file
-SPI_Forecast_SRP = read.csv(paste0(SRP_Blueprints_Path, "SPI_SRP_WY_2023_2024.csv"))
+SPI_Forecast_SRP = read.csv(paste0(SRP_Blueprints_Path, "SPI_SRP_WY2025.csv")) %>%
+  mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
 # Convert 1st 6 columns to integer data type to match Pre2023_SRP
 SPI_Forecast_SRP = SPI_Forecast_SRP %>% 
@@ -107,7 +114,8 @@ print("No errors exist because SRP_Preprocessed and Pre2023_SRP have no
 Dat_SRP_Merged = bind_rows(Pre2023_SRP, SRP_Processed) %>%
   arrange(Date)
 
-## QAQC Flags -----
+## FLAGGING BLOCK -----
+if (includeFlagging) {
 
 ### Identify negative precipitation values---
 
@@ -259,9 +267,10 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
     
     # Save the workbook
     saveWorkbook(wb, file = file_path, overwrite = TRUE)
-  
-## Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
-if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {
+}
+
+# Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
+if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() > 0) {
   
   print(c("The scraped SRP meteorological dataset contains rows for dates that appear 
           in the SPI_Forecast_SRP dat file."))
@@ -313,6 +322,10 @@ print(rows_with_minus_99_values)
 # Check that 'EndDate' is within the proper bounds for this procedure
 if (EndDate$date >= paste0(EndDate$year, "-03-01") & 
     EndDate$date < paste0(EndDate$year, "-09-30")) {
+  
+  
+  warning(paste0("Substituting data from ", EndDate$date + 1, " to ", EndDate$year, "-09-30 ",
+                 "with corresponding values from 2020"))
   
   # This is a manual assignment
   # Based on the regression model generated on 5/17/2024,
@@ -370,3 +383,13 @@ Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
 write.table(x = Dat_SRP_Final,
             file = paste0("ProcessedData/Dat_SRP_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
+
+
+# Calculate Run Time and Print Completion Statement
+
+# End timer
+  end_time <- Sys.time()
+  
+  # Calculate and print the duration
+  duration <- end_time - start_time
+  cat("The 'Dat_PRMS.R' script has finished running!\nRun-time:", duration, "seconds", "\n")

@@ -3,9 +3,10 @@
 # However, some reports should be treated as 0s instead of NA
 # (meaning they should impact the final monthly averages used by DWRAT)
 # This script will try to find them by checking if the all-NA report actually exists on eWRIMS
-# (Some NA-only years are introduced by the procedure for handling both calendar and water years)
 
-# FLAGGING BLOCK----
+
+#### Dependencies ####
+
 
 require(tidyverse)
 require(readxl)
@@ -15,7 +16,7 @@ require(writexl)
 #### Functions ####
 
 
-mainProcedure <- function () {
+flagEmptyReports <- function () {
   
   
   cat("Starting 'Check_NA_Reports.R'...\n")
@@ -120,10 +121,10 @@ mainProcedure <- function () {
   
   # If the code reaches this point, it's one of two cases:
   # (1) No manual review was done yet, and the spreadsheet must now be generated 
-    # flagging AND remediation occur
+  # flagging AND remediation occur
   
   # (2) A manual review was completed, but there are some remaining empty report records
-    # only remediation occurs
+  # only remediation occurs
   
   
   # Note: (2) is not necessarily a bad thing
@@ -238,7 +239,7 @@ mainProcedure <- function () {
     cat("All of the remaining flagged reports do not actually exist on eWRIMS\n")
     
     
-  # Otherwise, a manual review is required
+    # Otherwise, a manual review is required
   } else {
     
     # Output a message that a manual review is required
@@ -250,7 +251,6 @@ mainProcedure <- function () {
     
     # Then write 'naDF' to a file
     naDF %>%
-      mutate(Staff = NA_character_) %>%
       write_xlsx(paste0("OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx"))
     
   }
@@ -384,9 +384,9 @@ extractTable <- function (htmlPage) {
 #### Script Execution ####
 
 
-mainProcedure()
+flagEmptyReports()
 
 
 #### Cleanup ####
 
-remove(mainProcedure, extractTable, updateValues)
+remove(flagEmptyReports, extractTable, updateValues)

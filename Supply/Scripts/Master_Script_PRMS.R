@@ -16,11 +16,18 @@ require(writexl)
 # (This should be either "TRUE" or "FALSE")
 includeForecast <- FALSE
 
+# Include flagging and remediation blocks in Dat_PRMS.R? 
+#  Set to TRUE or FALSE after consulting with SDU management for that month's runs. TRUE means
+# that the flagging and remediation code blocks in the Dat_PRMS.R script will be executed. FALSE
+# means that those blocks will be skipped;
+
+includeFlagging <- TRUE
+includeRemediation <- TRUE
 
 # set start and end dates -------------------------------------------------
 ## Set start dates----
 
-StartDate <- as.Date("2022-06-17") # start of the water year
+StartDate <- as.Date("2023-10-01") # start of the water year
 Hydro_StartDate = as.Date("2023-10-01", format = "%Y-%m-%d") #, start of the current water year,
 # serves as the start date of the hydro simulation, 
 
@@ -37,7 +44,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-06-06")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2024-07-16")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -46,9 +53,9 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 print(EndDate)
 
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
-End_Date <- as.Date("2024-06-06", format = "%Y-%m-%d") # End of current Water Year
+End_Date <- as.Date("2024-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2024-06-06", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2024-09-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
 
   # usually the last day of the next month
 
