@@ -508,6 +508,21 @@ verifyWatershedOverlap <- function (pod, wsExit, wsBound) {
   
   
   
+  #### Output File for Potential Errors #1 ####
+  # Save a copy of the results if 'overlapRes' and 'exitDist' < 200 give different results
+  if (overlapRes != (exitDist < 200)) {
+    
+    counter <- 1 + length(list.files(pattern = "^StreamStats_Diff_Check.+\\.RData$"))
+    
+    save(wsBound, flowPath, wsExit, overlapRes, exitDist,
+         file = paste0("StreamStats_Diff_Check_This_", 
+                       paste0(rep(0, 3 - str_count(counter, "[0-9]")), collapse = ""), 
+                       counter, ".RData"))
+    
+  }
+  
+  
+  
   # Return a list that contains two logical values
   # The first element should indicate whether there is overlap with 'wsBound'
   # The second element should indicate whether a point is within at least 200 meters of 'wsExit'
@@ -636,6 +651,20 @@ requestFlowPath <- function (pod) {
                            matrix(ncol = 2, byrow = TRUE) %>%
                            data.frame() %>%
                            set_names(c("X", "Y")))
+    
+  }
+  
+  
+  
+  #### Output File for Potential Errors #2 ####
+  if (nrow(pointDF) < 2) {
+    
+    counter <- 1 + length(list.files(pattern = "^StreamStats_Diff_Check.+\\.RData$"))
+    
+    save(pod, flowReq, flowRes, pointDF,
+         file = paste0("StreamStats_Diff_Check_This_", 
+                       paste0(rep(0, 3 - str_count(counter, "[0-9]")), collapse = ""), 
+                       counter, ".RData"))
     
   }
   
