@@ -1,6 +1,6 @@
-# Given Northing and Easting values, 
-# try different coordinate reference systems (e.g., NAD83 or NAD27)
-# Then, output corresponding NAD83 geographic coordinates
+# Given Northing and Easting values (projected coordinates), 
+# try different coordinate reference systems (i.e., NAD83 and NAD27)
+# Then, output corresponding NAD83 geographic coordinates (latitude and longitude)
 
 
 require(tidyverse)
@@ -10,8 +10,8 @@ require(sf)
 # STEP 1
 # !!! Input Northing and Easting coordinates here !!!
 # !!! Only one number per variable !!!
-Northing <- 375600
-Easting <- 1602700
+Northing <- 348200
+Easting <- 1649800
 
 
 # STEP 2
@@ -84,7 +84,7 @@ cat(paste0("\nThe *",
              filter(ERROR == min(ERROR)) %>%
              select(DATUM) %>%
              unlist(use.names = FALSE),
-           "* datum has a longitude closer to -120, so it MIGHT be the correct original datum\n"))
+           "* datum gives a longitude closer to -120, so it MIGHT be the correct original datum\n"))
 
 
 

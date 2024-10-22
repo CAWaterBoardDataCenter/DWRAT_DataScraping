@@ -128,10 +128,10 @@ mainProcedure <- function () {
   
   
   # Then, filter 'podDF' down
+  # (Temporarily exclude rows that have a manual override command to keep the POD in the final dataset)
+  # (Permanently exclude rows that have a manual override command to remove PODs from the final dataset)
   podDF <- podDF %>%
-    filter(!is.na(REPORT_LATITUDE) | 
-             !is.na(REPORT_NORTHING) | 
-             !is.na(REPORT_SECTION_CORNER)) %>%
+    filter(is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
     filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
       #is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
   
@@ -579,7 +579,27 @@ requestFlowPath <- function (pod) {
   
   
   # Verify that the request was successful
-  stopifnot(flowReq$status_code == 200)
+  # If the request failed, check if the POD is located in the ocean
+  if (flowReq$status_code != 200) {
+    
+    
+    # The search can fail if the POD is located in the Pacific Ocean
+    # Check for overlap with a layer containing a polygon of the ocean
+    if (oceanOverlapCheck(pod)) {
+      
+      # If there is overlap, then this issue was the source of the StreamStats request failure
+      # In that case, simply return the POD coordinates for the flow path
+      return(pod)
+      
+    } else {
+      
+      # If the POD does not overlap with the ocean, then a different issue caused the request failure
+      # Stop the script and alert about the error
+      stopifnot(flowReq$status_code == 200)
+      
+    }
+    
+  }
   
   
   
@@ -744,6 +764,10 @@ chooseSection <- function (plssDF, section, township, range, datum, multiOptions
   # If 'datum' is 'MDB&M', that corresponds to "MDM" in the "Meridian" column of 'plssDF'
   if (datum == "MDB&M") {
     meridian <- "MDM"
+  } else if (datum == "SBB&M") {
+    meridian <- "SBM"
+  } else if (datum == "HB&M") {
+    meridian <- "HM"
   } else {
     stop(paste0("Unknown datum ", datum))
   }
@@ -1530,6 +1554,34 @@ translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
 
 
 
+oceanOverlapCheck <- function (pod) {
+  
+  # Check whether the POD is located in the ocean
+  # Return "TRUE" or "FALSE" based on the presence of overlap
+  
+  
+  
+  # Read in a polygon containing the Pacific Ocean (that is close to California)
+  pacific <- "Watershed Folders/Navarro River/Data/GIS Datasets/pacific_ocean/3853-s3_2002_s3_reg_pacific_ocean-geojson.json" %>%
+    makeSharePointPath() %>%
+    st_read() %>%
+    st_transform("epsg:3488")
+  
+  
+  
+  # Make sure 'pacific' and 'pod' have the same coordinate reference system
+  pod <- st_transform(pod, st_crs(pacific))
+  
+  
+  
+  # Return "TRUE" or "FALSE" depending on whether st_intersects() returns a non-empty value
+  # (A non-empty value means that there is intersection between the layers)
+  return(length(st_intersects(pod, pacific)) > 0)
+  
+}
+
+
+
 #### Script Execution ####
 
 
@@ -1541,4 +1593,4 @@ print("The script has finished running!")
 remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-       splitSection, translatePoint)
+       splitSection, translatePoint, oceanOverlapCheck)
