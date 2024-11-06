@@ -724,6 +724,7 @@ mainProcedure <- function () {
              (Diversion_as_Percent_of_FV < 0.01 & Diversion_as_Percent_of_FV > 0 & FACE_VALUE_AMOUNT > 0) | 
              (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
              (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
+    arrange(APPLICATION_NUMBER, YEAR) %>% 
     write.xlsx(paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
   
   

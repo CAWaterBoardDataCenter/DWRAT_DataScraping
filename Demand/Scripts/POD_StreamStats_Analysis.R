@@ -117,7 +117,7 @@ mainProcedure <- function () {
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  plssDF <- st_read(makeSharePointPath(filePathFragment = "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -1205,7 +1205,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   # First read in that dataset
   # (It will appear as a variable called 'plssSub')
-  load(makeSharePointPath(filePathFragment ="Watershed Folders/Navarro River/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
+  load(makeSharePointPath(filePathFragment ="Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
   
   
   
@@ -1591,7 +1591,7 @@ oceanOverlapCheck <- function (pod) {
   
   
   # Read in a polygon containing the Pacific Ocean (that is close to California)
-  pacific <- "Watershed Folders/Navarro River/Data/GIS Datasets/pacific_ocean/3853-s3_2002_s3_reg_pacific_ocean-geojson.json" %>%
+  pacific <- "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/pacific_ocean/3853-s3_2002_s3_reg_pacific_ocean-geojson.json" %>%
     makeSharePointPath() %>%
     st_read() %>%
     st_transform("epsg:3488")

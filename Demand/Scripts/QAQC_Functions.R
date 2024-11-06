@@ -268,7 +268,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       inputDF <- inputDF %>%
         applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
                               unitsQAQC$YEAR[i], toConvert,
-                              1 / 325851 * 365)
+                              1 / 325851 * 30)
       
       
       
@@ -291,7 +291,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       inputDF <- inputDF %>%
         applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
                               unitsQAQC$YEAR[i], toConvert,
-                              1 / 325851 * 60 * 24 * 365)
+                              1 / 325851 * 60 * 24 * 30)
       
       
       
