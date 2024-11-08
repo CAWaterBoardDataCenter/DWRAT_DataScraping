@@ -324,15 +324,21 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
     EndDate$date < paste0(EndDate$year, "-09-30")) {
   
   
+  
+  # This water year's data will be substituted into the remaining dates for the modeled water year
+  waterYearSub <- 2020
+  
+  
+  
   warning(paste0("Substituting data from ", EndDate$date + 1, " to ", EndDate$year, "-09-30 ",
-                 "with corresponding values from 2020"))
+                 "with corresponding values from ", waterYearSub))
   
   # This is a manual assignment
   # Based on the regression model generated on 5/17/2024,
   # data from WY2020 should be substituted into the remaining WY2024 range
   Dat_SRP_Merged[Dat_SRP_Merged$Date > EndDate$date & 
-                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= "2020-09-30" &
-                                                                                                                                                                         Dat_SRP_Merged$Date > paste0("2020-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))]
+                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= paste0(waterYearSub, "-09-30") &
+                                                                                                                                                                         Dat_SRP_Merged$Date > paste0(waterYearSub, "-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))]
   
 }
 

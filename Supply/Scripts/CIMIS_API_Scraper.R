@@ -13,9 +13,9 @@ require(httr)
 mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   
-  # Use the ipm.ucanr URL to get station data
-  # (Daily minimum temperature, maximum temperature, and precipitation)
-  combinedDF <- urlBasedCall(StartDate, EndDate)
+  # Use the CIMIS API to get station data
+  # (Max Air Temp, Min Air Temp, and Precip)
+  combinedDF <- apiBasedCall(StartDate, EndDate)
   
   
   
@@ -110,6 +110,9 @@ urlBasedCall <- function (StartDate, EndDate) {
   
   # This procedure for getting CIMIS data relies on a URL
   # The parameters in the URL are modified to get data for the desired stations
+  
+  # The ipm.ucanr URL is the source of station data
+  # (Daily minimum temperature, maximum temperature, and precipitation)
   
   
   
@@ -314,7 +317,7 @@ apiBasedCall <- function (StartDate, EndDate) {
                        "&endDate=", EndDate$date,
                        # Requesting Daily TMIN, TMAX, and PRECIP
                        "&dataItems=day-air-tmp-min,day-air-tmp-max,day-precip",
-                       # Metric units
+                       # Metric units (mm and Celsius)
                        "&unitOfMeasure=M")
   
   
@@ -346,6 +349,18 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   # The content of 'res' should be a JSON from CIMIS
   # There should be one entry in the "Providers" sub-list (CIMIS)
+  if (res[["Data"]][["Providers"]] %>% length() != 1) {
+    
+    message("There is a problem with the request. Retrying in about 10 seconds...")
+    
+    Sys.sleep(runif(1, min = 8, max = 12))
+    
+    return(apiBasedCall(StartDate, EndDate))
+    
+  }
+  
+  
+  
   stopifnot(res[["Data"]][["Providers"]] %>% length() == 1)
   stopifnot(tolower(res[["Data"]][["Providers"]][[1]][["Name"]]) == "cimis")
   
@@ -370,22 +385,34 @@ apiBasedCall <- function (StartDate, EndDate) {
                          map_chr(~ .[["Station"]]) %>% as.numeric(),
                        
                        TMIN = res$Data$Providers[[1]]$Records %>%
-                         map_chr(~ .[["DayAirTmpMin"]][["Value"]]) %>% as.numeric(),
+                         map_chr(~ .[["DayAirTmpMin"]][["Value"]] %>%
+                                   {ifelse(is.null(.), NA_character_, .)}) %>% 
+                         as.numeric(),
                        
                        TMAX = res$Data$Providers[[1]]$Records %>%
-                         map_chr(~ .[["DayAirTmpMax"]][["Value"]]) %>% as.numeric(),
+                         map_chr(~ .[["DayAirTmpMax"]][["Value"]] %>%
+                                   {ifelse(is.null(.), NA_character_, .)}) %>% 
+                         as.numeric(),
                        
                        PRECIP = res$Data$Providers[[1]]$Records %>%
-                         map_chr(~ .[["DayPrecip"]][["Value"]]) %>% as.numeric(),
+                         map_chr(~ .[["DayPrecip"]][["Value"]] %>%
+                                   {ifelse(is.null(.), NA_character_, .)}) %>% 
+                         as.numeric(),
                        
                        TMIN_QC = res$Data$Providers[[1]]$Records %>%
-                         map_chr(~ .[["DayAirTmpMin"]][["Qc"]]) %>% trimws(),
+                         map_chr(~ .[["DayAirTmpMin"]][["Qc"]] %>%
+                                   {ifelse(is.null(.), NA_character_, .)}) %>% 
+                         trimws(),
                        
                        TMAX_QC = res$Data$Providers[[1]]$Records %>%
-                         map_chr(~ .[["DayAirTmpMax"]][["Qc"]]) %>% trimws(),
+                         map_chr(~ .[["DayAirTmpMax"]][["Qc"]] %>%
+                                   {ifelse(is.null(.), NA_character_, .)}) %>% 
+                         trimws(),
                        
                        PRECIP_QC = res$Data$Providers[[1]]$Records %>%
-                         map_chr(~ .[["DayPrecip"]][["Qc"]]) %>% trimws())
+                         map_chr(~ .[["DayPrecip"]][["Qc"]] %>%
+                                   {ifelse(is.null(.), NA_character_, .)}) %>% 
+                         trimws())
                        
 
   
@@ -419,9 +446,107 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   
   
-  stop("This function has not been completed")
+  # Save 'compiledDF' to a file
+  compiledDF %>%
+    write_csv("WebData/CIMIS_Raw.csv")
   
   
+  
+  # Then, prepare to restructure the tibble
+  # Iterate through each of the stations
+  for (i in 1:nrow(stationDF)) {
+    
+    
+    # Skip the Hopland station in this procedure
+    if (stationDF$ID[i] == 85) {
+      next
+    }
+    
+    
+    
+    # Apply some station-specific changes as well
+    if (stationDF$Station[i] == "Sanel Valley 106") {
+      
+      
+      # Exclude the precipitation data for this station
+      # Then, rename the columns
+      cimisDF <- compiledDF %>%
+        filter(STATION_ID == stationDF$ID[i]) %>%
+        select(DATE, TMAX, TMIN) %>%
+        rename(CIMIS_TMAX3 = TMAX,
+               CIMIS_TMIN3 = TMIN)
+      
+      
+    } else if (stationDF$Station[i] == "Santa Rosa 83") {
+      
+      
+      # Exclude the precipitation data for this station
+      # Then, rename the columns
+      cimisDF <- compiledDF %>%
+        filter(STATION_ID == stationDF$ID[i]) %>%
+        select(DATE, TMAX, TMIN) %>%
+        rename(CIMIS_TMAX4 = TMAX,
+               CIMIS_TMIN4 = TMIN)
+      
+      
+    } else if (stationDF$Station[i] == "Windsor 103") {
+      
+      
+      # Exclude the temperature data for this station
+      # Then, rename the columns
+      cimisDF <- compiledDF %>%
+        filter(STATION_ID == stationDF$ID[i]) %>%
+        select(DATE, PRECIP) %>%
+        rename(CIMIS_PRECIP12 = PRECIP)
+      
+      
+    } else {
+      
+      stop("No procedure was written for this station")
+      
+    }
+    
+    
+    
+    # Combine these reformatted data frames together
+    if (i == 1) {
+      
+      finalDF <- cimisDF
+      
+    } else {
+      
+      finalDF <- finalDF %>%
+        full_join(cimisDF, by = "DATE")
+      
+    }
+    
+  }
+
+  
+  
+  # Add a fourth data frame to 'finalDF'
+  # This is for the "Hopland 85" station
+  finalDF <- c(seq(from = StartDate$date, to = EndDate$date, by = 'day'),
+                  rep(-999, nrow(finalDF))) %>%
+    matrix(ncol = 2, byrow = FALSE) %>%
+    data.frame() %>%
+    set_names(c("DATE", "CIMIS_PRECIP6")) %>%
+    mutate(DATE = as.Date(DATE)) %>%
+    full_join(finalDF, by = "DATE")
+  
+  
+  
+  
+  
+  # Replace 'NA' entries in 'finalDF' with -999
+  finalDF <- finalDF %>%
+    replace_na(list(rep(-999, ncol(finalDF))))
+  
+  
+  
+  # Return 'finalDF'
+  return(finalDF %>%
+           rename(Date = DATE))
   
 }
 
