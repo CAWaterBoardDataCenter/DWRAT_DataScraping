@@ -57,14 +57,6 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
   combinedDF[combinedDF == -999] <- prismDF[combinedDF == -999]
   
   
-  
-  # Verify that the "Date" column is set to the required format for DAT_Shell
-  combinedDF$Date <- combinedDF$Date %>%
-    as.character() %>%
-    as.Date(format = "%Y%m%d")
-  
-  
-  
   # The next step is to append CNRFC data to 'combinedDF'
   # (If 'includeForecast' is TRUE)
   if (includeForecast) {
