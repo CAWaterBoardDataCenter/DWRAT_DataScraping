@@ -1,18 +1,3 @@
-# Constructing a new SRP Dat File
-  # Run the first portion of Master_Script_PRMS.R where you define StartDate, EndDate, and includeForecast,
-    # through line 52
-  # and you download the SRP raw data
-    # Import Pre-2023 WY SRP DAT file--might need to be updated in the future with corrections; 
-        # for February 2024 - September 2024, the most similar water year, 2020, portion of this file
-        # is used for forecasting
-    # Import SPI WY 2023-2024 SRP DAT File; used for forecasting October 2023 - January 2024
-    # Import SRP_Processed.csv, which contains the observed meteorological data for SRP
-
-# Have some logic that overrides overlapping portion of SPI file with observed data if observed data exists. 
-# Never use SPI data if you have observed data available.
-# combine the 3 datasets (Pre-2023 WY SRP DAT File, SPI data, and observed data) to generate final SRP DAT file
-# for a specific month
-# For 
 # Save the SRP_Dat file for a specific month to the ProcessedData folder with a timestamp. The timestamp is the EndDate;
 # EndDate is the last day of the observed data range. 
 
