@@ -117,7 +117,7 @@ mainProcedure <- function () {
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read(makeSharePointPath(filePathFragment = "Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  plssDF <- st_read(makeSharePointPath(filePathFragment = "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
   
   
   
@@ -128,10 +128,10 @@ mainProcedure <- function () {
   
   
   # Then, filter 'podDF' down
+  # (Temporarily exclude rows that have a manual override command to keep the POD in the final dataset)
+  # (Permanently exclude rows that have a manual override command to remove PODs from the final dataset)
   podDF <- podDF %>%
-    filter(!is.na(REPORT_LATITUDE) | 
-             !is.na(REPORT_NORTHING) | 
-             !is.na(REPORT_SECTION_CORNER)) %>%
+    filter(is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
     filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
       #is.na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) | ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == FALSE)
   
@@ -369,17 +369,17 @@ mainProcedure <- function () {
     select(-KEY) %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     filter(AT_LEAST_ONE_EXIT == TRUE | 
-             ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
+             #ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY == TRUE |
              !is.na(`MANUAL_OVERRIDE: KEEP POD`)) %>%
     filter(is.na(`MANUAL_OVERRIDE: REMOVE POD`))
   
   
   
-  # Write 'finalDF' to a GeoJSON file
+  # Write 'finalDF' to a geopackage file
   # (Make sure that file doesn't already exist first)
-  if (paste0(ws$ID, "_PODs_Final_List.GeoJSON") %in% list.files("OutputData")) {
+  if (paste0(ws$ID, "_PODs_Final_List.gpkg") %in% list.files("OutputData")) {
     
-    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON")))
+    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.gpkg")))
     
   }
   
@@ -387,7 +387,7 @@ mainProcedure <- function () {
   
   st_write(finalDF %>%
              st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83"), 
-           paste0("OutputData/", ws$ID, "_PODs_Final_List.GeoJSON"), delete_dsn = TRUE)
+           paste0("OutputData/", ws$ID, "_PODs_Final_List.gpkg"), layer = "Final_POD_List", delete_dsn = TRUE)
   
   
   
@@ -508,6 +508,21 @@ verifyWatershedOverlap <- function (pod, wsExit, wsBound) {
   
   
   
+  #### Output File for Potential Errors #1 ####
+  # Save a copy of the results if 'overlapRes' and 'exitDist' < 200 give different results
+  if (overlapRes != (exitDist < 200)) {
+    
+    counter <- 1 + length(list.files(pattern = "^StreamStats_Diff_Check.+\\.RData$"))
+    
+    save(wsBound, flowPath, wsExit, overlapRes, exitDist,
+         file = paste0("StreamStats_Diff_Check_This_", 
+                       paste0(rep(0, 3 - str_count(counter, "[0-9]")), collapse = ""), 
+                       counter, ".RData"))
+    
+  }
+  
+  
+  
   # Return a list that contains two logical values
   # The first element should indicate whether there is overlap with 'wsBound'
   # The second element should indicate whether a point is within at least 200 meters of 'wsExit'
@@ -579,7 +594,27 @@ requestFlowPath <- function (pod) {
   
   
   # Verify that the request was successful
-  stopifnot(flowReq$status_code == 200)
+  # If the request failed, check if the POD is located in the ocean
+  if (flowReq$status_code != 200) {
+    
+    
+    # The search can fail if the POD is located in the Pacific Ocean
+    # Check for overlap with a layer containing a polygon of the ocean
+    if (oceanOverlapCheck(pod)) {
+      
+      # If there is overlap, then this issue was the source of the StreamStats request failure
+      # In that case, simply return the POD coordinates for the flow path
+      return(pod)
+      
+    } else {
+      
+      # If the POD does not overlap with the ocean, then a different issue caused the request failure
+      # Stop the script and alert about the error
+      stopifnot(flowReq$status_code == 200)
+      
+    }
+    
+  }
   
   
   
@@ -616,6 +651,20 @@ requestFlowPath <- function (pod) {
                            matrix(ncol = 2, byrow = TRUE) %>%
                            data.frame() %>%
                            set_names(c("X", "Y")))
+    
+  }
+  
+  
+  
+  #### Output File for Potential Errors #2 ####
+  if (nrow(pointDF) < 2) {
+    
+    counter <- 1 + length(list.files(pattern = "^StreamStats_Diff_Check.+\\.RData$"))
+    
+    save(pod, flowReq, flowRes, pointDF,
+         file = paste0("StreamStats_Diff_Check_This_", 
+                       paste0(rep(0, 3 - str_count(counter, "[0-9]")), collapse = ""), 
+                       counter, ".RData"))
     
   }
   
@@ -744,6 +793,10 @@ chooseSection <- function (plssDF, section, township, range, datum, multiOptions
   # If 'datum' is 'MDB&M', that corresponds to "MDM" in the "Meridian" column of 'plssDF'
   if (datum == "MDB&M") {
     meridian <- "MDM"
+  } else if (datum == "SBB&M") {
+    meridian <- "SBM"
+  } else if (datum == "HB&M") {
+    meridian <- "HM"
   } else {
     stop(paste0("Unknown datum ", datum))
   }
@@ -1152,7 +1205,7 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   # First read in that dataset
   # (It will appear as a variable called 'plssSub')
-  load(makeSharePointPath(filePathFragment ="Watershed Folders/Navarro River/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
+  load(makeSharePointPath(filePathFragment ="Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/PLSS_Subdivisions_BLM_20240123.RData"))
   
   
   
@@ -1161,6 +1214,12 @@ getSubPLSS <- function (section, township, range, meridian) {
   if (meridian == "MDM") {
     plssSub <- plssSub %>%
       filter(PRINMER %in% c("Mount Diablo Meridian", "Mount Diablo"))
+  } else if (meridian == "SBM") {
+    plssSub <- plssSub %>%
+      filter(PRINMER == "San Bernardino Meridian")
+  } else if (meridian == "HM") {
+    plssSub <- plssSub %>%
+      filter(PRINMER == "Humboldt Meridian")
   } else {
     stop(paste0("Unknown meridian ", meridian))
   }
@@ -1524,6 +1583,34 @@ translatePoint <- function (pod, nsMove, nsDirection, ewMove, ewDirection) {
 
 
 
+oceanOverlapCheck <- function (pod) {
+  
+  # Check whether the POD is located in the ocean
+  # Return "TRUE" or "FALSE" based on the presence of overlap
+  
+  
+  
+  # Read in a polygon containing the Pacific Ocean (that is close to California)
+  pacific <- "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/pacific_ocean/3853-s3_2002_s3_reg_pacific_ocean-geojson.json" %>%
+    makeSharePointPath() %>%
+    st_read() %>%
+    st_transform("epsg:3488")
+  
+  
+  
+  # Make sure 'pacific' and 'pod' have the same coordinate reference system
+  pod <- st_transform(pod, st_crs(pacific))
+  
+  
+  
+  # Return "TRUE" or "FALSE" depending on whether st_intersects() returns a non-empty value
+  # (A non-empty value means that there is intersection between the layers)
+  return(length(st_intersects(pod, pacific)) > 0)
+  
+}
+
+
+
 #### Script Execution ####
 
 
@@ -1535,4 +1622,4 @@ print("The script has finished running!")
 remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
        requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
        chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-       splitSection, translatePoint)
+       splitSection, translatePoint, oceanOverlapCheck)

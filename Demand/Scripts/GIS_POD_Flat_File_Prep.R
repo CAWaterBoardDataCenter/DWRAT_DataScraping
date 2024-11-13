@@ -222,8 +222,8 @@ Flat_File_PODs_WR_Type <- Flat_File_PODs_Status[Flat_File_PODs_Status$WATER_RIGH
 
 ##Filter by Water Right Status----
 Flat_File_eWRIMS<- Flat_File_PODs_WR_Type[Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Active" | 
-                                            Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Claimed - Local Oversight"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Certified" | 
+                                            Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Claimed - Local Oversight"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Claimed"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Completed"|
                                             Flat_File_PODs_WR_Type$WATER_RIGHT_STATUS == "Licensed"|
@@ -246,9 +246,9 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS[, cols_to_keep, drop = FALSE]
 #Replace Meridian Names with Meridian Short Names----
 Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   mutate(MERIDIAN = case_when(
-    MERIDIAN == " San Bernardino" ~"S",
-    MERIDIAN == "Mount Diablo" ~"M",
-    MERIDIAN == "Humboldt" ~"H",
+    MERIDIAN == " San Bernardino" ~ "SBM",
+    MERIDIAN == "Mount Diablo" ~ "MDM",
+    MERIDIAN == "Humboldt" ~ "HM",
     TRUE ~ MERIDIAN
   ))
 
@@ -257,9 +257,30 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
   #This field concatenates the Meridian, Township Number, Township Direction, Range Number, Range Direction, and Section Number fields
   #This field is used as a basis of comparison with the MTRS field in the PLSS_Sections_Fill shapefile
 
-Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, Flat_File_eWRIMS$TOWNSHIP_NUMBER, 
-                                 Flat_File_eWRIMS$TOWNSHIP_DIRECTION, Flat_File_eWRIMS$RANGE_NUMBER, Flat_File_eWRIMS$RANGE_DIRECTION,
+Flat_File_eWRIMS$FFMTRS = paste0(Flat_File_eWRIMS$MERIDIAN, 
+                                 "-T",
+                                 if_else(is.na(Flat_File_eWRIMS$TOWNSHIP_NUMBER),
+                                         NA_character_,
+                                         if_else(Flat_File_eWRIMS$TOWNSHIP_NUMBER < 10, 
+                                                 paste0("0", Flat_File_eWRIMS$TOWNSHIP_NUMBER),
+                                                 as.character(Flat_File_eWRIMS$TOWNSHIP_NUMBER))),
+                                 Flat_File_eWRIMS$TOWNSHIP_DIRECTION, 
+                                 "-R",
+                                 if_else(is.na(Flat_File_eWRIMS$RANGE_NUMBER),
+                                         NA_character_,
+                                         if_else(Flat_File_eWRIMS$RANGE_NUMBER < 10, 
+                                                 paste0("0", Flat_File_eWRIMS$RANGE_NUMBER),
+                                                 as.character(Flat_File_eWRIMS$RANGE_NUMBER))),
+                                 Flat_File_eWRIMS$RANGE_DIRECTION, 
+                                 "-",
                                  Flat_File_eWRIMS$SECTION_NUMBER)
+
+
+#### NOTE FOR LATER ####
+# THERE ARE ENTRIES IN THE FLAT FILE WITH "NA" MERIDIAN, BUT OTHERWISE VALID PLSS INFORMATION
+# THESE COULD BE FIXED WITH A ONE-TIME MANUAL REVIEW
+
+
 
 #Convert Coordinate Fields From Character Format to Numeric Format----
 Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
