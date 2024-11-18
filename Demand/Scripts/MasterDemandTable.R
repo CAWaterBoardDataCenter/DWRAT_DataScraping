@@ -343,6 +343,7 @@ ewrimsDF <- ewrimsDF %>%
 
 
 # Assign basin information to 'ewrimsDF' using information output by "Assign_Subbasin_to_POD.R"----
+# For other sub-basins, use a different procedure later in the script
 if (grepl("^Russian", ws$NAME)) {
   ewrimsDF <- ewrimsDF %>%
     assignBasinData_RR()
@@ -457,9 +458,6 @@ if (grepl("^Russian", ws$NAME)) {
 
 
 # If some rights were split, the information in 'ewrimsDF' will need to be adjusted
-
-
-
 if (sum(grepl("_[0-9]+$", sumDF$APPLICATION_NUMBER)) > 0) {
   
   
@@ -510,6 +508,7 @@ if (sum(grepl("_[0-9]+$", sumDF$APPLICATION_NUMBER)) > 0) {
 
 
 
+# With split water rights now reflected in 'ewrimsDF', merge it with 'sumDF'
 ewrimsDF <- sumDF %>%
   select(APPLICATION_NUMBER,
          JAN_MEAN_DIV, FEB_MEAN_DIV, 
@@ -522,6 +521,8 @@ ewrimsDF <- sumDF %>%
   rename(TOTAL_EXPECTED_ANNUAL_DIVERSION = TOTAL_ANNUAL_EXPECTED_DIVERSION,
          TOTAL_MAY_SEPT_DIV = MAY_TO_SEPT_EXPECTED_DIVERSION) %>%
   right_join(ewrimsDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
+
+
 
 # Calculate two new columns: "PERCENT_FACE" and "ZERO_DEMAND"----
 # The former will be the "TOTAL_EXPECTED_ANNUAL_DIVERSION" divided by the larger value
@@ -538,6 +539,55 @@ ewrimsDF <- ewrimsDF %>%
          ZERO_DEMAND = if_else(TOTAL_EXPECTED_ANNUAL_DIVERSION == 0, "Y", "N")) %>%
   ungroup()
 
+
+
+# For all watersheds, regardless of whether split water rights are present,
+# add a column that identifies the original "APPLICATION_NUMBER" value
+# ("APPLICATION_NUMBER" and "ORIGINAL_APPLICATION_NUMBER" are only different for split rights)
+ewrimsDF <- ewrimsDF %>%
+  mutate(ORIGINAL_APPLICATION_NUMBER = APPLICATION_NUMBER %>%
+           str_remove_all("_[0-9]+$"))
+
+
+
+# For watersheds other than the Russian River, 
+# assign sub-basins to water rights here
+if (!grepl("^Russian", ws$NAME)) {
+  
+  
+  # Read in the sub-basin assignments and the name of the column that 
+  # distinguishes between different sub-basins 
+  basinDF <- getXLSX(ws, 
+                     "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
+                     "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
+                     "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME")
+  
+  
+  basinColName <- ws[["SUBBASIN_FIELD_ID_NAMES"]] %>%
+    str_split(";") %>% unlist() %>%
+    pluck(1) %>% trimws()
+  
+  
+  
+  # Keep just "APPLICATION_NUMBER" and the sub-basin column
+  # Rename the sub-basin column to "BASIN" for consistency
+  basinDF <- basinDF %>%
+    select(APPLICATION_NUMBER, all_of(basinColName)) %>%
+    unique() %>%
+    rename(BASIN = all_of(basinColName))
+  
+  
+  
+  # Join 'basinDF' to 'ewrimsDF'
+  ewrimsDF <- ewrimsDF %>%
+    left_join(basinDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  
+  # Ensure that there are no "NA" values in this sub-basin column
+  stopifnot(!anyNA(ewrimsDF[["BASIN"]]))
+  
+}
 
 
 
