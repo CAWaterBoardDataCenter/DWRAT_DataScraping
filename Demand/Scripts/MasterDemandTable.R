@@ -551,8 +551,8 @@ ewrimsDF <- ewrimsDF %>%
 
 
 # For watersheds other than the Russian River, 
-# assign sub-basins to water rights here
-if (!grepl("^Russian", ws$NAME)) {
+# append water rights' sub-basins to 'ewrimsDF' here
+if (!grepl("^Russian", ws$NAME) & !is.na(ws$SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH)) {
   
   
   # Read in the sub-basin assignments and the name of the column that 
