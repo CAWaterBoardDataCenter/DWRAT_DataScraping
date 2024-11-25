@@ -108,4 +108,13 @@ source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 source("Scripts/MasterDemandTable.R")
 
 
+
+
+
+
+# Optional Analysis - Plot average annual demand by sub-basin*
+source("Scripts/Subbasin_Average_Annual_Demand_Mapping.R")
+
+
+
 # * = Script is not needed for the master demand table
