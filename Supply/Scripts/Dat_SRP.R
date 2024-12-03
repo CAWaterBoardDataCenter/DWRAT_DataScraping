@@ -1,18 +1,3 @@
-# Constructing a new SRP Dat File
-  # Run the first portion of Master_Script_PRMS.R where you define StartDate, EndDate, and includeForecast,
-    # through line 52
-  # and you download the SRP raw data
-    # Import Pre-2023 WY SRP DAT file--might need to be updated in the future with corrections; 
-        # for February 2024 - September 2024, the most similar water year, 2020, portion of this file
-        # is used for forecasting
-    # Import SPI WY 2023-2024 SRP DAT File; used for forecasting October 2023 - January 2024
-    # Import SRP_Processed.csv, which contains the observed meteorological data for SRP
-
-# Have some logic that overrides overlapping portion of SPI file with observed data if observed data exists. 
-# Never use SPI data if you have observed data available.
-# combine the 3 datasets (Pre-2023 WY SRP DAT File, SPI data, and observed data) to generate final SRP DAT file
-# for a specific month
-# For 
 # Save the SRP_Dat file for a specific month to the ProcessedData folder with a timestamp. The timestamp is the EndDate;
 # EndDate is the last day of the observed data range. 
 
@@ -35,18 +20,20 @@ source("../Demand/Scripts/Shared_Functions_Demand.R")
 
 # Import the precursor files----
 
-# Import Pre-2023 WY SRP CSV file
+# Import Pre-CWY (CWY = Current Water Year) SRP CSV file
 SRP_Blueprints_Path = makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\")
 
-Pre2023_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2023.csv"))
+PreCWY_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2024.csv")) %>%
+  mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
 #Convert Date field from character to date format 
-Pre2023_SRP$Date = as.Date(Pre2023_SRP$Date, format = "%Y-%m-%d")
+PreCWY_SRP$Date = as.Date(PreCWY_SRP$Date, format = "%Y-%m-%d")
 
-# Import SPI WY 2023-2024 SRP CSV file
-SPI_Forecast_SRP = read.csv(paste0(SRP_Blueprints_Path, "SPI_SRP_WY_2023_2024.csv"))
+# Import SPI Forecast SRP CSV file
+SPI_Forecast_SRP = read.csv(paste0(SRP_Blueprints_Path, "SPI_SRP_WY2025.csv")) %>%
+  mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
-# Convert 1st 6 columns to integer data type to match Pre2023_SRP
+# Convert 1st 6 columns to integer data type to match PreCWY_SRP
 SPI_Forecast_SRP = SPI_Forecast_SRP %>% 
   mutate_at(
     .vars = vars(1:6), #selects the 1st 6 columns
@@ -87,29 +74,29 @@ SRP_Processed <- SRP_Processed %>%
   select(year, month, day, hour, min, sec, everything())
 
 # Merge the 3 datasets----
-## Error Check for Pre2023_SRP and SRP_Preprocessed----
-# Perform an error check to ensure that no rows from SRP_Processed overlap with Pre-2023_SRP
-if (Pre2023_SRP %>% filter(Date %in% SRP_Processed$Date) %>% nrow() > 0) {
+## Error Check for PreCWY_SRP and SRP_Preprocessed----
+# Perform an error check to ensure that no rows from SRP_Processed overlap with PreCWY_SRP
+if (PreCWY_SRP %>% filter(Date %in% SRP_Processed$Date) %>% nrow() > 0) {
   
-  print(c("The scraped SRP meteorological dataset contains rows for dates that appear in the Pre2023_SRP dat file.", 
-          "The data for those dates in 'Pre2023_SRP' will be replaced with the data in the meteorological dataset."))
+  print(c("The scraped SRP meteorological dataset contains rows for dates that appear in the PreCWY_SRP dat file.", 
+          "The data for those dates in 'PreCWY_SRP' will be replaced with the data in the meteorological dataset."))
   
-  # Remove those rows from 'Pre2023_SRP'
-  Pre2023_SRP <- Pre2023_SRP %>%
+  # Remove those rows from 'PreCWY_SRP'
+  PreCWY_SRP <- PreCWY_SRP %>%
     filter(!(Date %in% SRP_Processed$Date))
 
   # Check for continuity of dataset--the earliest date in SRP_Processed should be 1 day AFTER the
-   # latest date in Pre2023_SRP
-} else if (as.Date(min(SRP_Processed$Date), "%Y-%m-%d") != as.Date(max(Pre2023_SRP$Date) + 1, "%Y-%m-%d")) {
-  print("The earliest date in SRP_Processed is not exactly 1 day after the latest date in Pre2023_SRP.")
+   # latest date in PreCWY_SRP
+} else if (as.Date(min(SRP_Processed$Date), "%Y-%m-%d") != as.Date(max(PreCWY_SRP$Date) + 1, "%Y-%m-%d")) {
+  print("The earliest date in SRP_Processed is not exactly 1 day after the latest date in PreCWY_SRP.")
   
 } else {
-print("No errors exist because SRP_Preprocessed and Pre2023_SRP have no 
+print("No errors exist because SRP_Preprocessed and PreCWY_SRP have no 
       overlapping records AND no date gap.")
 }
   
-## Merge Pre2023_SRP and SRP_Pre-processed and arrange in ascending order by Date-----
-Dat_SRP_Merged = bind_rows(Pre2023_SRP, SRP_Processed) %>%
+## Merge PreCWY_SRP and SRP_Pre-processed and arrange in ascending order by Date-----
+Dat_SRP_Merged = bind_rows(PreCWY_SRP, SRP_Processed) %>%
   arrange(Date)
 
 ## FLAGGING BLOCK -----
@@ -268,7 +255,7 @@ Dat_SRP_Merged_Precip_Flags = Dat_SRP_Merged %>%
 }
 
 # Error check for Dat_SRP_Merged and SPI_Forecast_SRP----
-if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() >0) {
+if (SPI_Forecast_SRP %>% filter(Date  %in% Dat_SRP_Merged$Date) %>% nrow() > 0) {
   
   print(c("The scraped SRP meteorological dataset contains rows for dates that appear 
           in the SPI_Forecast_SRP dat file."))
@@ -321,17 +308,27 @@ print(rows_with_minus_99_values)
 if (EndDate$date >= paste0(EndDate$year, "-03-01") & 
     EndDate$date < paste0(EndDate$year, "-09-30")) {
   
+  
+  
+  # This water year's data will be substituted into the remaining dates for the modeled water year
+  waterYearSub <- 2020
+  
+  
+  
+  warning(paste0("Substituting data from ", EndDate$date + 1, " to ", EndDate$year, "-09-30 ",
+                 "with corresponding values from ", waterYearSub))
+  
   # This is a manual assignment
   # Based on the regression model generated on 5/17/2024,
   # data from WY2020 should be substituted into the remaining WY2024 range
   Dat_SRP_Merged[Dat_SRP_Merged$Date > EndDate$date & 
-                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= "2020-09-30" &
-                                                                                                                                                                         Dat_SRP_Merged$Date > paste0("2020-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))]
+                   Dat_SRP_Merged$Date <= paste0(EndDate$year, "-09-30"), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))] <- Dat_SRP_Merged[Dat_SRP_Merged$Date <= paste0(waterYearSub, "-09-30") &
+                                                                                                                                                                         Dat_SRP_Merged$Date > paste0(waterYearSub, "-", EndDate$month, "-", EndDate$day), ][base::setdiff(names(Dat_SRP_Merged), c("year", "month", "day", "Date"))]
   
 }
 
 
-
+# Dat Formatting Check----
 # Ensure all numeric columns have at least 4 decimal places
 Dat_SRP_Merged[, c("precip01", "precip02", "tmax01", "tmax02", "tmin01", "tmin02")] <- 
   format(Dat_SRP_Merged[, c("precip01", "precip02", "tmax01", "tmax02", "tmin01", "tmin02")], nsmall = 4)
@@ -375,7 +372,7 @@ Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
   # Include the final observed date, EndDate as the suffix to the file name
 
 write.table(x = Dat_SRP_Final,
-            file = paste0("ProcessedData/Dat_SRP_Observed_EndDate_", EndDate$date, ".dat"),
+            file = paste0("ProcessedData/Dat_SRP_", modeler_name, "_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
 
 
@@ -386,4 +383,4 @@ write.table(x = Dat_SRP_Final,
   
   # Calculate and print the duration
   duration <- end_time - start_time
-  cat("The 'Dat_PRMS.R' script has finished running!\nRun-time:", duration, "seconds", "\n")
+  cat("The 'Dat_SRP.R' script has finished running!\nRun-time:", duration, "seconds", "\n")
