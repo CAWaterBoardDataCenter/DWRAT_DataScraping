@@ -300,7 +300,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       # Extract the number to use in the division
       divNum <- unitsQAQC$QAQC_Action_Taken[i] %>%
-        str_extract("[0-9]+$") %>% as.numeric()
+        str_extract("[0-9\\.]+$") %>% as.numeric()
       
       
       # Error Check

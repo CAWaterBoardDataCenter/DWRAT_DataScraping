@@ -91,8 +91,8 @@ source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 
 
 # POD Sub-basin Assignment
-source("Scripts/Assign_Subbasin_to_POD.R")
-#source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
+#source("Scripts/Assign_Subbasin_to_POD.R")
+source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 # ^ Alternative script that uses connectivity matrix for sub-basin assignment
 
 
