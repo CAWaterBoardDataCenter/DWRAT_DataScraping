@@ -27,8 +27,8 @@ includeRemediation <- TRUE
 # set start and end dates -------------------------------------------------
 ## Set start dates----
 
-StartDate <- as.Date("2022-10-01") # start of the water year
-Hydro_StartDate = as.Date("2022-10-01", format = "%Y-%m-%d") #, start of the current water year,
+StartDate <- as.Date("2024-10-01") # start of the water year
+Hydro_StartDate = as.Date("2024-10-01", format = "%Y-%m-%d") #, start of the current water year,
 # serves as the start date of the hydro simulation, 
 
   #usually the 1st day of the following month
@@ -44,7 +44,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2023-09-30")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2024-10-31")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -53,11 +53,13 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 print(EndDate)
 
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
-End_Date <- as.Date("2023-09-30", format = "%Y-%m-%d") # End of current Water Year
+End_Date <- as.Date("2025-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2023-09-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
-
+Hydro_EndDate = as.Date("2024-10-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
   # usually the last day of the next month
+
+#Define the modeler_name variable-this is the first initial and last name of the modeler
+modeler_name = "PAlemi" # has to be altered manually
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
