@@ -51,7 +51,7 @@ mainProcedure <- function () {
   # After that, choose a point around the exit of the watershed
   # The point's index should have been specified in "WATERSHED_EXIT_POINT_INDEX"
   # If that is not the case, throw an error
-  if (!is.numeric(ws$WATERSHED_EXIT_POINT_INDEX)) {
+  if (!is.numeric(ws$WATERSHED_EXIT_POINT_INDEX) || is.na(ws$WATERSHED_EXIT_POINT_INDEX)) {
     
     stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\n", 
                 "Please use the code 'mapview(wsPoints)' to view the points ",
@@ -105,13 +105,13 @@ mainProcedure <- function () {
   
   
   # Narrow the selection of columns in 'podDF'
-  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, 
+  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, LATITUDE, LONGITUDE, 
                             REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, 
                             REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
                             REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, 
                             REPORT_NS_DIRECTION, REPORT_EW_MOVE_FT, REPORT_EW_DIRECTION, 
                             REPORT_SECTION, REPORT_TOWNSHIP, REPORT_RANGE, REPORT_DATUM, 
-                            MULTI_OPTIONS_CHOICE, NOTES2, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY,
+                            MULTI_OPTIONS_CHOICE, NOTES2,
                             `MANUAL_OVERRIDE: KEEP POD`, `MANUAL_OVERRIDE: REMOVE POD`)
   
   
@@ -434,7 +434,7 @@ checkSectionMatches <- function (podDF, plssDF) {
       filter(Section == podDF$REPORT_SECTION[i] &
                Township == paste0("T", podDF$REPORT_TOWNSHIP[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
                Range == paste0("R", podDF$REPORT_RANGE[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
-               Meridian == "MDM")
+               Meridian == podDF$REPORT_MERIDIAN[i] %>% str_remove("B\\&"))
     
     
     
