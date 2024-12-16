@@ -434,7 +434,7 @@ checkSectionMatches <- function (podDF, plssDF) {
       filter(Section == podDF$REPORT_SECTION[i] &
                Township == paste0("T", podDF$REPORT_TOWNSHIP[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
                Range == paste0("R", podDF$REPORT_RANGE[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
-               Meridian == MDM)#podDF$REPORT_MERIDIAN[i] %>% str_remove("B\\&"))
+               Meridian == "MDM")#podDF$REPORT_MERIDIAN[i] %>% str_remove("B\\&"))
     
     
     
