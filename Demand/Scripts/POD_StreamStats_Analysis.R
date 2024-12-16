@@ -105,7 +105,7 @@ mainProcedure <- function () {
   
   
   # Narrow the selection of columns in 'podDF'
-  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, 
+  podDF <- podDF %>% select(APPLICATION_NUMBER, POD_ID, LATITUDE, LONGITUDE, 
                             REPORT_LATITUDE, REPORT_LONGITUDE, LAT_LON_CRS, 
                             REPORT_NORTHING, REPORT_EASTING, NOR_EAS_CRS, 
                             REPORT_SECTION_CORNER, REPORT_NS_MOVE_FT, 
