@@ -91,8 +91,8 @@ source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 
 
 # POD Sub-basin Assignment
-source("Scripts/Assign_Subbasin_to_POD.R")
-#source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
+#source("Scripts/Assign_Subbasin_to_POD.R")
+source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 # ^ Alternative script that uses connectivity matrix for sub-basin assignment
 
 
@@ -106,6 +106,15 @@ source("Scripts/Assign_Subbasin_to_POD.R")
 
 # MasterDemandTable.CSV for DWRAT
 source("Scripts/MasterDemandTable.R")
+
+
+
+
+
+
+# Optional Analysis - Plot average annual demand by sub-basin*
+source("Scripts/Subbasin_Average_Annual_Demand_Mapping.R")
+
 
 
 # * = Script is not needed for the master demand table

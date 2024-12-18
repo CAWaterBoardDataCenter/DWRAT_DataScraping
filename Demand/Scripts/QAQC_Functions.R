@@ -268,7 +268,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       inputDF <- inputDF %>%
         applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
                               unitsQAQC$YEAR[i], toConvert,
-                              1 / 325851 * 365)
+                              1 / 325851 * 30)
       
       
       
@@ -291,7 +291,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       inputDF <- inputDF %>%
         applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
                               unitsQAQC$YEAR[i], toConvert,
-                              1 / 325851 * 60 * 24 * 365)
+                              1 / 325851 * 60 * 24 * 30)
       
       
       
@@ -300,7 +300,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       # Extract the number to use in the division
       divNum <- unitsQAQC$QAQC_Action_Taken[i] %>%
-        str_extract("[0-9]+$") %>% as.numeric()
+        str_extract("[0-9\\.]+$") %>% as.numeric()
       
       
       # Error Check
