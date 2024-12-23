@@ -53,8 +53,12 @@ mainProcedure <- function () {
   # If that is not the case, throw an error
   if (!is.numeric(ws$WATERSHED_EXIT_POINT_INDEX) || is.na(ws$WATERSHED_EXIT_POINT_INDEX)) {
     
+    
+    print(mapview(wsPoints))
+    
+    
     stop(paste0("No exit point was chosen for watershed ", ws$NAME, ".\n", 
-                "Please use the code 'mapview(wsPoints)' to view the points ",
+                "Please use the mapview map to view the points ",
                 "in 'wsPoints'. Then, choose the point (using its ID/row number) ",
                 "that best represents the watershed's exit area."))
     
@@ -434,7 +438,7 @@ checkSectionMatches <- function (podDF, plssDF) {
       filter(Section == podDF$REPORT_SECTION[i] &
                Township == paste0("T", podDF$REPORT_TOWNSHIP[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
                Range == paste0("R", podDF$REPORT_RANGE[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
-               Meridian == MDM)#podDF$REPORT_MERIDIAN[i] %>% str_remove("B\\&"))
+               Meridian == "MDM")#podDF$REPORT_MERIDIAN[i] %>% str_remove("B\\&"))
     
     
     
