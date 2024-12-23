@@ -50,6 +50,23 @@ fixData <- function(x) {
   x <- bind_rows(x, t2) %>% 
     arrange(APPL_ID, YEAR, MONTH)
   
+  
+  
+  # WY 2024 data:
+  # Extract Oct, Nov, and Dec 2024 rows and rewind to 2023.
+  t3 <- x %>% 
+    filter(YEAR == 2024,
+           MONTH %in% c(10:12)) %>% 
+    mutate(YEAR = 2023)
+  
+  # Cut offending Oct, Nov, Dec rows for 2023 and 2024.  
+  x <- x %>% 
+    filter(!(YEAR %in% c(2023, 2024) & MONTH %in% c(10:12)))
+  
+  # Bind corrected Oct, Nov, Dec 2023 rows.
+  x <- bind_rows(x, t3) %>% 
+    arrange(APPL_ID, YEAR, MONTH)
+  
   # Return result.
   return(x)
 }
