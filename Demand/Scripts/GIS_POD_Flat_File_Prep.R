@@ -67,8 +67,40 @@ fixData <- function(x) {
   x <- bind_rows(x, t3) %>% 
     arrange(APPL_ID, YEAR, MONTH)
   
+  
+  
+  if (max(as.numeric(x$YEAR), na.rm = TRUE) > 2024) {
+    
+    
+    for (i in 2025:max(as.numeric(x$YEAR))) {
+      
+      # WY 2025 onwards data:
+      # Extract Oct, Nov, and Dec from each year and rewind to the prior year
+      tx <- x %>% 
+        filter(YEAR == i,
+               MONTH %in% c(10:12)) %>% 
+        mutate(YEAR = i - 1)
+      
+      
+      
+      # Cut offending Oct, Nov, Dec rows for both years.  
+      x <- x %>% 
+        filter(!(YEAR %in% c(i - 1, i) & MONTH %in% c(10:12)))
+      
+      
+      
+      # Bind corrected Oct, Nov, Dec rows.
+      x <- bind_rows(x, tx) %>% 
+        arrange(APPL_ID, YEAR, MONTH)
+      
+    }
+    
+  }
+  
+  
   # Return result.
   return(x)
+  
 }
 
 # Downloading Flat Files Required by QAQC Process----
@@ -132,8 +164,9 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                   WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
                                                   STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
                                                   STORAGE_SEASON_END,
-                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER
-                                                  
+                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER,
+                                                  PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
+                                                  SUB_TYPE, YEAR_DIVERSION_COMMENCED
                                                   FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
                                                   WHERE YEAR >= 2016
                                                   ")
