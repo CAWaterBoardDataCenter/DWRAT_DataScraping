@@ -1,8 +1,7 @@
 # Some RMS reports are empty (NA for every month and diversion type)
 # Later scripts will eventually remove these records from consideration
-# However, some reports should be treated as 0s instead of NA
+# However, these submissions should be included somehow because they are real submissions
 # (meaning they should impact the final monthly averages used by DWRAT)
-# This script will try to find them by checking if the all-NA report actually exists on eWRIMS
 
 
 #### Dependencies ####
@@ -24,6 +23,7 @@ flagEmptyReports <- function () {
   
   source("Scripts/Watershed_Selection.R")
   source("Scripts/Dataset_Year_Range.R")
+  
   
   
   # Read in th expected demand dataset
