@@ -491,7 +491,7 @@ if (sum(grepl("_[0-9]+$", sumDF$APPLICATION_NUMBER)) > 0) {
       
       ewrimsDF <- ewrimsDF %>%
         bind_rows(ewrimsDF[matchIndex, ] %>%
-                    mutate(APPLICATION_NUMBER == paste0(APPLICATION_NUMBER, "_", j)))
+                    mutate(APPLICATION_NUMBER = paste0(APPLICATION_NUMBER, "_", j)))
       
     } # End of 'j' loop
     
