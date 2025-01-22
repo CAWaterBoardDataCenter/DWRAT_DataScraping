@@ -344,7 +344,7 @@ ewrimsDF <- ewrimsDF %>%
 
 # Assign basin information to 'ewrimsDF' using information output by "Assign_Subbasin_to_POD.R"----
 # For other sub-basins, use a different procedure later in the script
-if (grepl("^Russian", ws$NAME)) {
+if (grepl("Russian", ws$NAME)) {
   ewrimsDF <- ewrimsDF %>%
     assignBasinData_RR()
 }
@@ -378,7 +378,7 @@ if ("LATITUDE" %in% names(ewrimsDF)) {
   #suffix for "main stem". For the remaining basins, 14 to 28, the UPPER_RUSSIAN field should be "N."
   #the str_sub looks at the 3rd and 4th characters of the Basin column which contain the 2-digit 
   #basin number. 
-if (grepl("^Russian", ws$NAME)) {
+if (grepl("Russian", ws$NAME)) {
   ewrimsDF <- ewrimsDF %>%
     mutate(UPPER_RUSSIAN = if_else(str_sub(BASIN, 3, 4) %in% c("01", "02", "03", "04", "05", 
                                                                "06", "07", "08", "09", "10", "11", 
@@ -393,7 +393,7 @@ ewrimsDF$ASSIGNED_PRIORITY_DATE = as.integer(ewrimsDF$ASSIGNED_PRIORITY_DATE)
 # Rename a few more columns----
 ewrimsDF = rename(ewrimsDF, ASSIGNED_PRIORITY_DATE_SUB = ASSIGNED_PRIORITY_DATE)
 
-if ("MAINSTEM" %in% names(ewrimsDF) && grepl("^Russian", ws$NAME)) {
+if ("MAINSTEM" %in% names(ewrimsDF) && grepl("Russian", ws$NAME)) {
   ewrimsDF = rename(ewrimsDF, MAINSTEM_RR = MAINSTEM)
 }
 
@@ -402,7 +402,7 @@ if ("MAINSTEM" %in% names(ewrimsDF) && grepl("^Russian", ws$NAME)) {
 
 # Append COUNTY to 'ewrimsDF'
 
-if (grepl("^Russian", ws$NAME)) {
+if (grepl("Russian", ws$NAME)) {
   
   # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx, which is now hosted on SharePoint"
   podDF <- getXLSX(ws = ws, 
@@ -552,7 +552,7 @@ ewrimsDF <- ewrimsDF %>%
 
 # For watersheds other than the Russian River, 
 # append water rights' sub-basins to 'ewrimsDF' here
-if (!grepl("^Russian", ws$NAME) & !is.na(ws$SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH)) {
+if (!grepl("Russian", ws$NAME) & !is.na(ws$SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH)) {
   
   
   # Read in the sub-basin assignments and the name of the column that 
