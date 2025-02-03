@@ -23,11 +23,11 @@ print("Starting '[CA]_POD_Flat_File_Prep.R'...")
 
 
 # Read in the POD flat file
-Flat_File_PODs <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/eWRIMS Flat File POD") %>%
+Flat_File_PODs <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/eWRIMS Flat File POD/") %>%
   list.files(full.names = TRUE) %>%
   sort() %>% tail(1) %>%
-  read.csv()
-  
+  fileRead("read.csv")
+
 
 
 # Apply the proper filters----
