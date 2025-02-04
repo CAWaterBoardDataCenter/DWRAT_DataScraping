@@ -121,3 +121,85 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
   
 }
 
+
+
+fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
+  
+  # Try to read a file
+  
+  
+  
+  # Verify that a valid 'commandType' is specified
+  if (!(commandType %in% c("read.csv", "read_csv", "fread"))) {
+    
+    stop("The function fileReadTry() can only be used with read.csv(), read_csv(), and fread()" %>%
+           strwrap(width = getOption("width")) %>%
+           paste0(collapse = "\n"))
+    
+  }
+  
+  
+  
+  # Based on the desired command, try to read the file
+  # (read_csv() and fread() have optional additional arguments)
+  if (commandType == "read.csv") {
+    
+    
+    fileDF <- try(read.csv(filePath), silent = TRUE)
+    
+    
+  } else if (commandType == "read_csv") {
+    
+    
+    fileDF <- try(read_csv(filePath, show_col_types = FALSE, col_types = col_types), silent = TRUE)
+    
+    
+  } else if (commandType == "fread") {
+    
+    
+    fileDF <- try(fread(filePath, select = select), silent = TRUE)
+    
+    
+  }
+  
+  
+  
+  # Check for errors in the read attempt
+  if (is.null(ncol(fileDF)) && length(fileDF) == 1 && grepl("Error", fileDF)) {
+    
+    cat("\n\n")
+    message(fileDF)
+    cat("\n")
+    
+    
+    if (grepl("invalid 'description' argument", fileDF) ||
+        grepl("cannot open the connection", fileDF) ||
+        grepl("does not exist", fileDF) || grepl("No such file", fileDF)) {
+      
+      stop(paste0("The input filepath is likely incorrect.",
+                  " It does not lead to a readable file.",
+                  "\n\nPath being used by the code: ", 
+                  filePath, "\n\n") %>%
+             strwrap(width = getOption("width")) %>%
+             paste0(collapse = "\n") %>%
+             str_replace("likely incorrect", red("likely incorrect")))
+      
+    } else {
+      
+      stop("An unexpected error occurred. See the error message above for details." %>%
+             strwrap(width = getOption("width")) %>%
+             paste0(collapse = "\n"))
+      
+    } 
+    
+  }
+  
+  
+  
+  # If no error occurred, return 'fileDF'
+  return(fileDF)
+  
+}
+
+
+
