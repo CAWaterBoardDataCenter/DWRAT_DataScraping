@@ -18,7 +18,7 @@ require(tidyverse)
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 #### Procedure ####
@@ -326,11 +326,7 @@ priorityDF <- priorityDF %>%
 
 
 # Read in 'flagDF' and append new columns
-flagDF <- makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                                    makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                                      list.files() %>% sort() %>% tail(1) %>% 
-                                      str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  fileRead("read_csv")
+flagDF <- readFlagTable()
 
 
 
@@ -347,11 +343,7 @@ flagDF <- flagDF %>%
 
 
 # Write the updated 'flagDF' to a file
-makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                          makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                            list.files() %>% sort() %>% tail(1) %>% 
-                            str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  write_csv(x = flagDF)
+writeFlagTable(flagDF)
 
 
 

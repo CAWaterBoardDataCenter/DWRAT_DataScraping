@@ -14,7 +14,7 @@ require(odbc)
 require(DBI)
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 print("Starting '[CA]_Snowflake_Data_Download.R'...")
@@ -37,16 +37,7 @@ cat("\n")
 
 # water_use_report_extended
 
-# A subset of columns was selected:
-# AMOUNT, APPLICATION_ACCEPTANCE_DATE, APPL_ID, APPLICATION_PRIMARY_OWNER,
-# APPLICATION_RECD_DATE, MONTH, YEAR, DIRECT_DIV_SEASON_END, DIRECT_DIV_SEASON_START,
-# DIVERSION_TYPE, EFFECTIVE_DATE, EFFECTIVE_FROM_DATE, FACE_VALUE_AMOUNT,
-# FACE_VALUE_UNITS, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, MAX_STORAGE,
-# PARTY_ID, PRIMARY_OWNER_ENTITY_TYPE, PRIORITY_DATE, SOURCE_NAME, STORAGE_SEASON_END,
-# STORAGE_SEASON_START, SUB_TYPE, TRIB_DESC, USE_CODE, WATER_RIGHT_STATUS,
-# WATER_RIGHT_TYPE, WATERSHED
-
-# The data was filtered to YEAR >= 2016
+# None
 
 
 # eWRIMS Flat File POD
@@ -120,17 +111,27 @@ if (is.character(sf_con)) {
 
 
 # First send the query to Snowflake
-# Select all unique rows for the water use extended report table
+# Select unique rows for the water use extended report table
+# A subset of columns is selected
+# The data is filtered to YEAR >= 2016
 cat("\nFetching a subset of the 'water_use_report_extended' table...\n")
 
 
 
-query <- dbSendQuery(sf_con, "SELECT DISTINCT * 
-                     FROM DWR_DEV.DEMAND_DATA_FLAGS.VW_WATER_USE_REPORT_EXTENDED")
-# Returns 6.96 million records on 7/10/2024 in both Snowflake and ReportManager, run by Payman
-
-# query <- dbSendQuery(sf_con, "SELECT DISTINCT * FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED")
-# Returns 12.73 million records on 7/10/2024, 177 columns, don't run, takes a long time and unneeded
+query <- dbSendQuery(sf_con, "SELECT DISTINCT 
+                                APPLICATION_NUMBER, YEAR, MONTH,
+                                AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
+                                FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
+                                INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT,
+                                EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
+                                WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
+                                STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
+                                STORAGE_SEASON_END,
+                                PARTY_ID, APPLICATION_PRIMARY_OWNER,
+                                PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
+                                SUB_TYPE, YEAR_DIVERSION_COMMENCED
+                     FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED
+                     WHERE CAST(YEAR AS INTEGER) >= 2016")
 
 
 
