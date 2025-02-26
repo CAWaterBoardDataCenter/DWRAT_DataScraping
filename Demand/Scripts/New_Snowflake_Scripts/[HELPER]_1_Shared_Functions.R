@@ -1,5 +1,3 @@
-# CATEGORY 1 Script: Flagging Script
-
 # Functions that are used across multiple scripts
 
 makeSharePointPath <- function (filePathFragment) {
@@ -203,3 +201,46 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
 
 
 
+readFlagTable <- function () {
+  
+  # Wrapper for importing the latest flag table
+  
+  
+  
+  # Use the extended CSV filename to get the expected ID of the flag table 
+  # (This ensures that the flag table was properly generated and belongs to the latest flat file)
+  flagDF <- makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
+                            makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
+                              list.files() %>% sort() %>% tail(1) %>% 
+                              str_replace("water_use_report_extended", "Flag_Table"))) %>%
+    fileRead("read_csv")
+  
+  
+  
+  # Return 'flagDF'
+  return(flagDF)
+  
+}
+
+
+
+writeFlagTable <- function (flagDF) {
+  
+  # Wrapper for writing the latest flag table
+  
+  
+  
+  # Use the extended CSV filename to get the expected ID of the flag table 
+  # (This ensures that the flag table belongs to the latest flat file)
+  makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
+                            makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
+                              list.files() %>% sort() %>% tail(1) %>% 
+                              str_replace("water_use_report_extended", "Flag_Table"))) %>%
+    write_csv(x = flagDF)
+  
+  
+  
+  # Return 'flagDF'
+  return(flagDF)
+  
+}

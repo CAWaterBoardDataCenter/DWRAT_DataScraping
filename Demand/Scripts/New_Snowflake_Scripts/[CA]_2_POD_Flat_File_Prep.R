@@ -13,21 +13,21 @@ require(crayon)
 require(tidyverse)
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 #### Procedure ####
 
-print("Starting '[CA]_POD_Flat_File_Prep.R'...")
+print("Starting '[CA]_2_POD_Flat_File_Prep.R'...")
 
 
 
 # Read in the POD flat file
-Flat_File_PODs <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/eWRIMS Flat File POD") %>%
+Flat_File_PODs <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/eWRIMS Flat File POD/") %>%
   list.files(full.names = TRUE) %>%
   sort() %>% tail(1) %>%
-  read.csv()
-  
+  fileRead("read.csv")
+
 
 
 # Apply the proper filters----
@@ -45,7 +45,7 @@ cat('\n\n\n')
 
 
 
-Flat_File_PODs_Status <- Flat_File_PODs[Flat_File_PODs$POD_STATUS == "Active", ]
+Flat_File_PODs_Status <- Flat_File_PODs[!is.na(Flat_File_PODs$POD_STATUS) & Flat_File_PODs$POD_STATUS == "Active", ]
 
 ##Get unique water right types----
 # WR_Types <- Flat_File_PODs$WATER_RIGHT_TYPE %>% 

@@ -18,7 +18,7 @@ require(tidyverse)
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 #### Procedure ####
@@ -31,8 +31,9 @@ print("Starting '[CA]_4_Flag_Table_Priority_Date.R'...")
 priorityDF <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended") %>%
   list.files(full.names = TRUE) %>%
   sort() %>% tail(1) %>%
-  fread(select = c("APPLICATION_NUMBER", "WATER_RIGHT_TYPE", "PRIORITY_DATE", "APPLICATION_RECD_DATE", 
-                   "APPLICATION_ACCEPTANCE_DATE", "SUB_TYPE", "YEAR_DIVERSION_COMMENCED")) %>%
+  fileRead("fread",
+           select = c("APPLICATION_NUMBER", "WATER_RIGHT_TYPE", "PRIORITY_DATE", "APPLICATION_RECD_DATE", 
+                      "APPLICATION_ACCEPTANCE_DATE", "SUB_TYPE", "YEAR_DIVERSION_COMMENCED")) %>%
   unique()
 
 
@@ -51,6 +52,8 @@ priorityDF <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Do
 #   (11) PRE_1914
 #   (12) RIPARIAN
 #   (13) APPROPRIATIVE
+#   (14) APPROPRIATIVE_DATE_SOURCE
+#   (15) STATEMENT_PRIORITY_SOURCE
 
 
 
@@ -323,11 +326,7 @@ priorityDF <- priorityDF %>%
 
 
 # Read in 'flagDF' and append new columns
-flagDF <- makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                                    makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                                      list.files() %>% sort() %>% tail(1) %>% 
-                                      str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  read_csv(show_col_types = FALSE)
+flagDF <- readFlagTable()
 
 
 
@@ -344,11 +343,7 @@ flagDF <- flagDF %>%
 
 
 # Write the updated 'flagDF' to a file
-makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                          makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                            list.files() %>% sort() %>% tail(1) %>% 
-                            str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  write_csv(x = flagDF)
+writeFlagTable(flagDF)
 
 
 

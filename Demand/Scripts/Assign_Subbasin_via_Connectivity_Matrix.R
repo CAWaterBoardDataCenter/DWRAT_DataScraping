@@ -79,7 +79,7 @@ mainProcedure <- function () {
   
   # Check for water rights with multiple subbasins assigned
   # (This can happen for rights with multiple PODs)
-  # If that is the case, a manual review will be needed
+  # If that is the case, additional steps will be needed
   podTable <- checkForMultiBasinRights(podTable, fieldNames, subWS, ws, yearRange)
   
   
@@ -132,7 +132,7 @@ checkOverlap <- function (POD, subWS) {
 checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange) {
   
   # Rights with more than one POD might have multiple subbasins assigned to them
-  # These cases must be manually reviewed because DWRAT only accepts
+  # These cases must be adjusted because DWRAT only accepts
   # one subbasin per water right/"APPLICATION_NUMBER" value
   
   
@@ -192,8 +192,7 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
   
   # Add fields to 'podTable' related to multiple sub-basins for the same right
   podTable <- podTable %>%
-    mutate(ASSIGNED_MULTIPLE_SUBBASINS = if_else(APPLICATION_NUMBER %in% appRecords$APPLICATION_NUMBER,
-                                                 TRUE, FALSE),
+    mutate(ASSIGNED_MULTIPLE_SUBBASINS = APPLICATION_NUMBER %in% appRecords$APPLICATION_NUMBER,
            ORIGINAL_ASSIGNMENT = if_else(APPLICATION_NUMBER %in% appRecords$APPLICATION_NUMBER,
                                          !!sym(fieldNames[1]), NA))
   
@@ -266,7 +265,7 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
         podTable <- podTable %>%
           splitWaterRight(appRecords$APPLICATION_NUMBER[i], 
                           subsetConn, fieldNames[1], 
-                          subWS, ws, yearRange)
+                          subWS, ws, yearRange, connMat)
         
       } else {
         
@@ -334,7 +333,7 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
         podTable <- podTable %>%
           splitWaterRight(appRecords$APPLICATION_NUMBER[i], 
                           subsetConn, fieldNames[1], 
-                          subWS, ws, yearRange)
+                          subWS, ws, yearRange, connMat)
         
       }
       
@@ -402,7 +401,7 @@ subbasinUpdate <- function (podTable, appNum, subsetConn, fieldNames) {
 
 
 splitWaterRight <- function (podTable, appNum, subsetConn, colName,
-                             subWS, ws, yearRange) {
+                             subWS, ws, yearRange, connMat) {
   
   # For each sub-basin in 'subsetConn', split the water right 
   # identified by 'appNum' into several sub-rights
@@ -425,19 +424,81 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
   
   
   
-  # Also get the area of each sub-basin
-  # (The right's flow values will be proportioned to 
-  #  each sub-right/sub-basin based on drainage area)
-  # This is split into two steps so that the basin IDs can be used in naming the results
-  areaVec <- subWS[subWS[[colName]] %in% unlist(subsetConn[, 1]), ]
-  
-  areaVec <- st_area(areaVec) %>%
+  # Also get the area of every sub-basin
+  # The right's flow values will be proportioned to 
+  # each sub-right/sub-basin based on drainage area
+  # For each sub-basin that will receive a split right, 
+  # the drainage areas *upstream* of the sub-basin are also considered 
+  # in the area calculations
+  # (This is split into two steps so that the basin IDs can be used 
+  #  in naming the results)
+  subbasinAreas <- subWS %>% st_area() %>%
     as.numeric() %>%
-    set_names(areaVec[[colName]])
+    set_names(subWS[[colName]])
+  
+  
+  
+  # This vector will hold the total drainage areas to each of the
+  # sub-basins in 'subsetConn'
+  areaVec <- rep(NA_real_, nrow(subsetConn)) %>%
+    setNames(subsetConn[[1]])
+  
+  
+  
+  # Get the total area of the sub-basins that flow into 
+  # each sub-basin in 'subsetConn'
+  # (Also include the target sub-basins themselves in these calculations)
+  for (i in 1:length(areaVec)) {
+    
+    # In the connectivity matrix, the format is "row flows into column"
+    # For each sub-basin row, columns will have a value of 1 if flow from the
+    # sub-basin row eventually reaches the sub-basin identified by that column
+    
+    
+    # Get a subset of 'connMat' that has the sub-basins that flow into
+    # this iteration's sub-basin
+    subbasinPath <- connMat[[1]][connMat[[which(names(connMat) == subsetConn[[1]][i])]] > 0]
+    
+    # Explaining the above line of code:
+    # (1) "subsetConn[[1]][i]" is the target sub-basin in this iteration
+    # (2) "which(names(connMat) == subsetConn[[1]][i])" gives the column index
+    #     in 'connMat' that matches the target sub-basin
+    #     (Rows with values of "1" in this column mean that those sub-basins 
+    #      drain into the target sub-basin)
+    # (3) "connMat[[which(names(connMat) == subsetConn[[1]][i])]] > 0" identifies
+    #     the rows with a value of "1" in the target sub-basin's column
+    # (4) "connMat[[1]][connMat[[which(names(connMat) == subsetConn[[1]][i])]] > 0]"
+    #     is the names of the sub-basins with a value of "1" in the target 
+    #     sub-basin's column. Therefore, this is a list of the sub-basins that
+    #     drain into the target sub-basin (that target sub-basin is also included 
+    #     in this list)
+    
+    
+    
+    areaVec[i] <- sum(subbasinAreas[names(subbasinAreas) %in% subbasinPath])
+    
+  }
+  
+  
+  
+  # Error Check
+  stopifnot(!anyNA(areaVec))
+  
+  
+  
+  # Previous code that only considered the drainage areas of the sub-basins
+  # that would house the split water rights: 
+  
+  #areaVec <- subWS[subWS[[colName]] %in% unlist(subsetConn[, 1]), ]
+  
+  # areaVec <- st_area(areaVec) %>%
+  #   as.numeric() %>%
+  #   set_names(areaVec[[colName]])
   
   
   
   # Iterate through each sub-basin
+  # Proportion the right's flow data to each sub-right based on 'areaVec'
   for (j in 1:nrow(subsetConn)) {
     
     # Create a new sub-right for the water right

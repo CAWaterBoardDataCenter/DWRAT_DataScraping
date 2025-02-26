@@ -12,11 +12,11 @@ require(tidyverse)
 
 
 
-cat("Starting '[CA]_3_Flag_Table_Generation.R'...\n")
+print("Starting '[CA]_3_Flag_Table_Generation.R'...")
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 
@@ -58,8 +58,8 @@ if (as.Date(file.info(podDF %>% str_replace("POD Subset/(.+_)Flat_File_eWRIMS(_.
 
 # Read in the modified POD flat file
 # (Use the file path already stored in 'podDF')
-podDF <- read_csv(podDF, 
-                  show_col_types = FALSE, col_types = cols(.default = col_character()))
+podDF <- podDF %>%
+  fileRead("read_csv", col_types = cols(.default = col_character()))
 
 
 
@@ -67,8 +67,9 @@ podDF <- read_csv(podDF,
 # Only keep rights that appear within 'podDF'
 # Only keep reports from 2017 onwards
 # Then, save it to a file 
-fread(extendedDF, 
-      select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE", "PARTY_ID")) %>% 
+extendedDF %>%
+  fileRead("fread",
+           select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE", "PARTY_ID")) %>%
   unique() %>%
   filter(APPLICATION_NUMBER %in% podDF$APPLICATION_NUMBER) %>%
   filter(YEAR > 2016) %>%
