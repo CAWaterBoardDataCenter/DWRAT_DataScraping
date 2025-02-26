@@ -16,7 +16,7 @@ print("Starting '[CA]_3_Flag_Table_Generation.R'...")
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 

@@ -20,7 +20,7 @@ require(tidyverse)
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 #### Procedure ####
@@ -151,11 +151,7 @@ if (anyNA(sameOwnerTotalYear_differentRightOrDiversionType)) {
 
 
 # Read in 'flagDF' and prepare to append new columns
-flagDF <- makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                                    makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                                      list.files() %>% sort() %>% tail(1) %>% 
-                                      str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  fileRead("read_csv") %>%
+flagDF <- readFlagTable() %>%
   mutate(ID_KEY_1 = paste(APPLICATION_NUMBER, YEAR, sep = "_"),
          ID_KEY_3 = paste(PARTY_ID, YEAR, APPLICATION_NUMBER, DIVERSION_TYPE, sep = "_"))
 
@@ -172,11 +168,7 @@ flagDF <- flagDF %>%
 
 
 # Write the updated 'flagDF' to a file
-makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                          makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                            list.files() %>% sort() %>% tail(1) %>% 
-                            str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  write_csv(x = flagDF)
+writeFlagTable(flagDF)
 
 
 
