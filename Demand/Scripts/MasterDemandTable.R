@@ -552,40 +552,49 @@ ewrimsDF <- ewrimsDF %>%
 
 # For watersheds other than the Russian River, 
 # append water rights' sub-basins to 'ewrimsDF' here
-if (!grepl("Russian", ws$NAME) & !is.na(ws$SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH)) {
+if (!grepl("Russian", ws$NAME)) {
   
   
-  # Read in the sub-basin assignments and the name of the column that 
-  # distinguishes between different sub-basins 
-  basinDF <- getXLSX(ws, 
-                     "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
-                     "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
-                     "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME")
-  
-  
-  basinColName <- ws[["SUBBASIN_FIELD_ID_NAMES"]] %>%
-    str_split(";") %>% unlist() %>%
-    pluck(1) %>% trimws()
-  
-  
-  
-  # Keep just "APPLICATION_NUMBER" and the sub-basin column
-  # Rename the sub-basin column to "BASIN" for consistency
-  basinDF <- basinDF %>%
-    select(APPLICATION_NUMBER, all_of(basinColName)) %>%
-    unique() %>%
-    rename(BASIN = all_of(basinColName))
-  
-  
-  
-  # Join 'basinDF' to 'ewrimsDF'
-  ewrimsDF <- ewrimsDF %>%
-    left_join(basinDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
-  
-  
-  
-  # Ensure that there are no "NA" values in this sub-basin column
-  stopifnot(!anyNA(ewrimsDF[["BASIN"]]))
+  if (!is.na(ws$SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH)) {
+    
+    # Read in the sub-basin assignments and the name of the column that 
+    # distinguishes between different sub-basins 
+    basinDF <- getXLSX(ws, 
+                       "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
+                       "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
+                       "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME")
+    
+    
+    basinColName <- ws[["SUBBASIN_FIELD_ID_NAMES"]] %>%
+      str_split(";") %>% unlist() %>%
+      pluck(1) %>% trimws()
+    
+    
+    
+    # Keep just "APPLICATION_NUMBER" and the sub-basin column
+    # Rename the sub-basin column to "BASIN" for consistency
+    basinDF <- basinDF %>%
+      select(APPLICATION_NUMBER, all_of(basinColName)) %>%
+      unique() %>%
+      rename(BASIN = all_of(basinColName))
+    
+    
+    
+    # Join 'basinDF' to 'ewrimsDF'
+    ewrimsDF <- ewrimsDF %>%
+      left_join(basinDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
+    
+    
+    
+    # Ensure that there are no "NA" values in this sub-basin column
+    stopifnot(!anyNA(ewrimsDF[["BASIN"]]))
+    
+  } else {
+    
+    print("No sub-basin assignment spreadsheet path was specified")
+    print("Therefore, no sub-basin column will appear in the output")
+    
+  }
   
 }
 
