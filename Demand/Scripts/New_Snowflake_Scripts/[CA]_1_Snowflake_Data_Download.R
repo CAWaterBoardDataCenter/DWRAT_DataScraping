@@ -26,9 +26,10 @@ cat("\n")
 
 # Downloading Flat Files Required by QAQC Process----
 
-# Two flat files are required:
+# Three flat files are required:
 # Water Use Report Extended
 # eWRIMS Flat File POD
+# eWRIMS Flat File Use Season
 
 
 
@@ -129,7 +130,8 @@ query <- dbSendQuery(sf_con, "SELECT DISTINCT
                                 STORAGE_SEASON_END,
                                 PARTY_ID, APPLICATION_PRIMARY_OWNER,
                                 PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
-                                SUB_TYPE, YEAR_DIVERSION_COMMENCED
+                                SUB_TYPE, YEAR_DIVERSION_COMMENCED,
+                                USE_CODE
                      FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED
                      WHERE CAST(YEAR AS INTEGER) >= 2016")
 
