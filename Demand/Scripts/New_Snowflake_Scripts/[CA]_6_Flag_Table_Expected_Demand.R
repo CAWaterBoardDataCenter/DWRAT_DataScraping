@@ -28,8 +28,7 @@ print("Starting '[CA]_6_Flag_Table_Expected_Demand.R'...")
 
 
 
-
-
+# Read in diversion data
 useDF <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended") %>%
   list.files(full.names = TRUE) %>%
   sort() %>% tail(1) %>%

@@ -1,5 +1,9 @@
+# These scripts prepare the precursor files for the demand datasets
 
+# eWRIMS data is downloaded and QA/QC flags are appended 
 
+# Watershed-level scripts ("[WS]" instead of "[CA]") will be used to develop 
+# demand datasets for individual watersheds
 
 
 remove(list = ls())
@@ -55,6 +59,12 @@ source("Scripts/New_Snowflake_Scripts/[CA]_8_Flag_Table_Face_Value_Substitution.
 
 
 # Primary Beneficial Use
+source("Scripts/New_Snowflake_Scripts/[CA]_9_Flag_Table_Primary_Beneficial_Use.R")
+
+
+
+# Check the flag table to verify that every prior script has been run successfully
+source("Scripts/New_Snowflake_Scripts/[HELPER]_2_Verify_Flag_Table.R")
 
 
 
