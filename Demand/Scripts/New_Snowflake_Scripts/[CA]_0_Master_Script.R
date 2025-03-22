@@ -49,7 +49,13 @@ source("Scripts/New_Snowflake_Scripts/[CA]_7_Flag_Table_Empty_Reports.R")
 
 
 
+# Flag reports that should be considered for a face value substitution procedure
+source("Scripts/New_Snowflake_Scripts/[CA]_8_Flag_Table_Face_Value_Substitution.R")
+
+
+
 # Primary Beneficial Use
+
 
 
 # Add this check somewhere? 

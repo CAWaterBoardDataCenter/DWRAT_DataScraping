@@ -241,10 +241,11 @@ annualDF <- annualDF %>%
 
 # Create a flag for unusual "YEAR_TOTAL" values
 # The variable should be "TRUE" if one of the following is "TRUE":
-#   (1) "YEAR_TOTAL" / "FACE_VALUE_AMOUNT" > 100
-#   (2) "YEAR_TOTAL" / "FACE_VALUE_AMOUNT" < 1/100
-#   (3) "YEAR_TOTAL" / "INI_REPORTED_DIV_AMOUNT" > 100
-#   (4) "YEAR_TOTAL" / "INI_REPORTED_DIV_AMOUNT" < 1/100
+#   (1) "YEAR_TOTAL" / "FACE_VALUE_AMOUNT" > X
+#   (2) "YEAR_TOTAL" / "FACE_VALUE_AMOUNT" < 1/X
+#   (3) "YEAR_TOTAL" / "INI_REPORTED_DIV_AMOUNT" > X
+#   (4) "YEAR_TOTAL" / "INI_REPORTED_DIV_AMOUNT" < 1/X
+# The value of "X" depends on "YEAR_TOTAL"
 annualDF <- annualDF %>%
   mutate(EXPECTED_DEMAND_FLAG_FV_OR_INI_DIV_AMOUNT = 
            (YEAR_TOTAL > 100 & 
@@ -309,12 +310,13 @@ annualDF <- annualDF %>%
 
 # Add another flag for unusual "YEAR_TOTAL" values
 # The variable should be "TRUE" if one of the following is "TRUE":
-#  (1) "YEAR_TOTAL" / "AVERAGE" > 100
-#  (2) "YEAR_TOTAL" / "AVERAGE" < 1/100
-#  (3) "YEAR_TOTAL" / "MEDIAN" > 100
-#  (4) "YEAR_TOTAL" / "MEDIAN" < 1/100
-#  (5) abs("YEAR_TOTAL" - AVERAGE) > 100
-#  (6) abs("YEAR_TOTAL" - MEDIAN) > 100
+#  (1) "YEAR_TOTAL" / "AVERAGE" > X
+#  (2) "YEAR_TOTAL" / "AVERAGE" < 1/X
+#  (3) "YEAR_TOTAL" / "MEDIAN" > X
+#  (4) "YEAR_TOTAL" / "MEDIAN" < 1/X
+#  (5) abs("YEAR_TOTAL" - AVERAGE) > X
+#  (6) abs("YEAR_TOTAL" - MEDIAN) > X
+# The value of "X" depends on "YEAR_TOTAL"
 annualDF <- annualDF %>%
   mutate(EXPECTED_DEMAND_FLAG_AVG_OR_MED_VOL = 
            (YEAR_TOTAL > 100 & ((AVERAGE > 0 & YEAR_TOTAL / AVERAGE > 10) |

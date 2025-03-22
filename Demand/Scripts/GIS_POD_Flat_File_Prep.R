@@ -164,10 +164,11 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                   EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
                                                   WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
                                                   STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
-                                                  STORAGE_SEASON_END,
+                                                  STORAGE_SEASON_END, 
                                                   PARTY_ID, APPLICATION_PRIMARY_OWNER,
                                                   PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
-                                                  SUB_TYPE, YEAR_DIVERSION_COMMENCED
+                                                  SUB_TYPE, YEAR_DIVERSION_COMMENCED,
+                                                  USE_CODE
                                                   FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
                                                   WHERE YEAR >= 2016
                                                   ")
