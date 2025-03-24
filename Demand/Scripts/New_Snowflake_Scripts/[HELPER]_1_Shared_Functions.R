@@ -121,16 +121,16 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
 
 
 
-fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
+fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sheet = NULL) {
   
   # Try to read a file
   
   
   
   # Verify that a valid 'commandType' is specified
-  if (!(commandType %in% c("read.csv", "read_csv", "fread"))) {
+  if (!(commandType %in% c("read.csv", "read_csv", "fread", "read_xlsx"))) {
     
-    stop("The function fileReadTry() can only be used with read.csv(), read_csv(), and fread()" %>%
+    stop("The function fileReadTry() can only be used with read.csv(), read_csv(), fread(), and read_xlsx()" %>%
            strwrap(width = getOption("width")) %>%
            paste0(collapse = "\n"))
     
@@ -158,6 +158,10 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
     fileDF <- try(fread(filePath, select = select), silent = TRUE)
     
     
+  } else if (commandType == "read_xlsx") {
+    
+    fileDF <- try(read_xlsx(filePath, sheet = sheet, col_types = col_types), silent = TRUE)
+    
   }
   
   
@@ -180,7 +184,19 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
                   filePath, "\n\n") %>%
              strwrap(width = getOption("width")) %>%
              paste0(collapse = "\n") %>%
-             str_replace("likely incorrect", red("likely incorrect")))
+             str_replace("likely incorrect", col_red("likely incorrect")))
+      
+    } else if (grepl("Error in utils::unzip.+cannot be opened", fileDF)) {
+      
+      stop(paste0("The target spreadsheet is open locally on your computer. ",
+                  "Please close the file before attempting to run the script again.") %>%
+             strwrap(width = 0.98 * getOption("width")) %>%
+             paste0(collapse = "\n") %>%
+             str_replace("open", col_red("open")) %>%
+             str_replace("locally", col_red("locally")) %>%
+             str_replace("close", col_green("close")) %>%
+             str_replace("the", col_green("the")) %>%
+             str_replace("file", col_green("file")))
       
     } else {
       

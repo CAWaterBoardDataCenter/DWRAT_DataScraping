@@ -8,7 +8,7 @@
 remove(list = ls())
 
 
-require(crayon)
+require(cli)
 require(tidyverse)
 require(odbc)
 require(DBI)
@@ -61,10 +61,12 @@ cat(paste0(strwrap(paste0("NOTE", ": If you have a proper connection setup, a ",
                           "web browser", " will open up for authenticating Snowflake.\n\n",
 "If your default browser is ", "NOT", " Microsoft Edge, you will likely need to authenticate manually.\n\n"), 
 width = getOption("width")), collapse = "\n") %>%
-  str_replace("^NOTE", red("NOTE")) %>%
-  str_replace(" NOT ", red(" NOT ")) %>%
-  str_replace(" web browser ", green(" web browser ")))
+  str_replace("^NOTE", col_red("NOTE")) %>%
+  str_replace(" NOT ", col_red(" NOT ")) %>%
+  str_replace("web", col_green("web")) %>%
+  str_replace("browser", col_green("browser")))
 cat("\n\n")
+
 
 
 # Try to connect to Snowflake
@@ -95,17 +97,17 @@ if (is.character(sf_con)) {
               "(i.e., can you access the 'DEMAND_DATA_FLAGS' schema with the 'DWR_DEV_DEMAND_DATA_FLAGS_RWC_ACROLE' ", 
               "role through your browser?)\n"), 
               width = getOption("width")), collapse = "\n") %>%
-         str_replace("Could not connect to Snowflake", red("Could not connect to Snowflake")) %>%
-         str_replace("VPN", green("VPN")) %>%
-         str_replace("in.office( corporate)?( network)?", green("in-office\\1\\2")) %>%
-         str_replace("(in.office )?corporate( network)?", green("\\1corporate\\2")) %>%
-         str_replace("(in.office )?(corporate )?network", green("\\1\\2network")) %>%
-         str_replace("close( and)?( reopen)?( RStudio)?", red("close\\1\\2\\3")) %>%
-         str_replace("(close )?and( reopen)?( RStudio)?", red("\\1and\\2\\3")) %>%
-         str_replace("(close )?(and )?reopen( RStudio)?", red("\\1\\2reopen\\3")) %>%
-         str_replace("(close )?(and )?(reopen )?RStudio", red("\\1\\2\\3RStudio")) %>%
-         str_replace("role( and)?( permissions)?", green("role\\1\\2")) %>%
-         str_replace("(role )?(and )?permissions", green("\\1\\2permissions")))
+         str_replace("Could not connect to Snowflake", col_red("Could not connect to Snowflake")) %>%
+         str_replace("VPN", col_green("VPN")) %>%
+         str_replace("in.office", col_green("in-office")) %>%
+         str_replace("corporate", col_green("corporate")) %>%
+         str_replace("network", col_green("network")) %>%
+         str_replace("close", col_red("close")) %>%
+         str_replace("and", col_red("and")) %>%
+         str_replace("reopen", col_red("reopen")) %>%
+         str_replace("RStudio", col_red("RStudio")) %>%
+         str_replace("role( and)?( permissions)?", col_green("role\\1\\2")) %>%
+         str_replace("(role )?(and )?permissions", col_green("\\1\\2permissions")))
   
 }
 

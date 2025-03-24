@@ -3,13 +3,13 @@
 # This initial list will be the starting point for all future operations
 
 
-#### Dependencies ####
+#### Setup ####
 
 
 remove(list = ls())
 
 
-require(crayon)
+require(cli)
 require(tidyverse)
 
 
@@ -35,9 +35,9 @@ Flat_File_PODs <- makeSharePointPath("Program Watersheds/7. Snowflake Demand Dat
 # Filter for Active PODs----
 cat("\n")
 "NOTE: The dataset will only contain PODs that are currently active" %>%
-  str_replace("^NOTE", red("NOTE")) %>% 
-  str_replace("currently", red(italic("currently"))) %>%
-  str_replace("PODs", red(bold("PODs"))) %>%
+  str_replace("^NOTE", col_red("NOTE")) %>% 
+  str_replace("currently", col_red(style_italic("currently"))) %>%
+  str_replace("PODs", col_red(style_bold("PODs"))) %>%
   cat()
 cat("\n")
 cat("      This is only a problem if you are attempting a historic run")
@@ -69,7 +69,7 @@ Flat_File_PODs_Status <- Flat_File_PODs[!is.na(Flat_File_PODs$POD_STATUS) & Flat
 # Waste Water Change
 
 # Filter by Water Right Type----
-paste0(red("NOTE"), ": Only the following water right types are included in the dataset:\n") %>%
+paste0(col_red("NOTE"), ": Only the following water right types are included in the dataset:\n") %>%
   cat()
 print(c("Appropriative", "Federal Claims", "Federal Stockponds",
         "Registration Cannabis", "Registration Domestic",
@@ -102,7 +102,7 @@ Flat_File_PODs_WR_Type <- Flat_File_PODs_Status[Flat_File_PODs_Status$WATER_RIGH
 
 
 # Filter by Water Right Status----
-paste0(red("NOTE"), ": Only the following water right statuses are included in the dataset:\n") %>%
+paste0(col_red("NOTE"), ": Only the following water right statuses are included in the dataset:\n") %>%
   cat()
 print(c("Active", "Claimed - Local Oversight", "Certified", "Claimed",
         "Completed", "Licensed", "Permitted", "Registered", 

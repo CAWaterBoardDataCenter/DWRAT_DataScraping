@@ -9,7 +9,7 @@ remove(list = ls())
 
 
 
-require(crayon)
+require(cli)
 require(data.table)
 require(tidyverse)
 
@@ -22,6 +22,20 @@ source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 print("Starting '[HELPER]_2_Verify_Flag_Table.R'...")
+
+
+
+cat("\n\n")
+cat(paste0("This script will double-check the flag table to verify that all ",
+           "prior scripts were executed and that their generated columns were ",
+           "added to this table successfully") %>%
+      strwrap(width = 0.98 * getOption("width")) %>%
+      paste0(collapse = "\n") %>%
+      str_replace("double.check", col_blue("double-check")) %>%
+      str_replace("executed", col_magenta("executed")) %>%
+      str_replace("columns", col_silver("columns")) %>%
+      str_replace("successfully", col_green("successfully")))
+cat("\n\n")
 
 
 
@@ -68,9 +82,9 @@ if (nrow(missingDF) > 0) {
   
   
   cat("\n\n")
-  cat(paste0("Missing Columns") %>% bold() %>% silver())
+  cat(paste0("Missing Columns") %>% style_bold() %>% col_silver())
   cat("\n")
-  cat(missingDF %>% mutate(LIST = paste0("   ", COLUMN_NAME, " (", red(SOURCE), ")")) %>%
+  cat(missingDF %>% mutate(LIST = paste0("   ", COLUMN_NAME, " (", col_red(SOURCE), ")")) %>%
         select(LIST) %>% unlist(use.names = FALSE) %>%
         paste0(collapse = "\n"))
   cat("\n")
@@ -80,8 +94,8 @@ if (nrow(missingDF) > 0) {
               " The list of missing column(s) was printed above this error message") %>%
          strwrap(width = 0.98 * getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("missing", red("missing")) %>%
-         str_replace("not", red("not")))
+         str_replace("missing", col_red("missing")) %>%
+         str_replace("not", col_red("not")))
   
   
 }
@@ -98,7 +112,7 @@ if (length(extraDF) > 0) {
   
   
   cat("\n\n")
-  cat(paste0("Unrecognized Columns") %>% bold() %>% silver())
+  cat(paste0("Unrecognized Columns") %>% style_bold() %>% col_silver())
   cat("\n   ")
   cat(extraDF %>%
         paste0(collapse = "\n   "))
@@ -111,9 +125,9 @@ if (length(extraDF) > 0) {
               " verify the formatting of the new column data.") %>%
          strwrap(width = 0.98 * getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("extra", red("extra")) %>%
-           str_replace("expectedColumns", blue("expectedColumns")) %>%
-         str_replace("updated", green("updated")))
+         str_replace("extra", col_red("extra")) %>%
+           str_replace("expectedColumns", col_blue("expectedColumns")) %>%
+         str_replace("updated", col_green("updated")))
   
   
 }
@@ -152,9 +166,9 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
                    " The file should be checked for data corruption.") %>%
               strwrap(width = 0.98 * getOption("width")) %>%
               paste0(collapse = "\n") %>%
-              str_replace("NA", red("NA")) %>%
-              str_replace("data", red("data")) %>%
-              str_replace("corruption", red("corruption")))
+              str_replace("NA", col_red("NA")) %>%
+              str_replace("data", col_red("data")) %>%
+              str_replace("corruption", col_red("corruption")))
     
     cat("\n")
     
@@ -168,9 +182,9 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
                    " There may be issues with the dataset or the Priority Date script.") %>%
               strwrap(width = 0.98 * getOption("width")) %>%
               paste0(collapse = "\n") %>%
-              str_replace("NA", red("NA")) %>%
-              str_replace("missing", red("missing")) %>%
-              str_replace("issues", red("issues")))
+              str_replace("NA", col_red("NA")) %>%
+              str_replace("missing", col_red("missing")) %>%
+              str_replace("issues", col_red("issues")))
     
     cat("\n")
     
@@ -184,8 +198,8 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
                    " There may be issues with the dataset or the script.") %>%
               strwrap(width = 0.98 * getOption("width")) %>%
               paste0(collapse = "\n") %>%
-              str_replace("NA", red("NA")) %>%
-              str_replace("issues", red("issues")))
+              str_replace("NA", col_red("NA")) %>%
+              str_replace("issues", col_red("issues")))
     
     cat("\n")
     
@@ -199,8 +213,8 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
                    " (for a diversion type other than 'USE'). There may be issues with the dataset or the script.") %>%
               strwrap(width = 0.98 * getOption("width")) %>%
               paste0(collapse = "\n") %>%
-              str_replace("NA", red("NA")) %>%
-              str_replace("issues", red("issues")))
+              str_replace("NA", col_red("NA")) %>%
+              str_replace("issues", col_red("issues")))
     
     cat("\n")
     
@@ -214,8 +228,8 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
                    " There should not be any 'NA' values in its data column.") %>%
               strwrap(width = 0.98 * getOption("width")) %>%
               paste0(collapse = "\n") %>%
-              str_replace("NA", red("NA")) %>%
-              str_replace("issues", red("issues")))
+              str_replace("NA", col_red("NA")) %>%
+              str_replace("issues", col_red("issues")))
     
     cat("\n")
     
@@ -229,8 +243,8 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
                    " There should not be any 'NA' values in its column.") %>%
               strwrap(width = 0.98 * getOption("width")) %>%
               paste0(collapse = "\n") %>%
-              str_replace("NA", red("NA")) %>%
-              str_replace("issues", red("issues")))
+              str_replace("NA", col_red("NA")) %>%
+              str_replace("issues", col_red("issues")))
     
     cat("\n")
     
@@ -238,7 +252,7 @@ if (sum(expectedColumns$COLUMN_NAME %in% problemColumns) > 0) {
   
   
   
-  cat(paste0("Columns with Data Issues") %>% bold() %>% silver())
+  cat(paste0("Columns with Data Issues") %>% style_bold() %>% col_silver())
   cat("\n   ")
   cat(expectedColumns %>%
         filter(COLUMN_NAME %in% problemColumns) %>%
