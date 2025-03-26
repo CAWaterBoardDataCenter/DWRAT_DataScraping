@@ -1,22 +1,34 @@
+# Initialize the flag table
+# It will contain flags for different QA/QC concerns
 
 
+#### Setup ####
 
 
 remove(list = ls())
 
 
-
-require(crayon)
+require(cli)
 require(data.table)
 require(tidyverse)
 
+
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
+
+
+#### Procedure ####
 
 
 print("Starting '[CA]_3_Flag_Table_Generation.R'...")
 
 
 
-source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
+cat("\n\n")
+cat(paste0("Data from the POD and extended tables will be used to initialize the flag table. ",
+           "Subsequent scripts will append flagging columns to this table.") %>%
+      strwrap(width = getOption("width") * 0.99) %>%
+      paste0(collapse = "\n"))
+cat("\n")
 
 
 
@@ -47,10 +59,10 @@ if (as.Date(file.info(podDF %>% str_replace("POD Subset/(.+_)Flat_File_eWRIMS(_.
               "'[CA]_2_POD_Flat_File_Prep.R' to proceed.") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("created on different days", red("created on different days")) %>%
-         str_replace_all("'(.+?)'", paste0("'", blue("\\1"), "'")) %>%
-         str_replace("different versions", red("different versions")) %>%
-         str_replace("rerun", green("rerun")))
+         str_replace("created on different days", col_red("created on different days")) %>%
+         str_replace_all("'(.+?)'", paste0("'", col_blue("\\1"), "'")) %>%
+         str_replace("different versions", col_red("different versions")) %>%
+         str_replace("rerun", col_green("rerun")))
   
 }
 

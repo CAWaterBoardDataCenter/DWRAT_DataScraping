@@ -10,7 +10,7 @@
 remove(list = ls())
 
 
-require(crayon)
+require(cli)
 require(data.table)
 require(tidyverse)
 
@@ -23,6 +23,27 @@ source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 print("Starting '[CA]_7_Flag_Table_Empty_Reports.R'...")
+
+
+
+cat("\n\n")
+paste0("This script will check for RMS report submissions in the dataset that lack both ",
+       "storage and direct diversion data") %>%
+  strwrap(width = 0.98 * getOption("width")) %>%
+  paste0(collapse = "\n") %>%
+  str_replace("check", col_blue("check")) %>%
+  str_replace("lack", col_silver("lack")) %>%
+  str_replace("both", col_red("both")) %>%
+  cat()
+cat("\n\n\n")
+
+
+
+cat("Reading in the extended dataset and checking for problematic reports..." %>%
+      strwrap(width = 0.98 * getOption("width")) %>%
+      paste0(collapse = "\n") %>%
+      str_replace("problematic", col_magenta("problematic")) %>%
+      str_replace("reports", col_magenta("reports")))
 
 
 
@@ -46,6 +67,11 @@ emptyDiversionReports <- reportDF %>%
 
 
 
+cat("Done!\n\n\n")
+cat("Loading in the flag table and creating a new flag column...")
+
+
+
 # Read in the flag table
 flagDF <- readFlagTable()
 
@@ -63,7 +89,8 @@ writeFlagTable(flagDF)
 
 
 # Output a completion message
-cat("\n\n")
+cat("Loading in the flag table and creating a new flag column...Done!")
+cat("\n\n\n")
 print("The script is complete!")
 
 

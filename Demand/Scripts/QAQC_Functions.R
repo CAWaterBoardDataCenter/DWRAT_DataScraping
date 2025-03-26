@@ -63,11 +63,11 @@ unitFixer <- function (inputDF, ws) {
   # Also, only keep records that relevant to the years in 'inputDF'
   unitsQAQC <- unitsQAQC %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+    filter(YEAR %in% inputDF$YEAR)
   
   unitsQAQC_Med <- unitsQAQC_Med %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+    filter(YEAR %in% inputDF$YEAR)
   
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
@@ -628,7 +628,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       
       # If an action has multiple actions specified
-    } else if (grepl("^Multiple Actions\\|", unitsQAQC$QAQC_Action_Taken[i])) {
+    } else if (grepl("^Multiple Actions\\s*\\|", unitsQAQC$QAQC_Action_Taken[i])) {
       
       
       # Get a vector with all of the required actions listed
@@ -922,6 +922,12 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
     
     # Error Check
     # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
+    if (nrow(qaqcSubSub) <= 1) {
+      
+      print(unitsQAQC$PK[i])
+      
+    }
+    
     stopifnot(nrow(qaqcSubSub) > 1)
     stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
     

@@ -114,11 +114,21 @@ assignBasinData_RR <- function (ewrimsDF) {
   }
   
   
+  
+  # Add a "BASIN_NUM" column
+  # (It's just the numeric portion of the "BASIN" column)
+  ewrimsDF <- ewrimsDF %>%
+    mutate(BASIN_NUM = BASIN %>%
+             str_extract("[0-9]+") %>% as.numeric())
+  
+  
+  
   # Check for errors
   stopifnot(!anyNA(ewrimsDF$BASIN))
   stopifnot(!anyNA(ewrimsDF$MAINSTEM))
   stopifnot(!anyNA(ewrimsDF$LONGITUDE))
   stopifnot(!anyNA(ewrimsDF$LATITUDE))
+  
   
   
   # Return 'ewrimsDF'
