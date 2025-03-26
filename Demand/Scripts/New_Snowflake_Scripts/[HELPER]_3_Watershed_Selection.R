@@ -1,5 +1,9 @@
 # Use this script to select a watershed for the demand data analysis
-# Change the number on Line 6 to choose a watershed
+# Change the number on Line 10 to choose a watershed
+
+
+
+# DO NOT COMMIT YOUR SELECTION TO GITHUB UNLESS IT'S RELEVANT TO THE ENTIRE GROUP
 
 
 
@@ -28,7 +32,7 @@ watershed_index <- 2    # <-- INPUT THE INDEX HERE!
 
 
 
-# Important required packages
+# Import required packages
 require(cli)
 require(tidyverse)
 require(readxl)
@@ -39,14 +43,14 @@ require(readxl)
 if (length(watershed_index) != 1 || is.na(watershed_index) || is.infinite(watershed_index) ||
     !is.numeric(watershed_index) || round(watershed_index) != watershed_index) {
   
-  stop(paste0("Please correct the value input on Line 6. A single integer number ",
+  stop(paste0("Please correct the value input on Line 10. A single integer number ",
               "should be assigned to the variable 'watershed_index'.\n\nStrings, 'NA', ",
               "etc. are not acceptable inputs.") %>%
          strwrap(width = 0.98 * getOption("width")) %>%
          paste0(collapse = "\n") %>%
          str_replace("correct", col_blue("correct")) %>%
          str_replace("Line", col_red("Line")) %>%
-         str_replace("6", col_red("6")) %>%
+         str_replace("10", col_red("10")) %>%
          str_replace("single", col_green("single")) %>%
          str_replace("integer", col_green("integer")) %>%
          str_replace("assigned", col_blue("assigned")) %>%
@@ -120,8 +124,8 @@ ws <- wsSpreadsheet %>%
 
 
 
-# Remove all variables other than 'ws'
-remove(list = base::setdiff(ls(), "ws"))
+# Other than 'ws', remove all variables introduced in this script
+remove(wsSpreadsheet, colIndex, watershed_index)
 
 
 

@@ -463,8 +463,8 @@ flagDF <- readFlagTable()
 # (1) MISSING_BOTH_FACE_VALUE_AND_INI_REPORTED_DIV
 # (2) EXPECTED_DEMAND_FLAG_FV_OR_INI_DIV_AMOUNT
 # (3) EXPECTED_DEMAND_FLAG_AVG_OR_MED_VOL
-#flagDF <- flagDF %>%
-#  left_join(annualDF, by = c("APPLICATION_NUMBER", "YEAR"), relationship = "many-to-one")
+flagDF <- flagDF %>%
+  left_join(annualDF, by = c("APPLICATION_NUMBER", "YEAR"), relationship = "many-to-one")
 
 
 
@@ -501,7 +501,7 @@ if (flagDF %>%
 
 
 # Write the updated 'flagDF' to a file
-#writeFlagTable(flagDF)
+writeFlagTable(flagDF)
 
 
 

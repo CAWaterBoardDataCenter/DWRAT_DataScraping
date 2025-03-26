@@ -20,4 +20,12 @@ source("Scripts/New_Snowflake_Scripts/[HELPER]_3_Watershed_Selection.R")
 
 
 # CHOOSE THE BOUNDS OF YOUR DEMAND DATASET #
+source("Scripts/New_Snowflake_Scripts/[HELPER]_4_Year_Selection.R")
+
+
+
+#### GIS PREPROCESSING ####
+
+source("Scripts/New_Snowflake_Scripts/[WS]_1_GIS_Preprocessing.R")
+
 

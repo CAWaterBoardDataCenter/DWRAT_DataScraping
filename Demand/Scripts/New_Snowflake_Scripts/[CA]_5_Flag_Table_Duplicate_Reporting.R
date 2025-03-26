@@ -181,7 +181,7 @@ if (anyNA(sameOwnerTotalYear_differentRightOrDiversionType)) {
 
 
 cat("Done!\n\n\n")
-cat("Writing flags to a file...")
+cat("Adding flags to the table...")
 
 
 
@@ -202,13 +202,18 @@ flagDF <- flagDF %>%
 
 
 
+cat("Adding flags to the table...Done!!\n\n\n")
+cat("Writing flags to a file...")
+
+
+
 # Write the updated 'flagDF' to a file
 writeFlagTable(flagDF)
 
 
 
 # Output a completion message
-cat("Writing flags to a file...Done!\n\n\n")
+cat("Done!\n\n\n")
 print("The script is complete!")
 
 

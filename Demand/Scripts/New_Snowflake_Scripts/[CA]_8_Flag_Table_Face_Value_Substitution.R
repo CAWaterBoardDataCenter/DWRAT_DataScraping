@@ -137,7 +137,6 @@ writeFlagTable(flagDF)
 
 
 # Output a completion message
-cat("Done!\n\n\n")
 print("The script is complete!")
 
 
