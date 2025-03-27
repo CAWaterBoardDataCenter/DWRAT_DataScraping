@@ -285,13 +285,37 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       # Then, apply the conversion factor
       # There are:
       #   325,851 gallons in 1 AF
-      #   365 days in a year
+      #   30 days in a month
       #   24 hours in a day
       #   60 minutes in an hour
       inputDF <- inputDF %>%
         applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
                               unitsQAQC$YEAR[i], toConvert,
                               1 / 325851 * 60 * 24 * 30)
+      
+      
+      
+      # If the actual units are "cfs"
+      # They need to be converted into AF
+    } else if (grepl("^Convert from cfs ", unitsQAQC$QAQC_Action_Taken[i])) {
+      
+      
+      # Use another function to choose the actions that will be modified
+      toConvert <- chooseUseType(unitsQAQC$QAQC_Action_Taken[i])
+      
+      
+      
+      # Then, apply the conversion factor
+      # There are:
+      #   43,559.9 ft^3 in 1 AF
+      #   30 days in a month
+      #   24 hours in a day
+      #   60 minutes in an hour
+      #   60 seconds in a minute
+      inputDF <- inputDF %>%
+        applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
+                              unitsQAQC$YEAR[i], toConvert,
+                              1 / 43559.9 * 60 * 60 * 24 * 30)
       
       
       
