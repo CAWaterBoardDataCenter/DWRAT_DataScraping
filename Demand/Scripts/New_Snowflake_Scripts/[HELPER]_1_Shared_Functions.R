@@ -87,7 +87,7 @@ getGIS <- function (ws, GIS_FILE_PATH_COLUMN, GIS_FILE_LAYER_NAME) {
     wsBound <- ws %>%
       getPath(GIS_FILE_PATH_COLUMN) %>%
       makeSharePointPath() %>%
-      st_read()
+      fileRead("st_read")
     
     # If "GIS_FILE_LAYER_NAME" DOES contain a layer name, 
     # then both columns are needed to define 'wsBound'
@@ -98,7 +98,7 @@ getGIS <- function (ws, GIS_FILE_PATH_COLUMN, GIS_FILE_LAYER_NAME) {
     wsBound <- ws %>%
       getPath(GIS_FILE_PATH_COLUMN) %>%
       makeSharePointPath() %>%
-      st_read(layer = getPath(ws, GIS_FILE_LAYER_NAME))
+      fileRead("st_read", layer = getPath(ws, GIS_FILE_LAYER_NAME))
     
   }
   
@@ -111,16 +111,18 @@ getGIS <- function (ws, GIS_FILE_PATH_COLUMN, GIS_FILE_LAYER_NAME) {
 
 
 
-fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sheet = NULL) {
+fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sheet = NULL, layer = NULL) {
   
   # Try to read a file
   
   
   
   # Verify that a valid 'commandType' is specified
-  if (!(commandType %in% c("read.csv", "read_csv", "fread", "read_xlsx"))) {
+  if (!(commandType %in% c("read.csv", "read_csv", "fread", 
+                           "read_xlsx", "st_read"))) {
     
-    stop("The function fileReadTry() can only be used with read.csv(), read_csv(), fread(), and read_xlsx()" %>%
+    stop(paste0("The function fileReadTry() can only be used with read.csv(),", 
+                "read_csv(), fread(), read_xlsx(), and st_read()") %>%
            strwrap(width = getOption("width")) %>%
            paste0(collapse = "\n"))
     
@@ -152,6 +154,16 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
     
     fileDF <- try(read_xlsx(filePath, sheet = sheet, col_types = col_types), silent = TRUE)
     
+  } else if (commandType == "st_read") {
+    
+    
+    if (is.null(layer)) {
+      fileDF <- try(st_read(filePath), silent = TRUE)
+    } else {
+      fileDF <- try(st_read(filePath, layer = layer), silent = TRUE)
+    }
+    
+    
   }
   
   
@@ -166,7 +178,8 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
     
     if (grepl("invalid 'description' argument", fileDF) ||
         grepl("cannot open the connection", fileDF) ||
-        grepl("does not exist", fileDF) || grepl("No such file", fileDF)) {
+        grepl("does not exist", fileDF) || grepl("No such file", fileDF) || 
+        grepl("doesn.t seem to exist", fileDF)) {
       
       stop(paste0("The input filepath is likely incorrect.",
                   " It does not lead to a readable file.",
@@ -188,6 +201,32 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
              str_replace("the", col_green("the")) %>%
              str_replace("file", col_green("file")))
       
+    } else if (grepl("Opening layer failed", fileDF)) {
+      
+      stop(paste0("There is a problem with the layer argument '", layer, "'. ", 
+                  "It seems that the GIS object (", filePath, ") does not contain ",
+                  "a layer with that name.\n\nThese are the available options:\n\n",
+                  st_layers(filePath)[["name"]] %>% paste0(collapse = "\n\n")) %>%
+             strwrap(width = 0.98 * getOption("width")) %>%
+             paste0(collapse = "\n") %>%
+             str_replace("layer", col_red("layer")) %>%
+             str_replace("does", col_red("does")) %>%
+             str_replace("not", col_red("not")) %>%
+             str_replace("available", col_green("available")) %>%
+             str_replace("options", col_green("options")))
+      
+    } else if (grepl("argument is not a character vector", fileDF)) {
+      
+      stop(paste0("There is a problem with the layer argument '", layer, "'. ", 
+                  "It should either be unused or specified as a character string.") %>%
+             strwrap(width = 0.98 * getOption("width")) %>%
+             paste0(collapse = "\n") %>%
+             str_replace("layer", col_red("layer")) %>%
+             str_replace("does", col_red("does")) %>%
+             str_replace("not", col_red("not")) %>%
+             str_replace("available", col_green("available")) %>%
+             str_replace("options", col_green("options")))
+      
     } else {
       
       stop("An unexpected error occurred. See the error message above for details." %>%
@@ -204,6 +243,92 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
   return(fileDF)
   
 }
+
+
+
+
+fileWrite <- function (fileObj, commandType, filePath, layer = NULL, delete_dsn = FALSE) {
+  
+  # Try to write a file
+  
+  
+  
+  # Verify that a valid 'commandType' is specified
+  if (!(commandType %in% c("write_xlsx", "write_csv", "st_write"))) {
+    
+    stop(paste0("The function fileReadTry() can only be used with ",
+                "write_xlsx(), write_csv(), and st_write()") %>%
+           strwrap(width = 0.98 * getOption("width")) %>%
+           paste0(collapse = "\n"))
+    
+  }
+  
+  
+  
+  # Based on the desired command, try to write the file
+  if (commandType == "write_xlsx") {
+    
+    
+    writeRes <- try(write_xlsx(fileObj, filePath), silent = TRUE)
+    
+    
+  } else if (commandType == "write_csv") {
+    
+    
+    writeRes <- try(write_csv(fileObj, filePath), silent = TRUE)
+    
+    
+    
+  } else if (commandType == "st_write") {
+    
+    
+    writeRes <- try(st_write(fileObj, filePath, layer = layer, 
+                             delete_dsn = delete_dsn), silent = TRUE)
+    
+    
+  }
+  
+  
+  
+  # Check for errors in the read attempt
+  if (length(writeRes) == 1 && grepl("Error", writeRes)) {
+    
+    cat("\n\n")
+    message(writeRes)
+    cat("\n")
+    
+    
+    if ((grepl("permissions", writeRes) & commandType == "write_xlsx") ||
+        grepl("Cannot open file for writing", writeRes)) {
+      
+      stop(paste0("The most common cause of this error is that '", filePath, 
+                  "' already exists AND is currently open. Please close the file ", 
+                  "and rerun the script.", "\n\n") %>%
+             strwrap(width = getOption("width")) %>%
+             paste0(collapse = "\n") %>%
+             str_replace("AND", col_red("AND")) %>%
+             str_replace("exists", col_blue("exists")) %>%
+             str_replace("open", col_blue("open")) %>%
+             str_replace("close", col_green("close")) %>%
+             str_replace("rerun", col_green("rerun")))
+      
+    } else {
+      
+      stop("An unexpected error occurred. See the error message above for details." %>%
+             strwrap(width = getOption("width")) %>%
+             paste0(collapse = "\n"))
+      
+    } 
+    
+  }
+  
+  
+  
+  # No object is returned
+  return(invisible(NULL))
+  
+}
+
 
 
 
@@ -242,7 +367,7 @@ writeFlagTable <- function (flagDF) {
                             makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
                               list.files() %>% sort() %>% tail(1) %>% 
                               str_replace("water_use_report_extended", "Flag_Table"))) %>%
-    write_csv(x = flagDF)
+    fileWrite(fileObj = flagDF, commandType = "write_csv")
   
   
   
