@@ -63,11 +63,11 @@ unitFixer <- function (inputDF, ws) {
   # Also, only keep records that relevant to the years in 'inputDF'
   unitsQAQC <- unitsQAQC %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+    filter(YEAR %in% inputDF$YEAR)
   
   unitsQAQC_Med <- unitsQAQC_Med %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+    filter(YEAR %in% inputDF$YEAR)
   
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
@@ -285,13 +285,37 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       # Then, apply the conversion factor
       # There are:
       #   325,851 gallons in 1 AF
-      #   365 days in a year
+      #   30 days in a month
       #   24 hours in a day
       #   60 minutes in an hour
       inputDF <- inputDF %>%
         applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
                               unitsQAQC$YEAR[i], toConvert,
                               1 / 325851 * 60 * 24 * 30)
+      
+      
+      
+      # If the actual units are "cfs"
+      # They need to be converted into AF
+    } else if (grepl("^Convert from cfs ", unitsQAQC$QAQC_Action_Taken[i])) {
+      
+      
+      # Use another function to choose the actions that will be modified
+      toConvert <- chooseUseType(unitsQAQC$QAQC_Action_Taken[i])
+      
+      
+      
+      # Then, apply the conversion factor
+      # There are:
+      #   43,559.9 ft^3 in 1 AF
+      #   30 days in a month
+      #   24 hours in a day
+      #   60 minutes in an hour
+      #   60 seconds in a minute
+      inputDF <- inputDF %>%
+        applyConversionFactor(unitsQAQC$APPLICATION_NUMBER[i],
+                              unitsQAQC$YEAR[i], toConvert,
+                              1 / 43559.9 * 60 * 60 * 24 * 30)
       
       
       
@@ -628,7 +652,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
       
       
       # If an action has multiple actions specified
-    } else if (grepl("^Multiple Actions\\|", unitsQAQC$QAQC_Action_Taken[i])) {
+    } else if (grepl("^Multiple Actions\\s*\\|", unitsQAQC$QAQC_Action_Taken[i])) {
       
       
       # Get a vector with all of the required actions listed
@@ -922,6 +946,12 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
     
     # Error Check
     # 'qaqcSubSub' should have more than one "APPLICATION_NUMBER" in it (and no repeats)
+    if (nrow(qaqcSubSub) <= 1) {
+      
+      print(unitsQAQC$PK[i])
+      
+    }
+    
     stopifnot(nrow(qaqcSubSub) > 1)
     stopifnot(length(unique(qaqcSubSub$APPLICATION_NUMBER)) == nrow(qaqcSubSub))
     

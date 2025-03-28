@@ -114,11 +114,21 @@ assignBasinData_RR <- function (ewrimsDF) {
   }
   
   
+  
+  # Add a "BASIN_NUM" column
+  # (It's just the numeric portion of the "BASIN" column)
+  ewrimsDF <- ewrimsDF %>%
+    mutate(BASIN_NUM = BASIN %>%
+             str_extract("[0-9]+") %>% as.numeric())
+  
+  
+  
   # Check for errors
   stopifnot(!anyNA(ewrimsDF$BASIN))
   stopifnot(!anyNA(ewrimsDF$MAINSTEM))
   stopifnot(!anyNA(ewrimsDF$LONGITUDE))
   stopifnot(!anyNA(ewrimsDF$LATITUDE))
+  
   
   
   # Return 'ewrimsDF'
@@ -212,8 +222,12 @@ diverDF <- diverDF %>%
 # Generate Monthly Demand Dataset for every year in your timeframe; uncomment these lines for the PowerBI 
 # Demand Analysis
 diverDF %>%
+  arrange(APPLICATION_NUMBER, YEAR) %>%
+  mutate(CALENDAR_YEAR_OR_WATER_YEAR = if_else(YEAR < 2022, "CY", "WY")) %>%
+  relocate(CALENDAR_YEAR_OR_WATER_YEAR, .after = YEAR) %>%
   write_csv(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                    "_DemandDataset_MonthlyValues.csv"))
+
 
 # Create a separate variable with expected total diversion values
 # (There are columns in 'expectedDF' with this name, but they are calculated differently)

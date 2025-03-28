@@ -18,41 +18,44 @@ makeSharePointPath <- function (filePathFragment) {
 
 
 
-getXLSX <- function (ws, SHAREPOINT_BOOL, FILEPATH, WORKSHEET_NAME) {
+getPath <- function (ws, FILEPATH_COLUMN) {
   
-  # For a given spreadsheet, 'ws' contains three relevant columns:
-  #  The filepath ('FILEPATH')
-  #  The spreadsheet's worksheet name ('WORKSHEET_NAME')
-  #  A TRUE/FALSE variable for whether the file path is a SharePoint path ('SHAREPOINT_BOOL')
-  # Based on these variables, attempt to read in the spreadsheet
+  # From 'ws', extract the watershed's path value for a specified column
   
+  # The first column of 'ws' contains each of the path names
+  # The second column contains the actual paths for the watershed (that correspond to the names)
   
-  if (ws[[SHAREPOINT_BOOL]] == TRUE) {
-    
-    sheetDF <- ws[[FILEPATH]] %>%
-      makeSharePointPath() %>%
-      read_xlsx(sheet = ws[[WORKSHEET_NAME]])
-    
-  } else if (ws[[SHAREPOINT_BOOL]] == FALSE) {
-    
-    sheetDF <- ws[[FILEPATH]] %>%
-      read_xlsx(sheet = ws[[WORKSHEET_NAME]])
-    
-  } else {
-    
-    stop(paste0("Invalid value for '", SHAREPOINT_BOOL, "'. Expected 'TRUE' or 'FALSE'."))
-    
-  }
+  # The first column is used to identify the desired filepath
+  # Then, it is extracted from the second column and returned
   
   
-  
-  return(sheetDF)
+  return(ws %>%
+           filter(WATERSHED == FILEPATH_COLUMN) %>%
+           select(2) %>%
+           unlist(use.names = FALSE))
   
 }
 
 
 
-getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME) {
+getXLSX <- function (ws, FILEPATH_COLUMN, WORKSHEET_NAME) {
+  
+  # For a given spreadsheet, 'ws' contains two relevant columns:
+  #  The filepath ('FILEPATH')
+  #  The spreadsheet's worksheet name ('WORKSHEET_NAME')
+  # Based on these variables, attempt to read in the spreadsheet
+  
+  return(ws %>%
+           getPath(FILEPATH_COLUMN) %>%
+           makeSharePointPath() %>%
+           fileRead(commandType = "read_xlsx", 
+                    sheet = getPath(ws, WORKSHEET_NAME)))
+  
+}
+
+
+
+getGIS <- function (ws, GIS_FILE_PATH_COLUMN, GIS_FILE_LAYER_NAME) {
   
   # 'ws' contains filepaths that link to GIS layers
   # This function can help extract that data
@@ -60,46 +63,31 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
   
   
   # First ensure that a path to a layer was specified for this watershed
-  if (is.na(ws[[GIS_FILE_PATH]])) {
+  if (is.na(ws %>% getPath(GIS_FILE_PATH_COLUMN))) {
     
-    stop(paste0(ws$NAME, " not recognized. ", GIS_FILE_PATH, " has not been specified for this watershed in the spreadsheet."))
-    
-  }
-  
-  
-  
-  # Then, define 'gisPath' to be equal to the value in "GIS_FILE_PATH"
-  # If "GIS_SHAREPOINT_BOOL" is TRUE, then makeSharePointPath() will be applied too
-  if (ws[[GIS_SHAREPOINT_BOOL]] == TRUE) {
-    
-    gisPath <- ws[[GIS_FILE_PATH]] %>%
-      makeSharePointPath()
-    
-    # If "GIS_SHAREPOINT_BOOL" is FALSE, no function call is needed
-  } else if (ws[[GIS_SHAREPOINT_BOOL]] == FALSE) {
-    
-    gisPath <- ws[[GIS_FILE_PATH]]
-    
-    # Error Check
-  } else {
-    
-    stop(paste0("Invalid value for '", GIS_SHAREPOINT_BOOL, "'. Expected 'TRUE' or 'FALSE'."))
+    stop(paste0("'", GIS_FILE_PATH_COLUMN, "' has not been specified for this watershed in ",
+                "the spreadsheet 'Snowflake_Watershed_Demand_Dataset_Paths.xlsx'") %>%
+           strwrap(width = 0.98 * getOption("width")) %>%
+           paste0(collapse = "\n"))
     
   }
   
   
   
   # Next, if "GIS_FILE_LAYER_NAME" has a value, 
-  # that means that "GIS_FILE_PATH" is a geodatabase/geopackage/GIS container
-  # If that is NOT the case, then st_read() should be called directly on "GIS_FILE_PATH"
+  # that means that "GIS_FILE_PATH_COLUMN" is a geodatabase/geopackage/GIS container
+  # If that is NOT the case, then st_read() should be called directly on "GIS_FILE_PATH_COLUMN"
   
   
   
-  # This statement is for cases where "GIS_FILE_PATH" is NOT a GIS container
+  # This statement is for cases where "GIS_FILE_PATH_COLUMN" is NOT a GIS container
   # (So "GIS_FILE_LAYER_NAME" is empty)
-  if (is.na(ws[[GIS_FILE_LAYER_NAME]])) {
+  if (is.na(ws %>% getPath(GIS_FILE_LAYER_NAME))) {
     
-    wsBound <- st_read(gisPath)
+    wsBound <- ws %>%
+      getPath(GIS_FILE_PATH_COLUMN) %>%
+      makeSharePointPath() %>%
+      st_read()
     
     # If "GIS_FILE_LAYER_NAME" DOES contain a layer name, 
     # then both columns are needed to define 'wsBound'
@@ -107,8 +95,10 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
     
     # Perform a similar step as above, but with both columns involved
     
-    wsBound <- st_read(gisPath,
-                       layer = ws[[GIS_FILE_LAYER_NAME]])
+    wsBound <- ws %>%
+      getPath(GIS_FILE_PATH_COLUMN) %>%
+      makeSharePointPath() %>%
+      st_read(layer = getPath(ws, GIS_FILE_LAYER_NAME))
     
   }
   
@@ -121,16 +111,16 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
 
 
 
-fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
+fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sheet = NULL) {
   
   # Try to read a file
   
   
   
   # Verify that a valid 'commandType' is specified
-  if (!(commandType %in% c("read.csv", "read_csv", "fread"))) {
+  if (!(commandType %in% c("read.csv", "read_csv", "fread", "read_xlsx"))) {
     
-    stop("The function fileReadTry() can only be used with read.csv(), read_csv(), and fread()" %>%
+    stop("The function fileReadTry() can only be used with read.csv(), read_csv(), fread(), and read_xlsx()" %>%
            strwrap(width = getOption("width")) %>%
            paste0(collapse = "\n"))
     
@@ -158,6 +148,10 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
     fileDF <- try(fread(filePath, select = select), silent = TRUE)
     
     
+  } else if (commandType == "read_xlsx") {
+    
+    fileDF <- try(read_xlsx(filePath, sheet = sheet, col_types = col_types), silent = TRUE)
+    
   }
   
   
@@ -180,7 +174,19 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
                   filePath, "\n\n") %>%
              strwrap(width = getOption("width")) %>%
              paste0(collapse = "\n") %>%
-             str_replace("likely incorrect", red("likely incorrect")))
+             str_replace("likely incorrect", col_red("likely incorrect")))
+      
+    } else if (grepl("Error in utils::unzip.+cannot be opened", fileDF)) {
+      
+      stop(paste0("The target spreadsheet is open locally on your computer. ",
+                  "Please close the file before attempting to run the script again.") %>%
+             strwrap(width = 0.98 * getOption("width")) %>%
+             paste0(collapse = "\n") %>%
+             str_replace("open", col_red("open")) %>%
+             str_replace("locally", col_red("locally")) %>%
+             str_replace("close", col_green("close")) %>%
+             str_replace("the", col_green("the")) %>%
+             str_replace("file", col_green("file")))
       
     } else {
       
