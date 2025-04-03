@@ -12,19 +12,34 @@
 #### Setup ####
 
 
-require(crayon)
+remove(list = ls())
+
+
+
+require(cli)
 require(data.table)
 require(tidyverse)
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 #### Procedure ####
 
 
 print("Starting '[CA]_4_Flag_Table_Priority_Date.R'...")
+
+
+
+cat("\n\n")
+cat(paste0("This script determines the priority date of each water right and ",
+           "appends six columns to the flag table.") %>%
+      strwrap(width = 0.98 * getOption("width")) %>%
+      paste0(collapse = "\n") %>%
+      str_replace("priority", col_blue("priority")) %>%
+      str_replace("date", col_blue("date")))
+cat("\n")
 
 
 
@@ -178,13 +193,13 @@ if (anyNA(priorityDF$APP_YEAR)) {
               " to identify these cases and replace them with the empty string ('').") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("APPROPRIATIVE_DATE", red("APPROPRIATIVE_DATE")) %>%
-         str_replace("NA", red("NA")) %>%
-         str_replace("APP_YEAR", red("APP_YEAR")) %>%
-         str_replace("updated", blue("updated")) %>%
-         str_replace("identify", blue("identify")) %>%
-         str_replace("replace", blue("replace")) %>%
-         str_replace("empty string", green("empty string")))
+         str_replace("APPROPRIATIVE_DATE", col_red("APPROPRIATIVE_DATE")) %>%
+         str_replace("NA", col_red("NA")) %>%
+         str_replace("APP_YEAR", col_red("APP_YEAR")) %>%
+         str_replace("updated", col_blue("updated")) %>%
+         str_replace("identify", col_blue("identify")) %>%
+         str_replace("replace", col_blue("replace")) %>%
+         str_replace("empty string", col_green("empty string")))
   
 }
 
@@ -217,13 +232,13 @@ if (anyNA(priorityDF$APP_MON)) {
               " to identify these cases and replace them with the empty string ('').") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("APPROPRIATIVE_DATE", red("APPROPRIATIVE_DATE")) %>%
-         str_replace("NA", red("NA")) %>%
-         str_replace("APP_MON", red("APP_MON")) %>%
-         str_replace("updated", blue("updated")) %>%
-         str_replace("identify", blue("identify")) %>%
-         str_replace("replace", blue("replace")) %>%
-         str_replace("empty string", green("empty string")))
+         str_replace("APPROPRIATIVE_DATE", col_red("APPROPRIATIVE_DATE")) %>%
+         str_replace("NA", col_red("NA")) %>%
+         str_replace("APP_MON", col_red("APP_MON")) %>%
+         str_replace("updated", col_blue("updated")) %>%
+         str_replace("identify", col_blue("identify")) %>%
+         str_replace("replace", col_blue("replace")) %>%
+         str_replace("empty string", col_green("empty string")))
   
 }
 
@@ -256,13 +271,13 @@ if (anyNA(priorityDF$APP_DAY)) {
               " to identify these cases and replace them with the empty string ('').") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("APPROPRIATIVE_DATE", red("APPROPRIATIVE_DATE")) %>%
-         str_replace("NA", red("NA")) %>%
-         str_replace("APP_DAY", red("APP_DAY")) %>%
-         str_replace("updated", blue("updated")) %>%
-         str_replace("identify", blue("identify")) %>%
-         str_replace("replace", blue("replace")) %>%
-         str_replace("empty string", green("empty string")))
+         str_replace("APPROPRIATIVE_DATE", col_red("APPROPRIATIVE_DATE")) %>%
+         str_replace("NA", col_red("NA")) %>%
+         str_replace("APP_DAY", col_red("APP_DAY")) %>%
+         str_replace("updated", col_blue("updated")) %>%
+         str_replace("identify", col_blue("identify")) %>%
+         str_replace("replace", col_blue("replace")) %>%
+         str_replace("empty string", col_green("empty string")))
   
 }
 
@@ -326,11 +341,7 @@ priorityDF <- priorityDF %>%
 
 
 # Read in 'flagDF' and append new columns
-flagDF <- makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                                    makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                                      list.files() %>% sort() %>% tail(1) %>% 
-                                      str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  fileRead("read_csv")
+flagDF <- readFlagTable()
 
 
 
@@ -347,11 +358,7 @@ flagDF <- flagDF %>%
 
 
 # Write the updated 'flagDF' to a file
-makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                          makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                            list.files() %>% sort() %>% tail(1) %>% 
-                            str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  write_csv(x = flagDF)
+writeFlagTable(flagDF)
 
 
 

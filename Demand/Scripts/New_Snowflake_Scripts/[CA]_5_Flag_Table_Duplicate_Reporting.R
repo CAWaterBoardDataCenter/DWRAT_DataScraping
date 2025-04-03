@@ -14,19 +14,39 @@
 remove(list = ls())
 
 
-require(crayon)
+require(cli)
 require(data.table)
 require(tidyverse)
 
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 #### Procedure ####
 
 
 print("Starting '[CA]_5_Flag_Table_Duplicate_Reporting.R'...")
+
+
+
+cat("\n\n")
+cat("This script flags two types of duplicate reporting:" %>%
+      strwrap(width = 0.98 * getOption("width")) %>%
+      paste0(collapse = "\n"))
+cat("\n\n  ")
+cat("  (1) Different owners reporting for the same water right in the same year" %>%
+      strwrap(width = 0.98 * getOption("width")) %>%
+      paste0(collapse = "\n      ") %>%
+      str_replace("Different", col_red("Different")) %>%
+      str_replace_all("same", style_italic(col_blue("same"))))
+cat("\n  ")
+cat("  (2) The same owner reporting the same total volume for different water rights (or diversion types) in the same year" %>%
+      strwrap(width = 0.98 * getOption("width")) %>%
+      paste0(collapse = "\n      ") %>%
+      str_replace_all("same", col_blue("same")) %>%
+      str_replace("different", style_italic(col_red("different"))))
+cat("\n")
 
 
 
@@ -50,9 +70,9 @@ if (anyNA(dupDF)) {
               "  and 'AMOUNT') should contain 'NA' values.") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("problem", red("problem")) %>%
-         str_replace("None", bold("None")) %>%
-         str_replace("NA", red("NA")))
+         str_replace("problem", col_red("problem")) %>%
+         str_replace("None", style_bold("None")) %>%
+         str_replace("NA", col_red("NA")))
   
 }
 
@@ -65,6 +85,11 @@ if (anyNA(dupDF)) {
 # (1) No duplicate reports (different party IDs, same water right, same year)
 
 # (2) Check for the same total year amount, same year, same party ID, different water rights (or diversion type)
+
+
+
+cat("\n\n")
+cat("Flagging Case 1...")
 
 
 
@@ -98,11 +123,16 @@ if (anyNA(sameRightYear_differentOwner)) {
               " (i.e., zero rows).") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("revised", red("revised")) %>%
-         str_replace("None", bold("None")) %>%
-         str_replace("NA", red("NA")))
+         str_replace("revised", col_red("revised")) %>%
+         str_replace("None", style_bold("None")) %>%
+         str_replace("NA", col_red("NA")))
   
 }
+
+
+
+cat("Done!\n\n\n")
+cat("Flagging Case 2...")
 
 
 
@@ -142,20 +172,21 @@ if (anyNA(sameOwnerTotalYear_differentRightOrDiversionType)) {
               "  final data frame to be empty (i.e., zero rows).") %>%
          strwrap(width = getOption("width")) %>%
          paste0(collapse = "\n") %>%
-         str_replace("revisions", red("revisions")) %>%
-         str_replace("None", bold("None")) %>%
-         str_replace("NA", red("NA")))
+         str_replace("revisions", col_red("revisions")) %>%
+         str_replace("None", style_bold("None")) %>%
+         str_replace("NA", col_red("NA")))
   
 }
 
 
 
+cat("Done!\n\n\n")
+cat("Adding flags to the table...")
+
+
+
 # Read in 'flagDF' and prepare to append new columns
-flagDF <- makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                                    makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                                      list.files() %>% sort() %>% tail(1) %>% 
-                                      str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  fileRead("read_csv") %>%
+flagDF <- readFlagTable() %>%
   mutate(ID_KEY_1 = paste(APPLICATION_NUMBER, YEAR, sep = "_"),
          ID_KEY_3 = paste(PARTY_ID, YEAR, APPLICATION_NUMBER, DIVERSION_TYPE, sep = "_"))
 
@@ -171,17 +202,18 @@ flagDF <- flagDF %>%
 
 
 
+cat("Adding flags to the table...Done!!\n\n\n")
+cat("Writing flags to a file...")
+
+
+
 # Write the updated 'flagDF' to a file
-makeSharePointPath(paste0("Program Watersheds/7. Snowflake Demand Data Downloads/Flag Table/",
-                          makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
-                            list.files() %>% sort() %>% tail(1) %>% 
-                            str_replace("water_use_report_extended", "Flag_Table"))) %>%
-  write_csv(x = flagDF)
+writeFlagTable(flagDF)
 
 
 
 # Output a completion message
-cat("\n\n")
+cat("Done!\n\n\n")
 print("The script is complete!")
 
 

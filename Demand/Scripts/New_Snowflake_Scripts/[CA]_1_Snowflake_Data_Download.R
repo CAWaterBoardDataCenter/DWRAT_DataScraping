@@ -8,13 +8,13 @@
 remove(list = ls())
 
 
-require(crayon)
+require(cli)
 require(tidyverse)
 require(odbc)
 require(DBI)
 
 
-source("Scripts/Shared_Functions_Demand.R")
+source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
 
 
 print("Starting '[CA]_Snowflake_Data_Download.R'...")
@@ -26,9 +26,10 @@ cat("\n")
 
 # Downloading Flat Files Required by QAQC Process----
 
-# Two flat files are required:
+# Three flat files are required:
 # Water Use Report Extended
 # eWRIMS Flat File POD
+# eWRIMS Flat File Use Season
 
 
 
@@ -37,16 +38,7 @@ cat("\n")
 
 # water_use_report_extended
 
-# A subset of columns was selected:
-# AMOUNT, APPLICATION_ACCEPTANCE_DATE, APPL_ID, APPLICATION_PRIMARY_OWNER,
-# APPLICATION_RECD_DATE, MONTH, YEAR, DIRECT_DIV_SEASON_END, DIRECT_DIV_SEASON_START,
-# DIVERSION_TYPE, EFFECTIVE_DATE, EFFECTIVE_FROM_DATE, FACE_VALUE_AMOUNT,
-# FACE_VALUE_UNITS, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, MAX_STORAGE,
-# PARTY_ID, PRIMARY_OWNER_ENTITY_TYPE, PRIORITY_DATE, SOURCE_NAME, STORAGE_SEASON_END,
-# STORAGE_SEASON_START, SUB_TYPE, TRIB_DESC, USE_CODE, WATER_RIGHT_STATUS,
-# WATER_RIGHT_TYPE, WATERSHED
-
-# The data was filtered to YEAR >= 2016
+# None
 
 
 # eWRIMS Flat File POD
@@ -69,10 +61,12 @@ cat(paste0(strwrap(paste0("NOTE", ": If you have a proper connection setup, a ",
                           "web browser", " will open up for authenticating Snowflake.\n\n",
 "If your default browser is ", "NOT", " Microsoft Edge, you will likely need to authenticate manually.\n\n"), 
 width = getOption("width")), collapse = "\n") %>%
-  str_replace("^NOTE", red("NOTE")) %>%
-  str_replace(" NOT ", red(" NOT ")) %>%
-  str_replace(" web browser ", green(" web browser ")))
+  str_replace("^NOTE", col_red("NOTE")) %>%
+  str_replace(" NOT ", col_red(" NOT ")) %>%
+  str_replace("web", col_green("web")) %>%
+  str_replace("browser", col_green("browser")))
 cat("\n\n")
+
 
 
 # Try to connect to Snowflake
@@ -103,34 +97,45 @@ if (is.character(sf_con)) {
               "(i.e., can you access the 'DEMAND_DATA_FLAGS' schema with the 'DWR_DEV_DEMAND_DATA_FLAGS_RWC_ACROLE' ", 
               "role through your browser?)\n"), 
               width = getOption("width")), collapse = "\n") %>%
-         str_replace("Could not connect to Snowflake", red("Could not connect to Snowflake")) %>%
-         str_replace("VPN", green("VPN")) %>%
-         str_replace("in.office( corporate)?( network)?", green("in-office\\1\\2")) %>%
-         str_replace("(in.office )?corporate( network)?", green("\\1corporate\\2")) %>%
-         str_replace("(in.office )?(corporate )?network", green("\\1\\2network")) %>%
-         str_replace("close( and)?( reopen)?( RStudio)?", red("close\\1\\2\\3")) %>%
-         str_replace("(close )?and( reopen)?( RStudio)?", red("\\1and\\2\\3")) %>%
-         str_replace("(close )?(and )?reopen( RStudio)?", red("\\1\\2reopen\\3")) %>%
-         str_replace("(close )?(and )?(reopen )?RStudio", red("\\1\\2\\3RStudio")) %>%
-         str_replace("role( and)?( permissions)?", green("role\\1\\2")) %>%
-         str_replace("(role )?(and )?permissions", green("\\1\\2permissions")))
+         str_replace("Could not connect to Snowflake", col_red("Could not connect to Snowflake")) %>%
+         str_replace("VPN", col_green("VPN")) %>%
+         str_replace("in.office", col_green("in-office")) %>%
+         str_replace("corporate", col_green("corporate")) %>%
+         str_replace("network", col_green("network")) %>%
+         str_replace("close", col_red("close")) %>%
+         str_replace("and", col_red("and")) %>%
+         str_replace("reopen", col_red("reopen")) %>%
+         str_replace("RStudio", col_red("RStudio")) %>%
+         str_replace("role( and)?( permissions)?", col_green("role\\1\\2")) %>%
+         str_replace("(role )?(and )?permissions", col_green("\\1\\2permissions")))
   
 }
 
 
 
 # First send the query to Snowflake
-# Select all unique rows for the water use extended report table
+# Select unique rows for the water use extended report table
+# A subset of columns is selected
+# The data is filtered to YEAR >= 2016
 cat("\nFetching a subset of the 'water_use_report_extended' table...\n")
 
 
 
-query <- dbSendQuery(sf_con, "SELECT DISTINCT * 
-                     FROM DWR_DEV.DEMAND_DATA_FLAGS.VW_WATER_USE_REPORT_EXTENDED")
-# Returns 6.96 million records on 7/10/2024 in both Snowflake and ReportManager, run by Payman
-
-# query <- dbSendQuery(sf_con, "SELECT DISTINCT * FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED")
-# Returns 12.73 million records on 7/10/2024, 177 columns, don't run, takes a long time and unneeded
+query <- dbSendQuery(sf_con, "SELECT DISTINCT 
+                                APPLICATION_NUMBER, YEAR, MONTH,
+                                AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
+                                FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
+                                INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT,
+                                EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
+                                WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
+                                STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
+                                STORAGE_SEASON_END,
+                                PARTY_ID, APPLICATION_PRIMARY_OWNER,
+                                PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
+                                SUB_TYPE, YEAR_DIVERSION_COMMENCED,
+                                USE_CODE
+                     FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED
+                     WHERE CAST(YEAR AS INTEGER) >= 2016")
 
 
 
