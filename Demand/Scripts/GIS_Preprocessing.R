@@ -389,6 +389,12 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
+  # Replace all periods in the column names with an underscore
+  names(allDF) <- names(allDF) %>%
+    str_replace_all("\\.", "_")
+  
+  
+  
   st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.gpkg"), layer = "Flagged_PODs", delete_dsn = TRUE)
   
   
