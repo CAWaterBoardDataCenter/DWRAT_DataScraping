@@ -40,9 +40,14 @@ water_use_report_Combined <- inner_join(Application_Number, water_use_report, by
 # Remove all data from before 2017 (Decision on 8/2/2023 because of "Combined" use type)
 # (It was formerly 2014 because that was when the data structure changed in the system)
 water_use_report_Date <- water_use_report_Combined %>%
-filter(YEAR >= yearRange[1]) %>%
-filter(YEAR <= yearRange[2]) #Added to generate a 2017-2020 dataset on 4/22/2024, 
-#2021 and 2022 were heavily curtailed years
+  filter(YEAR >= yearRange[1]) %>%
+  filter(YEAR <= yearRange[2]) #%>%
+  #filter(!(YEAR %in% 2021:2022))
+
+#print("Data from 2021 and 2022 will be excluded!")
+#Added to generate a 2017-2020 dataset on 4/22/2024, 
+  #2021 and 2022 were heavily curtailed years; Payman Alemi added 2023 data but still
+  #excluded 2021-2022 data on 12/16/2024
 
 
 
