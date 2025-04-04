@@ -56,6 +56,7 @@ assignBasinData_RR <- function (ewrimsDF) {
     left_join(rrDF, by = "APPLICATION_NUMBER", relationship = "one-to-one")
   
   
+  
   # Several rights had multiple PODs but only one POD's data has to be selected
   # All but one case already had a selection made (in "RUSSIAN_RIVER_DATABASE_2022.xlsx")
   # That case (and others with missing data) were manually assigned data in the 
@@ -85,32 +86,67 @@ assignBasinData_RR <- function (ewrimsDF) {
     ewrimsDF[ewrimsDF$APPLICATION_NUMBER == manualDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- manualDF$MAINSTEM[i]
   }
   
+  
+  
+  if (ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)] %>% length() > 0 &&
+      getXLSX(ws = ws, 
+              SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_MANUAL_ASSIGNMENT",
+              FILEPATH ="SUBBASIN_MANUAL_ASSIGNMENT_SPREADSHEET_PATH",
+              WORKSHEET_NAME = "SUBBASIN_MANUAL_ASSIGNMENT_WORKSHEET_NAME") %>%
+      filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)]) %>%
+      nrow() != ewrimsDF %>% filter(is.na(MAINSTEM)) %>% nrow()) {
+    
+    ewrimsDF %>%
+      filter(is.na(MAINSTEM)) %>%
+      write_xlsx("OutputData/Russian_River_Rights_Missing_Mainstem.xlsx")
+    
+    
+    warning(paste0("The following water rights are missing a mainstem designation:\n\n  ",
+                ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)] %>%
+                  paste0(collapse = "\n  "),
+                "\n\n\n",
+                "Please add these rights to 'RR_Missing_MainStem_GIS_Manual_Assignment.xlsx'"))
+    
+  }
+  
+  
+  
   # Finally, rely on the output of "Assign_Subbasin_to_POD.R" and the initial POD spreadsheet
   # The initial spreadsheet has mainstem information about the PODs
   # The POD Subbasin Assignment spreadsheet has subbasin information
   podDF <- getXLSX(ws = ws, 
                    SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
-                   FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
+                   FILEPATH ="POD_COORDINATES_SPREADSHEET_PATH",
                    WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME") %>%
     filter(APPLICATION_NUMBER %in% ewrimsDF$APPLICATION_NUMBER[is.na(ewrimsDF$MAINSTEM)]) %>%
-    left_join(read_xlsx("OutputData/RR_POD_Subbasin_Assignment.xlsx") %>%
-                select(-LONGITUDE, -LATITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
+    left_join(getXLSX(ws, 
+                      "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
+                      "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
+                      "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME") %>%
+                select(-LATITUDE, -LONGITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
               relationship = "one-to-one")
+  
+  
   
   # This procedure will not work if the remaining rights have multiple PODs
   stopifnot(nrow(podDF) == length(unique(podDF$APPLICATION_NUMBER)))
   
   
+  
   # Iterate through 'podDF' and apply these values to 'ewrimsDF'
-  for (i in 1:nrow(podDF)) {
+  if (nrow(podDF) > 0) {
     
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$BASIN <- paste0("R_", 
-                                                                                           if_else(podDF$Basin_Num[i] < 10, "0", ""), 
-                                                                                           podDF$Basin_Num[i], 
-                                                                                           if_else(podDF$MAIN_STEM[i] == "Y", "_M", ""))
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LATITUDE <- podDF$LATITUDE[i]
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- podDF$LONGITUDE[i]
-    ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- podDF$MAIN_STEM[i]
+    for (i in 1:nrow(podDF)) {
+      
+      ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$BASIN <- paste0("R_", 
+                                                                                             if_else(podDF$Basin_Num[i] < 10, "0", ""), 
+                                                                                             podDF$Basin_Num[i], 
+                                                                                             if_else(podDF$MAIN_STEM[i] == "Y", "_M", ""))
+      ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LATITUDE <- podDF$LATITUDE[i]
+      ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$LONGITUDE <- podDF$LONGITUDE[i]
+      #ewrimsDF[ewrimsDF$APPLICATION_NUMBER == podDF$APPLICATION_NUMBER[i], ]$MAINSTEM <- podDF$MAIN_STEM[i]
+    }
+    
   }
   
   
@@ -413,16 +449,16 @@ if ("MAINSTEM" %in% names(ewrimsDF) && grepl("Russian", ws$NAME)) {
 
 
 
-
 # Append COUNTY to 'ewrimsDF'
-
 if (grepl("Russian", ws$NAME)) {
   
-  # Read in "RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx, which is now hosted on SharePoint"
-  podDF <- getXLSX(ws = ws, 
-                   SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_POD_COORDINATES_SPREADSHEET",
-                   FILEPATH = "POD_COORDINATES_SPREADSHEET_PATH",
-                   WORKSHEET_NAME = "POD_COORDINATES_WORKSHEET_NAME")
+  
+  # Read in the adjusted eWRIMS POD flat file, which contains a "COUNTY" field
+  podDF <- list.files("IntermediateData/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
+    sort() %>% tail(1) %>%
+    read_csv(show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
+    mutate(LATITUDE = as.numeric(LATITUDE), LONGITUDE = as.numeric(LONGITUDE))
+  
   
   
   # Create a tibble with "APPLICATION_NUMBER" values that have only one unique county for their POD(s) 
@@ -430,6 +466,7 @@ if (grepl("Russian", ws$NAME)) {
     select(APPLICATION_NUMBER, COUNTY) %>% unique() %>%
     group_by(APPLICATION_NUMBER) %>%
     filter(n() == 1)
+  
   
   
   # Join this data to 'ewrimsDF'
@@ -441,6 +478,24 @@ if (grepl("Russian", ws$NAME)) {
   # If there are still NA values in "COUNTY", try to use the "LATITUDE" and "LONGITUDE" to help
   if (anyNA(ewrimsDF$COUNTY)) {
     
+    # Read in a layer containing California counties
+    countyDF <- "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/ca_counties/" %>%
+      makeSharePointPath() %>%
+      st_read() %>%
+      select(NAME) %>%
+      rename(COUNTY = NAME)
+    
+    
+    
+    # Temporarily convert 'ewrimsDF' into a spatial layer
+    ewrimsDF <- ewrimsDF %>%
+      mutate(TEMP_LAT = as.numeric(LATITUDE),
+             TEMP_LON = as.numeric(LONGITUDE)) %>%
+      st_as_sf(coords = c("TEMP_LON", "TEMP_LAT"), crs = "NAD83") %>%
+      st_transform(st_crs(countyDF))
+    
+    
+    
     # Iterate through 'ewrimsDF'
     for (i in 1:nrow(ewrimsDF)) {
       
@@ -449,13 +504,28 @@ if (grepl("Russian", ws$NAME)) {
         next
       }
       
+      
+      # Identify the county that overlaps with the POD coordinates given in 'ewrimsDF'
+      countyOverlap <- countyDF$COUNTY[ewrimsDF[i, ] %>%
+                                         st_intersects(countyDF) %>% unlist()]
+      
+      
+      
+      # There should only be one overlapping county
+      stopifnot(length(countyOverlap) == 1)
+      
+      
+      
       # Assign a county to 'ewrimsDF' based on the right's POD with matching APPLICATION_NUMBER and approximately equal LONGITUDE coordinate
-      ewrimsDF$COUNTY[i] <- podDF[podDF$APPLICATION_NUMBER == ewrimsDF$APPLICATION_NUMBER[i] &
-                                    round(podDF$LONGITUDE, 2) == round(ewrimsDF$LONGITUDE[i], 2), ]$COUNTY %>%
-        unique()
+      ewrimsDF$COUNTY[i] <- countyOverlap
       
     }
     
+    
+    
+    # Convert 'ewrimsDF' back into a regular data frame
+    ewrimsDF <- ewrimsDF %>%
+      st_drop_geometry()
     
   }
   
