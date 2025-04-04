@@ -123,7 +123,7 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Keep only entries in 'qaqcDF' that are relevant to the years in 'inputDF'
   qaqcDF <- qaqcDF %>%
-    filter(YEAR >= min(inputDF$YEAR) & YEAR <= max(inputDF$YEAR))
+    filter(YEAR %in% inputDF$YEAR)
   
   
   
