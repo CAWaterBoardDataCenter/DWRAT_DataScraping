@@ -346,10 +346,4 @@ write_csv(Flat_File_eWRIMS,
 
 # Clear the environment----
   # Get the name of all variables in the environment
-all_vars = ls()
-
-
-  # Remove variables
-rm(list = all_vars)
-
-remove(all_vars)
+remove(list = ls())

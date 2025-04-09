@@ -30,8 +30,7 @@ print("Starting '[CA]_6_Flag_Table_Expected_Demand.R'...")
 
 cat("\n\n")
 cat("This script compares water rights' report totals to several reference values. Volumes that are 'different enough' from these reference values are flagged." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("report", col_blue("report")) %>%
       str_replace("totals", col_blue("totals")) %>%
       str_replace("reference", col_green("reference")) %>%
@@ -44,8 +43,7 @@ cat("\n\n\n")
 
 
 cat("Gathering and preparing the first set of reference values (Face Value and Initial Diversion Amounts)..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("Gathering", col_magenta("Gathering")) %>%
       str_replace("and", col_magenta("and")) %>%
       str_replace("preparing", col_magenta("preparing")))
@@ -70,8 +68,7 @@ if (anyNA(useDF)) {
   stop(paste0("There is a problem with the extended CSV. None of the table's columns ",
               " ('APPLICATION_NUMBER', 'YEAR', 'MONTH', 'DIVERSION_TYPE',",
               "  and 'AMOUNT') should contain 'NA' values.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("problem", col_red("problem")) %>%
          str_replace("None", style_bold("None")) %>%
          str_replace("NA", col_red("NA")))
@@ -126,8 +123,7 @@ if (maxDivDF %>% filter(!is.na(FACE_VALUE_AMOUNT)) %>%
     stop(paste0("The 'FACE_VALUE_UNITS' column should contain only",
                 " one non-NA type of units: acre-feet. However,",
                 " there are zero non-NA entries.") %>%
-           strwrap(width = getOption("width")) %>%
-           paste0(collapse = "\n") %>%
+           wrapStr() %>%
            str_replace("one", col_blue("one")) %>%
            str_replace("acre.feet", col_green("acre-feet")) %>%
            str_replace("zero", col_red("zero")))
@@ -144,8 +140,7 @@ if (maxDivDF %>% filter(!is.na(FACE_VALUE_AMOUNT)) %>%
                 maxDivDF %>% filter(!is.na(FACE_VALUE_AMOUNT)) %>% 
                   select(FACE_VALUE_UNITS) %>% unique() %>% unlist() %>%
                   paste0(collapse = "; ")) %>%
-           strwrap(width = getOption("width")) %>%
-           paste0(collapse = "\n") %>%
+           wrapStr() %>%
            str_replace("one", col_blue("one")) %>%
            str_replace("acre.feet", col_green("acre-feet")) %>%
            str_replace(maxDivDF %>% filter(!is.na(FACE_VALUE_AMOUNT)) %>% 
@@ -169,8 +164,7 @@ if (unique(maxDivDF$FACE_VALUE_UNITS[!is.na(maxDivDF$FACE_VALUE_AMOUNT)])[1] != 
               " the 'FACE_VALUE_UNITS' column should contain 'Acre-feet per Year'.",
               " However, it instead contains the string '",
               unique(maxDivDF$FACE_VALUE_UNITS[!is.na(maxDivDF$FACE_VALUE_AMOUNT)])[1], "'.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("acre.feet", col_green("acre-feet")) %>%
          str_replace("Acre.feet per Year", col_green("Acre-feet per Year")) %>%
          str_replace("However", col_red("However")))
@@ -192,8 +186,7 @@ if (maxDivDF %>% filter(!is.na(INI_REPORTED_DIV_AMOUNT)) %>%
     stop(paste0("The 'INI_REPORTED_DIV_UNIT' column should contain only",
                 " one non-NA type of units: acre-feet. However,",
                 " there are zero non-NA entries.") %>%
-           strwrap(width = getOption("width")) %>%
-           paste0(collapse = "\n") %>%
+           wrapStr() %>%
            str_replace("one", col_blue("one")) %>%
            str_replace("acre.feet", col_green("acre-feet")) %>%
            str_replace("zero", col_red("zero")))
@@ -210,8 +203,7 @@ if (maxDivDF %>% filter(!is.na(INI_REPORTED_DIV_AMOUNT)) %>%
                 maxDivDF %>% filter(!is.na(INI_REPORTED_DIV_AMOUNT)) %>% 
                   select(INI_REPORTED_DIV_UNIT) %>% unique() %>% unlist() %>%
                   paste0(collapse = "; ")) %>%
-           strwrap(width = getOption("width")) %>%
-           paste0(collapse = "\n") %>%
+           wrapStr() %>%
            str_replace("one", col_blue("one")) %>%
            str_replace("acre.feet", col_green("acre-feet")) %>%
            str_replace(maxDivDF %>% filter(!is.na(INI_REPORTED_DIV_AMOUNT)) %>% 
@@ -235,8 +227,7 @@ if (unique(maxDivDF$INI_REPORTED_DIV_UNIT[!is.na(maxDivDF$INI_REPORTED_DIV_AMOUN
               " the 'INI_REPORTED_DIV_UNIT' column should contain 'Acre-feet'.",
               " However, it instead contains the string '",
               unique(maxDivDF$INI_REPORTED_DIV_UNIT[!is.na(maxDivDF$INI_REPORTED_DIV_AMOUNT)])[1], "'.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("acre.feet", col_green("acre-feet")) %>%
          str_replace("Acre.feet per Year", col_green("Acre-feet per Year")) %>%
          str_replace("However", col_red("However")))
@@ -247,8 +238,7 @@ if (unique(maxDivDF$INI_REPORTED_DIV_UNIT[!is.na(maxDivDF$INI_REPORTED_DIV_AMOUN
 
 cat("Done!\n\n\n    ")
 cat("Adding a flag for rights that are missing both a Face Value and an Initial Diversion Amount..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 
 
 
@@ -262,8 +252,7 @@ maxDivDF <- maxDivDF %>%
 
 cat("Done!\n\n\n    ")
 cat("Creating the initial set of reference-comparison flags..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 
 
 
@@ -305,8 +294,7 @@ annualDF <- annualDF %>%
 
 cat("Done!\n\n\n\n")
 cat("Gathering and preparing the second set of reference values (Average and Median totals)..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("Gathering", col_magenta("Gathering")) %>%
       str_replace("and", col_magenta("and")) %>%
       str_replace("preparing", col_magenta("preparing")))
@@ -330,8 +318,7 @@ if (anyNA(summaryDF)) {
                      " may need changes to ensure that these 'NA' values do not occur again. Here",
                      " are the 'APPLICATION_NUMBER' values of the water rights that had a 'NA' average",
                      " and/or median value:") %>%
-                strwrap(width = getOption("width")) %>%
-                paste0(collapse = "\n") %>%
+                wrapStr() %>%
                 str_replace("average", col_green("average")) %>%
                 str_replace("median", col_green("median")) %>%
                 str_replace("NA", col_red("NA")) %>%
@@ -357,8 +344,7 @@ annualDF <- annualDF %>%
 
 cat("Done!\n\n\n    ")
 cat("Generating the second set of reference-comparison flags..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 
 
 
@@ -401,8 +387,7 @@ if (anyNA(annualDF$MISSING_BOTH_FACE_VALUE_AND_INI_REPORTED_DIV)) {
   stop(paste0("There should be no 'NA' values when calculating the variable",
               " 'MISSING_BOTH_FACE_VALUE_AND_INI_REPORTED_DIV'. It should contain",
               " only 'TRUE' or 'FALSE'. There may be a problem with the extended dataset or script.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("NA", col_red("NA")) %>%
          str_replace("problem", col_red("problem")) %>%
          str_replace("dataset", col_red("dataset")) %>%
@@ -414,8 +399,7 @@ if (anyNA(annualDF$MISSING_BOTH_FACE_VALUE_AND_INI_REPORTED_DIV)) {
   stop(paste0("There should be no 'NA' values when calculating the variable",
               " 'EXPECTED_DEMAND_FLAG_FV_OR_INI_DIV_AMOUNT'. It should contain",
               " only 'TRUE' or 'FALSE'. There may be a problem with the extended dataset or script.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("NA", col_red("NA")) %>%
          str_replace("problem", col_red("problem")) %>%
          str_replace("dataset", col_red("dataset")) %>%
@@ -427,8 +411,7 @@ if (anyNA(annualDF$MISSING_BOTH_FACE_VALUE_AND_INI_REPORTED_DIV)) {
   stop(paste0("There should be no 'NA' values when calculating the variable",
               " 'EXPECTED_DEMAND_FLAG_AVG_OR_MED_VOL'. It should contain",
               " only 'TRUE' or 'FALSE'. There may be a problem with the extended dataset or script.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("NA", col_red("NA")) %>%
          str_replace("problem", col_red("problem")) %>%
          str_replace("dataset", col_red("dataset")) %>%
@@ -449,8 +432,7 @@ annualDF <- annualDF %>%
 
 cat("Done!\n\n\n")
 cat("Adding new columns to the flag table..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 
 
 
@@ -481,8 +463,7 @@ if (flagDF %>%
                      " that lack direct diversion or storage diversion data). However,",
                      " there may be a problem with the extended dataset or script. 'NA'",
                      " values were detected in additional cases. See these water rights:") %>%
-                strwrap(width = getOption("width")) %>%
-                paste0(collapse = "\n") %>%
+                wrapStr() %>%
                 str_replace("NA", col_red("NA")) %>%
                 str_replace("problem", col_red("problem")),
               "\n   ",
@@ -507,8 +488,7 @@ writeFlagTable(flagDF)
 
 # Output a completion message
 cat("Adding new columns to the flag table...Done!" %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 cat("\n\n\n")
 print("The script is complete!")
 

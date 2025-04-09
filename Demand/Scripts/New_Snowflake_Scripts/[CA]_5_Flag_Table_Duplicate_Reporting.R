@@ -32,18 +32,15 @@ print("Starting '[CA]_5_Flag_Table_Duplicate_Reporting.R'...")
 
 cat("\n\n")
 cat("This script flags two types of duplicate reporting:" %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 cat("\n\n  ")
 cat("  (1) Different owners reporting for the same water right in the same year" %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n      ") %>%
+      wrapStr(collapse = "\n      ") %>%
       str_replace("Different", col_red("Different")) %>%
       str_replace_all("same", style_italic(col_blue("same"))))
 cat("\n  ")
 cat("  (2) The same owner reporting the same total volume for different water rights (or diversion types) in the same year" %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n      ") %>%
+      wrapStr(collapse = "\n      ") %>%
       str_replace_all("same", col_blue("same")) %>%
       str_replace("different", style_italic(col_red("different"))))
 cat("\n")
@@ -68,8 +65,7 @@ if (anyNA(dupDF)) {
   stop(paste0("There is a problem with the extended CSV. None of the table's columns ",
               " ('APPLICATION_NUMBER', 'PARTY_ID', 'YEAR', 'MONTH', 'DIVERSION_TYPE',",
               "  and 'AMOUNT') should contain 'NA' values.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("problem", col_red("problem")) %>%
          str_replace("None", style_bold("None")) %>%
          str_replace("NA", col_red("NA")))
@@ -121,8 +117,7 @@ if (anyNA(sameRightYear_differentOwner)) {
               " 'NA' values. None of these columns ('APPLICATION_NUMBER', 'PARTY_ID', and 'YEAR')",
               " should contain 'NA' values, though it is okay for the final data frame to be empty",
               " (i.e., zero rows).") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("revised", col_red("revised")) %>%
          str_replace("None", style_bold("None")) %>%
          str_replace("NA", col_red("NA")))
@@ -170,8 +165,7 @@ if (anyNA(sameOwnerTotalYear_differentRightOrDiversionType)) {
               " 'NA' values. None of these columns ('APPLICATION_NUMBER', 'PARTY_ID', 'YEAR',",
               " 'DIVERSION_TYPE', and 'AMOUNT') should contain 'NA' values. It is okay for the",
               "  final data frame to be empty (i.e., zero rows).") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("revisions", col_red("revisions")) %>%
          str_replace("None", style_bold("None")) %>%
          str_replace("NA", col_red("NA")))

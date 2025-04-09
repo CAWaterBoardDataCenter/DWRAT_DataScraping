@@ -61,7 +61,11 @@ if (length(watershed_index) != 1 || is.na(watershed_index) || is.infinite(waters
 
 
 # Load generic functions that are useful in multiple scripts
-source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
+if (grepl("GIS_Manual_Review_Assistant", getwd())) {
+  source("../[HELPER]_1_Shared_Functions.R")
+} else {
+  source("Scripts/New_Snowflake_Scripts/[HELPER]_1_Shared_Functions.R")
+}
 
 
 

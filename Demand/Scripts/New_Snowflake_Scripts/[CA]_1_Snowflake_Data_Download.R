@@ -57,14 +57,15 @@ cat("\n")
 
 
 
-cat(paste0(strwrap(paste0("NOTE", ": If you have a proper connection setup, a ", 
-                          "web browser", " will open up for authenticating Snowflake.\n\n",
-"If your default browser is ", "NOT", " Microsoft Edge, you will likely need to authenticate manually.\n\n"), 
-width = getOption("width")), collapse = "\n") %>%
-  str_replace("^NOTE", col_red("NOTE")) %>%
-  str_replace(" NOT ", col_red(" NOT ")) %>%
-  str_replace("web", col_green("web")) %>%
-  str_replace("browser", col_green("browser")))
+cat(paste0("NOTE", ": If you have a proper connection setup, a ", 
+           "web browser", " will open up for authenticating Snowflake.\n\n",
+           "If your default browser is ", "NOT", " Microsoft Edge, you will likely need ",
+           "to authenticate manually.\n\n") %>%
+      wrapStr() %>%
+      str_replace("^NOTE", col_red("NOTE")) %>%
+      str_replace(" NOT ", col_red(" NOT ")) %>%
+      str_replace("web", col_green("web")) %>%
+      str_replace("browser", col_green("browser")))
 cat("\n\n")
 
 
@@ -89,14 +90,14 @@ if (is.character(sf_con)) {
   cat(sf_con)
   cat("\n\n")
   
-  stop(paste0(strwrap(paste0("Could not connect to Snowflake", ".\n\n",
+  stop(paste0("Could not connect to Snowflake", ".\n\n",
               "Please verify that you are using either the ", "VPN", " or the ", "in-office corporate network", ".\n",
               "\n",
               "If you connected to the VPN or EPA network just now, you may need to ", "close and reopen RStudio", ".\n\n",
               "Also make sure that you have the required ", "role and permissions", " to access this database ",
               "(i.e., can you access the 'DEMAND_DATA_FLAGS' schema with the 'DWR_DEV_DEMAND_DATA_FLAGS_RWC_ACROLE' ", 
-              "role through your browser?)\n"), 
-              width = getOption("width")), collapse = "\n") %>%
+              "role through your browser?)\n") %>%
+         wrapStr() %>%
          str_replace("Could not connect to Snowflake", col_red("Could not connect to Snowflake")) %>%
          str_replace("VPN", col_green("VPN")) %>%
          str_replace("in.office", col_green("in-office")) %>%
@@ -135,7 +136,7 @@ query <- dbSendQuery(sf_con, "SELECT DISTINCT
                                 SUB_TYPE, YEAR_DIVERSION_COMMENCED,
                                 USE_CODE
                      FROM DWR_DEV.DEMAND_DATA_FLAGS.EWRIMS_FLAT_FILE_WATER_USE_REPORT_EXTENDED
-                     WHERE CAST(YEAR AS INTEGER) >= 2016")
+                     WHERE CAST(YEAR AS INTEGER) >= 2017")
 
 
 

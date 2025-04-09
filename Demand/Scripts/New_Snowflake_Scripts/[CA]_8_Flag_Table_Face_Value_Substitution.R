@@ -30,8 +30,7 @@ print("Starting '[CA]_8_Flag_Table_Face_Value_Substitution.R'...")
 
 cat("\n\n")
 cat("This script will flag water rights that could be considered for 'Face Value Substitution'" %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("considered", col_green("considered")) %>%
       str_replace("Face", col_blue("Face")) %>%
       str_replace("Value", col_blue("Value")) %>%
@@ -39,8 +38,7 @@ cat("This script will flag water rights that could be considered for 'Face Value
 cat("\n\n")
 cat(paste0("Relatively new appropriative water rights (with a priority date within ",
            "the last three years) may have submitted a recent report that contains only zeroes") %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("new", col_blue("new")) %>%
       str_replace("appropriative", col_magenta("appropriative")) %>%
       str_replace("last", col_green("last")) %>%
@@ -51,8 +49,7 @@ cat(paste0("Relatively new appropriative water rights (with a priority date with
 cat("\n\n")
 cat(paste0("This may be due to needing time to 'wind up' their project or system, and so ",
            "that report may not accurately reflect what their typical demand would really be") %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("wind", col_red("wind")) %>%
       str_replace("up", col_red("up")) %>%
       str_replace("accurately", col_silver("accurately")) %>%
@@ -62,8 +59,7 @@ cat(paste0("This may be due to needing time to 'wind up' their project or system
 cat("\n\n")
 cat(paste0("If desired, these reports could later be modified to have the right's face value ",
            "distributed across their diversion season (so that the total would no longer be zero)") %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("If", col_green("If")) %>%
       str_replace("desired", col_green("desired")) %>%
       str_replace("later", col_magenta("later")) %>%
