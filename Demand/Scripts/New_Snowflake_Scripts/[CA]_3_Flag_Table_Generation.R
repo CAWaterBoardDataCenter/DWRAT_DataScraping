@@ -26,8 +26,7 @@ print("Starting '[CA]_3_Flag_Table_Generation.R'...")
 cat("\n\n")
 cat(paste0("Data from the POD and extended tables will be used to initialize the flag table. ",
            "Subsequent scripts will append flagging columns to this table.") %>%
-      strwrap(width = getOption("width") * 0.99) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 cat("\n")
 
 
@@ -57,8 +56,7 @@ if (as.Date(file.info(podDF %>% str_replace("POD Subset/(.+_)Flat_File_eWRIMS(_.
               "were created on different days. This may mean that they are from different versions ",
               "of the overall database.\n\nPlease rerun '[CA]_1_Snowflake_Data_Download.R' and ",
               "'[CA]_2_POD_Flat_File_Prep.R' to proceed.") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("created on different days", col_red("created on different days")) %>%
          str_replace_all("'(.+?)'", paste0("'", col_blue("\\1"), "'")) %>%
          str_replace("different versions", col_red("different versions")) %>%

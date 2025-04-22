@@ -1609,7 +1609,7 @@ oceanOverlapCheck <- function (pod) {
   
   # Return "TRUE" or "FALSE" depending on whether st_intersects() returns a non-empty value
   # (A non-empty value means that there is intersection between the layers)
-  return(length(st_intersects(pod, pacific)) > 0)
+  return(lengths(st_intersects(pod, pacific)) > 0)
   
 }
 

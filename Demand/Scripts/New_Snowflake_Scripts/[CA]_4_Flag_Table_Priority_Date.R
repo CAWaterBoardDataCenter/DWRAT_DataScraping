@@ -35,8 +35,7 @@ print("Starting '[CA]_4_Flag_Table_Priority_Date.R'...")
 cat("\n\n")
 cat(paste0("This script determines the priority date of each water right and ",
            "appends six columns to the flag table.") %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("priority", col_blue("priority")) %>%
       str_replace("date", col_blue("date")))
 cat("\n")
@@ -191,8 +190,7 @@ if (anyNA(priorityDF$APP_YEAR)) {
               " 'APPROPRIATIVE_DATE' column is missing some cases and is producing",
               " 'NA' values in the 'APP_YEAR' column. The code must be updated",
               " to identify these cases and replace them with the empty string ('').") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("APPROPRIATIVE_DATE", col_red("APPROPRIATIVE_DATE")) %>%
          str_replace("NA", col_red("NA")) %>%
          str_replace("APP_YEAR", col_red("APP_YEAR")) %>%
@@ -230,8 +228,7 @@ if (anyNA(priorityDF$APP_MON)) {
               " 'APPROPRIATIVE_DATE' column is missing some cases and is producing",
               " 'NA' values in the 'APP_MON' column. The code must be updated",
               " to identify these cases and replace them with the empty string ('').") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("APPROPRIATIVE_DATE", col_red("APPROPRIATIVE_DATE")) %>%
          str_replace("NA", col_red("NA")) %>%
          str_replace("APP_MON", col_red("APP_MON")) %>%
@@ -269,8 +266,7 @@ if (anyNA(priorityDF$APP_DAY)) {
               " 'APPROPRIATIVE_DATE' column is missing some cases and is producing",
               " 'NA' values in the 'APP_DAY' column. The code must be updated",
               " to identify these cases and replace them with the empty string ('').") %>%
-         strwrap(width = getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("APPROPRIATIVE_DATE", col_red("APPROPRIATIVE_DATE")) %>%
          str_replace("NA", col_red("NA")) %>%
          str_replace("APP_DAY", col_red("APP_DAY")) %>%
