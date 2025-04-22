@@ -29,8 +29,7 @@ print("Starting '[CA]_9_Flag_Table_Primary_Beneficial_Use.R'...")
 cat("\n\n")
 cat(paste0("Using the 'USE_CODE' rankings specified in this script, ",
            "a 'primary' beneficial use will be assigned to each water right") %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("in ", col_blue("in ")) %>%
       str_replace("this", col_blue("this")) %>%
       str_replace("script", col_blue("script")) %>%
@@ -70,8 +69,7 @@ useCodeRanking <- c("Irrigation",
 
 
 cat("Gathering the beneficial uses of each water right..." %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n"))
+      wrapStr())
 
 
 
@@ -98,8 +96,7 @@ if (sum(useDF$USE_CODE %in% c(NA_character_, useCodeRanking$USE_CODE)) != nrow(u
               " automatically assigned based on the order of the strings in the vector.",
               " More important uses have a lower ranking value and appear earlier in the initial vector.",
               " Also, the strings must exactly match what appears in the eWRIMS dataset.") %>%
-         strwrap(width = 0.99 * getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("does", col_red("does")) %>%
          str_replace("not", col_red("not")) %>%
          str_replace("appear", col_red("appear")) %>%

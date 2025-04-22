@@ -1,0 +1,207 @@
+
+
+body {
+	
+	font-size: 16pt;
+	margin-bottom: 12pt; 
+	
+}
+
+
+
+.btn {
+	
+	font-size: 14pt;
+	
+}
+
+
+
+h2 {
+
+	margin-bottom: 36pt;
+	font-size: 28pt;
+	font-weight: bold;
+
+}
+
+
+
+h3 {
+
+	margin-bottom: 32pt;
+	font-size: 24pt;
+
+}
+
+
+
+h4 {
+	
+	margin-top: 28pt;
+	margin-bottom: 16pt;
+	font-size: 20pt;
+	
+}
+
+
+
+.PART_A_BOXES {
+	
+	margin-top: 24pt;
+	margin-bottom: 32pt;
+	
+}
+
+
+
+.bold {
+	
+	font-weight: bold;
+	
+}
+
+
+.italics {
+	
+	font-style: italic;
+	
+}
+
+
+
+#fileInstr_2 {
+	
+	color: #0000ff;
+	
+}
+
+
+
+#ExitPointDecision2 {
+	
+	margin: 16pt 0pt; 
+	
+}
+
+
+
+#ExitPointSubmit {
+	
+	font-size: 16pt;
+	
+}
+
+
+
+#ErrorDiv {
+	
+	color: red;
+	
+	margin-top: 12pt;
+	
+}
+
+
+
+#PART_C_START {
+	
+	margin-bottom: 14pt;
+	
+}
+
+
+
+#PART_C_INFO {
+	
+	margin-bottom: 16pt;
+	
+}
+
+
+
+#PART_C_PURPOSE {
+	
+	margin-top: 16pt;
+	margin-bottom: 32pt;
+}
+
+
+
+.redText {
+	
+	color: #990000;
+	
+}
+
+
+
+#BULK_QUESTION {
+	
+	margin-top: 20pt;
+	
+}
+
+
+
+#rightPODs {
+	
+	margin-top: 24pt;
+	
+	margin-bottom: 16pt;
+	
+}
+
+
+
+#relatedRights {
+	
+	margin-top: 8pt; 
+	white-space: pre-wrap;
+	
+}
+
+
+
+#LoadingText {
+	
+	font-size: 28pt;
+	
+	font-weight: bold;
+	/*margin-top: 12pt;*/
+	color: #0000ff;
+	
+	
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	
+}
+
+
+
+#podPlotText {
+	
+	margin: 16pt 0;
+	
+}
+
+
+
+#PART_C_LARGE_REVIEW_OCCURRED {
+	
+	margin-bottom: 32pt;
+	
+	color: #7A00F5;
+	
+	white-space: pre-wrap;
+	
+}
+
+
+
+.slightPadding {
+	
+	padding-top: 12pt;
+	
+}
