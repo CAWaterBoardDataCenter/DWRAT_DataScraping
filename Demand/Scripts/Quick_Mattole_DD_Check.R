@@ -8,7 +8,8 @@ df = read.csv("OutputData/MT_2017_2023_MDT_2025-04-23.csv")
 top_10 <- df %>%
   arrange(desc(TOTAL_EXPECTED_ANNUAL_DIVERSION)) %>% # sort by descending order 
   slice_head(n = 10) %>%
-  select(APPLICATION_NUMBER, PRIMARY_OWNER_TYPE, TOTAL_EXPECTED_ANNUAL_DIVERSION)
+  select(APPLICATION_NUMBER, PRIMARY_OWNER_TYPE, APPLICATION_PRIMARY_OWNER, TOTAL_EXPECTED_ANNUAL_DIVERSION)
+print(top_10)
 
 
 # Define range of columns
