@@ -187,7 +187,7 @@ ui <- fluidPage(
       div(class = "PART_A_BOXES",
           HTML(paste0("<div>",
                       "<p id = 'PART_C_INFO'>",
-                      "This manual review involves reviewing data and documentation related to ",
+                      "This procedure involves reviewing data and documentation related to ",
                       "a water right and its points of diversion (PODs)</p>",
                       
                       "<p>We want to identify PODs that:</p>",
@@ -201,7 +201,7 @@ ui <- fluidPage(
       ),
       
       
-      div(id = "PART_C_LARGE_REVIEW_OCCURRED"),
+      div(id = "PART_C_LARGE_REVIEW_OCCURRED", class = "bold"),
       
       
       div(id = "PART_C_LARGE_REVIEW",
@@ -225,13 +225,17 @@ ui <- fluidPage(
       div(id = "PART_C_MAIN_REVIEW",
           
           div(class = "PART_A_BOXES",
-              HTML(paste0("<p id = 'PART_C_START'>To get started with the review, choose a water right:</p>")),
+              HTML(paste0("<p id = 'PART_C_START'>",
+                          "To get started with the review, choose a water right:</p>")),
               
               
               uiOutput("WaterRightSelectOut"),
               
               
               DTOutput("ReviewProgress", width = "40%"),
+              
+              
+              div(id = "wrSectionHeader", class = "PART_A_BOXES slightPadding"),
               
               
               textOutput("rightPODs"),
@@ -243,7 +247,7 @@ ui <- fluidPage(
           
           div(id = "PART_C_POD_MAP", class = "PART_A_BOXES",
               
-              HTML(paste0("<h4>POD Plot</h4>")),
+              HTML(paste0("<h4>[1] POD Plot</h4>")),
               
               
               leafletOutput("podPlot", width = "60%"),
@@ -259,7 +263,7 @@ ui <- fluidPage(
           
           div(id = "PART_C_POD_DB_FIELDS", class = "slightPadding",
               
-              HTML(paste0("<h4>POD eWRIMS Database Fields</h4>")),
+              HTML(paste0("<h4>[2] POD eWRIMS Database Fields</h4>")),
               
               
               div(id = "podDBInfo", class = "PART_A_BOXES"),
@@ -280,11 +284,12 @@ ui <- fluidPage(
           
           div(id = "PART_C_POD_WR_DOC", class = c("PART_A_BOXES", "slightPadding"),
               
-              HTML(paste0("<h4>Water Right Documentation</h4>")),
+              HTML(paste0("<h4>[3] 
+                          
+                          Water Right Documentation</h4>")),
               
               
               div(id = "wrDocumentationInfo"),
-              
               
               checkboxInput("noDocumentation", 
                             paste0("Check this box if no documentation is ",
@@ -541,6 +546,11 @@ server <- function(input, output, session) {
 
     
     
+    # Hide 'Loading..." text
+    shinyjs::hide("LoadingText")
+    
+    
+    
     # The value of 'fileData' will now be the table in 'spreadsheetDF'
     spreadsheetDF
     
@@ -552,57 +562,32 @@ server <- function(input, output, session) {
   
   
   
-  # Render a map of exit points (with accompanying text)
-  output$exitPointPlot <- renderLeaflet({
-    
+  # Get a preliminary exit point for the watershed
+  initExitPoint <- observe({
     
     # Check if a filepath was specified (Part A)
+    reviewPath <- filePath()
     df <- fileData()
     
     
     
-    if (is.null(df)) {
-      return("")
+    if (is.null(df) || is.null(reviewPath) || !is.null(input$ExitPointSelect)) {
+      return(NULL)
     }
     
     
     
-    # An exit point is required for the manual review
-    # Check if that was already specified by the user
-    if ("WS_EXIT_POINT" %in% sheets(loadWorkbook(filePath()))) {
+    shinyjs::show("LoadingText")
+    
+    
+    
+    # Check if an exit point was already specified by the user
+    # It would be located in the review spreadsheet
+    if ("WS_EXIT_POINT" %in% sheets(loadWorkbook(reviewPath))) {
       
-      
-      
-      
-    }
-    
-    
-    
-    
-  })
-  
-  
-  # A text entry related to the exit point in PART B
-  output$ExitPointDecision2 <- renderText({
-    
-    
-    # Check if a filepath was specified (Part A)
-    df <- fileData()
-    
-    
-    
-    if (is.null(df)) {
-      return("")
-    }
-    
-    
-    
-    # An exit point is required for the manual review
-    # Check if that was already specified by the user
-    if ("WS_EXIT_POINT" %in% sheets(loadWorkbook(filePath()))) {
       
       # Read in the exit point worksheet
-      exitDF <- read_xlsx(filePath(), sheet = "WS_EXIT_POINT")
+      exitDF <- read_xlsx(reviewPath, sheet = "WS_EXIT_POINT")
       
       
       
@@ -627,7 +612,7 @@ server <- function(input, output, session) {
       
       
       # Filter to the current watershed
-      exitDF <- read_xlsx(filePath(), sheet = "WS_EXIT_POINT") %>%
+      exitDF <- read_xlsx(reviewPath, sheet = "WS_EXIT_POINT") %>%
         filter(DATABASE_PATH == getPath(ws, "WATERSHED_BOUNDARY_DATABASE_SHAREPOINT_PATH")) %>%
         filter(is.na(LAYER_PATH) | LAYER_PATH == getPath(ws, "WATERSHED_BOUNDARY_LAYER_NAME"))
       
@@ -646,29 +631,15 @@ server <- function(input, output, session) {
                     "application again for this watershed."))
         
         
-      # If a match was found, proceed as normal
-      # Map the exit point for the user and ask them to confirm the choice
-      # Then wait for them to click on "Submit"
+        # If a match was found, proceed as normal
+        # Map the exit point for the user and ask them to confirm the choice
+        # Then wait for them to click on "Submit"
       } else if (nrow(exitDF) == 1) {
         
         
         # Get the exit point defined in 'exitDF'
         Exit_Point <- Watershed_Boundary_Points[exitDF$POINT_INDEX, ] %>%
           mutate(CHOSEN_INDEX = exitDF$POINT_INDEX)
-        
-        
-        
-        # Prepare a plot
-        exitPlot <- mapview(Watershed_Polygon, col.regions = "darkgray", popup = NULL) + 
-          mapview(Watershed_Boundary_Points, popup = "INDEX", 
-                  col.regions = "black", color = "black", burst = FALSE) + 
-          mapview(Exit_Point, col.regions = "green", popup = "CHOSEN_INDEX", label = "CHOSEN_INDEX")
-        
-        
-        
-        output$exitPointPlot <- renderLeaflet({
-          exitPlot@map
-        })
         
         
         
@@ -687,11 +658,14 @@ server <- function(input, output, session) {
         
         
         
-        # Finally, include accompanying text
-        output$ExitPointDecision1 <- renderText({
-          paste0("An approximate exit point has already been specified for this watershed (Index ", 
-                 exitDF$POINT_INDEX, ").")
-        })
+        # Output the text as well
+        html("ExitPointInfo",
+             paste0("<p id = 'ExitPointDecision1'>",
+                    "An approximate exit point has already been specified for ",
+                    "this watershed (Index ", exitDF$POINT_INDEX, ")</p>",
+                    "<p id = 'ExitPointDecision2'>",
+                    "Please double-check whether it is accurate and click on the ",
+                    "'Submit' button to continue with the manual review</p>"))
         
         
         
@@ -699,9 +673,28 @@ server <- function(input, output, session) {
         
         
         
-        return(paste0("Please double-check whether it is accurate and click on the ",
-                      "'Submit' button to continue ",
-                      "with the manual review."))
+        # Finally, prepare a plot
+        exitPlot <- mapview(Watershed_Polygon, col.regions = "darkgray", popup = NULL) + 
+          mapview(Watershed_Boundary_Points, popup = "INDEX", 
+                  col.regions = "black", color = "black", burst = FALSE) + 
+          mapview(Exit_Point, col.regions = "green", popup = "CHOSEN_INDEX", label = "CHOSEN_INDEX")
+        
+        
+        
+        # Output the plot
+        output$exitPointPlot <- renderLeaflet({
+          exitPlot@map
+        })
+        
+        
+        
+        # Hide the loading text
+        shinyjs::hide("LoadingText")
+        
+        
+        
+        # Return the exit point index value as 'initExitPoint'
+        return(exitDF$POINT_INDEX[1])
         
       }
       
@@ -720,13 +713,15 @@ server <- function(input, output, session) {
     
     
     
+    # Use USGS StreamStats to try and help them find the exit point
     if (is.null(input$ExitPointSelect)) {
       
       
       withProgress(message = "Trying to guess the exit point location...Please wait...", value = 0,
                    {
                      # Start by trying to help them identify the exit point
-                     # Do this automatically using USGS StreamStats
+                     # Do this automatically by checking three PODs' flow paths
+                     # using USGS StreamStats and comparing where they exit
                      
                      
                      
@@ -744,8 +739,20 @@ server <- function(input, output, session) {
                      
                      
                      
-                     # Select 3 random POD rows
-                     spatialDF <- spatialDF[sample(nrow(spatialDF), 3, replace = FALSE), ]
+                     # If no rows are available, use the centroid of 'Watershed_Polygon'
+                     if (is.null(nrow(spatialDF)) || nrow(spatialDF) == 0) {
+                       
+                       spatialDF <- st_centroid(Watershed_Polygon)
+                       
+                       # Otherwise , select 3 random POD rows
+                     } else {
+                       
+                       # (If fewer than 3 rows are available, use as many rows as available)
+                       spatialDF <- spatialDF[sample(nrow(spatialDF), 
+                                                     min(3, nrow(spatialDF)), 
+                                                     replace = FALSE), ]
+                       
+                     }
                      
                      
                      
@@ -817,21 +824,6 @@ server <- function(input, output, session) {
       
       
       
-      # Prepare a map for the user
-      exitPlot <- mapview(Watershed_Polygon, col.regions = "darkgray", popup = NULL) + 
-        mapview(Watershed_Boundary_Points, popup = "INDEX", 
-                col.regions = "black", color = "black", burst = FALSE) + 
-        mapview(Possible_Exit_Point, col.regions = "orange", 
-                popup = "POSSIBLE_INDEX", label = "POSSIBLE_INDEX")
-      
-      
-      
-      output$exitPointPlot <- renderLeaflet({
-        exitPlot@map
-      })
-      
-      
-      
       # Prepare the UI for selecting and confirming an exit point
       output$ExitPointSelectOut <- renderUI({
         selectInput("ExitPointSelect", "Select an Exit Point Index", 
@@ -847,34 +839,48 @@ server <- function(input, output, session) {
       
       
       
-      # Finally, include accompanying text
-      output$ExitPointDecision1 <- renderText({
-        paste0("Please examine the map and locate the watershed outlet. ",
-               "Note the index of the point closest to the outlet in the input box provided below.")
-      })
+      # Include accompanying text as well
+      html("ExitPointInfo",
+           paste0("<p id = 'ExitPointDecision1'>", 
+                  "Please examine the map and locate the watershed outlet. ",
+                  "Note the index of the point closest to the outlet in the ",
+                  "input box provided below.</p>",
+                  "<p id = 'ExitPointDecision2'>",
+                  "This tool tried to locate the exit point and identified Point ", 
+                  exitIndex, ". Please verify if this is accurate and correct the ",  
+                  "value if needed.</p>",
+                  "<p id = 'ExitPointDecision3'>",
+                  "Once you are ready to proceed with the review, please click ",
+                  "the 'Submit' button.</p>"))
       
       
       
-      output$ExitPointDecision3 <- renderText({
-        paste0("Once you are ready to proceed with the review, please click the 'Submit' button.")
-      })
+      # Finally, prepare a map for the user
+      exitPlot <- mapview(Watershed_Polygon, col.regions = "darkgray", popup = NULL) + 
+        mapview(Watershed_Boundary_Points, popup = "INDEX", 
+                col.regions = "black", color = "black", burst = FALSE) + 
+        mapview(Possible_Exit_Point, col.regions = "orange", 
+                popup = "POSSIBLE_INDEX", label = "POSSIBLE_INDEX")
       
       
       
+      output$exitPointPlot <- renderLeaflet({exitPlot@map})
+      
+      
+      
+      # Hide the "Loading..." text
       shinyjs::hide("LoadingText")
       
       
       
-      return(paste0("This tool tried to locate the exit point and identified Point ", exitIndex,
-                    ". Please verify if this is accurate and correct the value if needed."))
+      # Set the exit point guess as 'initExitPoint'
+      return(exitIndex)
       
     }
     
     
     
     shinyjs::hide("LoadingText")
-    
-    
     
   })
   
@@ -1018,7 +1024,7 @@ server <- function(input, output, session) {
     if (sheetDF %>%
         filter(is.na(KEEP_OR_REMOVE_POD)) %>%
         select(APPLICATION_NUMBER) %>% unique() %>%
-        nrow() > 150) {
+        nrow() > 300) {
       
       shinyjs::show("PART_C_LARGE_REVIEW")
       
@@ -1027,9 +1033,9 @@ server <- function(input, output, session) {
            paste0("<p>This manual review spreadsheet contains ",
                   sheetDF %>% filter(is.na(KEEP_OR_REMOVE_POD)) %>%
                     select(APPLICATION_NUMBER) %>% unique() %>% nrow(),
-                  " water rights with PODs that need to be reviewed.</p>",
+                  " water rights with PODs that need to be reviewed</p>",
                   "<p>Ideally, we would want to review every POD for accuracy, ",
-                  "but a significant time investment would be required in this case.</p>",
+                  "but a significant time investment would be required in this case</p>",
                   "<p id = 'BULK_QUESTION'>Would you like to <span class = 'redText bold'>'bulk approve'",
                   "</b></span> all PODs whose eWRIMS coordinates place them <i>one mile or ",
                   "more</i> within the watershed boundaries?</p>",
@@ -1040,7 +1046,7 @@ server <- function(input, output, session) {
                   sheetDF %>% filter(is.na(KEEP_OR_REMOVE_POD)) %>% 
                     filter(FLAG_ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY) %>%
                     select(APPLICATION_NUMBER) %>% unique() %>% nrow(),
-                  " water rights).</p>"))
+                  " water rights)</p>"))
       
       
       
@@ -1084,6 +1090,14 @@ server <- function(input, output, session) {
     
     
     # Approve all PODs that are unreviewed and one mile or more within the watershed
+    # (Update the "NOTES" column as well)
+    reviewDF$NOTES[is.na(reviewDF$KEEP_OR_REMOVE_POD) & 
+                                  reviewDF$FLAG_ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY] <- paste0("Assumed that the POD diverts from ",
+                                                                                                      "the watershed and that its database ",
+                                                                                                      "coordinates are correct")
+    
+    
+    
     reviewDF$KEEP_OR_REMOVE_POD[is.na(reviewDF$KEEP_OR_REMOVE_POD) & 
                                   reviewDF$FLAG_ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY] <- "KEEP"
     
@@ -1184,6 +1198,13 @@ server <- function(input, output, session) {
     
     
     reviewDF <- fileData()
+    
+    
+    
+    # Set the current section's header
+    html("wrSectionHeader",
+         paste0("<h4 class = 'bold'>Reviewing ", 
+                input$WaterRightSelect, "</h4>"))
     
     
     
@@ -1356,6 +1377,12 @@ server <- function(input, output, session) {
                          sum(relevantRights %in% reviewDF[["APPLICATION_NUMBER"]]),
                          " of these rights were also flagged for this manual review)")
       
+    } else {
+      
+      finalStr <- paste0(finalStr,
+                         "\n(None of these ", 
+                         "rights were flagged in this manual review)")
+      
     }
     
     
@@ -1442,8 +1469,11 @@ server <- function(input, output, session) {
                        
                        
                        
-                       incProgress(0, detail = paste0("Querying USGS StreamStats...[", 
-                                                      i, "/", nrow(podDF), "]"))
+                       incProgress(0, detail = paste0("Query failed...See error message at ",
+                                                      "the bottom of the page...Will retry ",
+                                                      "around ", 
+                                                      format(Sys.time() + 3, format = "%I:%M"),
+                                                      "..."))
                        
                        
                        
@@ -1520,7 +1550,12 @@ server <- function(input, output, session) {
     
     # Add the watershed boundary and the PODs
     plot <- mapview(Watershed_Polygon, col.regions = "darkgray", popup = NULL) +
-      mapview(Water_Right_PODs, col.regions = "orange", popup = popupHTML, label = "POD_ID")
+      mapview(Water_Right_PODs, col.regions = "orange", popup = popupHTML, label = "POD_ID") +
+      mapview(Watershed_Boundary_Points[as.numeric(input$ExitPointSelect), ] %>%
+                mutate(INDEX = as.numeric(input$ExitPointSelect)) %>%
+                select(INDEX), 
+              layer.name = "Exit_Point",
+              col.regions = "green", popup = "INDEX", label = "INDEX")
     
     
     
@@ -1571,12 +1606,14 @@ server <- function(input, output, session) {
       Water_Right_PODs %>%
         st_drop_geometry() %>%
         mutate(WITHIN_100_METERS_OF_WS_EXIT_POINT = 
-                 if_else(exitOverlap, "YES", "NO"))
+                 if_else(exitOverlap, "YES", "NO")) %>%
+        datatable(options = list("searching" = FALSE, "pageLength" = nrow(Water_Right_PODs), 
+                                 "lengthChange" = FALSE, "paging" = FALSE, "info" = FALSE),
+                  rownames = FALSE) %>%
+        formatStyle('WITHIN_100_METERS_OF_WS_EXIT_POINT',
+                    color = styleEqual(c("YES", "NO"), c("#006100", "#9E0000")))
       
-    },
-    options = list("searching" = FALSE, "pageLength" = nrow(Water_Right_PODs), 
-                   "lengthChange" = FALSE, "paging" = FALSE, "info" = FALSE),
-    rownames = FALSE)
+    })
     
     
     
@@ -1630,6 +1667,25 @@ server <- function(input, output, session) {
     
     
     
+    # Include information about the next section as well
+    docURL <- fileData() %>%
+      filter(APPLICATION_NUMBER == input$WaterRightSelect) %>%
+      select(URL) %>% unique() %>% head(1) %>%
+      unlist(use.names = FALSE)
+    
+    
+    
+    html("wrDocumentationInfo",
+         paste0("<p>Most water rights' paper records have been digitized. ",
+                "Click on the link below to download it:</p>",
+                "<a href = '", docURL, "'>", docURL, "</a>",
+                "<p>If no file is downloaded, the documentation has not yet been scanned</p>",
+                "<p>In that case, mark the checkbox below</p>")) 
+                #"<p>By heading to the Records Room, you can request to view these materials</p>"))
+    
+    
+    
+    # Finally, output a table with database information
     statewidePODList %>%
       st_drop_geometry() %>%
       filter(APPLICATION_NUMBER == input$WaterRightSelect) %>%
@@ -1661,9 +1717,10 @@ server <- function(input, output, session) {
   
   # Provide options for what appears in the report:
   # Lat/Lon
+  # DMS
   # Northing/Easting
   # PLSS Displacement
-  # Other (Not Handled by the App)
+  # Other (Not Handled by the App) (like Parcel Number)
   
   
   
@@ -1674,7 +1731,7 @@ server <- function(input, output, session) {
   # (Option to add more of each check type)
   
   
-  
+  # Section for verifying that eWRIMS coordinates are correct
   
   
   
