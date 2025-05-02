@@ -211,8 +211,19 @@ ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager,
 
 # Get the Water Rights Parties flat file after that
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
+# (Columns containing sensitive information are removed)
 ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+                                     statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+  select(-c(MAILING_ADDRESS, BILLING_ADDRESS,
+            CONTACT_INFORMATION_PHONE, CONTACT_INFORMATION_EMAIL,
+            MAILING_STREET_NUMBER, MAILING_STREET_NAME,
+            MAILING_ADDRESS_LINE_2, MAILING_CITY,
+            MAILING_STATE, MAILING_ZIP,
+            MAILING_COUNTRY, MAILING_FOREIGN_CODE,
+            BILLING_STREET_NUMBER, BILLING_STREET_NAME,
+            BILLING_ADDRESS_LINE_2, BILLING_CITY,
+            BILLING_STATE, BILLING_ZIP,
+            BILLING_COUNTRY, BILLING_FOREIGN_CODE)) %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
 
