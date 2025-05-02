@@ -67,8 +67,7 @@ getGIS <- function (ws, GIS_FILE_PATH_COLUMN, GIS_FILE_LAYER_NAME) {
     
     stop(paste0("'", GIS_FILE_PATH_COLUMN, "' has not been specified for this watershed in ",
                 "the spreadsheet 'Snowflake_Watershed_Demand_Dataset_Paths.xlsx'") %>%
-           strwrap(width = 0.98 * getOption("width")) %>%
-           paste0(collapse = "\n"))
+           wrapStr())
     
   }
   
@@ -117,14 +116,26 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
   
   
   
+  # Verify that the file exists
+  if (!file.exists(filePath)) {
+    
+    stop(paste0("No file exists at the specified path (",
+                filePath, ")") %>%
+           wrapStr() %>%
+           str_replace("exists", col_red("exists")) %>%
+           str_replace("path", col_magenta("path")))
+    
+  }
+  
+  
+  
   # Verify that a valid 'commandType' is specified
   if (!(commandType %in% c("read.csv", "read_csv", "fread", 
                            "read_xlsx", "st_read"))) {
     
     stop(paste0("The function fileReadTry() can only be used with read.csv(),", 
                 "read_csv(), fread(), read_xlsx(), and st_read()") %>%
-           strwrap(width = getOption("width")) %>%
-           paste0(collapse = "\n"))
+           wrapStr())
     
   }
   
@@ -185,16 +196,14 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
                   " It does not lead to a readable file.",
                   "\n\nPath being used by the code: ", 
                   filePath, "\n\n") %>%
-             strwrap(width = getOption("width")) %>%
-             paste0(collapse = "\n") %>%
+             wrapStr() %>%
              str_replace("likely incorrect", col_red("likely incorrect")))
       
     } else if (grepl("Error in utils::unzip.+cannot be opened", fileDF)) {
       
       stop(paste0("The target spreadsheet is open locally on your computer. ",
                   "Please close the file before attempting to run the script again.") %>%
-             strwrap(width = 0.98 * getOption("width")) %>%
-             paste0(collapse = "\n") %>%
+             wrapStr() %>%
              str_replace("open", col_red("open")) %>%
              str_replace("locally", col_red("locally")) %>%
              str_replace("close", col_green("close")) %>%
@@ -207,8 +216,7 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
                   "It seems that the GIS object (", filePath, ") does not contain ",
                   "a layer with that name.\n\nThese are the available options:\n\n",
                   st_layers(filePath)[["name"]] %>% paste0(collapse = "\n\n")) %>%
-             strwrap(width = 0.98 * getOption("width")) %>%
-             paste0(collapse = "\n") %>%
+             wrapStr() %>%
              str_replace("layer", col_red("layer")) %>%
              str_replace("does", col_red("does")) %>%
              str_replace("not", col_red("not")) %>%
@@ -219,8 +227,7 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
       
       stop(paste0("There is a problem with the layer argument '", layer, "'. ", 
                   "It should either be unused or specified as a character string.") %>%
-             strwrap(width = 0.98 * getOption("width")) %>%
-             paste0(collapse = "\n") %>%
+             wrapStr() %>%
              str_replace("layer", col_red("layer")) %>%
              str_replace("does", col_red("does")) %>%
              str_replace("not", col_red("not")) %>%
@@ -230,10 +237,14 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL, sh
     } else {
       
       stop("An unexpected error occurred. See the error message above for details." %>%
-             strwrap(width = getOption("width")) %>%
-             paste0(collapse = "\n"))
+             wrapStr())
       
     } 
+    
+  } else if (commandType == "fread" && nrow(fileDF) == 0 && length(fileDF) == 0) {
+    
+    stop("An unknown error occurred with 'fread'. Please consult the above output." %>%
+           wrapStr())
     
   }
   
@@ -258,8 +269,7 @@ fileWrite <- function (fileObj, commandType, filePath, layer = NULL, delete_dsn 
     
     stop(paste0("The function fileReadTry() can only be used with ",
                 "write_xlsx(), write_csv(), and st_write()") %>%
-           strwrap(width = 0.98 * getOption("width")) %>%
-           paste0(collapse = "\n"))
+           wrapStr())
     
   }
   
@@ -304,8 +314,7 @@ fileWrite <- function (fileObj, commandType, filePath, layer = NULL, delete_dsn 
       stop(paste0("The most common cause of this error is that '", filePath, 
                   "' already exists AND is currently open. Please close the file ", 
                   "and rerun the script.", "\n\n") %>%
-             strwrap(width = getOption("width")) %>%
-             paste0(collapse = "\n") %>%
+             wrapStr() %>%
              str_replace("AND", col_red("AND")) %>%
              str_replace("exists", col_blue("exists")) %>%
              str_replace("open", col_blue("open")) %>%
@@ -315,8 +324,7 @@ fileWrite <- function (fileObj, commandType, filePath, layer = NULL, delete_dsn 
     } else {
       
       stop("An unexpected error occurred. See the error message above for details." %>%
-             strwrap(width = getOption("width")) %>%
-             paste0(collapse = "\n"))
+             wrapStr())
       
     } 
     
@@ -344,7 +352,7 @@ readFlagTable <- function () {
                             makeSharePointPath("Program Watersheds/7. Snowflake Demand Data Downloads/Water Use Report Extended/") %>% 
                               list.files() %>% sort() %>% tail(1) %>% 
                               str_replace("water_use_report_extended", "Flag_Table"))) %>%
-    fileRead("read_csv")
+    fileRead("fread")
   
   
   
@@ -375,3 +383,17 @@ writeFlagTable <- function (flagDF) {
   return(flagDF)
   
 }
+
+
+
+wrapStr <- function (str, width = 0.98 * getOption("width"), collapse = "\n") {
+  
+  # Split a string based on the console width and paste it back together
+  # using a newline character
+  
+  return(str %>%
+           strwrap(width = width) %>%
+           paste0(collapse = collapse))
+  
+}
+

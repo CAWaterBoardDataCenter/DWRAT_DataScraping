@@ -127,8 +127,7 @@ if (sum(pod_points_statewide$FFMTRS %in% PLSS_Sections_Fill$MTRS) == 0) {
               "two-digit range (between 'R' and either 'E' or 'W'); and a one- or two-digit section.",
               "\n\nIf the columns are dissimilar and no errors are present, modifications to ",
               "either the PLSS dataset or '[CA]_2_POD_Flat_File_Prep.R' may be needed.") %>%
-         strwrap(width = 0.98 * getOption("width")) %>%
-         paste0(collapse = "\n") %>%
+         wrapStr() %>%
          str_replace("no", col_red("no")) %>%
          str_replace("matches", col_red("matches")) %>%
          str_replace("formatting", col_blue("formatting")) %>%
@@ -349,8 +348,7 @@ if (!is.na(getPath(ws, "GIS_PREPROCESSING_SPREADSHEET_SHAREPOINT_PATH"))) {
   cat(paste0("NOTE: A previous GIS manual review spreadsheet exists for this ",
              "watershed. There may be some overlap between that prior review and ",
              "this current spreadsheet that could be reused.") %>%
-        strwrap(width = 0.98 * getOption("width")) %>%
-        paste0(collapse = "\n") %>%
+        wrapStr() %>%
         str_replace("NOTE", col_red("NOTE")) %>%
         str_replace("previous", col_blue("previous")) %>%
         str_replace("overlap", col_magenta("overlap")) %>%
@@ -455,8 +453,7 @@ cat(paste0("\n\n\nCreated '",
              str_extract("/[0-9]+_Flat_File") %>% str_extract("[0-9]+"),
            ".gpkg' ",
            "in the 'OutputData' folder!") %>%
-      strwrap(width = 0.98 * getOption("width")) %>%
-      paste0(collapse = "\n") %>%
+      wrapStr() %>%
       str_replace("OutputData", col_green("OutputData")))
 cat("\n\n\n")
 print("The script is complete!")
