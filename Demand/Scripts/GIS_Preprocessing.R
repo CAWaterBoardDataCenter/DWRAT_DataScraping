@@ -57,7 +57,8 @@ mainProcedure <- function () {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read(makeSharePointPath(filePathFragment = "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/Public_Land_Survey_System_(PLSS)%3A_Sections.geojson"))
+  PLSS_Sections_Fill <- st_read("InputData/GIS_General/Public_Land_Survey_System_(PLSS)%3A_Sections.gpkg",
+                                layer = "Public_Land_Survey_System_(PLSS)%3A_Sections")
   
   
   
