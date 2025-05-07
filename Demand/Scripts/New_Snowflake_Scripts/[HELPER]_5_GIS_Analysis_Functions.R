@@ -77,14 +77,14 @@ requestFlowPath <- function (pod) {
     if (oceanOverlapCheck(pod)) {
       
       # If there is overlap, then this issue was the source of the StreamStats request failure
-      # In that case, simply return the POD coordinates for the flow path
-      return(pod)
+      # In that case, simply a data frame that expresses this issue
+      return(data.frame(LINEID = NA, ERROR = "Coordinates in Pacific Ocean!"))
       
     } else {
       
       # If the POD does not overlap with the ocean, then a different issue caused the request failure
-      # Stop the script and alert about the error
-      stopifnot(flowReq$status_code == 200)
+      # Just return 'pod' in that case
+      return(pod)
       
     }
     
@@ -172,7 +172,7 @@ oceanOverlapCheck <- function (pod) {
   
   # Return "TRUE" or "FALSE" depending on whether st_intersects() returns a non-empty value
   # (A non-empty value means that there is intersection between the layers)
-  return(length(st_intersects(pod, pacific)) > 0)
+  return(lengths(st_intersects(pod, pacific))[1] > 0)
   
 }
 
