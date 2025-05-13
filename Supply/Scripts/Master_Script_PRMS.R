@@ -83,7 +83,7 @@ source(here("Scripts/CIMIS_API_Scraper.R"))
 # Generate PRMS Dat File
 #source(here("Scripts/Dat_PRMS.R"))
 print("Running the Water Sharing Program version of 'DAT_PRMS.R'")
-source(here("Scripts/Dat_PRMS_WSP_(For_Prior_WYs).R"))
+source(here("Scripts/Dat_PRMS.R"))
 
 
 # generate SRP model input ------------------------------------------------

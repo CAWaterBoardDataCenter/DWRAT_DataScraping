@@ -106,7 +106,11 @@ h4 {
 
 #PART_C_START {
 	
-	margin-bottom: 14pt;
+	font-size: 18pt;
+	
+	color: #0000ff;
+	
+	margin-bottom: 28pt;
 	
 }
 
@@ -192,7 +196,7 @@ h4 {
 	
 	margin-bottom: 32pt;
 	
-	color: #7A00F5;
+	/*color: #7A00F5;*/
 	
 	white-space: pre-wrap;
 	
