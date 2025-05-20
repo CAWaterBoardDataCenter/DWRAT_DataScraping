@@ -430,17 +430,22 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   # Read in NHD Flowlines
-  # Keep only the column that uniquely identifies different flowlines
-  message("NHD Flowlines is currently a manually specified path - update it as needed")
+  flowLines <- getGIS(ws,
+                      "IS_SHAREPOINT_PATH_NHD_FLOWLINES",
+                      "NHD_FLOWLINES_DATABASE_PATH",
+                      "NHD_FLOWLINES_LAYER_NAME")
   
-  flowLines <- st_read("C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/Program Watersheds/1. Watershed Folders/Gualala River/Data/GIS/Delineations/Gualala_Flowlines/",
-                       layer = "Gualala_Flowlines")
+  
+  #flowLines <- st_read("C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/Program Watersheds/1. Watershed Folders/Gualala River/Data/GIS/Delineations/Gualala_Flowlines/",
+  #                     layer = "Gualala_Flowlines")
   
   #flowLines <- st_read("C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/NHDPlus_Delineations/LSPC_Delineations",
   #                     layer = "NHDFlowline_EditedforLSPC")
   
   
   
+  # Get the name of the column that uniquely identifies each catchment
+  # (It's usually called "COMID")
   fieldName <- if_else("COMID" %in% names(flowLines),
                        "COMID",
                        ws$SUBBASIN_FIELD_ID_NAMES %>%
@@ -449,6 +454,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
     
   
+  # Keep only the column that uniquely identifies different flowlines
   flowLines <- flowLines %>%
     st_zm() %>%
     select(all_of(fieldName)) %>%
@@ -465,6 +471,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   
+  # "ASSIGNED_HUC12" and "ASSIGNED_NHD_CAT" are appended before writing 'assignedDF'
   st_write(assignedDF %>%
              left_join(mdtDF %>% select(APPLICATION_NUMBER, ASSIGNED_HUC12),
                        by = "APPLICATION_NUMBER", relationship = "many-to-one") %>%
@@ -509,15 +516,21 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
            layer = "Hydro_Model_NHD_Flowlines",
            append = FALSE)
   
+  
+  
+  # Output a completion message
+  cat("\n\n")
+  print("Check the 'OutputData' folder for the files to be used in the PowerBI dashboard!")
+  
 }
 
 
 
 #### Script Execution ####
 
-#mainProcedure()
+mainProcedure()
 
 
 
 # Cleanup
-#remove(list = ls())
+remove(list = ls())
