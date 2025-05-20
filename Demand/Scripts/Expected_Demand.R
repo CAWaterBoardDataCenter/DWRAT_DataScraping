@@ -673,7 +673,8 @@ mainProcedure <- function () {
     reviewDF <- getXLSX(ws = ws, 
                         SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET",
                         FILEPATH = "QAQC_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
-                        WORKSHEET_NAME = "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")
+                        WORKSHEET_NAME = "QAQC_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+      mutate(YEAR_TOTAL = as.numeric(YEAR_TOTAL))
     
     
     
@@ -689,7 +690,8 @@ mainProcedure <- function () {
       reviewDF2 <- getXLSX(ws = ws,
                            SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET",
                            FILEPATH = "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH", 
-                          WORKSHEET_NAME =  "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME") %>%
+                          WORKSHEET_NAME =  "QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_WORKSHEET_NAME")%>%
+        mutate(YEAR_TOTAL = as.numeric(YEAR_TOTAL)) %>%
         makeKey_APP_YEAR_AMOUNT()
       
       

@@ -73,7 +73,7 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
 #Prepare the RMS_parties dataset for manual review----
 
   #Filter to 2017-present records
-  RMS_parties <- filter(RMS_parties, YEAR >= 2017)
+  RMS_parties <- filter(RMS_parties, YEAR >= yearRange[1], YEAR <= yearRange[2])
 
   #Filter to just direct diversion and  diversion to storage--usage is irrelevant because we only care about 
     #what's diverted out of stream

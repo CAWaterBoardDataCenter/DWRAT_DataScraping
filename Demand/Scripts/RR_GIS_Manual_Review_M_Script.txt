@@ -34,8 +34,6 @@ let
     Added_Report_QSection = Table.AddColumn(Added_Report_Section, "Report_QSection", each ""),
     Added_Report_QQSection = Table.AddColumn(Added_Report_QSection, "Report_QQSection", each ""),
     Added_Report_POD_Information = Table.AddColumn(Added_Report_QQSection, "Report_POD_Information", each ""),
-    Added_Coordinates_Action = Table.AddColumn(Added_Report_POD_Information, "Coordinates_Action", each ""),
-    Added_Coordinates_Justification = Table.AddColumn(Added_Coordinates_Action, "Coordinates_Justification", each ""),
     Added_Latitude = Table.AddColumn(Added_Coordinates_Justification, "LATITUDE", each ""),
     Added_Longitude = Table.AddColumn(Added_Latitude, "LONGITUDE", each ""),
     Added_StreamStats = Table.AddColumn(Added_Longitude, "StreamStats", each ""),

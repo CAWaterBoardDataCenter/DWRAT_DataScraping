@@ -127,14 +127,16 @@ DAT_Merged <- DAT_Initial %>%
 
 DAT_Merged <- DAT_Merged %>%  relocate(Date, .after = 6)
 
+# Identify precipitation columns
+precip_columns <- names(DAT_Merged)[grepl("PRECIP", names(DAT_Merged))]
+# Identify temperature columns
+temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
+
 # QAQC steps----
 
  ## FLAGGING BLOCK ----
 if (includeFlagging) {
 ### Identify negative precipitation values----
-
-# Identify precipitation columns
-precip_columns <- names(DAT_Merged)[grepl("PRECIP", names(DAT_Merged))]
 
 # Create negative precipitation flag columns
 Dat_Merged_Precip_Flags <- DAT_Merged %>%
@@ -163,9 +165,6 @@ print(negative_precip_dates) # returns 0 records on 6/25/2024
 ### Identify extreme temperature values----
   
   #### 1) TMIN > TMAX ----
-
-# Identify temperature columns
-temperature_columns <- names(DAT_Merged)[grepl("TM", names(DAT_Merged))]
 
 Dat_Merged_Temp <- DAT_Merged[, c("Date", temperature_columns)]
 
@@ -740,7 +739,7 @@ if (EndDate$date >= paste0(EndDate$year, "-03-01") &
   
   
   # This water year's data will be substituted into the remaining dates for the modeled water year
-  waterYearSub <- 2020
+  waterYearSub <- 1993
   
   
   

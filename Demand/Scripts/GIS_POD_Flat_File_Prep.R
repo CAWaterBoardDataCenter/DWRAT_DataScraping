@@ -50,8 +50,57 @@ fixData <- function(x) {
   x <- bind_rows(x, t2) %>% 
     arrange(APPL_ID, YEAR, MONTH)
   
+  
+  
+  # WY 2024 data:
+  # Extract Oct, Nov, and Dec 2024 rows and rewind to 2023.
+  t3 <- x %>% 
+    filter(YEAR == 2024,
+           MONTH %in% c(10:12)) %>% 
+    mutate(YEAR = 2023)
+  
+  # Cut offending Oct, Nov, Dec rows for 2023 and 2024.  
+  x <- x %>% 
+    filter(!(YEAR %in% c(2023, 2024) & MONTH %in% c(10:12)))
+  
+  # Bind corrected Oct, Nov, Dec 2023 rows.
+  x <- bind_rows(x, t3) %>% 
+    arrange(APPL_ID, YEAR, MONTH)
+  
+  
+  
+  if (max(as.numeric(x$YEAR), na.rm = TRUE) > 2024) {
+    
+    
+    for (i in 2025:max(as.numeric(x$YEAR))) {
+      
+      # WY 2025 onwards data:
+      # Extract Oct, Nov, and Dec from each year and rewind to the prior year
+      tx <- x %>% 
+        filter(YEAR == i,
+               MONTH %in% c(10:12)) %>% 
+        mutate(YEAR = i - 1)
+      
+      
+      
+      # Cut offending Oct, Nov, Dec rows for both years.  
+      x <- x %>% 
+        filter(!(YEAR %in% c(i - 1, i) & MONTH %in% c(10:12)))
+      
+      
+      
+      # Bind corrected Oct, Nov, Dec rows.
+      x <- bind_rows(x, tx) %>% 
+        arrange(APPL_ID, YEAR, MONTH)
+      
+    }
+    
+  }
+  
+  
   # Return result.
   return(x)
+  
 }
 
 # Downloading Flat Files Required by QAQC Process----
@@ -111,12 +160,15 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                   APPLICATION_NUMBER,YEAR,MONTH,
                                                   AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
                                                   FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
+                                                  INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT,
                                                   EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
                                                   WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
                                                   STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
-                                                  STORAGE_SEASON_END,
-                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER
-                                                  
+                                                  STORAGE_SEASON_END, 
+                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER,
+                                                  PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
+                                                  SUB_TYPE, YEAR_DIVERSION_COMMENCED,
+                                                  USE_CODE
                                                   FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
                                                   WHERE YEAR >= 2016
                                                   ")
@@ -159,8 +211,19 @@ ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager,
 
 # Get the Water Rights Parties flat file after that
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
+# (Columns containing sensitive information are removed)
 ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+                                     statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+  select(-c(MAILING_ADDRESS, BILLING_ADDRESS,
+            CONTACT_INFORMATION_PHONE, CONTACT_INFORMATION_EMAIL,
+            MAILING_STREET_NUMBER, MAILING_STREET_NAME,
+            MAILING_ADDRESS_LINE_2, MAILING_CITY,
+            MAILING_STATE, MAILING_ZIP,
+            MAILING_COUNTRY, MAILING_FOREIGN_CODE,
+            BILLING_STREET_NUMBER, BILLING_STREET_NAME,
+            BILLING_ADDRESS_LINE_2, BILLING_CITY,
+            BILLING_STATE, BILLING_ZIP,
+            BILLING_COUNTRY, BILLING_FOREIGN_CODE)) %>%
   write_csv("RawData/ewrims_flat_file_party.csv")
 
 
@@ -294,10 +357,4 @@ write_csv(Flat_File_eWRIMS,
 
 # Clear the environment----
   # Get the name of all variables in the environment
-all_vars = ls()
-
-
-  # Remove variables
-rm(list = all_vars)
-
-remove(all_vars)
+remove(list = ls())
