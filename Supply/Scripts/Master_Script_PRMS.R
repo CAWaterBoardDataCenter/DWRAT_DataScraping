@@ -9,6 +9,7 @@ library(tinytex)
 require(rvest)
 require(httr)
 require(writexl)
+require(openxlsx)
 #
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 
