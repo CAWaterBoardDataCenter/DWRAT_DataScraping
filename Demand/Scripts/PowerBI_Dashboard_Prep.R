@@ -68,7 +68,8 @@ mainProcedure <- function () {
   
   
   huc12 <- huc12 %>%
-    st_transform(st_crs(assignedDF))
+    st_transform(st_crs(assignedDF)) %>%
+    mutate(name = name %>% str_remove("\\-.+$"))
   
   
   
@@ -500,6 +501,16 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "HUC12_Subbasins",
            append = FALSE)
+  
+  
+  
+  # Ensure that the catchments layer is valid
+  if (sum(st_is_valid(catchDF)) != nrow(catchDF)) {
+
+    catchDF <- catchDF %>%
+      st_make_valid()
+
+  }
   
   
   
