@@ -171,7 +171,7 @@ mainProcedure <- function () {
   
   
   # Create an allocations variable with dummy data
-  # DUMMY DATA SHOULD BE REPLACED EVENTUALLY!!!
+  message("\n\nThe allocations table contains dummy data!\n\n")
   allocationsDF <- mdtDF %>%
     select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE_SUB, ASSIGNED_HUC12,
            JAN_MEAN_DIV) %>%
@@ -285,12 +285,20 @@ mainProcedure <- function () {
   
   
   
-  # Join data form 'monthlyDF' to 'appDF'
+  # Join Primary Use data form 'monthlyDF' to 'appDF' and 'assignedDF'
   appDF <- appDF %>%
     left_join(monthlyDF %>%
                 select(APPLICATION_NUMBER, Primary_Use) %>%
                 unique(),
               by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  
+  assignedDF <- assignedDF %>%
+    left_join(monthlyDF %>%
+                select(APPLICATION_NUMBER, Primary_Use) %>%
+                unique(),
+              by = "APPLICATION_NUMBER", relationship = "many-to-one")
   
   
   
