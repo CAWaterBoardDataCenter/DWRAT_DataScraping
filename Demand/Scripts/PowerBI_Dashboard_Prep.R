@@ -55,6 +55,7 @@ mainProcedure <- function () {
                      "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
                      "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
                      "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME") %>% 
+    filter(APPLICATION_NUMBER %in% mdtDF$APPLICATION_NUMBER) %>%
     mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
     st_as_sf(coords = c("LONGITUDE2", "LATITUDE2"), crs = ws$POD_COORDINATES_REFERENCE_SYSTEM[1]) %>%
     st_transform("epsg:3488")
