@@ -50,3 +50,9 @@ stopifnot(nrow(ws) == 1)
 
 
 cat(paste0("Running script for ", ws$NAME, "\n"))
+
+
+
+# Remove 'index' from the environment
+remove(index)
+
