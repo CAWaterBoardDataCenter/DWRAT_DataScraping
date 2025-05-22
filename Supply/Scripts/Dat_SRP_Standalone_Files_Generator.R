@@ -1,3 +1,15 @@
+#----PURPOSE----
+# This script was created to recover and isolate the original SPI forecast data 
+# embedded within a finalized SRP .dat file, after the standalone SPI source data
+# had been lost. Recognizing that any data from April 1, 2024 onward in the file was
+# forecast using SPI—rather than observed—the script extracts this segment into a
+# separate CSV (SPI_SRP_WY_2023_2024.csv). It also isolates all historical data 
+# through September 30, 2023 into another file (DAT_SRP_1947_to_WY2023.csv),
+# preserving a clean, pre-forecast blueprint dataset.However, this script has been 
+# superseded and is now obsolete. 
+
+# Last Updated By: Payman Alemi
+
 #Install and load libraries and custom functions----
 library(dplyr)
 library(tidyverse)
