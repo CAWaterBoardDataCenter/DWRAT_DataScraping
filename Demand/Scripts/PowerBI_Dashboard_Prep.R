@@ -56,6 +56,12 @@ mainProcedure <- function () {
                      "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
                      "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME") %>% 
     filter(APPLICATION_NUMBER %in% mdtDF$APPLICATION_NUMBER) %>%
+    select(APPLICATION_NUMBER, POD_ID, LONGITUDE, LATITUDE,
+           all_of(ws$SUBBASIN_FIELD_ID_NAMES %>% 
+                    str_split(";") %>%
+                    unlist() %>% trimws() %>%
+                    pluck(1)),
+           ASSIGNED_MULTIPLE_SUBBASINS, ORIGINAL_ASSIGNMENT) %>%
     mutate(LONGITUDE2 = LONGITUDE, LATITUDE2 = LATITUDE) %>%
     st_as_sf(coords = c("LONGITUDE2", "LATITUDE2"), crs = ws$POD_COORDINATES_REFERENCE_SYSTEM[1]) %>%
     st_transform("epsg:3488")
@@ -303,6 +309,36 @@ mainProcedure <- function () {
   
   
   
+  # Add HUC12 assignment information to 'assignedDF'
+  assignedDF <- assignedDF %>%
+    left_join(catchDF %>% 
+                st_drop_geometry() %>%
+                select(NHD_CAT, HUC12, HUC12_NAME) %>%
+                rename(ASSIGNED_NHD_CAT = NHD_CAT,
+                       ASSIGNED_HUC12 = HUC12,
+                       ASSIGNED_HUC12_NAME = HUC12_NAME),
+              by = "ASSIGNED_NHD_CAT",
+              relationship = "many-to-one")
+  
+  
+  
+  # Add this information to 'appDF' and 'monthlyDF'
+  appDF <- appDF %>%
+    left_join(assignedDF %>%
+                st_drop_geometry() %>%
+                select(APPLICATION_NUMBER, ASSIGNED_HUC12, ASSIGNED_HUC12_NAME) %>%
+                unique(),
+              by = "APPLICATION_NUMBER", relationship = "one-to-one")
+  
+  
+  
+  monthlyDF <- monthlyDF %>%
+    left_join(appDF %>%
+                select(APPLICATION_NUMBER, ASSIGNED_HUC12, ASSIGNED_HUC12_NAME),
+              by = "APPLICATION_NUMBER", relationship = "many-to-one")
+  
+  
+  
   # Create output files
   write_xlsx(list("Monthly_Demand" = monthlyDF),
              paste0("OutputData/", ws$ID, "_Monthly_Demand.xlsx"))
@@ -483,20 +519,10 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   # "ASSIGNED_HUC12" and "ASSIGNED_NHD_CAT" are appended before writing 'assignedDF'
   st_write(assignedDF %>%
-             left_join(mdtDF %>% select(APPLICATION_NUMBER, ASSIGNED_HUC12),
-                       by = "APPLICATION_NUMBER", relationship = "many-to-one") %>%
              select(POD_ID, APPLICATION_NUMBER,
                     HUC12, HUC12_NAME, NHD_CAT, 
-                    ASSIGNED_NHD_CAT) %>%
-             left_join(catchDF %>% 
-                         st_drop_geometry() %>%
-                         select(NHD_CAT, HUC12, HUC12_NAME) %>%
-                         rename(ASSIGNED_NHD_CAT = NHD_CAT,
-                                ASSIGNED_HUC12 = HUC12,
-                                ASSIGNED_HUC12_NAME = HUC12_NAME),
-                       by = "ASSIGNED_NHD_CAT",
-                       relationship = "many-to-one") %>%
-             relocate(ASSIGNED_HUC12, ASSIGNED_HUC12_NAME, .before = ASSIGNED_NHD_CAT),
+                    ASSIGNED_HUC12, ASSIGNED_HUC12_NAME,
+                    ASSIGNED_NHD_CAT),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Water_Rights",
            append = FALSE)
