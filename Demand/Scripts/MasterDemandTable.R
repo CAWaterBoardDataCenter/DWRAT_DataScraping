@@ -124,7 +124,11 @@ assignBasinData_RR <- function (ewrimsDF) {
                       "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
                       "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
                       "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME") %>%
+<<<<<<< Updated upstream
                 select(-LATITUDE, -LONGITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
+=======
+                select(-LONGITUDE, -LATITUDE), by = c("APPLICATION_NUMBER", "POD_ID"),
+>>>>>>> Stashed changes
               relationship = "one-to-one")
   
   

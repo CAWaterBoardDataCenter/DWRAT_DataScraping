@@ -15,8 +15,12 @@ source("Scripts/Shared_Functions_Demand.R")
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
+<<<<<<< Updated upstream
 index <- 6 # Change the index to your desired watershed's corresponding "INDEX" value
 
+=======
+ws <- ws[9, ] # Change the row index to your desired watershed
+>>>>>>> Stashed changes
 
 
 
