@@ -1,4 +1,4 @@
-#install.packages ("tinytex")
+# #install.packages ("tinytex")
 # load packages -----------------------------------------------------------
 library(tidyverse)
 library(RSelenium)
@@ -10,8 +10,12 @@ require(rvest)
 require(httr)
 require(writexl)
 require(openxlsx)
-#
-# RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
+
+#----PURPOSE:----
+# This master script runs the processing and scraping scripts in order to generate the
+# PRMS and SRP dat files. After both the PRMS and SRP models are run, the remaining scripts
+# process the model outputs to generate a single supply dataset, Raw_Flows.csv, which
+# serves as an input for DWRAT. 
 
 # Include forecasted data from CNRFC in the datasets? ----
 # (This should be either "TRUE" or "FALSE")
