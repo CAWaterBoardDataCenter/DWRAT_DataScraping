@@ -1,3 +1,10 @@
+#----PURPOSE----
+# Uses RSelenium to download CNRFC temperature and precipitation 6-day forecast
+# data from weather stations in the Russian River watershed.
+
+# Last Updated by: Payman Alemi on 5/22/2025
+
+# Load Libraries----
 library(RSelenium)
 library(tidyverse)
 library(netstat)
