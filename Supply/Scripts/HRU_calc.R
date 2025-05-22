@@ -1,3 +1,11 @@
+#----PURPOSE:-----
+
+# This script was written to calculate the minimum and maximum temperatures for
+# the HRUs that produced erroneous results when the PRMS model was run in June 2024.We
+# wanted to see how absurd those temperatures were to trigger the error thresholds.
+
+#Last updated by: Payman Alemi on 5/22/2025
+
 # Scenario 1: Successful PRMS Run for 6/4/2024
 
 # Minimum Temperature Calculation ----
