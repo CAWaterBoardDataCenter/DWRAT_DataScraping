@@ -9,6 +9,7 @@ library(tinytex)
 require(rvest)
 require(httr)
 require(writexl)
+require(openxlsx)
 #
 # RUNS SCRAPING & PROCESSING SCRIPTS IN ORDER TO GENERATE FINAL DAT FILE
 
@@ -44,7 +45,7 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2024-10-31")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2025-04-30")# set to desired end date for observed meteorological data range
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -55,7 +56,7 @@ print(EndDate)
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
 End_Date <- as.Date("2025-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2024-10-31", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2025-09-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
   # usually the last day of the next month
 
 #Define the modeler_name variable-this is the first initial and last name of the modeler
@@ -81,8 +82,6 @@ source(here("Scripts/RAWS_API_Scraper.R"))
 source(here("Scripts/CIMIS_API_Scraper.R"))
 
 # Generate PRMS Dat File
-#source(here("Scripts/Dat_PRMS.R"))
-print("Running the Water Sharing Program version of 'DAT_PRMS.R'")
 source(here("Scripts/Dat_PRMS.R"))
 
 
