@@ -68,7 +68,7 @@ modeler_name = "PAlemi" # has to be altered manually
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
-source(here("Scripts/PRISM_Processor.R"))
+source(here("Scripts/PRISM_PRMS_Processor.R"))
 print(Prism_Processed)
 source(here("Scripts/NOAA_API_Scraper.R"))
 #source(here("Scripts/CNRFC_API_Scraper.R")) #downloads CNRFC data for both PRMS and SRP stations simultaneously
