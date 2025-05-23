@@ -1,8 +1,10 @@
 #----PURPOSE:----
 
-# Perform the operations of "PRISM_Selenium Scraper.R" without relying on RSelenium.
+# Perform the operations of "PRISM_Selenium Scraper.R" by using the POST method to fetch data.
 # This script downloads precipitation data for 15 locations in the Russian River watershed
 # and minimum and maximum temperature data for 8 locations in the Russian River watershed.
+
+# Last Updated by: Aakash Prashar
 
 
 #### Dependencies ####
