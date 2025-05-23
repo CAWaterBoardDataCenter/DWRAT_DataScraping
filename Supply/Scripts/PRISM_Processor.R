@@ -1,3 +1,7 @@
+#----PURPOSE:----
+# This script appropriately formats the downloaded PRISM data so that it can be 
+# imported into the PRMS DAT file.
+
 #Load libraries----
 library(here)
 library(dplyr)
@@ -8,7 +12,7 @@ library(lubridate)
 #PRISM Precipitation Data Manipulation----
 #Import PRISM_Precipitation.csv by skipping first 10 rows
 # (Removing metadata)
-ndays = 85
+
 PP <- read.csv(here("WebData/PRISM_Precip_Raw.csv"), skip = 10, header = T)
 
 #Rename columns as needed
@@ -49,5 +53,5 @@ colnames(PT) = PT_NewNames
 #Merge PT and PP dataframes and export to CSV----
 Prism_Processed = merge(x= PT, y = PP, by = "Date")
 write.csv(Prism_Processed, here("ProcessedData/Prism_Processed.csv"), row.names = FALSE)
-print("Prism_Processed.R has finished running!")
+print("Prism_Processor.R has finished running!")
 
