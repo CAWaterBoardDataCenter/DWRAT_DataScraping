@@ -1,4 +1,4 @@
-# This script completes the same objective as "Scripts/CNRFC_Scraper.R" 
+# This script completes the same objective as "Scripts/CNRFC_Selenium_Scraper.R" 
 # However, it does not rely on RSelenium
 
 # As of 6/6/2024, this script can be skipped because SDA no longer uses CNRFC

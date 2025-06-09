@@ -1,3 +1,16 @@
+#----PURPOSE: ----
+# This script restructures and manipulates the output inq.csv (simulated hydrological flows
+# for basins 1-22 of the Russian River watershed) produced by the PRMS model. 
+# It generates the PRMS precursor to Raw_Flows.csv, the supply input of DWRAT
+
+ # (1) Adds headers to the output for Date and the 22 basins
+ # (2) Whittles the dataset to the hydrological month of interest
+ # (3) Converts the flows from cubic feet per second to acre-feet per dayu
+ # (4) Adds a Year-Month column
+ # (5) Aggregates the values from daily to monthly using Year-Month
+ # (6) Exports a csv
+
+
 #Last Updated By: Payman Alemi
 #Last Updated On: 2/6/2024
 

@@ -30,7 +30,7 @@ DAT_Metadata <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Bluepri
 
 
 
-# SBI predicted values for the rest of the water year
+# SPI predicted values for the rest of the water year
 # (Used when October-February data for the water year is not yet available)
 DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values_WY2025.dat") %>%
   read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%

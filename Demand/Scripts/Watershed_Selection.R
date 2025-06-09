@@ -17,9 +17,6 @@ source("Scripts/Shared_Functions_Demand.R")
 # IMPORTANT!! CHOOSE A WATERSHED
 index <- 6 # Change the index to your desired watershed's corresponding "INDEX" value
 
-
-
-
 # No other edits are needed to this file!
 
 
@@ -50,3 +47,9 @@ stopifnot(nrow(ws) == 1)
 
 
 cat(paste0("Running script for ", ws$NAME, "\n"))
+
+
+
+# Remove 'index' from the environment
+remove(index)
+
