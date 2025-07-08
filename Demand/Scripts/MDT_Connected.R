@@ -1,7 +1,11 @@
-# The purpose of this script is to generate the input demand files for 
-# the Connected version of DWRAT; we will create 2 sets of input demand files: 
-# for the 2017-2020 Russian River Master Demand Table and 2017-2022
-# Russian River Master Demand Table
+#----PURPOSE:----
+
+
+# This script generates the input ("child") demand files for the Connected version of DWRAT; 
+# we will create 2 sets of input demand files for the 2017-2020 and 2017-2022
+# Russian River Master Demand Tables
+
+# Last Updated by: Payman Alemi on 6/10/2025
 
 #Load Libraries----
 library(tidyverse)

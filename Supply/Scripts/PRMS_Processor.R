@@ -1,7 +1,8 @@
 #----PURPOSE: ----
+
 # This script restructures and manipulates the output inq.csv (simulated hydrological flows
 # for basins 1-22 of the Russian River watershed) produced by the PRMS model. 
-# It generates the PRMS precursor to Raw_Flows.csv, the supply input of DWRAT
+# It generates the PRMS precursor to Raw_Flows.csv, the supply input of DWRAT.
 
  # (1) Adds headers to the output for Date and the 22 basins
  # (2) Whittles the dataset to the hydrological month of interest
@@ -12,7 +13,7 @@
 
 
 #Last Updated By: Payman Alemi
-#Last Updated On: 2/6/2024
+#Last Updated On: 6/26/2025
 
 #Load libraries----
 require(tidyverse) #required for %>% operator
@@ -20,7 +21,7 @@ require(tidyverse) #required for %>% operator
 #RR_PRMS_Processor----
 #Process the output CSV of the Russian River PRMS model
 ##Import RR PRMS CSV----
-PRMS_Output_Folder = "C:\\RR_PRMS\\PRMS\\output"
+PRMS_Output_Folder = "C://Users//PHoupt//Desktop//DWRATTTT//RR_PRMS//PRMS//output"
 PRMS_Output_File_Path = list.files(PRMS_Output_Folder, pattern = "inq.csv$", full.names = TRUE) %>% sort() %>% tail(1)
 RR <- read.csv(PRMS_Output_File_Path)
 

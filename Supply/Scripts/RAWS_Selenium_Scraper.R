@@ -1,3 +1,10 @@
+#----PURPOSE:----
+
+# OBSOLETE and SUPERSEDED by RAWS_API_Scraper.R This script uses RSelenium to download
+# temperature and precipitation data for RAWS stations. It substitutes missing entries with PRISM data
+# and outputs a processed CSV.
+
+
 #SCRIPT LAST UPDATED:
     #BY: Payman Alemi
     #ON: 5/22/2023

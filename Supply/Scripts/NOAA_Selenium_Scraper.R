@@ -1,7 +1,12 @@
+#----PURPOSE:----
+# OBSOLETE--superseded by NOAA_API_Scraper.R
+
 # As a replacement for the downsizer application, collect climate data from NOAA
 # Get daily values for Precipitation and Temperature (Min/Max) in mm and degrees Celsius, respectively
 
+# Last Updated by: Payman Alemi on 6/26/2025
 
+#----Load libraries----
 library(tidyverse)
 library(RSelenium)
 library(wdman)

@@ -1,6 +1,12 @@
+#---PURPOSE----
 
-# This script adjusts the data downloaded by 'NOAA_API_Scraper.R' to be compatible with the DAT format
-# It also adds missing and forecasted data to the dataset
+# This script adjusts the data downloaded by 'NOAA_API_Scraper.R' to be compatible 
+# with the Dat PRMS file format.
+# It also adds missing and forecast data to the dataset.
+# The final output, NOAA_API_Processed.csv, has precipitation in mm
+# and temperatures in degrees Celsius. 
+
+
 
 require(tidyverse)
 require(readxl)

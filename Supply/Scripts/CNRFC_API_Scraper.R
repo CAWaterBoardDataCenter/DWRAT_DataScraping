@@ -1,8 +1,10 @@
+#---PURPOSE----
+
 # This script completes the same objective as "Scripts/CNRFC_Selenium_Scraper.R" 
-# However, it does not rely on RSelenium
+# However, it relies on an API instead of RSelenium.
 
 # As of 6/6/2024, this script can be skipped because SDA no longer uses CNRFC
-# forecast data. This script downloads the 6-day forecasted
+# forecast data. This script downloads the 6-day forecast
 # temperature and precipitation data via API for the 13 CNRFC stations that 
 # correspond to our observed weather stations. Most CNRFC stations correspond to
 # more than one observed weather station--that's why we have fewer CNRFC

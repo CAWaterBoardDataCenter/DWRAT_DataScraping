@@ -1,3 +1,11 @@
+#----PURPOSE:----
+# This script bulk downloads the eWRIMS documents for the water rights 
+# identified by the GIS pre-processing step for the watershed ws in the reporting
+# timeframe. You don't have to download thousands of docs manually anymore; this script
+# dumps them all in the watershed's Reports folder. 
+
+#Last Updated by: Payman Alemi on 6/10/2025
+
 # Load libraries, hared functions, and ws dataframe----
 library(tidyverse)
 library(here)

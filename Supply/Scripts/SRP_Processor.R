@@ -1,3 +1,19 @@
+#----PURPOSE:---- 
+
+# This script generates the raw_flows.csv that serves as the supply input
+# for the Russian River DWRAT!
+
+# 1) Imports and processes .gag inflow files for 6 SRP stream gages
+# 2) Applies monthly reduction factors to each gages' flow data
+# 3) Generates subbasin flow estimates(Sub23 - Sub28) by combining 
+# gage flows based on hydrologic formulas
+# 4) Converts daily cubic feet values into acre-feet
+# 5) Aggregates flows into monthly flows matching DWRAT's expected input format
+# 6) Merges SRP monthly flows with PRMS observed data for the same hydrologic period
+# 7) Exports a combined Raw Flows CSV formatted for DWRAT
+
+# Last Updated by: Payman Alemi on 6/10/2025
+
 ## load packages
 library(tidyverse)
 library(lubridate)

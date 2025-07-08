@@ -1,4 +1,12 @@
-## load packages
+#----PURPOSE----
+
+# SUPERSEDED BY CIMIS_API_Scraper.R
+# Scrapes temperature and precipitation data from CIMIS weather stations in the 
+# Upper Russian River via RSelenium. 
+
+# Last Updated by: Payman Alemi on 6/26/2025
+
+# load packages----
 library(RSelenium)
 library(tidyverse)
 library(netstat)

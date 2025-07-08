@@ -1,3 +1,11 @@
+#----PURPOSE:----
+# This master script runs the processing and scraping scripts in order to generate the
+# PRMS and SRP dat files. After both the PRMS and SRP models are run, the remaining scripts
+# process the model outputs to generate a single supply dataset, Raw_Flows.csv, which
+# serves as an input for DWRAT. 
+
+# Last Updated: By Payman Alemi on 6/26/2025
+
 # #install.packages ("tinytex")
 # load packages -----------------------------------------------------------
 library(tidyverse)
@@ -11,14 +19,10 @@ require(httr)
 require(writexl)
 require(openxlsx)
 
-#----PURPOSE:----
-# This master script runs the processing and scraping scripts in order to generate the
-# PRMS and SRP dat files. After both the PRMS and SRP models are run, the remaining scripts
-# process the model outputs to generate a single supply dataset, Raw_Flows.csv, which
-# serves as an input for DWRAT. 
 
 # Include forecasted data from CNRFC in the datasets? ----
 # (This should be either "TRUE" or "FALSE")
+
 includeForecast <- FALSE
 
 # Include flagging and remediation blocks in Dat_PRMS.R? 
@@ -49,7 +53,9 @@ StartDate <- data.frame(date = StartDate, day = StartDay, month = StartMonth, ye
 print(StartDate)
 
 ## set end date----
-EndDate <- as.Date("2025-04-30")# set to desired end date for observed meteorological data range
+
+EndDate <- as.Date("2025-06-30")# set to desired end date for observed meteorological data range
+
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
 EndYear <- year(EndDate)
@@ -64,7 +70,7 @@ Hydro_EndDate = as.Date("2025-09-30", format = "%Y-%m-%d") #serves as the end da
   # usually the last day of the next month
 
 #Define the modeler_name variable-this is the first initial and last name of the modeler
-modeler_name = "PAlemi" # has to be altered manually
+modeler_name = "PHoupt" # has to be altered manually
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
@@ -89,6 +95,21 @@ source(here("Scripts/CIMIS_API_Scraper.R"))
 source(here("Scripts/Dat_PRMS.R"))
 
 
+
+
+# NOTE: If this is the first model run with 'EndDate' >= March 1st, 
+#       additional steps are required!
+
+# [1] Run through PRMS and generate a new "rr_budget.out2" file
+
+# [2] Then run this script:
+# source("Scripts/Dat_Most_Similar_Water_Year_Updater.R")
+
+# [3] Update "Dat_PRMS.R" and "Dat_SRP.R" if it isn't automatically performed by the above script
+
+# [4] After that, run through "Dat_PRMS.R" and the rest of the PRMS process again
+
+
 # generate SRP model input ------------------------------------------------
 #source(here("Scripts/CNRFC_SRP_Processor.R")) #Formats already downloaded CNRFC forecast data for SRP
 source(here("Scripts/PRISM_SRP_Processor.R")) #Formats already downloaded PRISM observed data for SRP
@@ -104,4 +125,4 @@ source(here("Scripts/PRMS_Processor.R"))
 
 
 # SRP Post-Processing Script
-source(here("Scripts/SRP_Post_Processing.R"))
+source(here("Scripts/SRP_Processor.R"))

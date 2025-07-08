@@ -1,3 +1,7 @@
+#----PURPOSE:----
+
+# OBSOLETE because SDA has replaced Downsizer with NOAA API downloads
+
 # The Downsizer application is one of the first steps in running the PRMS Model
 # However, it cannot be perfectly automated
 
@@ -5,6 +9,8 @@
 # It also prepares the file output for the next step
 
 # Note: This script will only work on devices that use Windows
+
+# Last Updated by: Payman Alemi on 6/26/2025
 
 
 #### Dependencies ####

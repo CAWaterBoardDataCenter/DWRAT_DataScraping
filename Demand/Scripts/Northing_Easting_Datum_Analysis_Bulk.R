@@ -4,8 +4,8 @@ require(sf)
 # STEP 1: Define a data frame with multiple Northing and Easting values
 # You can modify this table to include your list of coordinates
 coords_df <- data.frame(
-  Northing = c(2212993, 2187465, 1995644, 2224576),
-  Easting = c(6258764, 6223862, 6371650, 6258393)
+  Northing = c(1916474),
+  Easting = c(6015808)
 )
 
 # Function to convert a single Northing/Easting pair for both NAD27 and NAD83

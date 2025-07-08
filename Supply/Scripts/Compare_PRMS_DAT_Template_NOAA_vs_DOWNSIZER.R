@@ -1,3 +1,14 @@
+#----PURPOSE----
+# --------------------------------------------------------------------------------
+# One-time script, ARCHIVABLE. In 2024, when the SDA unit manually constructed the DAT file for running PRMS,
+# SDA used both Downsizer and NOAA to collect data. This script compared
+# the data in both downloads to identify differences.
+
+# Last Updated by: Payman Alemi on 6/26/2025
+# --------------------------------------------------------------------------------
+
+
+# Load packages----
 require(tidyverse)
 require(readxl)
 require(writexl)

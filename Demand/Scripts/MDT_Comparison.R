@@ -1,3 +1,16 @@
+#----PURPOSE:----
+# One-off comparison script that can be archived--not used in any ongoing process as of 6/10/2025
+  #1. Validates the construction and consistency of various Master Demand Tables for the 
+  # Russian River (RR) watershed across multiple years
+
+  #2. Investigate missing or newly added water rights between time ranges 
+  # (2017–2019, 2017–2020, 2017–2022).
+
+  #3. Produces an comparison summary of annual demand values across the datasets
+  #4. Identifies filtering or inclusion errors due to POD status or late updates to ewrims.
+
+# Last Updated by: Payman Alemi on 6/10/2025
+
 #Load Libraries
 library(tidyverse)
 library(data.table)

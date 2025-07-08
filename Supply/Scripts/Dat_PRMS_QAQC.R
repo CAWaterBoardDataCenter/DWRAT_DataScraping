@@ -1,3 +1,10 @@
+#----PURPOSE----
+# ARCHIVABLE. 1-time script used during SDA unit's QAQC efforts in June 2025 to 
+# correct the Dat_PRMS file after absurd meteorological values were causing the PRMS model 
+# to fail during runs. 
+
+# Last updated by: Payman Alemi on 6/26/2025
+
 #Install and load libraries----
 library(dplyr)
 library(tidyverse)

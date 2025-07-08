@@ -1,7 +1,14 @@
-#Last Updated By: Payman Alemi
-#Last Updated On: 4/18/2023
+#----PURPOSE:----
+#OBSOLETE script
 
-#Load libraries
+# Aggregated meteorological data for CIMIS 83 and CIMIS 103 stations at daily
+# time steps for the 6-day CNRFC forecast range--OBSOLETE because the SDA unit
+# no longer relies on the CNRFC forecast for meteorological forecasts.
+
+#Last Updated By: Payman Alemi
+#Last Updated On: 6/26/2025
+
+#Load libraries----
 library(here)
 library(dplyr)
 library(tidyr)

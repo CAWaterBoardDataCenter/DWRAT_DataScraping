@@ -1,3 +1,5 @@
+#----PURPOSE----
+
 #Download the USGS Discharge data [CFS] from station EF Russian 11461500
 #Change on Time Span to select the observed data range
 #Select Data to graph--pick Discharge, cubic feet per second

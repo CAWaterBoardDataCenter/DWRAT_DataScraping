@@ -20,8 +20,11 @@ mainProcedure <- function () {
   #   (4) "[ID]_AppID_List.xlsx" (a spreadsheet with just application numbers)
   #   (5) "[ID]_PODs.xlsx" (a spreadsheet with geographic coordinates, sub-basin assignments, and HUC-12 assignments)
   
+  # It will also generate a geopackage file with layers useful for the dashboard
   
   
+  
+  # Get the watershed and demand dataset range
   source("Scripts/Watershed_Selection.R")
   source("Scripts/Dataset_Year_Range.R")
   
@@ -136,6 +139,12 @@ mainProcedure <- function () {
   # Reduce the size of 'huc12' to only ones relevant to the watershed
   huc12 <- huc12[st_intersects(st_buffer(wsBound, -5), huc12) %>%
           unlist(), ]
+  
+  
+  
+  # Clip the extent of the HUC12 boundaries to the watershed boundaries
+  huc12 <- huc12 %>%
+    st_intersection(wsBound)
   
   
   
@@ -340,32 +349,53 @@ mainProcedure <- function () {
   
   
   # Create output files
-  write_xlsx(list("Monthly_Demand" = monthlyDF),
-             paste0("OutputData/", ws$ID, "_Monthly_Demand.xlsx"))
+  write_csv(monthlyDF %>%
+              select(APPLICATION_NUMBER, YEAR, MONTH, TYPE, DIVERSION),
+            paste0("OutputData/", ws$ID, "_Monthly_Demand.csv"))
   
   
   
-  write_xlsx(list("DWRAT_Allocations" = allocationsDF),
+  write_xlsx(list("Sheet1" = allocationsDF %>%
+                    select(APPLICATION_NUMBER, ALLOCATIONS,
+                           Curtailment, DEMAND, `SHORTAGE %`,
+                           BASIN, PRIORITY, Month) %>%
+                    rename(`Application ID` = APPLICATION_NUMBER)),
              paste0("OutputData/", ws$ID, "_DWRAT_Allocations.xlsx"))
   
   
   
-  write_xlsx(list("AppID_List" = appDF),
+  write_xlsx(list("Sheet1" = appDF %>%
+                    select(APPLICATION_NUMBER)),
              paste0("OutputData/", ws$ID, "_AppID_List.xlsx"))
   
   
   
-  write_xlsx(list("MDT" = mdtDF),
-             paste0("OutputData/", ws$ID, "_MDT.xlsx"))
+  write_csv(mdtDF %>%
+              mutate(BASIN = ASSIGNED_NHD_CAT) %>%
+              select(APPLICATION_NUMBER, all_of(contains("_MEAN_DIV")), 
+                     TOTAL_EXPECTED_ANNUAL_DIVERSION, TOTAL_MAY_SEPT_DIV,
+                     WATER_RIGHT_TYPE, WATER_RIGHT_STATUS, PRIMARY_OWNER_TYPE,
+                     APPLICATION_PRIMARY_OWNER, SOURCE_NAME, TRIB_DESC, WATERSHED,
+                     PRIMARY_USE, `FULLY NON-CONSUMPTIVE`, POWER_DEMAND_ZEROED,
+                     ASSIGNED_PRIORITY_DATE_SUB, ASSIGNED_PRIORITY_DATE_SOURCE,
+                     PRE_1914, RIPARIAN, APPROPRIATIVE, FACE_VALUE_AMOUNT_AF,
+                     INI_REPORTED_DIV_AMOUNT_AF, NULL_DEMAND, PERCENT_FACE,
+                     ZERO_DEMAND, ORIGINAL_APPLICATION_NUMBER, BASIN),
+            paste0("OutputData/", ws$ID, "_MDT.csv"))
   
   
   
-  write_xlsx(list("PODs" = assignedDF %>% st_drop_geometry()),
+  write_xlsx(list("TD_PODs" = assignedDF %>% 
+                    st_drop_geometry() %>%
+                    select(APPLICATION_NUMBER, POD_ID,
+                           LATITUDE, LONGITUDE, HUC12,
+                           HUC12_NAME, NHD_CAT)),
              paste0("OutputData/", ws$ID, "_PODs.xlsx"))
   
   
   
   # Finally, generate a geopackage with layers useful to the visualization
+  # (Metadata will appear in an accompanying HTML file)
   generateGPKG(ws, wsBound, assignedDF, huc12, catchDF, mdtDF)
   
   
@@ -472,6 +502,9 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   # (3) HUC-12 sub-basins ('huc12')
   # (4) Hydrologic Model NHD Catchments ('catchDF')
   # (5) Hydrologic Model NHD Flowlines (need to read in - watershed-specific!!!)
+  # (6) Watershed Mask
+  
+  # (In an accompanying function, metadata will be generated for these layers)
   
   
   
@@ -494,9 +527,11 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   # (It's usually called "COMID")
   fieldName <- if_else("COMID" %in% names(flowLines),
                        "COMID",
-                       ws$SUBBASIN_FIELD_ID_NAMES %>%
-                         str_split(";") %>% unlist() %>%
-                         trimws() %>% head(1))
+                       if_else("reachcode" %in% names(flowLines),
+                               "reachcode",
+                               ws$SUBBASIN_FIELD_ID_NAMES %>%
+                                 str_split(";") %>% unlist() %>%
+                                 trimws() %>% head(1)))
   
     
   
@@ -509,7 +544,37 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   
-  # Write these layers to a file
+  # Prepare the watershed mask layer next
+  # Use 'wsBound' and a generic rectangle that covers California to create a mask layer
+  # (The mask layer will be the rectangle with the watershed's polygon subtracted out)
+  
+  
+  
+  # Create the generic rectangle layer
+  universalMask <- c(-131.8766, 50.95556, 
+                     -105.8087, 50.89833, 
+                     -105.8659, 24.83043, 
+                     -131.9338, 24.88766, 
+                     -131.8766, 50.95556) %>%
+    matrix(ncol = 2, byrow = TRUE) %>%
+    data.frame() %>%
+    st_as_sf(coords = 1:2, crs = "epsg:4269") %>%
+    summarize(geometry = st_combine(geometry)) %>% 
+    st_cast("POLYGON") %>%
+    st_transform(st_crs(wsBound))
+  
+  
+  
+  # Create the mask layer for the watershed
+  # (The mask layer will contain no fields except for "geometry" and an ID column)
+  wsMask <- st_difference(universalMask, wsBound) %>%
+    select(geometry) %>%
+    mutate(FEATUREID = 1) %>%
+    select(FEATUREID, geometry)
+  
+  
+  
+  # Write all of these layers to a file
   st_write(wsBound,
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"), 
            layer = "Watershed_Boundary",
@@ -564,9 +629,237 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   
+  st_write(wsMask,
+           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
+           layer = "Watershed_Mask",
+           append = FALSE)
+  
+  
+  
+  # Generate metadata about these layers next
+  generateMetadata(ws)
+  
+  
+  
   # Output a completion message
   cat("\n\n")
   print("Check the 'OutputData' folder for the files to be used in the PowerBI dashboard!")
+  
+}
+
+
+
+generateMetadata <- function (ws) {
+  
+  # Produce metadata for the resultant geopackage of this script
+  # (This information will be useful for making the dataset public)
+  # The output will be an HTML file
+  
+  
+  
+  # Check first if the metadata document already exists
+  # (Delete it if this is the case)
+  if (file.exists(paste0("OutputData/", ws$ID, "_GIS_Layers_Metadata.html"))) {
+    
+    unlink(paste0("OutputData/", ws$ID, "_GIS_Layers_Metadata.html"))
+    
+  }
+  
+  
+  
+  # Initiate a new HTML document
+  htmlVec <- c("<!DOCTYPE html>",
+               "",
+               "<html lang=\"en\">",
+               "",
+               "<head>",
+               "",
+               "<meta charset=\"UTF-8\">",
+               "",
+               "<title>Watershed GIS Metadata</title>",
+               "",
+               "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">",
+               "",
+               "<style>",
+               "",
+               "body {",
+               "  font-family: \"Avenir Next W01\", \"Avenir Next W00\", \"Avenir Next\", \"Avenir\", \"Helvetica Neue\", sans-serif;",
+               "  font-size: 12pt;", 
+               "}",
+               "",
+               "h2 {",
+               "  margin-top: 36pt;",
+               "}",
+               "",
+               ".hintText {",
+               "  color: blue;",
+               "}",
+               "",
+               "</style>",
+               "",
+               "</head>",
+               "",
+               "<body>",
+               "",
+               "<h1>Metadata for ArcGIS Portal</h1>",
+               paste0("<p>",
+                      paste0("Instructions: Copy the text below into each of the ",
+                             "corresponding sections on Portal!"),
+                      "</p>"),
+               paste0("<a href = ",
+                      "\"https://gispublic.waterboards.ca.gov/portal/home/content.html#my\" ",
+                      "target = \"_blank\">",
+                      "Link to Portal Content",
+                      "</a>"),
+               # Title
+               "<h2>Title</h2>",
+               paste0("<p>", paste0(ws$NAME, " Watershed GIS Layers"), "</p>"),
+               "",
+               # Summary
+               "<h2>Summary</h2>",
+               paste0("<p>", 
+                      paste0("This GIS dataset includes a comprehensive set of ",
+                             "spatial layers prepared for modeling and analysis of ",
+                             "water supply, demand, and availability within the ",
+                             ws$NAME, " ",
+                             "watershed. The dataset integrates surface hydrology, ",
+                             "water right diversion points, and watershed boundaries ",
+                             "to support technical assessments by the California State ",
+                             "Water Board’s Supply & Demand Assessment Unit (SDA)."),
+                      "</p>"),
+               "",
+               # Description
+               "<h2>Description</h2>",
+               paste0("<p>",
+                      paste0("This dataset comprises the core spatial components ",
+                             "used in the ", ws$NAME, " watershed modeling framework."),
+                      "</p>"),
+               paste0("<p>",
+                      paste0("It includes: "),
+                      "</p>"),
+               # Ordered List of Layer Descriptions
+               paste0("<ol>",
+                      paste0("<li>",
+                             "<b>Water Rights Point of Diversion</b>: ",
+                             "Points of diversion for water rights that are currently ",
+                             "active in the watershed. The original source is ",
+                             "the Electronic Water Rights Information Management System ",
+                             "(eWRIMS), which is maintained by the State Water Board.",
+                             "</li>"),
+                      paste0("<li>",
+                             "<b>NHD Flowlines</b>: ",
+                             "Modified surface water features (rivers, streams, ",
+                             "channels) from the National Hydrography Dataset (NHD). ",
+                             "In the SDA hydrologic modeling procedure, one major ",
+                             "flowline is assigned to each catchment in the watershed.",
+                             "</li>"),
+                      paste0("<li>",
+                             "<b>HUC-12 Subbasins</b>: ",
+                             "Subdivisions from the Hydrologic Unit Code (HUC) dataset ",
+                             "that enable a more granular regional analysis within a ",
+                             "watershed. Wherever applicable, the HUC-12 subbasins ",
+                             "are clipped to the extent of the California land mass.",
+                             "</li>"),
+                      paste0("<li>",
+                             "<b>NHD Catchments</b>: ",
+                             "Fine-scale hydrologic units that support water balance ",
+                             "modeling and water availability analysis. The catchments ",
+                             "are sometimes split or combined to better suit the ",
+                             "watershed's modeling needs, so this layer may differ from ",
+                             "the original NHD source.",
+                             "</li>"),
+                      paste0("<li>",
+                             "<b>Watershed Boundary</b>: ",
+                             "Delineation of the modeled watershed boundaries. This ",
+                             "polygon is derived from the official HUC boundaries ",
+                             "maintained by the United States Geological Survey (USGS).",
+                             "</li>"),
+                      paste0("<li>",
+                             "<b>Watershed Mask</b>: ",
+                             "A polygon used to spatially constrain modeling and ",
+                             "analysis to the watershed basin extent.",
+                             "</li>"),
+                      "</ol>"),
+               paste0("<p>",
+                      paste0("This suite of data is used by the California State Water ",
+                             "Resources Control Board (SWRCB) for scenario modeling, ",
+                             "hydrologic assessment, water rights evaluation, and drought ",
+                             "response planning. It supports coordination across State ",
+                             "agencies, local stakeholders, and the public in efforts to ",
+                             "manage limited surface water resources."),
+                      "</p>"),
+               paste0("<p>",
+                      paste0("For more information, please contact the Supply & Demand ",
+                             "Assessment Unit (",
+                             paste0("<a href = \"mailto:DWR-SDA@waterboards.ca.gov\">",
+                                    "DWR-SDA@waterboards.ca.gov",
+                                    "</a>"),
+                             ")."),
+                      "</p>"),
+               "",
+               # Topic Categories
+               "<h2>Topic Categories</h2>",
+               paste0("<ol>",
+                      paste0("<li>",
+                             "Division of Water Rights",
+                             "</li>"),
+                      paste0("<li>",
+                             "Boundaries",
+                             "</li>"),
+                      paste0("<li>",
+                             "Inland Waters",
+                             paste0("<ul>",
+                                    "<li>",
+                                    "Choose \"Rivers and Streams\"!",
+                                    "</li>",
+                                    "</ul>"),
+                             "</li>"),
+                      "</ol>"),
+               paste0("<p class = \"hintText\">",
+                      paste0("<i>Hint</i>: You'll have to input each category ",
+                             "one-by-one. Click on the label that appears after ",
+                             "pasting a text string into the \"Assign ",
+                             "Category\" box!"),
+                      "</p>"),
+               "",
+               # Tags
+               "<h2>Tags</h2>",
+               paste0("<p>",
+                      paste0(ws$NAME, ", SDA, Water, Watershed, Surface Water, ",
+                             "NHD, HUC, eWRIMS, ",
+                             "California, CA, State Water Resources Control Board, SWRCB, ",
+                             "Division of Water Rights, DWR, Supply, Demand"),
+                      "</p>"),
+               paste0("<p class = \"hintText\">",
+                      paste0("<i>Hint</i>: These can be entered all at once! Triple-click ",
+                             "the above line to select all of the tags at once! Press ",
+                             "\"Enter\" after pasting the above tags into ",
+                             "the \"Edit Tags\" section!"),
+                      "</p>"),
+               "",
+               # Credits
+               "<h2>Credits (Attribution)</h2>",
+               paste0("<p>",
+                      paste0("The USGS is the original source of the boundaries ",
+                             "and NHD data. The SWRCB Division of Water Rights is ",
+                             "the original source for information on California's water ",
+                             "rights and their PODs. Modifications to the NHD catchments ",
+                             "and flowlines were performed in conjunction with Paradigm ",
+                             "Environmental."),
+                      "</p>"),
+               "",
+               "<h2>HTML Info (Don't Copy This)</h2>",
+               paste0("<p>",
+                      paste0("This file was generated on: ", Sys.time()),
+                      "</p>"),
+               "</body>",
+               "",
+               "</html>")
+  
+  
+  
+  # Save the HTML to a file
+  write_lines(htmlVec, paste0("OutputData/", ws$ID, "_GIS_Layers_Metadata.html"))
   
 }
 
