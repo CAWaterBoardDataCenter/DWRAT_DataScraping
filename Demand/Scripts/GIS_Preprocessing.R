@@ -203,7 +203,7 @@ mainProcedure <- function () {
     filter(grepl(ws$WATERSHED_COLUMN_SEARCH_STRING, WATERSHED, ignore.case = TRUE) |
              grepl(ws$SOURCE_NAME_COLUMN_SEARCH_STRING, SOURCE_NAME, ignore.case = TRUE) |
              grepl(ws$TRIB_DESC_COLUMN_SEARCH_STRING, TRIB_DESC, ignore.case = TRUE))
-
+  
   
   
   # Additional watershed-specific searches can be added here as needed
@@ -217,11 +217,32 @@ mainProcedure <- function () {
   
   
   
+  #### Task 5 Half a Mile Outside of the Watershed Boundary ####
+  
+  # Flag PODs that are outside of the watershed boundaries, but no more than half a mile away
+  
+  
+  
+  # Get a polygon that contains only a half-mile buffer on the outside of the watershed
+  # (This would be the difference between a half-mile buffered polygon and the original watershed boundaries)
+  halfMileBuffer <- st_difference(st_buffer(wsBound, 0.5 * 5280 / 3.28084), # Meters > Feet > Miles
+                                  wsBound)
+
+  
+  
+  # Flag PODs using 'halfMileBuffer'
+  wsBound_Outside_HalfMile_Intersect <- st_intersection(pod_points_statewide_spatial, halfMileBuffer)
+  
+  
+  
+  #### Output Results #### 
+  
   # Output the four variables to a spreadsheet for further analysis
   # ('WS_pod_points_Merge', 'wsLine_Buffer_Intersect', 'wsBound_Inner_Intersect', and 'wsMention')
   #outputResults(ws, WS_pod_points_Merge, wsLine_Buffer_Intersect, wsBound_Inner_Intersect, wsMention)
   #outputResults_NoTask2(ws, WS_pod_points_Merge, wsBound_Inner_Intersect, wsMention)
-  outputResults(ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention)
+  outputResults(ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention,
+                wsBound_Outside_HalfMile_Intersect)
   
   
   
@@ -321,9 +342,9 @@ deleteIdentical <- function (gisDF, colName) {
 
 
 
-outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention) {
+outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, wsBound_Inner_Intersect, wsMention, wsBound_Outside_HalfMile_Intersect) {
   
-  # Write the four output variables to a spreadsheet
+  # Write the five output variables to a spreadsheet
   # (Create a shapefile as well)
   
   
@@ -335,7 +356,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   # Create a combined version of all four variables
   allDF <- wsBound_Inner_Intersect %>%
-    bind_rows(wsBound_OneMile_Intersect, WS_pod_points_Merge, wsMention) %>%
+    bind_rows(wsBound_OneMile_Intersect, WS_pod_points_Merge, wsMention, wsBound_Outside_HalfMile_Intersect) %>%
     unique() %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     deleteIdentical("POD_ID")
@@ -347,6 +368,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
     mutate(MATCHING_MTRS_OR_FFMTRS = POD_ID %in% WS_pod_points_Merge$POD_ID,
            LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY = POD_ID %in% wsBound_OneMile_Intersect$POD_ID,
            ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = POD_ID %in% wsBound_Inner_Intersect$POD_ID,
+           LESS_THAN_HALFMILE_OUTSIDE_WATERSHED_BOUNDARY = POD_ID %in% wsBound_Outside_HalfMile_Intersect$POD_ID,
            MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = POD_ID %in% wsMention$POD_ID)
   
   
@@ -487,17 +509,25 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
     mutate(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = TRUE)
   
   
+  task5 <- wsBound_Outside_HalfMile_Intersect %>%
+    st_drop_geometry() %>%
+    select(APPLICATION_NUMBER, POD_ID) %>%
+    mutate(LESS_THAN_HALFMILE_OUTSIDE_WATERSHED_BOUNDARY = TRUE)
   
-  # Join all four variables together
+  
+  
+  # Join all five variables together
   combinedDF <- task1 %>%
     full_join(task2, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
     full_join(task3, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
+    full_join(task5, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
     full_join(task4, by = c("APPLICATION_NUMBER", "POD_ID")) %>%
     arrange(APPLICATION_NUMBER, POD_ID) %>%
     mutate(MATCHING_MTRS_OR_FFMTRS = replace_na(MATCHING_MTRS_OR_FFMTRS, FALSE),
            LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY = replace_na(LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY, FALSE),
            ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY = replace_na(ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, FALSE),
-           MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = replace_na(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION, FALSE))
+           MENTIONS_WATERSHED_IN_SOURCE_INFORMATION = replace_na(MENTIONS_WATERSHED_IN_SOURCE_INFORMATION, FALSE),
+           LESS_THAN_HALFMILE_OUTSIDE_WATERSHED_BOUNDARY = replace_na(LESS_THAN_HALFMILE_OUTSIDE_WATERSHED_BOUNDARY, FALSE))
   
   
   
@@ -521,7 +551,8 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   writeData(wb, "R_Review",
             allDF %>%
               select(APPLICATION_NUMBER, POD_ID, URL, LATITUDE, LONGITUDE, NORTH_COORD, EAST_COORD, WATERSHED, SOURCE_NAME, TRIB_DESC, MATCHING_MTRS_OR_FFMTRS,
-                     LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, MENTIONS_WATERSHED_IN_SOURCE_INFORMATION) %>%
+                     LESS_THAN_ONE_MILE_WITHIN_WATERSHED_BOUNDARY, ONE_MILE_OR_MORE_WITHIN_WATERSHED_BOUNDARY, LESS_THAN_HALFMILE_OUTSIDE_WATERSHED_BOUNDARY, 
+                     MENTIONS_WATERSHED_IN_SOURCE_INFORMATION) %>%
               mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
                      REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
                      REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,

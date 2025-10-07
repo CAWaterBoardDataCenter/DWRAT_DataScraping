@@ -6,7 +6,7 @@
 # it has a commented out section that performs QAQC checks for absurd temperature and precipitation
 # values. 
 
-# Last Updated by: Payman Alemi on 6/26/2026
+# Last Updated by: Payman Alemi on 10/3/2025
 
 # Start timer
 start_time <- Sys.time()
@@ -28,7 +28,7 @@ source("../Demand/Scripts/Shared_Functions_Demand.R")
 # Import Pre-CWY (CWY = Current Water Year) SRP CSV file
 SRP_Blueprints_Path = makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT SRP Blueprints\\")
 
-PreCWY_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2024.csv")) %>%
+PreCWY_SRP = read.csv(file = paste0(SRP_Blueprints_Path, "DAT_SRP_1947_to_WY2025.csv")) %>%
   mutate(Date = as.Date(paste0(year, "-", month, "-", day), format = "%Y-%m-%d"))
 
 #Convert Date field from character to date format 

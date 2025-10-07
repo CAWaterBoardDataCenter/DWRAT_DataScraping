@@ -4,7 +4,7 @@
 # process the model outputs to generate a single supply dataset, Raw_Flows.csv, which
 # serves as an input for DWRAT. 
 
-# Last Updated: By Payman Alemi on 6/26/2025
+# Last Updated: By Payman Alemi on 10/2/2025
 
 # #install.packages ("tinytex")
 # load packages -----------------------------------------------------------
@@ -30,8 +30,8 @@ includeForecast <- FALSE
 # that the flagging and remediation code blocks in the Dat_PRMS.R script will be executed. FALSE
 # means that those blocks will be skipped;
 
-includeFlagging <- TRUE
-includeRemediation <- TRUE
+includeFlagging <- FALSE
+includeRemediation <- FALSE
 
 # set start and end dates -------------------------------------------------
 ## Set start dates----
@@ -54,7 +54,7 @@ print(StartDate)
 
 ## set end date----
 
-EndDate <- as.Date("2025-06-30")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2025-09-30")# set to desired end date for observed meteorological data range
 
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
@@ -70,7 +70,7 @@ Hydro_EndDate = as.Date("2025-09-30", format = "%Y-%m-%d") #serves as the end da
   # usually the last day of the next month
 
 #Define the modeler_name variable-this is the first initial and last name of the modeler
-modeler_name = "PHoupt" # has to be altered manually
+modeler_name = "PAlemi" # has to be altered manually
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
@@ -95,7 +95,7 @@ source(here("Scripts/CIMIS_API_Scraper.R"))
 source(here("Scripts/Dat_PRMS.R"))
 
 
-
+# Test Comment 7/31/2025
 
 # NOTE: If this is the first model run with 'EndDate' >= March 1st, 
 #       additional steps are required!

@@ -60,14 +60,28 @@ unitFixer <- function (inputDF, ws) {
   
   
   # Filter out entries where no action is required
-  # Also, only keep records that relevant to the years in 'inputDF'
+  # Also, only keep records that relevant to the reporting years in 'inputDF'
+  
+  # (Reporting years are: Calendar years before 2022 and water years afterwards)
+  
+  # 'inputDF' does not contain reporting years, so the reporting years 
+  # must be inferred indirectly for water years 
   unitsQAQC <- unitsQAQC %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR %in% inputDF$YEAR)
+    filter(if_else(YEAR < 2022, YEAR %in% inputDF$YEAR,
+                   YEAR %in% inputDF$YEAR[inputDF$MONTH < 10]))
+  
   
   unitsQAQC_Med <- unitsQAQC_Med %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR %in% inputDF$YEAR)
+    filter(if_else(YEAR < 2022, YEAR %in% inputDF$YEAR,
+                   YEAR %in% inputDF$YEAR[inputDF$MONTH < 10]))
+  
+  
+  # NOTE: Having Oct - Dec data in a year does not mean that a report was 
+  # submitted for the water year equal to that year (since that Oct - Dec data
+  # is part of the next water year)
+  
   
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
@@ -123,7 +137,8 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Keep only entries in 'qaqcDF' that are relevant to the years in 'inputDF'
   qaqcDF <- qaqcDF %>%
-    filter(YEAR %in% inputDF$YEAR)
+    filter(if_else(YEAR < 2022, YEAR %in% inputDF$YEAR,
+                   YEAR %in% inputDF$YEAR[inputDF$MONTH < 10]))
   
   
   

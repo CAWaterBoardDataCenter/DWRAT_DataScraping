@@ -365,6 +365,25 @@ mainProcedure <- function () {
   
   
   
+  # Create a catchment-focused spreadsheet
+  # (The connectivity matrix spreadsheet is required for this)
+  connMat <- getXLSX(ws,
+                     "IS_SHAREPOINT_PATH_CONNECTIVITY_MATRIX_SPREADSHEET",
+                     "CONNECTIVITY_MATRIX_SPREADSHEET_PATH",
+                     "CONNECTIVITY_MATRIX_WORKSHEET_NAME")
+  
+  
+  
+  # Rename the first column of 'connMat' to "BASIN"
+  names(connMat)[1] <- "BASIN"
+  
+  
+  
+  # For each catchment, identify its final outlet catchment (and HUC-12 sub-basin)
+  outletDF <- findOutlets(catchDF, connMat)
+  
+  
+  
   # Create output files
   write_csv(monthlyDF %>%
               select(APPLICATION_NUMBER, YEAR, MONTH, TYPE, DIVERSION),
@@ -408,6 +427,14 @@ mainProcedure <- function () {
                            LATITUDE, LONGITUDE, HUC12,
                            HUC12_NAME, NHD_CAT)),
              paste0("OutputData/", ws$ID, "_PODs.xlsx"))
+  
+  
+  
+  write_xlsx(list("Out_Cat" = outletDF %>%
+                    st_drop_geometry() %>%
+                    select(NHD_CAT, HUC12, HUC12_NAME, NHD_OUTLET, HUC12_OUTLET,
+                           NHD_DOWNSTREAM, HUC12_DOWNSTREAM)),
+             paste0("OutputData/", ws$ID, "_Catchments.xlsx"))
   
   
   
@@ -506,6 +533,94 @@ verticalizeData <- function (inputDF) {
   
   
   return(combinedDF)
+  
+}
+
+
+
+findOutlets <- function (catchDF, connMat) {
+  
+  # Find the outlet catchment for each catchment
+  # Note that outlet catchment and its corresponding HUC-12 subbasin
+  # Also prepare a string of every downstream catchment and downstream HUC-12 subbasin
+  
+  
+  
+  # Create new columns in 'catchDF' to identify the outlet catchment and HUC-12 IDs
+  outletDF <- catchDF %>%
+    mutate(NHD_OUTLET = NA_real_,
+           HUC12_OUTLET = NA_real_,
+           NHD_DOWNSTREAM = NA_character_,
+           HUC12_DOWNSTREAM = NA_character_)
+  
+  
+  
+  # Iterate through the catchments in 'outletDF'
+  for (i in 1:nrow(outletDF)) {
+    
+    
+    # Find the row in 'connMat' that has this iteration's catchment ID
+    rowIndex <- which(connMat$BASIN == outletDF$NHD_CAT[i])
+    
+    
+    
+    stopifnot(length(rowIndex) == 1)
+    
+    
+    
+    # Identify the columns with non-zero values in this row of 'connMat'
+    # (Get their catchment IDs, which are stored as column names)
+    # (Don't let the "BASIN" name appear in this vector)
+    nonzeroCols <- names(connMat)[which(connMat[rowIndex, ] > 0)] %>%
+      str_subset("^BASIN$", negate = TRUE) %>%
+      as.numeric()
+    
+    
+    
+    # Get the row sum for each catchment
+    catchRowSums <- connMat[, -1] %>% rowSums()
+    
+    
+    
+    # The catchment that is the outlet should not drain into any other catchment
+    # That means that its row sum would be equal to 1 (since it only drains into itself)
+    
+    
+    
+    # Among the catchments in 'nonzeroCols' find the one with a row sum equal to 1
+    # (There should only be 1)
+    outCatch <- connMat$BASIN[which(connMat$BASIN %in% nonzeroCols & catchRowSums == 1)]
+    
+    
+    
+    # There should be exactly one match
+    stopifnot(length(outCatch) == 1)
+    
+    
+    
+    # Update 'outletDF' accordingly
+    outletDF$NHD_OUTLET[i] <- outCatch
+    outletDF$HUC12_OUTLET[i] <- outletDF$HUC12[outletDF$NHD_CAT == outCatch]
+    
+    
+    
+    # Also get the HUC-12 subbasins of each of the catchments in 'nonzeroCols'
+    nonzeroCols_HUC <- nonzeroCols %>%
+      map(~ outletDF$HUC12[outletDF$NHD_CAT == .]) %>%
+      unlist()
+    
+    
+    
+    # Input 'nonzeroCols' and 'nonzeroCols_HUC' as comma-separated strings into 'outletDF'
+    outletDF$NHD_DOWNSTREAM[i] <- paste0("\"", nonzeroCols, "\"", collapse = ",")
+    outletDF$HUC12_DOWNSTREAM[i] <- paste0("\"", nonzeroCols_HUC, "\"", collapse = ",")
+    
+  }
+  
+  
+  
+  # Return 'outletDF'
+  return(outletDF)
   
 }
 
