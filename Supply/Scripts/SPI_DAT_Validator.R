@@ -1,3 +1,21 @@
+#----PURPOSE:----
+
+# This script is a one-off and not part of an ongoing process.
+# It verifies the accuracy of SPI-based data substitution in the April -
+# September 2024 forecast period for both the PRMS and SRP hydrology datasets
+# used in DWRAT. Specifically, it checks that each forecast month correctly
+# mirrors the values from its designated historical ref month, as defined in the
+# SPI_Manashi.xlsx file. For example, April 2024 in the Dat_PRMS and Dat_SRP files should match
+# April 2021 in the historical record, May 2024 should match May 2001, and so on. 
+# The script imports both the historical and forecast versions of the data, extracts
+# only the relevant months and looks for discrepancies. It confirms that all the 
+# precipitation and temperature values have been correctly copied and any detected
+# differences are only in the date or year fields, which is exactly as expected
+# with SPI based substitutions.
+
+# Last Updated by: Payman Alemi on 6/10/2025
+
+
 #Install and load libraries----
 library(dplyr)
 library(tidyverse)

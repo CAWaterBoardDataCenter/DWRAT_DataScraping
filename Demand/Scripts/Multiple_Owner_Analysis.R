@@ -18,7 +18,15 @@ source("Scripts/Dataset_Year_Range.R")
 #Import Statistics_FINAL.csv. This is one of the output files of the Priority_Date_Preprocessing.R 
 #script; but we just want the unique APPLICATION_NUMBERS; these are just water rights
 #in the Russian River.
-appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL.csv"), show_col_types = FALSE) %>%
+appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
+                            if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                    "",
+                                    paste0("_Excluded_",
+                                           ws$EXCLUDED_REPORTING_YEARS %>%
+                                             str_split(";") %>% unlist() %>%
+                                             trimws() %>% 
+                                             as.numeric() %>% sort() %>% unique() %>%
+                                             paste0(collapse = "_"))), ".csv"), show_col_types = FALSE) %>%
   select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>% unique() %>%
   mutate(ADJ_YEAR = if_else(YEAR < 2021, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
   #Add a YEAR_ID column that concatenates the year and application number
@@ -87,6 +95,7 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
   #Add a Year_Right column to RMS_parties
     RMS_parties <- RMS_parties %>%
     mutate(ADJ_YEAR = if_else(YEAR < 2021, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
+    filter(ADJ_YEAR <= yearRange[2]) %>% 
     mutate(YEAR_ID = paste(ADJ_YEAR, APPLICATION_NUMBER, sep = "_"))
 
 #Group RMS_parties by YEAR_ID

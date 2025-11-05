@@ -1,5 +1,10 @@
-# This script is an alternative to 'RAWS_Scraper.R' that does not use RSelenium
+#----PURPOSE:----
+# This script uses an API to download temperature and precipitation data fro RAWS stations.
+# It substitutes missing entries with PRISM data and produces RAWS_Processed.csv as a final export.
 
+# This script is an alternative to 'RAWS_Selenium_Scraper.R' that does not use RSelenium
+
+# Last updated by: Payman Alemi on 6/26/2025
 
 #### Dependencies ####
 

@@ -13,7 +13,15 @@ source("Scripts/Dataset_Year_Range.R")
 
 
 # Read in the Expected Demand spreadsheet
-expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions.xlsx"))
+expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions",
+                              if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                      "",
+                                      paste0("_Excluded_",
+                                             ws$EXCLUDED_REPORTING_YEARS %>%
+                                               str_split(";") %>% unlist() %>%
+                                               trimws() %>% 
+                                               as.numeric() %>% sort() %>% unique() %>%
+                                               paste0(collapse = "_"))), ".xlsx"))
 
 
 

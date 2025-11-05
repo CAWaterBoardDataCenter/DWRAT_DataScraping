@@ -1,3 +1,10 @@
+#---PURPOSE----
+# Extracted the Downsizer station names from the Downzier_Headers.csv--now obsolete
+# because Downsizer has been phased out since it was just a clunky front-end for accessing 
+# NOAA data.
+
+# Last Updated by: Payman Alemi on 5/22/2025
+
 #Load libraries----
 library(dplyr)
 library(tidyverse)

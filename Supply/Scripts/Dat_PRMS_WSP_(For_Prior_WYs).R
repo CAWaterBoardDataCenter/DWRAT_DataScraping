@@ -1,3 +1,10 @@
+#----PURPOSE:----
+
+# Generated the Dat files used during the PRMS runs required by the Russian River
+# Voluntary Water Sharing Program modeling effort in January 2025
+
+# Last Updated by: Payman Alemi on 6/26/2025
+
 #Install and load libraries----
 
 # Start timer

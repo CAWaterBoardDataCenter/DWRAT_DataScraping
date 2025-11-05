@@ -1,5 +1,8 @@
+#----PURPOSE:----
 # This script generates a PowerBI friendly demand dataset for analysis and visualization;
-# This script is not involved in flagging, remediation, or DWRAT.
+# It is not involved in flagging, remediation, or DWRAT.
+
+#Last Updated by: Payman Alemi on 6/10/2025
 
 # Load libraries----
 library(readxl)
@@ -31,7 +34,16 @@ manual_review = getXLSX(ws = ws,
   #Duplicate reporting corrections
 
 Statistics_Final <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", 
-yearRange[2], "_Statistics_FINAL.csv"))
+yearRange[2], "_Statistics_FINAL",
+if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+        "",
+        paste0("_Excluded_",
+               ws$EXCLUDED_REPORTING_YEARS %>%
+                 str_split(";") %>% unlist() %>%
+                 trimws() %>% 
+                 as.numeric() %>% sort() %>% unique() %>%
+                 paste0(collapse = "_"))),
+".csv"))
 
 # Analyzing the manual review spreadsheet----
 
@@ -122,6 +134,15 @@ Statistics_Final2 = Statistics_Final2 %>% filter(DIVERSION_TYPE != "USE")
 
 #Export Statistics_Final2 as a CSV
 write.csv(x = Statistics_Final2, file = paste0("OutputData/",
-ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Demands_By_Right.csv"),
+ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Demands_By_Right",
+if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+        "",
+        paste0("_Excluded_",
+               ws$EXCLUDED_REPORTING_YEARS %>%
+                 str_split(";") %>% unlist() %>%
+                 trimws() %>% 
+                 as.numeric() %>% sort() %>% unique() %>%
+                 paste0(collapse = "_"))),
+".csv"),
 row.names= F)
 

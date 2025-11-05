@@ -1,3 +1,10 @@
+#----PURPOSE----
+# This is a one-off script that Payman  Alemi developed to compare discrepancies in his GIS manual review for
+# the Russian River and Francisco Corella's. It is not part of any ongoing process and can be archived.
+
+
+# Last Updated by: Payman Alemi, unknown date
+
 #Load Packages----
 library(readxl) #For Reading Excel packages
 library(tidyverse)

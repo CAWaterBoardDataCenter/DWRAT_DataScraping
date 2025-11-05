@@ -1,3 +1,10 @@
+#----PURPOSE:---
+# OBSOLETE SCRIPT---Generated the Dat PRMS file for a hypothetical 2008 water year
+# where the spring precipitation was set to 0. Required by the Russian River 
+# voluntary water sharing program DWRAT modeling effort in January 2025.
+
+# Last Updated by: Payman Alemi on 6/26/2025
+
 # For a specified date range, set all precipitation values to zero
 
 

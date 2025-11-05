@@ -167,7 +167,7 @@ connMat <- connMat %>%
 #reducedConnMat <- connMat
 actionList <- data.frame()#vector(mode = "list", length = nrow(subWS))
 #outletCatchmentEncountered <- FALSE
-
+downstreamList <- data.frame(BASIN = NA_real_, DOWNSTREAM_BASIN = NA_real_)
 
 
 for (i in 1:nrow(subWS)) {
@@ -218,6 +218,9 @@ for (i in 1:nrow(subWS)) {
   
   stopifnot(length(nearestDownBasin) == 1)
   
+  
+  downstreamList <- downstreamList %>%
+    rbind(c(subWS[[fieldName]][i], nearestDownBasin))
   
   
   # Check the POD counts of both this catchment and its downstream catchment

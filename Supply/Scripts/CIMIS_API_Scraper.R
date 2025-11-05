@@ -1,5 +1,9 @@
-# This script is intended to replace "CIMIS_Scraper.R" 
+#----PURPOSE----
+# Scrapes temperature data in degrees Celsius and precipitation data in millimeters (mm)
+# from CIMIS weather stations in the 
+# Upper Russian River via API. Superseded the CIMIS_Selenium_Scraper.R
 
+# Last Updated by: Payman Alemi on 6/26/2025
 
 #### Dependencies ####
 
@@ -28,7 +32,7 @@ mainProcedure <- function (StartDate, EndDate, includeForecast) {
   
   #Replace all missing values with -999
   combinedDF[combinedDF == ""] = -999
-  
+  combinedDF[is.na(combinedDF)] <- -999
   
   
   # The next steps rely on the outputs of 
@@ -547,7 +551,7 @@ apiBasedCall <- function (StartDate, EndDate) {
 #### Script Execution ####
 
 
-cat("Starting 'CIMIS_Static_Scraper.R'...")
+cat("Starting 'CIMIS_API_Scraper.R'...")
 
 
 mainProcedure(StartDate, EndDate, includeForecast)

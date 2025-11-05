@@ -24,8 +24,24 @@ mainProcedure <- function () {
   
   
   # Read in the input CSV file for this analysis
-  inputDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                             "_Beneficial_Use_and_Return_Flow_FINAL.csv"))
+  if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
+    
+    inputDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                               "_Beneficial_Use_and_Return_Flow_FINAL",
+                               "_Excluded_", 
+                               ws$EXCLUDED_REPORTING_YEARS %>%
+                                 str_split(";") %>% unlist() %>%
+                                 trimws() %>% 
+                                 as.numeric() %>% sort() %>% unique() %>%
+                                 paste0(collapse = "_"),
+                               ".csv"))
+    
+  } else {
+    
+    inputDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                               "_Beneficial_Use_and_Return_Flow_FINAL.csv"))
+    
+  }
   
   
   
@@ -523,8 +539,25 @@ writeSpreadsheet <- function (inputDF, resDF, wsID) {
   
   
   # Save 'wb' to a file
-  saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                          "_Beneficial_Use_Return_Flow_Scripted.xlsx"), overwrite = TRUE)
+  if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
+    
+    saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                            "_Beneficial_Use_Return_Flow_Scripted",
+                            "_Excluded_",
+                            ws$EXCLUDED_REPORTING_YEARS %>%
+                              str_split(";") %>% unlist() %>%
+                              trimws() %>% 
+                              as.numeric() %>% sort() %>% unique() %>%
+                              paste0(collapse = "_"),
+                            ".xlsx"), overwrite = TRUE)
+    
+  } else {
+    
+    saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                            "_Beneficial_Use_Return_Flow_Scripted",
+                            ".xlsx"), overwrite = TRUE)
+    
+  }
   
   
   

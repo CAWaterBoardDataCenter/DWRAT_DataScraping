@@ -19,7 +19,7 @@ yearSelection <- c(2017,
 
 
 # Numbers should be comma-separated within the vector
-# Input values as numbers, not strings (e.g., 2017 instead of "2017")
+# Specify values as numbers, not strings (e.g., 2017 instead of "2017")
 
 
 

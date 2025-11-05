@@ -1,5 +1,15 @@
-“3853-s3_2002_s3_reg_pacific_ocean-geojson”
+"3853-s3_2002_s3_reg_pacific_ocean-geojson"
 https://geodata.library.ucsb.edu/catalog/3853-s3_2002_s3_reg_pacific_ocean
+
+
+
+"California_SPCS_Zones_NAD27"
+https://catalog.data.gov/dataset/united-states-stateplane-zones-nad27
+
+
+
+"California_SPCS_Zones_NAD83"
+https://catalog.data.gov/dataset/united-states-stateplane-zones-nad83
 
 
 
@@ -9,10 +19,10 @@ https://prd-tnm.s3.amazonaws.com/index.html?prefix=StagedProducts/Hydrography/NH
 
 
 
-“PLSS_Subdivisions_BLM_20240123”
+"PLSS_Subdivisions_BLM_20240123"
 https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3
 
 
 
-“Public_Land_Survey_System_(PLSS)%3A_Sections”
+"Public_Land_Survey_System_(PLSS)%3A_Sections"
 https://data.ca.gov/dataset/public-land-survey-system-plss-sections

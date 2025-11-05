@@ -1,7 +1,11 @@
-# This script replaces both Downsizer and "NOAA_Scraper.R"
-# It collects climate data from the NOAA NCEI API 
-# Specifically, it gets daily values for Precipitation and Temperature (Min/Max) in mm and degrees Celsius, respectively
+#----PURPOSE:----
 
+# This script replaces both Downsizer and "NOAA_Selenium_Scraper.R"
+# It collects climate data from the NOAA NCEI API 
+# Specifically, it gets daily values for Precipitation and Temperature (Min/Max) in mm
+# and degrees Celsius, respectively
+
+# Last Updated by: Payman Alemi on 6/26/2025
 
 library(tidyverse)
 library(readxl)

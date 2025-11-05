@@ -1,3 +1,5 @@
+#----PURPOSE----
+
 # This script is a relic from the old SDA process which relied on CNRFC forecast data. 
 # It aggregates the CNRC precipitation data into daily sums and the CNRFC temperature
 # data into daily minima and maxima for each station. The data is then formatted for easy
@@ -5,7 +7,9 @@
 # analogous but independent script, CNRFC_SRP_Processor.R exists for the SRP model, but only relies
 # on 2 CNRFC stations.
 
-#Load libraries
+# Last Updated by: Payman Alemi on 6/26/2025
+
+#Load libraries----
 library(here)
 library(dplyr)
 library(tidyr)

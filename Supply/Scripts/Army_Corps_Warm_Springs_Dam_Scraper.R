@@ -1,6 +1,8 @@
+#----PURPOSE:----
 # Download data from the US Army Corps of Engineers website
 # This script specifically gathers data for the Warm Springs Dam
 
+# Last Updated by: Aakash Prashar
 
 require(tidyverse)
 require(writexl)

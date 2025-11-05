@@ -60,14 +60,28 @@ unitFixer <- function (inputDF, ws) {
   
   
   # Filter out entries where no action is required
-  # Also, only keep records that relevant to the years in 'inputDF'
+  # Also, only keep records that relevant to the reporting years in 'inputDF'
+  
+  # (Reporting years are: Calendar years before 2022 and water years afterwards)
+  
+  # 'inputDF' does not contain reporting years, so the reporting years 
+  # must be inferred indirectly for water years 
   unitsQAQC <- unitsQAQC %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR %in% inputDF$YEAR)
+    filter(if_else(YEAR < 2022, YEAR %in% inputDF$YEAR,
+                   YEAR %in% inputDF$YEAR[inputDF$MONTH < 10]))
+  
   
   unitsQAQC_Med <- unitsQAQC_Med %>%
     filter(!grepl("^[Nn]one", QAQC_Action_Taken)) %>%
-    filter(YEAR %in% inputDF$YEAR)
+    filter(if_else(YEAR < 2022, YEAR %in% inputDF$YEAR,
+                   YEAR %in% inputDF$YEAR[inputDF$MONTH < 10]))
+  
+  
+  # NOTE: Having Oct - Dec data in a year does not mean that a report was 
+  # submitted for the water year equal to that year (since that Oct - Dec data
+  # is part of the next water year)
+  
   
   
   # In a separate function, iterate through 'unitsQAQC' and 'unitsQAQC_Med'
@@ -123,7 +137,8 @@ dupReportingFixer <- function (inputDF, ws) {
   
   # Keep only entries in 'qaqcDF' that are relevant to the years in 'inputDF'
   qaqcDF <- qaqcDF %>%
-    filter(YEAR %in% inputDF$YEAR)
+    filter(if_else(YEAR < 2022, YEAR %in% inputDF$YEAR,
+                   YEAR %in% inputDF$YEAR[inputDF$MONTH < 10]))
   
   
   
@@ -973,22 +988,25 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
     } else if (yearVec[j] == 2021) {
       
       
-      # If the owner has reports for 2022 and later, do not zero out the last three months in 2022
-      # (Because they are part of the WY2022 dataset)
-      if (sum(yearVec > 2021) > 0) {
-        
-        inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                  inputDF$YEAR == yearVec[j] &
-                  inputDF$MONTH %in% 1:9, ]$AMOUNT <- 0
-        
-        # If there are no reports after 2021, it is okay to zero out the last three months as well
-        # (Because this data is from the CY2021 report)
-      } else {
-        
-        inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
-                  inputDF$YEAR == yearVec[j], ]$AMOUNT <- 0
-        
-      }
+      inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+               inputDF$YEAR == yearVec[j] &
+               inputDF$MONTH %in% 1:9, ]$AMOUNT <- 0
+      # # If the owner has reports for 2022 and later, do not zero out the last three months in 2022
+      # # (Because they are part of the WY2022 dataset)
+      # if (sum(yearVec > 2021) > 0) {
+      #   
+      #   inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+      #             inputDF$YEAR == yearVec[j] &
+      #             inputDF$MONTH %in% 1:9, ]$AMOUNT <- 0
+      #   
+      #   # If there are no reports after 2021, it is okay to zero out the last three months as well
+      #   # (Because this data is from the CY2021 report)
+      # } else {
+      #   
+      #   inputDF[inputDF$APPLICATION_NUMBER %in% qaqcSubSub$APPLICATION_NUMBER &
+      #             inputDF$YEAR == yearVec[j], ]$AMOUNT <- 0
+      #   
+      # }
       
       
       # For the final case (reports in 2022 or later), water years are used

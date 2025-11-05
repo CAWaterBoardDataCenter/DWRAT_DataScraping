@@ -1,3 +1,11 @@
+#----PURPOSE:----
+# This script bulk downloads the eWRIMS documents for the water rights 
+# identified by the GIS pre-processing step for the watershed ws in the reporting
+# timeframe. You don't have to download thousands of docs manually anymore; this script
+# dumps them all in the watershed's Reports folder. 
+
+#Last Updated by: Payman Alemi on 6/10/2025
+
 # Load libraries, hared functions, and ws dataframe----
 library(tidyverse)
 library(here)
@@ -45,7 +53,10 @@ options(timeout = 600)
 #Prevent the re-downloading of PDFs that have already been downloaded----
 
 #Generate list of files, remove .pdf extension, of already downloaded PDFs
-File_List = list.files(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)) %>%str_remove(pattern = "\\.pdf$")
+File_List = list.files(if_else(file.exists(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)), 
+                               makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), 
+                               ws$EWRIMS_REPORTS_FOLDER_PATH) %>%
+                         str_remove(pattern = "\\.pdf$"))
 eWRIMS_List = eWRIMS_List%>%filter(!(APPLICATION_NUMBER %in% File_List)) #Remove Application_Numbers of already downloaded PDFs
 
 # Bulk Download Watershed ewrims report PDFs----
@@ -54,7 +65,9 @@ for (i in 1:nrow(eWRIMS_List)) {
     # Download the document (permit, license, statement, registration, etc.)
     download.file(url = paste0("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/DocumentRetriever.jsp?appNum=",
                                eWRIMS_List$APPLICATION_NUMBER[i], "&wrType=",eWRIMS_List$WATER_RIGHT_TYPE[i], "&docType=DOCS"),
-                  destfile = paste0(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), "/", eWRIMS_List$APPLICATION_NUMBER[i], ".pdf"),
+                  destfile = paste0(if_else(file.exists(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)), 
+                                            makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), 
+                                            ws$EWRIMS_REPORTS_FOLDER_PATH), "/", eWRIMS_List$APPLICATION_NUMBER[i], ".pdf"),
                   mode = "wb") # Resolves download issues on Windows
   }, error = function(e) {
     # Handle the error or simply ignore it
