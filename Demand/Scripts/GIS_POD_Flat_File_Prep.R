@@ -22,6 +22,8 @@ require(DBI)
 # REMEDIATION CODING BLOCK
 
 fixData <- function(x) {
+  # Function to shift data reporting in water years to calendar years.
+  # eWRIMS paradigm shift from calendar year to water year starts in calendar year 2021.
   
   # WY 2022 data:
   # Extract Oct, Nov, and Dec 2022 rows and rewind to 2021.
@@ -188,7 +190,7 @@ if (water_use_report_extended %>%
   water_use_report_extended$YEAR = as.numeric(water_use_report_extended$YEAR)
   
   # Apply the fixData function to water_use_report_extended
-  water_use_report_extended_repaired = fixData(water_use_report_extended)
+  water_use_report_extended_repaired = fixData(water_use_report_extended) # shifts water years to calendar years
   
   # Revert APPL_ID to APPLICATION_NUMBER
   water_use_report_extended_repaired <- water_use_report_extended_repaired %>% 
