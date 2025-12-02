@@ -63,6 +63,59 @@ if (yearRange[2] >= 2022) {
 
 
 
+# If some years will be removed from the dataset, they are specified in "EXCLUDED_REPORTING_YEARS"
+if (!is.na(ws$EXCLUDED_REPORTING_YEARS) && grepl("[0-9]{4}", ws$EXCLUDED_REPORTING_YEARS)) {
+  
+  # The years that will be excluded from the dataset are specified in 'water_use_report_Date'
+  # They are separated by semicolons
+  removeYears <- ws$EXCLUDED_REPORTING_YEARS %>%
+    str_split(";") %>% unlist() %>% 
+    trimws() %>% as.numeric()
+  
+  
+  
+  # Prior to 2022, the reporting years are calendar years
+  # From 2022 onwards, they are water years
+  
+  # So if a WY will be excluded from the dataset, 
+  # only a portion of the corresponding calendar year will be removed (Jan - Sep)
+  # A portion of the prior numeric year will be removed too (Oct - Dec)
+  
+  
+  
+  # Iterate through 'removeYears' and remove data
+  for (i in 1:length(removeYears)) {
+    
+    
+    # Calendar Year Reports
+    if (removeYears[i] < 2022) {
+      
+      # Simply filter out this year
+      water_use_report_Date <- water_use_report_Date %>%
+        filter(YEAR != removeYears[i])
+      
+    # Water Year Reports
+    } else {
+      
+      # Remove Jan - Sep of the calendar year that equals the water year number
+      # Then, remove Oct - Dec of the prior calendar year
+      water_use_report_Date <- water_use_report_Date %>%
+        filter(!(YEAR == removeYears[i] & MONTH %in% 1:9)) %>%
+        filter(!(YEAR == (removeYears[i] - 1) & MONTH %in% 10:12))
+      
+    }
+  
+  } # End of for loop
+  
+  
+  
+  # Free up space used by this sub-procedure
+  remove(i, removeYears)
+  
+} 
+
+
+
 # SQLite Approach
 # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
 # water_use_report <- dbGetQuery(conn, 
@@ -121,7 +174,15 @@ water_use_report_Date <- water_use_report_Date %>%
 
 # Output the data to a CSV file
 write.csv(water_use_report_Date,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE", ".csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
 remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Combined,
@@ -181,7 +242,15 @@ ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_fil
 
 # Write the output to a file
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 # Remove unnecessary variables again to save memory
 remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
@@ -197,7 +266,15 @@ remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
 # Read in the CSV
 Beneficial_Use_and_Return_Flow <- read.csv(paste0("IntermediateData/", ws$ID, 
                                                   "_", yearRange[1], "_", yearRange[2], 
-                                                  "_ewrims_flat_file_use_season_WITH_FILTERS.csv"))
+                                                  "_ewrims_flat_file_use_season_WITH_FILTERS",
+                                                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                                          "",
+                                                          paste0("_Excluded_",
+                                                                 ws$EXCLUDED_REPORTING_YEARS %>%
+                                                                   str_split(";") %>% unlist() %>%
+                                                                   trimws() %>% 
+                                                                   as.numeric() %>% sort() %>% unique() %>%
+                                                                   paste0(collapse = "_"))), ".csv"))
 
 
 # Keep a subset of the columns
@@ -210,7 +287,15 @@ Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
 
 ####Output the variable to a file
 write.csv(Beneficial_Use_and_Return_Flow_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Beneficial_Use_and_Return_Flow_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Beneficial_Use_and_Return_Flow_FINAL",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 
@@ -219,7 +304,15 @@ write.csv(Beneficial_Use_and_Return_Flow_FINAL,
 # Get statistical data next
 
 # Read in a CSV 
-Statistics <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE.csv"))
+Statistics <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+                              if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                      "",
+                                      paste0("_Excluded_",
+                                             ws$EXCLUDED_REPORTING_YEARS %>%
+                                               str_split(";") %>% unlist() %>%
+                                               trimws() %>% 
+                                               as.numeric() %>% sort() %>% unique() %>%
+                                               paste0(collapse = "_"))), ".csv"))
 
 
 # Keep a subset of the columns
@@ -229,7 +322,15 @@ Statistics_FINAL  <- Statistics %>%
 
 # Output the data
 write.csv(Statistics_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 # Read in another CSV next 
@@ -244,7 +345,15 @@ Statistics_FaceValue_IniDiv_Final  <- Statistics_FaceValue_IniDiv %>%
 
 # Output results to a file structure
 write.csv(Statistics_FaceValue_IniDiv_Final,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 ################################################################### Diversion out of Season Part A ############################################################
@@ -252,7 +361,15 @@ write.csv(Statistics_FaceValue_IniDiv_Final,
 # Write a CSV file for the first Diversion out of Season module
 
 # Read in the use season flat file
-Diversion_out_of_Season_Part_A <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS.csv"))
+Diversion_out_of_Season_Part_A <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS",
+                                                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                                          "",
+                                                          paste0("_Excluded_",
+                                                                 ws$EXCLUDED_REPORTING_YEARS %>%
+                                                                   str_split(";") %>% unlist() %>%
+                                                                   trimws() %>% 
+                                                                   as.numeric() %>% sort() %>% unique() %>%
+                                                                   paste0(collapse = "_"))), ".csv"))
 
 
 # Extract a portion of the table
@@ -265,7 +382,15 @@ Diversion_out_of_Season_Part_A_FINAL <- Diversion_out_of_Season_Part_A %>%
 
 # Output the data to a file
 write.csv(Diversion_out_of_Season_Part_A_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_A_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_A_FINAL",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 ###################################################################Diversion out of Season Part B############################################################
@@ -273,7 +398,15 @@ write.csv(Diversion_out_of_Season_Part_A_FINAL,
 # Write a CSV file for the second Diversion out of Season module
 
 # Read in a flat file
-Diversion_out_of_Season_Part_B <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE.csv"))
+Diversion_out_of_Season_Part_B <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+                                                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                                          "",
+                                                          paste0("_Excluded_",
+                                                                 ws$EXCLUDED_REPORTING_YEARS %>%
+                                                                   str_split(";") %>% unlist() %>%
+                                                                   trimws() %>% 
+                                                                   as.numeric() %>% sort() %>% unique() %>%
+                                                                   paste0(collapse = "_"))), ".csv"))
 
 
 # Filter down the table to remove application numbers that start with "S" (statements of diversion and use)
@@ -291,7 +424,15 @@ Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
 
 # Output a CSV file
 write.csv(Diversion_out_of_Season_Part_B_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_B_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_B_FINAL",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 # Remove unnecessary variables at this step to free up memory
@@ -309,7 +450,15 @@ remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
 
 
 # Read in a flat file CSV
-Missing_RMS_Reports <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE.csv")) %>%
+Missing_RMS_Reports <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+                                       if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                               "",
+                                               paste0("_Excluded_",
+                                                      ws$EXCLUDED_REPORTING_YEARS %>%
+                                                        str_split(";") %>% unlist() %>%
+                                                        trimws() %>% 
+                                                        as.numeric() %>% sort() %>% unique() %>%
+                                                        paste0(collapse = "_"))), ".csv")) %>%
   unique()
 
 
@@ -334,7 +483,15 @@ Missing_RMS_Reports_FINAL <- Missing_RMS_Reports_Priority_Date_Combined %>%
 
 # Output the data
 write.csv(Missing_RMS_Reports_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Missing_RMS_Reports_FINAL.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Missing_RMS_Reports_FINAL",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 ######################################## QAQC Working Files###################################
@@ -376,7 +533,15 @@ ewrims_flat_file_Working_File <- ewrims_flat_file_Three %>%
 
 # Output data to a file structure
 write.csv(ewrims_flat_file_Working_File,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_Working_File.csv"), row.names = FALSE)
+          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_Working_File",
+                 if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                         "",
+                         paste0("_Excluded_",
+                                ws$EXCLUDED_REPORTING_YEARS %>%
+                                  str_split(";") %>% unlist() %>%
+                                  trimws() %>% 
+                                  as.numeric() %>% sort() %>% unique() %>%
+                                  paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 
 ####################################################Contact Information#################################################

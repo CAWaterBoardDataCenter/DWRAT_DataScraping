@@ -2,6 +2,8 @@
 #Install if you do not have in your current packages or are not up to date.----
 #install.packages("tidyverse")
 
+start_time = proc.time()
+
 #Load Packages- This step must be done each time the project is opened. ----
 require(tidyverse)
 require(odbc)
@@ -354,7 +356,12 @@ write_csv(Flat_File_eWRIMS,
           paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
 
 
+end_time = proc.time()
+run_time = start_time - end_time
+
+
+cat("The script ran in", round(run_time["elapsed"], 2), "seconds\n")
 
 # Clear the environment----
   # Get the name of all variables in the environment
-remove(list = ls())
+#remove(list = ls())

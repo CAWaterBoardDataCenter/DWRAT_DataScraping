@@ -31,8 +31,26 @@ mainProcedure <- function () {
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL.csv"))
-  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final.csv")) %>% unique()
+  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
+                            if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                    "",
+                                    paste0("_Excluded_",
+                                           ws$EXCLUDED_REPORTING_YEARS %>%
+                                             str_split(";") %>% unlist() %>%
+                                             trimws() %>% 
+                                             as.numeric() %>% sort() %>% unique() %>%
+                                             paste0(collapse = "_"))),
+                            ".csv"))
+  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final",
+                          if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                  "",
+                                  paste0("_Excluded_",
+                                         ws$EXCLUDED_REPORTING_YEARS %>%
+                                           str_split(";") %>% unlist() %>%
+                                           trimws() %>% 
+                                           as.numeric() %>% sort() %>% unique() %>%
+                                           paste0(collapse = "_"))),
+                          ".csv")) %>% unique()
   
   
   # Create and append two new columns to 'statDF'
@@ -630,7 +648,15 @@ mainProcedure <- function () {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions.xlsx"),
+    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions",
+                      if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                              "",
+                              paste0("_Excluded_",
+                                     ws$EXCLUDED_REPORTING_YEARS %>%
+                                       str_split(";") %>% unlist() %>%
+                                       trimws() %>% 
+                                       as.numeric() %>% sort() %>% unique() %>%
+                                       paste0(collapse = "_"))), ".xlsx"),
                overwrite = TRUE)
     #write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
     #           overwrite = TRUE)
@@ -641,7 +667,16 @@ mainProcedure <- function () {
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
     unique() %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ExpectedDemand_FV.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ExpectedDemand_FV",
+                      if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                              "",
+                              paste0("_Excluded_",
+                                     ws$EXCLUDED_REPORTING_YEARS %>%
+                                       str_split(";") %>% unlist() %>%
+                                       trimws() %>% 
+                                       as.numeric() %>% sort() %>% unique() %>%
+                                       paste0(collapse = "_"))),
+                      ".xlsx"), overwrite = TRUE)
   
   
   
@@ -659,7 +694,15 @@ mainProcedure <- function () {
     
     cat(paste0("Note: This list can be extracted from the spreadsheet 'OutputData/", ws$ID, 
                "_", yearRange[1], "_", yearRange[2], 
-               "_ExpectedDemand_FV.xlsx'\n\n"))
+               "_ExpectedDemand_FV",
+               if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                       "",
+                       paste0("_Excluded_",
+                              ws$EXCLUDED_REPORTING_YEARS %>%
+                                str_split(";") %>% unlist() %>%
+                                trimws() %>% 
+                                as.numeric() %>% sort() %>% unique() %>%
+                                paste0(collapse = "_"))), ".xlsx'\n\n"))
     
   }
   

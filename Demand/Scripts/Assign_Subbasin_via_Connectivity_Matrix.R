@@ -61,6 +61,12 @@ mainProcedure <- function () {
   
   
   
+  # Sort 'subWS' based on the values of the first column name in 'fieldNames'
+  subWS <- subWS %>%
+    arrange(!!sym(fieldNames[1]))
+  
+  
+  
   # Check that each 'POD' intersects with a subbasin
   checkOverlap(POD, subWS)
   
@@ -172,6 +178,18 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
                      "IS_SHAREPOINT_PATH_CONNECTIVITY_MATRIX_SPREADSHEET",
                      "CONNECTIVITY_MATRIX_SPREADSHEET_PATH",
                      "CONNECTIVITY_MATRIX_WORKSHEET_NAME")
+  
+  
+  
+  # Sort the data frame by the first column (and make sure the columns match too)
+  connMat <- connMat %>%
+    arrange(!!sym(names(connMat)[1]))
+  
+  
+  
+  connMat <- connMat %>%
+    select(names(connMat)[1], sort(names(connMat)[-1]))
+  
   
   
   # NOTE
@@ -412,9 +430,26 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
   
   
   # Read in the flow spreadsheet
-  flowDF <- read_xlsx(paste0("OutputData/", ws$ID, "_",
-                             yearRange[1], "_", yearRange[2],
-                             "_Monthly_Diversions.xlsx"))
+  if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
+    
+    flowDF <- read_xlsx(paste0("OutputData/", ws$ID, "_",
+                               yearRange[1], "_", yearRange[2],
+                               "_Monthly_Diversions",
+                               "_Excluded_",
+                               ws$EXCLUDED_REPORTING_YEARS %>%
+                                 str_split(";") %>% unlist() %>%
+                                 trimws() %>% 
+                                 as.numeric() %>% sort() %>% unique() %>%
+                                 paste0(collapse = "_"),
+                               ".xlsx"))
+    
+  } else {
+    
+    flowDF <- read_xlsx(paste0("OutputData/", ws$ID, "_",
+                               yearRange[1], "_", yearRange[2],
+                               "_Monthly_Diversions.xlsx"))
+    
+  }
   
   
   
@@ -529,10 +564,28 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
   
   
   # Then overwrite flowDF's file with these updates
-  flowDF %>%
-    write_xlsx(paste0("OutputData/", ws$ID, "_",
-                      yearRange[1], "_", yearRange[2],
-                      "_Monthly_Diversions.xlsx"))
+  if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
+    
+    flowDF %>%
+      write_xlsx(paste0("OutputData/", ws$ID, "_",
+                        yearRange[1], "_", yearRange[2],
+                        "_Monthly_Diversions",
+                        "_Excluded_",
+                        ws$EXCLUDED_REPORTING_YEARS %>%
+                          str_split(";") %>% unlist() %>%
+                          trimws() %>% 
+                          as.numeric() %>% sort() %>% unique() %>%
+                          paste0(collapse = "_"),
+                        ".xlsx"))
+    
+  } else {
+    
+    flowDF %>%
+      write_xlsx(paste0("OutputData/", ws$ID, "_",
+                        yearRange[1], "_", yearRange[2],
+                        "_Monthly_Diversions.xlsx"))
+    
+  }
   
   
   

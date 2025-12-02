@@ -26,9 +26,27 @@ mainProcedure <- function () {
   
   
   # Read in th expected demand dataset
-  flowDF <- paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                   "_Monthly_Diversions.xlsx") %>%
-    read_xlsx()
+  if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
+    
+    flowDF <- paste0("OutputData/", ws$ID, "_",
+                     yearRange[1], "_", yearRange[2],
+                     "_Monthly_Diversions",
+                     "_Excluded_",
+                     ws$EXCLUDED_REPORTING_YEARS %>%
+                       str_split(";") %>% unlist() %>%
+                       trimws() %>% 
+                       as.numeric() %>% sort() %>% unique() %>%
+                       paste0(collapse = "_"),
+                     ".xlsx") %>%
+      read_xlsx()
+    
+  } else {
+    
+    flowDF <- paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                     "_Monthly_Diversions.xlsx") %>%
+      read_xlsx()
+    
+  }
   
   
   
@@ -104,11 +122,33 @@ mainProcedure <- function () {
       cat("Done!\n")
       
       
-      write_xlsx(flowDF,
-                 paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                        "_Monthly_Diversions.xlsx"))
+      
+      if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
+        
+        flowDF %>%
+          write_xlsx(paste0("OutputData/", ws$ID, "_",
+                            yearRange[1], "_", yearRange[2],
+                            "_Monthly_Diversions",
+                            "_Excluded_",
+                            ws$EXCLUDED_REPORTING_YEARS %>%
+                              str_split(";") %>% unlist() %>%
+                              trimws() %>% 
+                              as.numeric() %>% sort() %>% unique() %>%
+                              paste0(collapse = "_"),
+                            ".xlsx"))
+        
+      } else {
+        
+        flowDF %>%
+          write_xlsx(paste0("OutputData/", ws$ID, "_",
+                            yearRange[1], "_", yearRange[2],
+                            "_Monthly_Diversions.xlsx"))
+        
+      }
       
       
+      
+      # Return nothing
       return(invisible(NULL))
       
     }
@@ -276,7 +316,16 @@ mainProcedure <- function () {
   # (Overwriting its original version)
   write_xlsx(flowDF,
              paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                    "_Monthly_Diversions.xlsx"))
+                    "_Monthly_Diversions",
+                    if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                            "",
+                            paste0("_Excluded_",
+                                   ws$EXCLUDED_REPORTING_YEARS %>%
+                                     str_split(";") %>% unlist() %>%
+                                     trimws() %>% 
+                                     as.numeric() %>% sort() %>% unique() %>%
+                                     paste0(collapse = "_"))),
+                    ".xlsx"))
   
   
   

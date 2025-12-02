@@ -235,7 +235,15 @@ colMean <- function (colData) {
   #mutate(across(ends_with("DIVERSION"), as.numeric))
 
 diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                            "_Monthly_Diversions.xlsx"))
+                            "_Monthly_Diversions",
+                            if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                    "",
+                                    paste0("_Excluded_",
+                                           ws$EXCLUDED_REPORTING_YEARS %>%
+                                             str_split(";") %>% unlist() %>%
+                                             trimws() %>% 
+                                             as.numeric() %>% sort() %>% unique() %>%
+                                             paste0(collapse = "_"))), ".xlsx"))
 
 
 
@@ -263,7 +271,15 @@ diverDF %>%
   mutate(CALENDAR_YEAR_OR_WATER_YEAR = if_else(YEAR < 2022, "CY", "WY")) %>%
   relocate(CALENDAR_YEAR_OR_WATER_YEAR, .after = YEAR) %>%
   write_csv(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                   "_DemandDataset_MonthlyValues.csv"))
+                   "_DemandDataset_MonthlyValues",
+                   if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                           "",
+                           paste0("_Excluded_",
+                                  ws$EXCLUDED_REPORTING_YEARS %>%
+                                    str_split(";") %>% unlist() %>%
+                                    trimws() %>% 
+                                    as.numeric() %>% sort() %>% unique() %>%
+                                    paste0(collapse = "_"))), ".csv"))
 
 
 # Create a separate variable with expected total diversion values
@@ -308,7 +324,15 @@ if (anyNA(sumDF)) {
   # Will be the basis of the Master Demand Table
   # (In the master table, "PRIMARY_OWNER_ENTITY_TYPE" is called "PRIMARY_OWNER_TYPE")
 ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                            "_ewrims_flat_file_Working_File.csv")) %>%
+                            "_ewrims_flat_file_Working_File",
+                            if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                    "",
+                                    paste0("_Excluded_",
+                                           ws$EXCLUDED_REPORTING_YEARS %>%
+                                             str_split(";") %>% unlist() %>%
+                                             trimws() %>% 
+                                             as.numeric() %>% sort() %>% unique() %>%
+                                             paste0(collapse = "_"))), ".csv")) %>%
   rename(PRIMARY_OWNER_TYPE = PRIMARY_OWNER_ENTITY_TYPE) %>%
   #filter(APPLICATION_NUMBER %in% diverDF$APPLICATION_NUMBER)
   filter(APPLICATION_NUMBER %in% str_remove_all(diverDF$APPLICATION_NUMBER, "_[0-9]+$"))
@@ -317,7 +341,15 @@ ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", 
 
 # Add in columns from the beneficial use module
 beneficialUse <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                                  "_Beneficial_Use_Return_Flow_Scripted.xlsx")) %>%
+                                  "_Beneficial_Use_Return_Flow_Scripted",
+                                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                          "",
+                                          paste0("_Excluded_",
+                                                 ws$EXCLUDED_REPORTING_YEARS %>%
+                                                   str_split(";") %>% unlist() %>%
+                                                   trimws() %>% 
+                                                   as.numeric() %>% sort() %>% unique() %>%
+                                                   paste0(collapse = "_"))), ".xlsx")) %>%
   spreadsheetAdjustment()
 
 
@@ -361,7 +393,15 @@ ewrimsDF <- ewrimsDF %>%
 #                        col_types = "text") %>%
 #  spreadsheetAdjustment()
 expectedDF <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
-                               "_ExpectedDemand_FV.xlsx"), col_types = "text")
+                               "_ExpectedDemand_FV",
+                               if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                       "",
+                                       paste0("_Excluded_",
+                                              ws$EXCLUDED_REPORTING_YEARS %>%
+                                                str_split(";") %>% unlist() %>%
+                                                trimws() %>% 
+                                                as.numeric() %>% sort() %>% unique() %>%
+                                                paste0(collapse = "_"))), ".xlsx"), col_types = "text")
 
 # Get two sub-tables from the main dataset
 # (Rename some columns too)
@@ -689,7 +729,16 @@ if (!grepl("Russian", ws$NAME)) {
 #dataset that includes 2021 and 2022 curtailment reporting years
 write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
                                          yearRange[1], "_", yearRange[2],
-                                         "_MDT_", format(Sys.Date(), "%Y-%m-%d"), ".csv"), row.names = FALSE)
+                                         "_MDT_", format(Sys.Date(), "%Y-%m-%d"),
+                                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                                          "",
+                                          paste0("_Excluded_",
+                                                 ws$EXCLUDED_REPORTING_YEARS %>%
+                                                   str_split(";") %>% unlist() %>%
+                                                   trimws() %>% 
+                                                   as.numeric() %>% sort() %>% unique() %>%
+                                                   paste0(collapse = "_"))), 
+                                  ".csv"), row.names = FALSE)
 
 #just the 2017-2020 reporting years
 #write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)

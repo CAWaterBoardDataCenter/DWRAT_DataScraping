@@ -31,6 +31,14 @@ subWS <- getGIS(ws = ws,
 mdt <- list.files("OutputData", 
                   pattern = paste0(ws$ID, "_", yearRange[1], "_", yearRange[2], "_MDT_"),
                   full.names = TRUE) %>%
+  str_subset(if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                     "_MDT_",
+                     paste0("_Excluded_",
+                            ws$EXCLUDED_REPORTING_YEARS %>%
+                              str_split(";") %>% unlist() %>%
+                              trimws() %>% 
+                              as.numeric() %>% sort() %>% unique() %>%
+                              paste0(collapse = "_")))) %>%
   sort() %>% tail(1) %>%
   read_csv(show_col_types = FALSE)
 
@@ -56,6 +64,10 @@ subWS <- subWS %>%
 
 # Output a plot of 'subWS'
 print(mapview(subWS, zcol = "TOTAL_DIVERSION_AF"))
+
+
+mapshot(mapview(subWS, zcol = "TOTAL_DIVERSION_AF"), 
+        url = "Output.html")
 
 
 

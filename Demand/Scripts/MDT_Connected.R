@@ -2,10 +2,10 @@
 
 
 # This script generates the input ("child") demand files for the Connected version of DWRAT; 
-# we will create 2 sets of input demand files for the 2017-2020 and 2017-2022
-# Russian River Master Demand Tables
+# we will create 2 sets of input demand files for the 2017-2024 demand dataset excluding drought years
+# 2021-2022
 
-# Last Updated by: Payman Alemi on 6/10/2025
+# Last Updated by: Payman Alemi on 7/9/2025
 
 #Load Libraries----
 library(tidyverse)
@@ -13,20 +13,17 @@ library(here)
 source("Scripts/Shared_Functions_Demand.R")
 
 #Import the demand CSVs
-filePathFragment = "DWRAT/SDU_Runs/Demand_Datasets/RR_2017-2020_MasterDemandTable_2024-04-24.csv"
+filePathFragment = "DWRAT/SDU_Runs/Demand_Datasets/RR_2017_2024_MDT_2025-04-04.csv"
 Demand_Path = makeSharePointPath(filePathFragment = filePathFragment)
-MDT_2017_2020 = read.csv(file = Demand_Path)
+MDT = read.csv(file = Demand_Path)
                                    
-                                  
-#MDT_2017_2022 = read.csv(file = here("OutputData/2017-2022_RR_MasterDemandTable.csv"))
-
+                                
 #Rename columns----
   #Rename Application_Number to USER
-  MDT_2017_2020 = rename(MDT_2017_2020, USER = APPLICATION_NUMBER)
-  #MDT_2017_2022 = rename(MDT_2017_2022, USER = APPLICATION_NUMBER)
+  MDT = rename(MDT, USER = APPLICATION_NUMBER)
   
   #Set Diversion Year--change depending on the flow month you're modeling
-  Diversion_Year = "2024"
+  Diversion_Year = "2025"
     
   #Rename Diversion Columns
   Diversion_Columns = c(paste0(Diversion_Year,"-01"), 
@@ -42,24 +39,19 @@ MDT_2017_2020 = read.csv(file = Demand_Path)
                         paste0(Diversion_Year,"-11"),
                         paste0(Diversion_Year,"-12"))
                         
-  colnames(MDT_2017_2020)[2:13] = Diversion_Columns
-  #colnames(MDT_2017_2022)[2:13] = Diversion_Columns
-  
+  colnames(MDT)[2:13] = Diversion_Columns
+
   #Rename TOTAL_MAY_SEPT_DIV to MAY_SEPT_ZERO_DEMAND
-  MDT_2017_2020 = rename(MDT_2017_2020, MAY_SEPT_ZERO_DEMAND = TOTAL_MAY_SEPT_DIV)
-  #MDT_2017_2022 = rename(MDT_2017_2022, MAY_SEPT_ZERO_DEMAND = TOTAL_MAY_SEPT_DIV)
+  MDT = rename(MDT, MAY_SEPT_ZERO_DEMAND = TOTAL_MAY_SEPT_DIV)
   
   #Rename POWER_DEMAND_ZEROED to DEMAND_ZEROED_POWER
-  MDT_2017_2020 = rename(MDT_2017_2020, DEMAND_ZEROED_POWER = POWER_DEMAND_ZEROED)
-  #MDT_2017_2022 = rename(MDT_2017_2022, DEMAND_ZEROED_POWER = POWER_DEMAND_ZEROED)
+  MDT = rename(MDT, DEMAND_ZEROED_POWER = POWER_DEMAND_ZEROED)
   
   #Rename MAINSTEM_RR to MAINSTEM
-  MDT_2017_2020 = rename(MDT_2017_2020, MAINSTEM = MAINSTEM_RR)
-  #MDT_2017_2022 = rename(MDT_2017_2022, MAINSTEM = MAINSTEM_RR)
+  MDT = rename(MDT, MAINSTEM = MAINSTEM_RR)
   
   #Rename ASSIGNED_PRIORITY_DATE_SUB to PRIORITY
-  MDT_2017_2020 =rename(MDT_2017_2020, PRIORITY = ASSIGNED_PRIORITY_DATE_SUB)
-  #MDT_2017_2022 =rename(MDT_2017_2022, PRIORITY = ASSIGNED_PRIORITY_DATE_SUB)
+  MDT =rename(MDT, PRIORITY = ASSIGNED_PRIORITY_DATE_SUB)
 
   
 #Remove unnecessary columns----
@@ -71,46 +63,40 @@ MDT_2017_2020 = read.csv(file = Demand_Path)
   )
   
   # Remove the specified columns
-  MDT_2017_2020 <- MDT_2017_2020[, !names(MDT_2017_2020) %in% cols_to_delete]
-  #MDT_2017_2022 <- MDT_2017_2022[, !names(MDT_2017_2022) %in% cols_to_delete]
+  MDT <- MDT[, !names(MDT) %in% cols_to_delete]
   
-
 #Separate MDTs into URR and LRR----
-  URR_MDT_2017_2020 = MDT_2017_2020 %>% filter(UPPER_RUSSIAN == 'Y')
-  #URR_MDT_2017_2022 = MDT_2017_2022 %>% filter(UPPER_RUSSIAN == 'Y')
+  URR_MDT = MDT %>% filter(UPPER_RUSSIAN == 'Y')
   
-  LRR_MDT_2017_2020 = MDT_2017_2020 %>% filter(UPPER_RUSSIAN == 'N')
-  #LRR_MDT_2017_2022 = MDT_2017_2022 %>% filter(UPPER_RUSSIAN == 'N')
+  LRR_MDT= MDT %>% filter(UPPER_RUSSIAN == 'N')
   
 #Separate MDTs into riparian and appropriative---
-  urr_rip_mdt_2017_2020 = URR_MDT_2017_2020 %>% filter(RIPARIAN == 'Y')
-  #urr_rip_mdt_2017_2022 = URR_MDT_2017_2022 %>% filter(RIPARIAN == 'Y')
+  urr_rip_mdt = URR_MDT %>% filter(RIPARIAN == 'Y')
   
-  urr_app_mdt_2017_2020 = URR_MDT_2017_2020 %>% filter(RIPARIAN == 'N')
-  #urr_app_mdt_2017_2022 = URR_MDT_2017_2022 %>% filter(RIPARIAN == 'N')
+  urr_app_mdt = URR_MDT %>% filter(RIPARIAN == 'N')
+
+  lrr_rip_mdt = LRR_MDT %>% filter(RIPARIAN == 'Y')
   
-  lrr_rip_mdt_2017_2020 = LRR_MDT_2017_2020 %>% filter(RIPARIAN == 'Y')
-  #lrr_rip_mdt_2017_2022 = LRR_MDT_2017_2022 %>% filter(RIPARIAN == 'Y')
-  
-  lrr_app_mdt_2017_2020 = LRR_MDT_2017_2020 %>% filter(RIPARIAN == 'N')
-  #lrr_app_mdt_2017_2022 = LRR_MDT_2017_2022 %>% filter(RIPARIAN == 'N')
-  
+  lrr_app_mdt = LRR_MDT %>% filter(RIPARIAN == 'N')
+
 
 #Export the MDTs into CSVs----
   #Create an Export List
-  MDT_List = list(lrr_app_mdt_2017_2020, #lrr_app_mdt_2017_2022,
-                  lrr_rip_mdt_2017_2020, #lrr_rip_mdt_2017_2022,
-                  urr_app_mdt_2017_2020, #urr_app_mdt_2017_2022,
-                  urr_rip_mdt_2017_2020) #,urr_rip_mdt_2017_2022)
+  mdt_list = list(lrr_app_mdt,
+                  lrr_rip_mdt,
+                  urr_app_mdt,
+                  urr_rip_mdt)
   
-  #You have to manually assign the dataframe names to each item in the list, otherwise the export loop will fail because the dataframe names are null; lists wipe out dataframe names by default
-  names(MDT_List) = c("lrr_app_mdt_2017_2020_2024-04-24", #"lrr_app_mdt_2017_2022",
-                  "lrr_rip_mdt_2017_2020_2024-04-24", #"lrr_rip_mdt_2017_2022",
-                  "urr_app_mdt_2017_2020_2024-04-24", #"urr_app_mdt_2017_2022",
-                  "urr_rip_mdt_2017_2020_2024-04-24") #,"urr_rip_mdt_2017_2022")
+  #You have to manually assign the dataframe names to each item in the list, 
+  # otherwise the export loop will fail because the dataframe names are null; 
+  #lists wipe out dataframe names by default
+  names(mdt_list) = c("lrr_app_mdt_2017_2024_2025_04-04", #"lrr_app_mdt_2017_2022",
+                  "lrr_rip_mdt_2017_2024_2025_04-04", #"lrr_rip_mdt_2017_2022",
+                  "urr_app_mdt__2017_2024_2025_04-04", #"urr_app_mdt_2017_2022",
+                  "urr_rip_mdt_2017_2024_2025_04-04") #,"urr_rip_mdt_2017_2022")
                   
 #Use a for loop to export each dataframe
-  for (i in seq_along(MDT_List)) {
-    filename <- names(MDT_List)[i]
-    write.csv(MDT_List[[i]], file = paste0("OutputData/",filename, ".csv"), row.names = FALSE) 
+  for (i in seq_along(mdt_list)) {
+    filename <- names(mdt_list)[i]
+    write.csv(mdt_list[[i]], file = paste0("OutputData/",filename, ".csv"), row.names = FALSE) 
   }
