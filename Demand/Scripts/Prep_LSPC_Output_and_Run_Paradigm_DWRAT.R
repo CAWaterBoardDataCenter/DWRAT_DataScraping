@@ -810,8 +810,8 @@ outputAndRun <- function (mdtDF, roSupply, flowsTo, ws, lastCatch) {
     
     # Define a vector with the planned filenames
     filePaths <- c(Demand = paste0("OutputData/", ws$ID, "_formatted_demand.csv"),
-                   Supply = "OutputData/", ws$ID, "_formatted_supply.csv",
-                   Basin = "OutputData/", ws$ID, "_generated_basins.csv")
+                   Supply = paste0("OutputData/", ws$ID, "_formatted_supply.csv"),
+                   Basin = paste0("OutputData/", ws$ID, "_generated_basins.csv"))
     
     
     # Demand
@@ -1934,7 +1934,7 @@ combineOutputs <- function (ws, numFlowPaths) {
 
 
 #### Execution ####
-mainProcedure(hucBased = FALSE)
+mainProcedure(hucBased = TRUE)
 
 
 

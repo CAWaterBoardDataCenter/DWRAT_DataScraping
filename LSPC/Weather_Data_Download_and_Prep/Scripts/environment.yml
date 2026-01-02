@@ -1,0 +1,12 @@
+name: SDA
+dependencies:
+  - geopandas
+  - pandas
+  - openpyxl
+  - numpy
+  - requests
+  - folium
+  - pip
+  - pip:
+    - arcgis
+    

@@ -439,7 +439,7 @@ checkSectionMatches <- function (podDF, plssDF) {
       filter(Section == podDF$REPORT_SECTION[i] &
                Township == paste0("T", podDF$REPORT_TOWNSHIP[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
                Range == paste0("R", podDF$REPORT_RANGE[i] %>% str_replace("^([0-9][A-Z])$", "0\\1")) &
-               Meridian == "MDM")#podDF$REPORT_MERIDIAN[i] %>% str_remove("B\\&"))
+               Meridian == podDF$REPORT_DATUM[i] %>% str_remove("B\\&"))
     
     
     
@@ -583,7 +583,7 @@ requestFlowPath <- function (pod) {
                     #Sec-Fetch-Site:
                     #  same-origin
                     "User-Agent" = "R version 4.2.3",
-                    "User-Contact" = "aakash.prashar@waterboards.ca.gov")),
+                    "User-Contact" = "DWR-SDA@waterboards.ca.gov")),
                   body = paste0('[{"id":1,"name":"Start point location","required":true,',
                                 '"description":"Specified lat/long/crs  navigation start location",', 
                                 '"valueType":"geojson point geometry",', 

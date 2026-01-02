@@ -1,0 +1,11 @@
+name: SDA
+dependencies:
+  - geopandas
+  - pandas
+  - openpyxl
+  - numpy
+  - requests
+  - pip
+  - pip:
+    - arcgis
+    - pip_system_certs
