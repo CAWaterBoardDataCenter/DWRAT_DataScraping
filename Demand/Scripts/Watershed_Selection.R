@@ -13,7 +13,6 @@ source("Scripts/Shared_Functions_Demand.R")
 
 
 
-
 # IMPORTANT!! CHOOSE A WATERSHED
 index <- 2 # Change the index to your desired watershed's corresponding "INDEX" value
 
@@ -22,9 +21,9 @@ index <- 2 # Change the index to your desired watershed's corresponding "INDEX" 
 
 
 # Get watershed names and identifiers
-if (file.exists(makeSharePointPath("Program Watersheds/4. Demand Data Tracking/Watershed_Demand_Dataset_Paths.xlsx"))) {
+if (file.exists(makeSharePointPath(getFromControl("SHAREPOINT_DEMAND_CONTROL_FILE")))) {
   
-  ws <- makeSharePointPath("Program Watersheds/4. Demand Data Tracking/Watershed_Demand_Dataset_Paths.xlsx") %>%
+  ws <- makeSharePointPath(getFromControl("SHAREPOINT_DEMAND_CONTROL_FILE")) %>%
     read_xlsx(sheet = "Main_Sheet", skip = 1)
   
 } else {

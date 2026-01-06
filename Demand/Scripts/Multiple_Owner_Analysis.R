@@ -28,7 +28,7 @@ appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", 
                                              as.numeric() %>% sort() %>% unique() %>%
                                              paste0(collapse = "_"))), ".csv"), show_col_types = FALSE) %>%
   select(APPLICATION_NUMBER, YEAR, MONTH, AMOUNT, DIVERSION_TYPE) %>% unique() %>%
-  mutate(ADJ_YEAR = if_else(YEAR < 2022, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
+  mutate(ADJ_YEAR = if_else(YEAR < 2021, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
   #Add a YEAR_ID column that concatenates the year and application number
   mutate(YEAR_ID = paste(ADJ_YEAR, APPLICATION_NUMBER, sep = "_"))
 
@@ -94,7 +94,8 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
 ##Look for duplicate party IDs ----
   #Add a Year_Right column to RMS_parties
     RMS_parties <- RMS_parties %>%
-    mutate(ADJ_YEAR = if_else(YEAR < 2022, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
+    mutate(ADJ_YEAR = if_else(YEAR < 2021, YEAR, if_else(MONTH > 9, YEAR + 1, YEAR))) %>%
+    filter(ADJ_YEAR <= yearRange[2]) %>% 
     mutate(YEAR_ID = paste(ADJ_YEAR, APPLICATION_NUMBER, sep = "_"))
 
 #Group RMS_parties by YEAR_ID

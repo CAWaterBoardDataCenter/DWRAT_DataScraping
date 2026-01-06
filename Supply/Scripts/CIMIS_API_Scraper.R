@@ -12,6 +12,9 @@ require(tidyverse)
 require(httr)
 
 
+source("../Demand/Scripts/Shared_Functions_Demand.R")
+
+
 #### Functions ####
 
 mainProcedure <- function (StartDate, EndDate, includeForecast) {
@@ -304,7 +307,7 @@ apiBasedCall <- function (StartDate, EndDate) {
   requestURL <- paste0("https://et.water.ca.gov/api/data?",
                        # State the API Key (CIMIS account required to get these)
                        # This key is tied to an account that uses Aakash's SWRCB email
-                       "appKey=", "b0173b26-6de4-48e8-be98-cc21a18dc20a",
+                       "appKey=", read_lines(makeSharePointPath("Admin + Management/1. Staff Folders/APrashar/CIMIS_API_Key.txt")),
                        # Station IDs (comma-separated)
                        "&targets=", stationDF$ID %>% paste0(collapse = ","),
                        # Dataset Start Date

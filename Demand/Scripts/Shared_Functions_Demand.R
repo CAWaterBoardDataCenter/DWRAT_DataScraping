@@ -10,11 +10,9 @@ makeSharePointPath <- function (filePathFragment) {
   # Everything up to "Supply and Demand Assessment - Documents" (inclusive) will be already specified by this function
   # The rest of the path is needed as input
   
-  # (This function assumes that the SharePoint filepath is "C:/Users/[username]/Water Boards/Supply and Demand Assessment - Documents/...")
+  # (This function assumes that the SharePoint filepath is "C:/Users/[username]/[Initial SharePoint Path String]/...")
   
-  system("whoami", intern = TRUE) %>%
-    str_split("\\\\") %>% unlist() %>% tail(1) %>%
-    paste0("C:/Users/", ., "/Water Boards/Supply and Demand Assessment - Documents/", filePathFragment)
+  paste0("C:/Users/", Sys.info()[["user"]], "/", getFromControl("INITIAL_SHAREPOINT_FILE_PORTION"), filePathFragment)
   
 }
 
@@ -203,3 +201,29 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
 
 
 
+getFromControl <- function (fieldName) {
+  
+  # Extract a value from the main control file for the repository
+  # ("Repo_Control_File.xlsx")
+  
+  
+  # First, read in the primary spreadsheet
+  controlDF <- read_xlsx("../Master_Control_File.xlsx")
+  
+  
+  
+  # Find a match for 'fieldName' in the "FIELD" column
+  if (!(fieldName %in% controlDF[["FIELD"]])) {
+    
+    stop(paste0("The field '", fieldName, "' does not exist in the repo control spreadsheet!"))
+    
+  }
+  
+  
+  
+  # Extract a string from the "VALUE" column based on the location where
+  # 'fieldName' matches the string in "FIELD"
+  return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
+  
+  
+}

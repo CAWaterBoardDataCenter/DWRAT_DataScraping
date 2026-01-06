@@ -53,11 +53,11 @@ options(timeout = 600)
 #Prevent the re-downloading of PDFs that have already been downloaded----
 
 #Generate list of files, remove .pdf extension, of already downloaded PDFs
-File_List = list.files(if_else(file.exists(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)), 
+File_List = list.files(if_else(dir.exists(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)), 
                                makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), 
-                               ws$EWRIMS_REPORTS_FOLDER_PATH) %>%
-                         str_remove(pattern = "\\.pdf$"))
-eWRIMS_List = eWRIMS_List%>%filter(!(APPLICATION_NUMBER %in% File_List)) #Remove Application_Numbers of already downloaded PDFs
+                               ws$EWRIMS_REPORTS_FOLDER_PATH)) %>%
+  str_remove(pattern = "\\.pdf$")
+eWRIMS_List = eWRIMS_List %>% filter(!(APPLICATION_NUMBER %in% File_List)) #Remove Application_Numbers of already downloaded PDFs
 
 # Bulk Download Watershed ewrims report PDFs----
 for (i in 1:nrow(eWRIMS_List)) {

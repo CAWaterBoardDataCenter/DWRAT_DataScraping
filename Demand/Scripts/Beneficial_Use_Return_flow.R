@@ -541,14 +541,6 @@ writeSpreadsheet <- function (inputDF, resDF, wsID) {
   # Save 'wb' to a file
   if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
     
-    ws$EXCLUDED_REPORTING_YEARS %>%
-      str_split(";") %>% unlist() %>%
-      trimws() %>% 
-      as.numeric() %>% sort() %>% unique() %>%
-      paste0(collapse = "_")
-    
-  } else {
-    
     saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                             "_Beneficial_Use_Return_Flow_Scripted",
                             "_Excluded_",
@@ -557,6 +549,12 @@ writeSpreadsheet <- function (inputDF, resDF, wsID) {
                               trimws() %>% 
                               as.numeric() %>% sort() %>% unique() %>%
                               paste0(collapse = "_"),
+                            ".xlsx"), overwrite = TRUE)
+    
+  } else {
+    
+    saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+                            "_Beneficial_Use_Return_Flow_Scripted",
                             ".xlsx"), overwrite = TRUE)
     
   }

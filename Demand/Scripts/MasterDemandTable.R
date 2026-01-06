@@ -520,9 +520,7 @@ if (grepl("Russian", ws$NAME)) {
   if (anyNA(ewrimsDF$COUNTY)) {
     
     # Read in a layer containing California counties
-    countyDF <- "Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/ca_counties/" %>%
-      makeSharePointPath() %>%
-      st_read() %>%
+    countyDF <- st_read("InputData/GIS_General/ca_counties.geojson") %>%
       select(NAME) %>%
       rename(COUNTY = NAME)
     

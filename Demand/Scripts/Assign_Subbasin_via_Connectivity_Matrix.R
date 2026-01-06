@@ -61,6 +61,12 @@ mainProcedure <- function () {
   
   
   
+  # Sort 'subWS' based on the values of the first column name in 'fieldNames'
+  subWS <- subWS %>%
+    arrange(!!sym(fieldNames[1]))
+  
+  
+  
   # Check that each 'POD' intersects with a subbasin
   checkOverlap(POD, subWS)
   
@@ -172,6 +178,18 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
                      "IS_SHAREPOINT_PATH_CONNECTIVITY_MATRIX_SPREADSHEET",
                      "CONNECTIVITY_MATRIX_SPREADSHEET_PATH",
                      "CONNECTIVITY_MATRIX_WORKSHEET_NAME")
+  
+  
+  
+  # Sort the data frame by the first column (and make sure the columns match too)
+  connMat <- connMat %>%
+    arrange(!!sym(names(connMat)[1]))
+  
+  
+  
+  connMat <- connMat %>%
+    select(names(connMat)[1], sort(names(connMat)[-1]))
+  
   
   
   # NOTE

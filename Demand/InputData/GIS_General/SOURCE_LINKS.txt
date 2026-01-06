@@ -3,6 +3,11 @@ https://geodata.library.ucsb.edu/catalog/3853-s3_2002_s3_reg_pacific_ocean
 
 
 
+"ca_counties"
+https://data.ca.gov/dataset/ca-geographic-boundaries/
+
+
+
 "California_SPCS_Zones_NAD27"
 https://catalog.data.gov/dataset/united-states-stateplane-zones-nad27
 

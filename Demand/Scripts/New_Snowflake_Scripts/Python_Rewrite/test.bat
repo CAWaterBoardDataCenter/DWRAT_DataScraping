@@ -1,0 +1,2 @@
+cd C:\Users\aprashar\Documents\Github\DWRAT_DataScraping\Demand\Scripts\New_Snowflake_Scripts\Python_Rewrite\
+C:\Anaconda-3.11\Scripts\activate.bat && conda activate SDA && python C:\Users\aprashar\Documents\Github\DWRAT_DataScraping\Demand\Scripts\New_Snowflake_Scripts\Python_Rewrite\test2.py

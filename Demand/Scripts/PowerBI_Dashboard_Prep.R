@@ -647,13 +647,6 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
                       "NHD_FLOWLINES_LAYER_NAME")
   
   
-  #flowLines <- st_read("C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/Program Watersheds/1. Watershed Folders/Gualala River/Data/GIS/Delineations/Gualala_Flowlines/",
-  #                     layer = "Gualala_Flowlines")
-  
-  #flowLines <- st_read("C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/NHDPlus_Delineations/LSPC_Delineations",
-  #                     layer = "NHDFlowline_EditedforLSPC")
-  
-  
   
   # Get the name of the column that uniquely identifies each catchment
   # (It's usually called "COMID")
@@ -839,7 +832,7 @@ generateMetadata <- function (ws) {
                              "corresponding sections on Portal!"),
                       "</p>"),
                paste0("<a href = ",
-                      "\"https://gispublic.waterboards.ca.gov/portal/home/content.html#my\" ",
+                      "\"", getFromControl("PORTAL_URL_MY_CONTENT"), "\" ",
                       "target = \"_blank\">",
                       "Link to Portal Content",
                       "</a>"),
@@ -977,7 +970,7 @@ generateMetadata <- function (ws) {
                              "the original source for information on California's water ",
                              "rights and their PODs. Modifications to the NHD catchments ",
                              "and flowlines were performed in conjunction with Paradigm ",
-                             "Environmental."),
+                             "Environmental (Ulteig)."),
                       "</p>"),
                "",
                # Terms of Use

@@ -8,6 +8,12 @@ start_time = proc.time()
 require(tidyverse)
 require(odbc)
 require(DBI)
+require(readxl)
+
+
+# Reference shared functions
+source("Scripts/Shared_Functions_Demand.R")
+
 
 # Repair function for corrupted flat files----
 
@@ -108,31 +114,30 @@ fixData <- function(x) {
 # Downloading Flat Files Required by QAQC Process----
 
 # Download in advance all flat files that will be used in the procedures of this script and the other demand-related scripts
-# They will be downloaded directly from the ReportManager, 1542 SQL Server, Database ReportDB, which hosts all eWRIMS flat files. 
-# This database is accessible to all Division staff. (VPN Required)
+# They will be downloaded directly from a database accessible to all Division staff. (VPN Required)
 ReportManager <- dbConnect(odbc(),
                            Driver = "SQL Server",
-                           Server = "reportmanager,1542",
+                           Server = getFromControl("FLAT_FILE_DATABASE_SERVER"),
                            Trusted_Connection = "Yes",
-                           Database = "ReportDB")
+                           Database = getFromControl("FLAT_FILE_DATABASE_NAME"))
 
 
 # Save the POD flat file, ~73 MB as of 2/13/2024
 Flat_File_PODs <- dbGetQuery(ReportManager,
-                             "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_pod") %>%
+                             paste0("Select * from ", getFromControl("FLAT_FILE_POD_TABLE_NAME"))) %>%
   write_csv("RawData/ewrims_flat_file_pod.csv")
 
 
 # Get the master flat file as well, ~69 MB as of 2/13/2024
 flat_file <- dbGetQuery(conn = ReportManager,
-           statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file") %>% 
+           statement = paste0("Select * from ", getFromControl("FLAT_FILE_MAIN_TABLE_NAME"))) %>% 
   write_csv("RawData/ewrims_flat_file.csv")
 
 
 # Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
 water_use_report <- dbGetQuery(conn = ReportManager,
-           statement = "SELECT * from ReportDB.FLAT_FILE.ewrims_water_use_report
-           WHERE YEAR >= 2016 ")
+           statement = paste0("SELECT * FROM ", getFromControl("FLAT_FILE_REPORTING_TABLE_NAME"),
+                              " WHERE YEAR >= 2016"))
 
 # Convert the YEAR  column to numeric
 water_use_report$YEAR = as.numeric(water_use_report$YEAR)
@@ -158,22 +163,20 @@ if (water_use_report %>%
 # Save the Water Rights Annual Water Use Extended Report file too, ~1.6 GB as of 2/13/2024
 # (This works, but it takes a long time, and the progress bar might not update)
 water_use_report_extended = dbGetQuery(conn = ReportManager,
-           statement = "Select
-                                                  APPLICATION_NUMBER,YEAR,MONTH,
-                                                  AMOUNT,DIVERSION_TYPE, MAX_STORAGE,
-                                                  FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, 
-                                                  INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT,
-                                                  EFFECTIVE_DATE, EFFECTIVE_FROM_DATE,
-                                                  WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START,
-                                                  STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, 
-                                                  STORAGE_SEASON_END, 
-                                                  PARTY_ID, APPLICATION_PRIMARY_OWNER,
-                                                  PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, 
-                                                  SUB_TYPE, YEAR_DIVERSION_COMMENCED,
-                                                  USE_CODE
-                                                  FROM ReportDB.FLAT_FILE.ewrims_water_use_report_extended
-                                                  WHERE YEAR >= 2016
-                                                  ")
+                                       statement = paste0("Select APPLICATION_NUMBER, YEAR, MONTH, ",
+                                                          "AMOUNT,DIVERSION_TYPE, MAX_STORAGE, ",
+                                                          "FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, ",
+                                                          "INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, ",
+                                                          "EFFECTIVE_DATE, EFFECTIVE_FROM_DATE, ",
+                                                          "WATER_RIGHT_TYPE, DIRECT_DIV_SEASON_START, ",
+                                                          "STORAGE_SEASON_START, DIRECT_DIV_SEASON_END, ", 
+                                                          "STORAGE_SEASON_END, ",
+                                                          "PARTY_ID, APPLICATION_PRIMARY_OWNER, ",
+                                                          "PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, ", 
+                                                          "SUB_TYPE, YEAR_DIVERSION_COMMENCED, ",
+                                                          "USE_CODE",
+                                                          " FROM ", getFromControl("FLAT_FILE_EXTENDED_REPORTING_TABLE_NAME"),
+                                                          " WHERE YEAR >= 2016"))
 
 if (water_use_report_extended %>% 
     filter(YEAR == max(as.numeric(water_use_report_extended$YEAR)) & as.numeric(MONTH) > 9) %>%
@@ -206,8 +209,7 @@ if (water_use_report_extended %>%
   
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
 ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
-           statement = "Select * from 
-                                          ReportDB.FLAT_FILE.ewrims_flat_file_use_season") %>% 
+           statement = paste0("Select * from ", getFromControl("FLAT_FILE_USE_SEASON_TABLE_NAME"))) %>% 
   write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
@@ -215,7 +217,7 @@ ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager,
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
 # (Columns containing sensitive information are removed)
 ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
-                                     statement = "Select * from ReportDB.FLAT_FILE.ewrims_flat_file_party") %>%
+                                     statement = paste0("Select * from ", getFromControl("FLAT_FILE_PARTY_TABLE_NAME"))) %>%
   select(-c(MAILING_ADDRESS, BILLING_ADDRESS,
             CONTACT_INFORMATION_PHONE, CONTACT_INFORMATION_EMAIL,
             MAILING_STREET_NUMBER, MAILING_STREET_NAME,
@@ -360,7 +362,7 @@ end_time = proc.time()
 run_time = start_time - end_time
 
 
-cat("The script ran in", round(run_time["elapsed"], 2), "seconds\n")
+cat("The script ran in ", round(run_time["elapsed"], 2), " seconds\n")
 
 # Clear the environment----
   # Get the name of all variables in the environment

@@ -60,7 +60,7 @@ DAT_Headers <- c("Year", "month", "day", "h", "m", "s",
 
 # SPI predicted values for the rest of the water year
 # (Used when October-February data for the water year is not yet available)
-DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values_WY2025.dat") %>%
+DAT_Predictions <- makeSharePointPath("DWRAT\\SDU_Runs\\Hydrology\\DAT PRMS Blueprints\\Dat_Forecast_Values_WY2026.dat") %>%
   read_delim("\t", col_names = FALSE, show_col_types = FALSE) %>%
   set_names(DAT_Headers)
 
