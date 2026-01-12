@@ -208,7 +208,7 @@ getFromControl <- function (fieldName) {
   
   
   # First, read in the primary spreadsheet
-  controlDF <- read_xlsx("../Repo_Control_File.xlsx")
+  controlDF <- read_xlsx("../Master_Control_File.xlsx")
   
   
   
