@@ -555,7 +555,8 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
                      MENTIONS_WATERSHED_IN_SOURCE_INFORMATION) %>%
               mutate(REPORT_LATITUDE = NA, REPORT_LONGITUDE = NA, LAT_LON_CRS = NA,
                      REPORT_NORTHING = NA, REPORT_EASTING = NA, NOR_EAS_CRS = NA,
-                     REPORT_SECTION_CORNER = NA, REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
+                     REPORT_NS_MOVE_FT = NA, REPORT_NS_DIRECTION = NA, REPORT_EW_MOVE_FT = NA, REPORT_EW_DIRECTION = NA,
+                     REPORT_SECTION_CORNER = NA, REPORT_Q_SECTION = NA, REPORT_QQ_SECTION = NA, 
                      REPORT_SECTION = NA, REPORT_TOWNSHIP = NA, REPORT_RANGE = NA, REPORT_DATUM = NA, MULTI_OPTIONS_CHOICE = NA_integer_, NOTES2 = "--") %>%
               mutate(`MANUAL_OVERRIDE: KEEP POD` = NA,
                      `MANUAL_OVERRIDE: REMOVE POD` = NA) %>%
