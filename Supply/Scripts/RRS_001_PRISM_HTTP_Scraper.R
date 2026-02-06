@@ -3,6 +3,7 @@
 
 # These locations correspond to NOAA, RAWS, and CIMIS weather stations
 
+
 # The required input is three CSV files that correspond to: 
 #   (1) PRMS-related precipitation stations
 #   (2) PRMS-related temperature stations
@@ -13,14 +14,15 @@
 #  (2) LONGITUDE
 #  (3) ID
 
+
 # Three corresponding output CSV files are produced and stored in the "WebData" folder
 #  (1) "PRISM_Raw_Precip_[startDate]_[endDate].csv"
 #  (2) "PRISM_Raw_Temp_[startDate]_[endDate].csv"
 #  (3) "PRISM_SRP_Raw_[startDate]_[endDate].csv"
 
 
-# Note: The PRMS-related output files use SI units, while the SRP-related
-#       output file has US customary units
+# Note: The PRMS-related output files use SI units (mm and Celsius), 
+#       while the SRP-related output file has US customary units (in and Fahrenheit)
 
 
 #### Setup ####
@@ -274,28 +276,6 @@ validateInput <- function (stationDF, sourceField) {
   
   # Return nothing if there are no issues
   return(invisible(NULL))
-  
-}
-
-
-
-anyFalse <- function (logVec) {
-  
-  # Given a logical vector, return TRUE if any of these elements are FALSE
-  # (This works with single element logical variables too)
-  
-  return(FALSE %in% logVec)
-  
-}
-
-
-
-twoDigitText <- function (num) {
-  
-  # This function is called when a number is being written to a string
-  # If it has only one digit, a zero will be added to the beginning
-  
-  return(sprintf("%.2d", num))
   
 }
 

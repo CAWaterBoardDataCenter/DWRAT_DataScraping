@@ -3,9 +3,9 @@
 
 #### Dependencies ####
 
+require(data.table)
 require(tidyverse)
 require(readxl)
-require(data.table)
 require(cli)
 
 
@@ -457,5 +457,27 @@ getFromSupplyControl_RR <- function (fieldName) {
   # Extract a string from the "VALUE" column based on the row where
   # 'fieldName' matches the string in "FIELD"
   return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
+  
+}
+
+
+
+anyFalse <- function (logVec) {
+  
+  # Given a logical vector, return TRUE if any of these elements are FALSE
+  # (This works with single element logical variables too)
+  
+  return(FALSE %in% logVec)
+  
+}
+
+
+
+twoDigitText <- function (num) {
+  
+  # This function is called when a number is being written to a string
+  # If it has only one digit, a zero will be added to the beginning
+  
+  return(sprintf("%.2d", num))
   
 }

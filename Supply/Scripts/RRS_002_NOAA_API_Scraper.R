@@ -1,14 +1,18 @@
 # Download precipitation and temperature data from NOAA at various stations  
 # in the Russian River watershed
 
+
 # The required input is a CSV file with one column:
 #  (1) STATION_ID
 
 # These IDs should be the GHCND IDs (e.g., "USC00043875") 
 # ("GHCND" stands for Global Historical Climatology Network Daily)
 
+
 # The raw output will be stored in the "WebData" folder as 
 # "NOAA_API_Data_[startDate]_[endDate].csv"
+
+# Note: SI units are used for the output (mm and Celsius)
 
 
 #### Setup ####
@@ -87,7 +91,7 @@ mainProcedure <- function () {
   # Output a completion message
   cat("\tDone!\n\n")
   
-  cat(col_green("\n'RRS_002_NOAA_API_Scraper' is complete!\n\n"))
+  cat(col_green("\n'RRS_002_NOAA_API_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing
