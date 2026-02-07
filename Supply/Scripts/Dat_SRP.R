@@ -412,7 +412,7 @@ write.table(x = Dat_SRP_Final,
 
 ## Export to SRPHM_Update_Ag folder
 write.table(x= Dat_SRP_Final,
-            file = paste0("C:/SRPHM_update_ag_andy_rich/Dat_SRP_", modeler_name, "_Observed_EndDate_", EndDate$date, ".dat"),
+            file = paste0("C:/SRPHM_update_ag/Dat_SRP_", modeler_name, "_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
 
 # Calculate Run Time and Print Completion Statement
