@@ -117,26 +117,26 @@ fixData <- function(x) {
 # They will be downloaded directly from a database accessible to all Division staff. (VPN Required)
 ReportManager <- dbConnect(odbc(),
                            Driver = "SQL Server",
-                           Server = getFromControl("FLAT_FILE_DATABASE_SERVER"),
+                           Server = getFromMasterControl("FLAT_FILE_DATABASE_SERVER"),
                            Trusted_Connection = "Yes",
-                           Database = getFromControl("FLAT_FILE_DATABASE_NAME"))
+                           Database = getFromMasterControl("FLAT_FILE_DATABASE_NAME"))
 
 
 # Save the POD flat file, ~73 MB as of 2/13/2024
 Flat_File_PODs <- dbGetQuery(ReportManager,
-                             paste0("Select * from ", getFromControl("FLAT_FILE_POD_TABLE_NAME"))) %>%
+                             paste0("Select * from ", getFromMasterControl("FLAT_FILE_POD_TABLE_NAME"))) %>%
   write_csv("RawData/ewrims_flat_file_pod.csv")
 
 
 # Get the master flat file as well, ~69 MB as of 2/13/2024
 flat_file <- dbGetQuery(conn = ReportManager,
-           statement = paste0("Select * from ", getFromControl("FLAT_FILE_MAIN_TABLE_NAME"))) %>% 
+           statement = paste0("Select * from ", getFromMasterControl("FLAT_FILE_MAIN_TABLE_NAME"))) %>% 
   write_csv("RawData/ewrims_flat_file.csv")
 
 
 # Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
 water_use_report <- dbGetQuery(conn = ReportManager,
-           statement = paste0("SELECT * FROM ", getFromControl("FLAT_FILE_REPORTING_TABLE_NAME"),
+           statement = paste0("SELECT * FROM ", getFromMasterControl("FLAT_FILE_REPORTING_TABLE_NAME"),
                               " WHERE YEAR >= 2016"))
 
 # Convert the YEAR  column to numeric
@@ -175,7 +175,7 @@ water_use_report_extended = dbGetQuery(conn = ReportManager,
                                                           "PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, ", 
                                                           "SUB_TYPE, YEAR_DIVERSION_COMMENCED, ",
                                                           "USE_CODE",
-                                                          " FROM ", getFromControl("FLAT_FILE_EXTENDED_REPORTING_TABLE_NAME"),
+                                                          " FROM ", getFromMasterControl("FLAT_FILE_EXTENDED_REPORTING_TABLE_NAME"),
                                                           " WHERE YEAR >= 2016"))
 
 if (water_use_report_extended %>% 
@@ -209,7 +209,7 @@ if (water_use_report_extended %>%
   
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
 ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
-           statement = paste0("Select * from ", getFromControl("FLAT_FILE_USE_SEASON_TABLE_NAME"))) %>% 
+           statement = paste0("Select * from ", getFromMasterControl("FLAT_FILE_USE_SEASON_TABLE_NAME"))) %>% 
   write_csv("RawData/ewrims_flat_file_use_season.csv")
 
 
@@ -217,7 +217,7 @@ ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager,
 # (It is also a big file that would work better with read_csv() instead of download.file()) ~174 MB
 # (Columns containing sensitive information are removed)
 ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
-                                     statement = paste0("Select * from ", getFromControl("FLAT_FILE_PARTY_TABLE_NAME"))) %>%
+                                     statement = paste0("Select * from ", getFromMasterControl("FLAT_FILE_PARTY_TABLE_NAME"))) %>%
   select(-c(MAILING_ADDRESS, BILLING_ADDRESS,
             CONTACT_INFORMATION_PHONE, CONTACT_INFORMATION_EMAIL,
             MAILING_STREET_NUMBER, MAILING_STREET_NAME,
@@ -359,11 +359,11 @@ write_csv(Flat_File_eWRIMS,
 
 
 end_time = proc.time()
-run_time = start_time - end_time
+run_time = end_time - start_time
 
 
 cat("The script ran in ", round(run_time["elapsed"], 2), " seconds\n")
 
 # Clear the environment----
   # Get the name of all variables in the environment
-#remove(list = ls())
+remove(list = ls())

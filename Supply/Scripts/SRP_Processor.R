@@ -100,6 +100,12 @@ colnames(gag) = gag_names
 # creating the final subbasin values----
 
 # create the data frames with mutate() and select()
+
+# These equations originated from the Daily_percent_reduction_gwPumping_to_Oct.xlsx
+# spreadsheet saved under the SRPHM_update_ag\Percent_reduction_streamflow_gw_pumping_estimate folder; the 
+# spreadsheet was originally developed by Jaspreet Gill of the Cannabis Instream Policies Unit and later
+# shared with the SDA section before Payman Alemi converted it into an R code block below:
+
 sub23 <- gag %>% select(Date, gag1) %>% 
   mutate(sub23 = gag1) %>% select(Date = Date, sub23)
 

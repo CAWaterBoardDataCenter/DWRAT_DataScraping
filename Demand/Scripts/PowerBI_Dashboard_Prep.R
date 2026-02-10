@@ -832,7 +832,7 @@ generateMetadata <- function (ws) {
                              "corresponding sections on Portal!"),
                       "</p>"),
                paste0("<a href = ",
-                      "\"", getFromControl("PORTAL_URL_MY_CONTENT"), "\" ",
+                      "\"", getFromMasterControl("PORTAL_URL_MY_CONTENT"), "\" ",
                       "target = \"_blank\">",
                       "Link to Portal Content",
                       "</a>"),
