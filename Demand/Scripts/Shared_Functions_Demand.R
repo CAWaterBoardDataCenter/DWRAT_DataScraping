@@ -12,7 +12,7 @@ makeSharePointPath <- function (filePathFragment) {
   
   # (This function assumes that the SharePoint filepath is "C:/Users/[username]/[Initial SharePoint Path String]/...")
   
-  paste0("C:/Users/", Sys.info()[["user"]], "/", getFromControl("INITIAL_SHAREPOINT_FILE_PORTION"), filePathFragment)
+  paste0("C:/Users/", Sys.info()[["user"]], "/", getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"), filePathFragment)
   
 }
 
@@ -201,7 +201,7 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
 
 
 
-getFromControl <- function (fieldName) {
+getFromMasterControl <- function (fieldName) {
   
   # Extract a value from the main control file for the repository
   # ("Repo_Control_File.xlsx")
@@ -216,6 +216,17 @@ getFromControl <- function (fieldName) {
   if (!(fieldName %in% controlDF[["FIELD"]])) {
     
     stop(paste0("The field '", fieldName, "' does not exist in the repo control spreadsheet!"))
+    
+  }
+  
+  
+  # If the control file has a blank entry for this field, notify the user
+  if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
+    
+    stop(paste0("'Master_Control_File.xlsx' has 'NA' for required field '", 
+                fieldName, "'",
+                "\n\n",
+                "Please update this file."))
     
   }
   
