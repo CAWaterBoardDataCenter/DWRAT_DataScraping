@@ -4,10 +4,9 @@
 # These locations correspond to NOAA, RAWS, and CIMIS weather stations
 
 
-# The required input is three CSV files that correspond to: 
-#   (1) PRMS-related precipitation stations
-#   (2) PRMS-related temperature stations
-#   (3) SRP-related precipitation and temperature stations 
+# The required input is two CSV files that correspond to: 
+#   (1) PRMS-related precipitation and temperature stations
+#   (2) SRP-related precipitation and temperature stations 
 
 # Each of these files must contain three columns:
 #  (1) LATITUDE
@@ -15,13 +14,12 @@
 #  (3) ID
 
 
-# Three corresponding output CSV files are produced and stored in the "WebData" folder
-#  (1) "PRISM_Raw_Precip_[startDate]_[endDate].csv"
-#  (2) "PRISM_Raw_Temp_[startDate]_[endDate].csv"
-#  (3) "PRISM_SRP_Raw_[startDate]_[endDate].csv"
+# Two corresponding output CSV files are produced and stored in the "WebData" folder
+#  (1) "PRISM_PRMS_Raw_[startDate]_[endDate].csv"
+#  (2) "PRISM_SRP_Raw_[startDate]_[endDate].csv"
 
 
-# Note: The PRMS-related output files use SI units (mm and Celsius), 
+# Note: The PRMS-related output file uses SI units (mm and Celsius), 
 #       while the SRP-related output file has US customary units (in and Fahrenheit)
 
 
@@ -53,17 +51,17 @@ mainProcedure <- function () {
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  cat("\n[1/3]\tGetting precipitation data for PRMS-related stations...\n")
+  cat("\n[1/2]\tGetting precipitation and temperature data for PRMS-related stations...\n")
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("PRISM_PRMS_PRECIPITATION_STATIONS_CSV") |>
+  stationDF <- getFromSupplyControl_RR("PRISM_PRMS_STATIONS_CSV") |>
     getFile() |>
     unique()
   
   
   # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "PRISM_PRMS_PRECIPITATION_STATIONS_CSV")
+  validateInput(stationDF, "PRISM_PRMS_STATIONS_CSV")
   
   
   # Prepare the request content
@@ -72,76 +70,32 @@ mainProcedure <- function () {
                    lons = stationDF$LONGITUDE |> paste0(collapse = "|"),  # Latitude
                    lats = stationDF$LATITUDE |> paste0(collapse = "|"), # Longitude
                    names = stationDF$ID |> paste0(collapse = "|"),       # Station Names
-                   spares = "4km",   # Resolution
-                   interp = "idw",   # Interpolate grid cell values ("0" if no)
-                   stats = "ppt",    # Precipitation
-                   units = "si",     # Metric units
-                   range = "daily",  # Daily values
+                   spares = "4km",             # Resolution
+                   interp = "idw",             # Interpolate grid cell values ("0" if no)
+                   stats = "ppt tmin tmax",    # Precipitation + Minimum & Maximum Temperature
+                   units = "si",               # Metric units
+                   range = "daily",            # Daily values
                    start = paste0(year(startDate), twoDigitText(month(startDate)), twoDigitText(day(startDate))),
                    end = paste0(year(endDate), twoDigitText(month(endDate)), twoDigitText(day(endDate))),
                    stability = "provisional")
   
   
   # Submit the request for precipitation data
-  getPRISM(bodyList, paste0("WebData/PRISM_Raw_Precip_", startDate, "_", endDate, ".csv"))
+  getPRISM(bodyList, paste0("WebData/PRISM_PRMS_Raw_", startDate, "_", endDate, ".csv"))
   
   
   # Add to the message
   cat("\tDone!\n\n")
   
   
-  # Wait a bit before proceeding to the next step
-  Sys.sleep(1)
-  
-  
-  # Next, prepare to request temperature data
-  
-  
-  cat("[2/3]\tGetting temperature data for PRMS-related stations...\n")
-  
-  
-  # Read in a list of temperature stations
-  stationDF <- getFromSupplyControl_RR("PRISM_PRMS_TEMPERATURE_STATIONS_CSV") |>
-    getFile() |>
-    unique()
-  
-  
-  # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "PRISM_PRMS_TEMPERATURE_STATIONS_CSV")
-  
-  
-  # Prepare the POST request content
-  bodyList <- list(call = "pp/daily_timeseries_mp",
-                   proc = "gridserv",
-                   lons = stationDF$LONGITUDE |> paste0(collapse = "|"),  # Latitude
-                   lats = stationDF$LATITUDE |> paste0(collapse = "|"), # Longitude
-                   names = stationDF$ID |> paste0(collapse = "|"),       # Station Names
-                   spares = "4km",
-                   interp = "idw",
-                   stats = "tmin tmax", # Minimum and maximum temperatures
-                   units = "si",
-                   range = "daily",
-                   start = paste0(year(startDate), twoDigitText(month(startDate)), twoDigitText(day(startDate))),
-                   end = paste0(year(endDate), twoDigitText(month(endDate)), twoDigitText(day(endDate))),
-                   stability = "provisional")
-  
-  
-  # Submit the request for temperature data
-  getPRISM(bodyList, paste0("WebData/PRISM_Raw_Temp_", startDate, "_", endDate, ".csv"))
-  
-  
-  # Add to the message
-  cat("\tDone!\n\n")
-  
-  
-  # Wait a bit before proceeding to the next step
+  # Wait a bit before proceeding
   Sys.sleep(1)
   
   
   # The final step is to get both precipitation and temperature data for the SRP stations
   
   
-  cat("[3/3]\tGetting precipitation AND temperature data for SRP-related stations...\n")
+  cat("[2/2]\tGetting precipitation and temperature data for SRP-related stations...\n")
   
   
   # Read in a list of SRP stations
@@ -298,6 +252,7 @@ getPRISM <- function (bodyList, writePath) {
                             `Accept-Encoding` = "gzip, deflate, br",
                             `Sec-Ch-Ua-Platform` = "Windows",
                             `User-Agent` = sessionInfo()[["R.version"]][["version.string"]],
+                            `X-User-Name` = Sys.info()[["user"]],
                             `X-User-Contact` = "DWR-SDA@Waterboards.ca.gov",
                             `X-Requested-With` = "XMLHttpRequest",
                             `Content-Type` = "application/x-www-form-urlencoded; charset=UTF-8")
