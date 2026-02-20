@@ -30,9 +30,11 @@
 remove(list = ls())
 
 
+require(data.table)
 require(tidyverse)
-require(httr)
+require(readxl)
 require(cli)
+require(httr)
 
 
 # Import shared functions
@@ -251,7 +253,7 @@ validateInput <- function (stationDF, sourceField) {
                 "are being read in as character columns instead of numeric columns\n\n", 
                 "Since types are assigned automatically, this indicates that the columns ",
                 "cannot be parsed as numeric columns due to the presence of non-number-related ",
-                "characters\n\n",
+                "characters (or the absence of any values at all)\n\n",
                 "Please correct these columns and ensure that they are numeric values\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
            strwrap(width = 0.99 * getOption("width")) |>

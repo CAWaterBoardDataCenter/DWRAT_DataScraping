@@ -9,12 +9,12 @@ remove(list = ls())
 
 
 # Import packages
+require(data.table)
 require(tidyverse)
 require(readxl)
 require(cli)
 require(httr)
 require(rvest)
-require(data.table)
 
 
 #### Scripts ####
