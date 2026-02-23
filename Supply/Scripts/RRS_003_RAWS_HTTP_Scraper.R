@@ -20,7 +20,9 @@
 remove(list = ls())
 
 
+require(data.table)
 require(tidyverse)
+require(readxl)
 require(cli)
 require(httr)
 require(rvest)

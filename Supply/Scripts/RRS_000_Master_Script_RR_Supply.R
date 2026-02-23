@@ -9,12 +9,12 @@ remove(list = ls())
 
 
 # Import packages
+require(data.table)
 require(tidyverse)
 require(readxl)
 require(cli)
 require(httr)
 require(rvest)
-require(data.table)
 
 
 #### Scripts ####
@@ -36,6 +36,7 @@ require(data.table)
 #   (*) PRISM
 #   (*) NOAA
 #   (*) RAWS
+#   (*) CIMIS
 
 
 source("Scripts/RRS_001_PRISM_HTTP_Scraper.R")
@@ -48,6 +49,9 @@ source("Scripts/RRS_004_CIMIS_API_Scraper.R")
 
 
 ##### PRMS ####
+
+# Process the downloaded weather files
+source("Scripts/RRS_005_Process_Weather_Data.R")
 
 
 # Generate a DAT file for PRMS

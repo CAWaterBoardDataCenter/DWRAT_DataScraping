@@ -15,7 +15,7 @@
 
 # Note 1: The first line of the text file should be just the API key
 # Note 2: To get a key, create an account on https://www.cimis.water.ca.gov/
-# Note 3: Don't use Microsoft Edge on this website
+# Note 3: Don't use Microsoft Edge on this website (some buttons don't function properly)
 
 
 # The raw output will be stored in the "WebData" folder as 
@@ -30,10 +30,11 @@
 remove(list = ls())
 
 
+require(data.table)
 require(tidyverse)
+require(readxl)
 require(cli)
 require(httr)
-require(rvest)
 
 
 # Import shared functions
@@ -53,58 +54,44 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("RAWS_STATIONS_CSV") |>
+  stationDF <- getFromSupplyControl_RR("CIMIS_STATIONS_CSV") |>
     getFile() |>
     unique()
   
   
   # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "RAWS_STATIONS_CSV")
+  validateStationInput(stationDF, "CIMIS_STATIONS_CSV")
   
   
-  # Iteratively submit requests to RAWS in a for loop
-  for (i in 1:nrow(stationDF)) {
-    
-    cat(paste0("\n[", i, "/", nrow(stationDF), "]\tGetting temperature and ",
-               "precipitation data for ", stationDF$STATION_ID[i], "...\n"))
-    
-    
-    # In another function, submit a POST request to RAWS to acquire data
-    downloadDF <- requestRAWS(stationDF$STATION_ID[i], startDate, endDate)
-    
-    
-    # If this is the first iteration, define a variable to hold all stations' data
-    # For subsequent iterations, simply append new data to that data frame
-    if (i == 1) {
-      
-      rawsDF <- downloadDF
-      
-    } else {
-      
-      rawsDF <- bind_rows(rawsDF, downloadDF)
-      
-    }
-    
-    
-    cat("\tDone!\n\n")
-    
-  }
+  # Output a message
+  cat(paste0("\nGetting precipitation and temperature data for ",
+             nrow(stationDF), " CIMIS station",
+             if_else(nrow(stationDF) > 1, "s", ""),
+             "...\n"))
+  
+  
+  # Get data for all CIMIS stations at once
+  cimisDF <- requestCIMIS(stationDF$STATION_ID, startDate, endDate)
+  
+  
+  # Add another message
+  cat("\tDone!\n\n")
   
   
   # Define the output file name as well
-  outFile <- paste0("WebData/RAWS_HTTP_Data_", startDate, "_",
+  outFile <- paste0("WebData/CIMIS_API_Data_", startDate, "_",
                     endDate, ".csv")
   
   
   # Write the file to the "WebData" folder
-  write_csv(rawsDF, outFile)
+  write_csv(cimisDF, outFile)
   
   
   # Confirm that 'outFile' exists
   # If not, output an error message
   if (!file.exists(outFile)) {
     
-    stop(paste0("RAWS File Output Failed\n\n",
+    stop(paste0("CIMIS File Output Failed\n\n",
                 "The output file was not detected in the expected directory\n\n",
                 "The final `write_csv()` step may have failed, please investigate ",
                 "this issue\n\n") |>
@@ -128,7 +115,7 @@ mainProcedure <- function () {
 
 
 
-validateInput <- function (stationDF, sourceField) {
+validateStationInput <- function (stationDF, sourceField) {
   
   # Make sure that 'stationDF' is formatted correctly
   # If there are any issues, notify the user
@@ -138,11 +125,11 @@ validateInput <- function (stationDF, sourceField) {
   if (!("STATION_ID" %in% names(stationDF))) {
     
     stop(paste0("Station Input File - Column Issue\n\n",
-                "The input file containing RAWS stations does not have ",
+                "The input file containing CIMIS stations does not have ",
                 "the required column (\"STATION_ID\"). ",
                 "Please correct this file and try again.\n\n",
-                "The input file must contain the IDs that appear in RAWS's ",
-                "URLs for each target location (e.g., 'CHAW' for 'Hawkeye')\n\n",
+                "The input file must contain the numeric IDs that correspond ",
+                "to different CIMIS stations (e.g., '103' for 'Windsor')\n\n",
                 "Also, the name of this column must match exactly\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
@@ -158,9 +145,29 @@ validateInput <- function (stationDF, sourceField) {
   if (anyNA(stationDF$STATION_ID)) {
     
     stop(paste0("Station Input File - Missing Data Issue\n\n",
-                "The input file containing target RAWS stations has one or more ",
+                "The input file containing target CIMIS stations has one or more ",
                 "missing rows in its required column (\"STATION_ID\")\n\n", 
                 "Please fill in any empty entries in this column\n\n",
+                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "')") |>
+           strwrap(width = 0.99 * getOption("width")) |>
+           paste0(collapse = "\n") |>
+           str_replace("(missing)", col_red("\\1")))
+    
+  }
+  
+  
+  # Make sure "STATION_ID" is a numeric column
+  if (!is.numeric(stationDF$STATION_ID)) {
+    
+    stop(paste0("Station Input File - ID Type Issue\n\n",
+                "The \"STATION_ID\" column of the input file is being read in ",
+                "as something other than a numeric column\n\n", 
+                "Since types are assigned automatically, this indicates that the ",
+                "column cannot be parsed as a numeric column due to the presence of ",
+                "non-number-related characters (or the absence of any value at all)\n\n",
+                "Please correct this column and ensure that it contains only ",
+                "numeric values\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
            strwrap(width = 0.99 * getOption("width")) |>
@@ -177,335 +184,397 @@ validateInput <- function (stationDF, sourceField) {
 
 
 
-requestRAWS <- function (stationID, startDate, endDate) {
+requestCIMIS <- function (stationVec, startDate, endDate) {
   
-  # Prepare a POST request and submit it to RAWS
+  # Prepare a GET request and submit it to CIMIS
   
-  # Obtain a table of climate data for the specified station 
+  # Obtain a table of climate data for the specified stations  
   # within the date range delineated by 'startDate' and 'endDate'
   
   
-  # However, before the request can be submitted, adjustments to 'startDate' 
-  # and 'endDate' may be required
-  adjDates <- adjustScrapingBounds(stationID, startDate, endDate)
+  # First, obtain the user's API key
+  # It should be specified in a file linked via the RR Supply Control File
+  apiKey <- getFromSupplyControl_RR("CIMIS_API_KEY") |>
+    getFile()
   
   
-  # The next step is to submit a POST request to the WRCC server
-  req <- POST(url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl",
-              body = list("stn" = stationID,
-                          # Set the Start Date
-                          "smon" = twoDigitText(month(adjDates[1])),
-                          "sday" = twoDigitText(day(adjDates[1])),
-                          "syea" = format(adjDates[1], "%y"), # Last two digits of the year
-                          # Set the End Date
-                          "emon" = twoDigitText(month(adjDates[2])),
-                          "eday" = twoDigitText(day(adjDates[2])), 
-                          "eyea" = format(adjDates[2], "%y"),
-                          # Select "Air Temperature" and "Precipitation" data
-                          "qAT" = "ON",
-                          "qPR" = "ON",
-                          # Metric units
-                          "unit" = "M",
-                          # HTML output
-                          "Ofor" = "H",
-                          # Only Complete data
-                          "Datareq" = "C",
-                          # Apply physical limits QC to the data
-                          "qc" = "Y",
-                          # Missing values are "-999"
-                          "miss" = "07",
-                          # Don't include number of valid observations for each element
-                          "obs" = "N",
-                          # Subinterval start and end dates
-                          "WsMon" = "01",
-                          "WsDay" = "01",
-                          "WeMon" = "12",
-                          "WeDay" = "31"),
-              add_headers(`User-Agent` = sessionInfo()[["R.version"]][["version.string"]],
-                          `X-User-Contact` = "DWR-SDA@Waterboards.ca.gov"))
+  # Validate the input
+  validateAPI(apiKey, "CIMIS_API_KEY")
+  
+  
+  # Keep only the first element of 'apiKey' 
+  # (just in case additional input was included in the file)
+  apiKey <- apiKey[1]
+  
+  
+  # Before continuing, verify that 'startDate' and 'endDate' are within 
+  # 400 days of each other
+  # If the gap is wider, the request will need to be split into chunks
+  if (difftime(endDate, startDate, units = "days") > 400) {
+    
+    # (CIMIS has a request limit of 1,750 records)
+    # (Records, not days)
+    return(splitRequest(stationVec, startDate, endDate, maxGap = 400))
+    
+  }
+  
+  
+  # If there are no issues, prepare the request URL
+  requestURL <- paste0("https://et.water.ca.gov/api/data?",
+                       # State the API Key (a CIMIS account is required to get this)
+                       "appKey=", apiKey,
+                       # Station IDs (comma-separated)
+                       "&targets=", stationVec |> paste0(collapse = ","),
+                       # Dataset Start Date
+                       "&startDate=", startDate,
+                       # Dataset End Date
+                       "&endDate=", endDate,
+                       # Requesting Daily TMIN, TMAX, and PRECIP
+                       "&dataItems=day-air-tmp-min,day-air-tmp-max,day-precip",
+                       # Metric units (mm and Celsius)
+                       "&unitOfMeasure=M")
+  
+  
+  # Try to submit the GET request
+  # (Also, ask for a JSON-formatted response)
+  req <- try(GET(requestURL, add_headers("Accept" = "application/json")), 
+             silent = TRUE)
   
   
   # Wait a bit after receiving the response
   Sys.sleep(runif(1, min = 1.1, max = 1.4))
   
   
-  # Check if the response is valid
+  # Check if an error was received
+  if ("try-error" %in% class(req)) {
+    
+    stop(paste0("CIMIS API Call Failed\n\n",
+                "A request failed to reach CIMIS's server\n\n",
+                "The most likely cause is a network firewall issue, but please ",
+                "examine the error message to double-check this:\n\n",
+                req[[1]][1]) |>
+           strwrap(width = 0.99 * getOption("width")) |>
+           paste0(collapse = "\n"))
+    
+  }
+  
+  
+  # Also check if the response is valid
   if (req$status_code != 200) {
     
-    stop(paste0("RAWS HTTP Request Failed\n\n",
-                "A request sent to RAWS's server returned an error code of ", 
+    stop(paste0("CIMIS API Call Failed\n\n",
+                "A request sent to CIMIS's server returned an error code of ", 
                 req$status_code, "\n\n",
-                "This could be a problem with the request and/or RAWS's server\n\n",
-                "Please investigate this issue for station \"", stationID, "\"") |>
+                "This could be a problem with the request and/or CIMIS's server\n\n",
+                "Please double-check the request URL: ",
+                requestURL, "\n\n",
+                "Alternatively, there may be a problem with CIMIS's server, ",
+                "so please consider contacting them for assistance") |>
            strwrap(width = 0.99 * getOption("width")) |>
            paste0(collapse = "\n"))
     
   }
   
   
-  # After that, extract the table from the HTML content of 'req'
-  htmlTable <- content(req) %>% as.character() |>
-    read_html() |>
-    html_node("table")
-  
-  
-  # If 'htmlTable' is NA, a <table> element could not be extracted from the response
-  if (is.na(htmlTable)) {
-    
-    stop(paste0("Could Not Parse RAWS Output\n\n",
-                "The data returned by RAWS could not be interpreted correctly\n\n",
-                "No <table> element was found in the response text\n\n", 
-                "This could be a problem with the request and/or RAWS's server\n\n",
-                "Please investigate this issue for station \"", stationID, "\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
-    
-  }
-  
-  
-  # If a table was successfully found, read it in as a data frame
-  htmlTable <- htmlTable |>
-    html_table(header = TRUE)
-  
-  
-  # After that, make sure the expected columns are in 'htmlTable'
-  expectedCols <- c("DAY_OF_YEAR" = "Day of Year", 
-                    "DAY_OF_RUN" = "Day of Run",
-                    "TAVG" = "Ave.  Average Air Temperature   Deg C",
-                    "TMAX" = "Max.  Average Air Temperature   Deg C",
-                    "TMIN" = "Min.  Average Air Temperature   Deg C",
-                    "PRECIPITATION" = "Total  Precipitation    mm",
-                    "DATE" = "Date",
-                    "YEAR" = "Year")
-  
-  # Note: The element names are the eventual column renames, while the 
-  #       elements themselves are the expected names in 'htmlTable'
-  
-  
-  # Check if any of the expected columns are missing in 'htmlTable'
-  if (anyFalse(c(expectedCols) %in% names(htmlTable))) {
-    
-    stop(paste0("Could Not Parse RAWS Output\n\n",
-                "The data returned by RAWS could not be interpreted correctly (",
-                "not all of the expected columns were found)\n\n", 
-                "This could be a problem with the request and/or RAWS's server\n\n",
-                "Please investigate this issue for station \"", stationID, "\"\n\n",
-                length(which(!(expectedCols %in% names(htmlTable)))), " Missing Column(s):\n\n",
-                paste0("(*) ", expectedCols[which(!(expectedCols %in% names(htmlTable)))],
-                       collapse = "\n\n")) |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
-    
-  }
-  
-  
-  # Update the column names using 'expectedCols'
-  htmlTable <- htmlTable |>
-    rename(all_of(expectedCols))
-  
-  
-  # As a penultimate step, make sure the date column is formatted correctly
-  htmlTable <- htmlTable |>
-    mutate(DATE = as.Date(DATE, format = "%m/%d/%Y"))
-  
-  
-  # Finally, append the station ID as a column and return the data
-  return(htmlTable |>
-           mutate(STATION_ID = stationID))
+  # Check the content of the response and mold it into a data frame format
+  # Then, return that result
+  return(content(req) |>
+           formatResponse())
   
 }
 
 
 
-adjustScrapingBounds <- function (stationID, startDate, endDate) {
+validateAPI <- function (apiKey, sourceField) {
   
-  # Requests to RAWS can fail if the dataset bounds are improper
-  
-  # This procedure checks the station's page on RAWS to get its start and 
-  # end dates
-  # 'startDate' cannot exceed these bounds; otherwise an error is returned
-  # 'endDate' can exceed the limits without any issue
-  # ('endDate' can even be a date later than today!)
-  
-  # The final returned result is a vector containing adjusted date bounds 
-  # to use in the request
+  # Confirm that the API key was provided correctly by the user 
   
   
-  # First, there is a glitch in RAWS's system
-  # The "Total Precipitation" will always be returned as 
-  # "missing" on the first day of the requested range
-  # The workaround for this issue is to set 'startDate' to one day earlier
-  adjStart <- startDate - 1
-  
-  
-  # However, 'adjStart' cannot exceed the start of the dataset
-  # To double-check this, extract the start and end dates from 
-  # the station's "Daily Time Series" page
-  dateBounds <- getDatasetBounds(stationID)
-  
-  
-  # Compare 'startDate' to the station's data start date
-  # It should be the more recent of the two dates
-  if (adjStart < dateBounds[1]) {
+  # Confirm that 'apiKey' is not empty or blank
+  if (length(apiKey) == 0 || is.null(apiKey)) {
     
-    adjStart <- dateBounds[1]
-    
-    # The glitch with "Total Precipitation" still applies in this case,
-    # but the request will fail if we try to set the date to one day earlier
+    stop(paste0("API Key Input File Issue\n\n",
+                "The input file containing the CIMIS API key does not have ",
+                "a value. There may be an issue with this file. ",
+                "Please correct it and try again.\n\n",
+                "If the input file is a .txt file, it must contain the API key ",
+                "on the first line (with nothing else on that line)\n\n",
+                "If the input file is something else (like a CSV, TSV, or XLSX file) ",
+                "the API key should be alone on the first line after the column ",
+                "header\n\n",
+                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "')") |>
+           strwrap(width = 0.99 * getOption("width")) |>
+           paste0(collapse = "\n") |>
+           str_replace("(does not)", col_red("\\1")) |>
+           str_replace("(.txt)", col_green("\\1")) |>
+           str_replace("(something else)", col_green("\\1")) |>
+           str_replace("(after)", col_blue("\\1")))
     
   }
   
   
-  # Make sure 'endDate' is more recent than 'adjStart'
-  # If not, set it to one day greater than 'adjStart'
-  if (endDate <= adjStart) {
+  # The first element of 'apiKey' should be "character" type  
+  if (!is.character(apiKey[1])) {
     
-    adjEnd <- adjStart + 1
+    stop(paste0("API Key Input File Issue\n\n",
+                "The API key could not be parsed as a string. There may be an ",
+                "issue with this file. Please correct it and try again.\n\n",
+                "If the input file is a .txt file, it must contain the API key ",
+                "on the first line (with nothing else on that line)\n\n",
+                "If the input file is something else (like a CSV, TSV, or XLSX file) ",
+                "the API key should be alone on the first line after the column ",
+                "header\n\n",
+                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "')") |>
+           strwrap(width = 0.99 * getOption("width")) |>
+           paste0(collapse = "\n") |>
+           str_replace("(does not)", col_red("\\1")) |>
+           str_replace("(.txt)", col_green("\\1")) |>
+           str_replace("(something else)", col_green("\\1")) |>
+           str_replace("(after)", col_blue("\\1")))
+    
+  }
+  
+  
+  # Confirm that the first line of 'apiKey' is not 'NA'
+  if (is.na(apiKey[1])) {
+    
+    stop(paste0("API Key Input File - Missing Key Issue\n\n",
+                "The first line of the input file is missing a value. ",
+                "Please correct it and try again.\n\n",
+                "If the input file is a .txt file, it must contain the API key ",
+                "on the first line (with nothing else on that line)\n\n",
+                "If the input file is something else (like a CSV, TSV, or XLSX file) ",
+                "the API key should be alone on the first line after the column ",
+                "header\n\n",
+                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "')") |>
+           strwrap(width = 0.99 * getOption("width")) |>
+           paste0(collapse = "\n") |>
+           str_replace("(missing)", col_red("\\1")) |>
+           str_replace("(.txt)", col_green("\\1")) |>
+           str_replace("(something else)", col_green("\\1")) |>
+           str_replace("(after)", col_blue("\\1")))
+    
+  }
+  
+  
+  # It seems that CIMIS API keys are just numbers and letters separated by hyphens
+  # If the API key is read in as something different, output a warning
+  # (Not an error message)
+  if (grepl("[^a-zA-Z0-9\\-]", apiKey[1])) {
+    
+    message(paste0("API Key Input File - Potential Key Issue\n\n",
+                   "CIMIS API keys are typically a mix of letters and digits, ",
+                   "separated by hyphens\n\n",
+                   "The provided API key does not match this format. There may be ",
+                   "issues encountered later on when submitting the API call.\n\n",
+                   "(This flag occurred for '", getFromSupplyControl_RR(sourceField), 
+                   "')") |>
+              strwrap(width = 0.99 * getOption("width")) |>
+              paste0(collapse = "\n"))
+    
+  }
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
+  
+}
+
+
+
+formatResponse <- function (res) {
+  
+  # After a successful request to CIMIS, reformat the returned data
+  # Return a tibble with that information
+  
+  
+  # 'res' should have a JSON structure
+  
+  # Under 'Data' and 'Providers', there will be four elements
+  # ("Name", "Type", "Owner", and "Records")
+  
+  # The first three elements are all individual strings
+  
+  # The fourth element is a list, with a separate entry for each day 
+  # in the requested date range
+  
+  # Within each entry of "Records", the requested variables will be present
+  # as separate, named sub-elements
+  varNames <- c("TMIN" = "DayAirTmpMin", 
+                "TMAX" = "DayAirTmpMax", 
+                "PRECIP" = "DayPrecip")
+  
+  # Those variables' sub-elements are lists themselves
+  # They are further divided into "Value", "Qc", and "Unit"
+  
+  
+  # If the expected format was NOT received, output an error message
+  if (# [1] The content should be stored under 
+    #     "Data" > "Providers" > "Records"
+    is.null(res[["Data"]][["Providers"]]) ||
+    !("Records" %in% names(res[["Data"]][["Providers"]][[1]])) ||
+    # [2] Every entry in "Records" should contain elements for "Date",  
+    #     "Station", and the parameters listed in 'varNames'
+    anyFalse(c("Date", "Station", varNames) %in% 
+             names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]])) ||
+    # [3] The parameters in 'varNames' should be lists too
+    #     They should each have an element called "Value"
+    !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[1]]])) ||
+    !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[2]]])) ||
+    !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[3]]]))) {
+    
+    stop(paste0("Could Not Parse CIMIS Response\n\n",
+                "The information returned by CIMIS could not be interpreted ",
+                " correctly. The response text was not in the expected format.\n\n", 
+                "Please investigate this issue further. Either this script ",
+                "requires revisions, or CIMIS must be contacted about a ",
+                "server issue.\n\n") |>
+           strwrap(width = 0.99 * getOption("width")) |>
+           paste0(collapse = "\n"))
+    
+  }
+  
+  
+  # Extract data from different columns within the records in 'res'
+  # Store that information in a tibble
+  cimisDF <- tibble(
+    
+    # Dates are stored under "Date" for each element in "Records"
+    DATE = res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[["Date"]]) |> 
+      as.Date(format = "%Y-%m-%d"),
+    
+    # Station IDs are stored under "Station"
+    STATION_ID = res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[["Station"]]) |> as.numeric(),
+    
+    # Minimum temperature
+    !! names(varNames)[1] := res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[[varNames[1]]][["Value"]] |> 
+                replace_null()) |> # (Missing entries become "NA")
+      as.numeric(),
+    
+    # Maximum temperature
+    !! names(varNames)[2] := res$Data$Providers[[1]]$Records |> 
+      map_chr(~ .[[varNames[2]]][["Value"]] |> 
+                replace_null()) |>  
+      as.numeric(),
+    
+    # Precipitation
+    !! names(varNames)[3] := res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[[varNames[3]]][["Value"]] |> 
+                replace_null()) |>
+      as.numeric(),
+    
+    # QC information for TMIN
+    !! paste0(names(varNames)[1], "_QC") := res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[[varNames[1]]][["Qc"]] |> 
+                replace_null()) |>
+      trimws(),
+    
+    # QC information for TMAX
+    !! paste0(names(varNames)[2], "_QC") := res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[[varNames[2]]][["Qc"]] |> 
+                replace_null()) |> 
+      trimws(),
+    
+    # QC information for PRECIP
+    !! paste0(names(varNames)[3], "_QC") := res$Data$Providers[[1]]$Records |>
+      map_chr(~ .[[varNames[3]]][["Qc"]] |> 
+                replace_null()) |> 
+      trimws())
+  
+  
+  # Return the formatted tibble
+  return(cimisDF)
+  
+}
+
+
+
+replace_null <- function (x, replacement = NA_character_) {
+  
+  # If a value 'x' is NULL, replace it with 
+  # the value listed in 'replacement'
+  
+  if (is.null(x)) {
+    
+    return(replacement)
     
   } else {
     
-    adjEnd <- endDate
+    return(x)
     
   }
-  
-  
-  # Return 'adjStart' and 'adjEnd' in a vector
-  return(c(adjStart, adjEnd))
   
 }
 
 
 
-getDatasetBounds <- function (stationID) {
+splitRequest <- function (stationVec, startDate, endDate, maxGap) {
   
-  # For the RAWS station denoted by 'stationID', extract its start date 
-  # and end date
+  # For data requests that cover a large date range, 
+  # split the range into chunks and perform several requests to CIMIS
   
-  # This is noted on the "Daily Time Series" webpage
-  
-  # Towards the beginning of the page, 
-  # there is a line that says "Earliest available data: [MONTH] [YEAR]"
-  
-  # Use that to determine the start date
+  # Combine the response tibbles into one and return that
   
   
-  # Start by scraping the contents of the page
-  pageURL <- paste0("https://wrcc.dri.edu/cgi-bin/wea_dysimts.pl?ca", 
-                    stationID)
+  # First, get intermediate dates between 'startDate' and 'endDate' 
+  # that satisfy the limitation set by 'maxGap'
+  # (The number of days in each request will at most be ~90% 
+  #  of the limit set by 'maxGap')
+  dateVec <- seq(from = startDate, to = endDate,
+                 by = paste0(round(0.90 * maxGap), " day"))
   
   
-  pageContent <- pageURL |>
-    read_lines()
-  
-  
-  # Wait a bit before continuing
-  Sys.sleep(runif(1, min = 1.0, max = 1.3))
-  
-  
-  # Find the text that says "Earliest available data"
-  # Extract the month and year from that name
-  # Then, convert it into a date variable 
-  # (with the day set to the first of the month)
-  startDateString <- grep("Earliest available data:", pageContent, 
-                          ignore.case = TRUE, value = TRUE) |>
-    str_extract(" [A-Za-z]+ [0-9]+\\.?$") |>
-    trimws() |>
-    str_remove("\\.$") |>
-    paste0(" 01") |>
-    as.Date(format = "%B %Y %d")
-  
-  
-  # If 'startDateString" is not a single string, the extraction failed
-  if (is.na(startDateString)) {
+  # If 'endDate' does not appear in 'dateVec', add it in
+  if (!(endDate %in% dateVec)) {
     
-    stop(paste0("RAWS Station - Could Not Extract Start Date\n\n",
-                "The script attempted to find the start date for station \"",
-                stationID,"\"; however, this information could not be ",
-                "extracted from its \"Daily Time Series\" page on RAWS\n\n",
-                "This could be due to a network error or a change to the ",
-                "website (you can check that by viewing this URL: \"",
-                pageURL, "\"); there should be a text element that starts with ",
-                "\"Earliest available data\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(not)", col_red("\\1")) |>
-           str_replace("(network)", col_red("\\1")) |>
-           str_replace("(error)", col_red("\\1")) |>
-           str_replace("(change)", col_blue("\\1")))
-    
-  } else if (length(startDateString) != 1) {
-    
-    stop(paste0("RAWS Station - Could Not Extract Start Date\n\n",
-                "The script attempted to find the start date for station \"",
-                stationID,"\"; however, more than one match was found in its ",
-                "\"Daily Time Series\" page on RAWS\n\n",
-                "There should have been only one match on the page for ",
-                "\"Earliest available data\" (you can investigate that by ",
-                "viewing this URL: \"", pageURL, "\")") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(more)", col_red("\\1")) |>
-           str_replace("(than)", col_red("\\1")) |>
-           str_replace("(one)", col_red("\\1")) |>
-           str_replace("(match)", col_red("\\1")))
+    dateVec <- c(dateVec, endDate)
     
   }
   
   
-  # After that, get the end date of the dataset
-  # Find the text that says "Latest available data"
-  # Extract the month and year from that name
-  # Then, convert it into a date variable 
-  # (with the day set to the first of the month)
-  endDateString <- grep("Latest available data:", pageContent, 
-                        ignore.case = TRUE, value = TRUE) |>
-    str_extract(" [A-Za-z]+ [0-9]+\\.?$") |>
-    trimws() |>
-    str_remove("\\.$") |>
-    paste0(" 01") |>
-    as.Date(format = "%B %Y %d")
+  # Output a message to the user to inform them of the split
+  cat(paste0("\n\tSplitting into ", length(dateVec) - 1, " API calls...\n"))
   
   
-  # If 'endDateString" is not a single string, the extraction failed
-  if (is.na(endDateString)) {
+  # Iterate through 'dateVec' and submit requests to CIMIS
+  for (i in 2:length(dateVec)) {
     
-    stop(paste0("RAWS Station - Could Not Extract End Date\n\n",
-                "The script attempted to find the end date for station \"",
-                stationID,"\"; however, this information could not be ",
-                "extracted from its \"Daily Time Series\" page on RAWS\n\n",
-                "This could be due to a network error or a change to the ",
-                "website (you can check that by viewing this URL: \"",
-                pageURL, "\"); there should be a text element that starts with ",
-                "\"Latest available data\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(not)", col_red("\\1")) |>
-           str_replace("(network)", col_red("\\1")) |>
-           str_replace("(error)", col_red("\\1")) |>
-           str_replace("(change)", col_blue("\\1")))
+    # Start with a status message
+    cat(paste0("\n\t[", i - 1, "/", length(dateVec) - 1, "]\tRequesting...\n"))
     
-  } else if (length(endDateString) != 1) {
     
-    stop(paste0("RAWS Station - Could Not Extract End Date\n\n",
-                "The script attempted to find the end date for station \"",
-                stationID,"\"; however, more than one match was found in its ",
-                "\"Daily Time Series\" page on RAWS\n\n",
-                "There should have been only one match on the page for ",
-                "\"Latest available data\" (you can investigate that by ",
-                "viewing this URL: \"", pageURL, "\")") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(more)", col_red("\\1")) |>
-           str_replace("(than)", col_red("\\1")) |>
-           str_replace("(one)", col_red("\\1")) |>
-           str_replace("(match)", col_red("\\1")))
+    # Take two consecutive dates from 'dateVec' 
+    # and request the date between them
+    iterRes <- requestCIMIS(stationVec, dateVec[i - 1], dateVec[i])
+    
+    
+    # Combine 'iterRes' after each request
+    if (i == 2) {
+      
+      combinedDF <- iterRes
+      
+    } else {
+      
+      combinedDF <- bind_rows(combinedDF, iterRes) |>
+        unique()
+      
+    }
+    
+    
+    # Output another message to the user at the end of the loop
+    cat("\n\t\tDone!\n")
     
   }
   
   
-  
-  # Return a vector containing 'startDateString' and 'endDateString'
-  return(c(startDateString, endDateString))
+  # Finally, return 'combinedDF'
+  return(combinedDF)
   
 }
 
