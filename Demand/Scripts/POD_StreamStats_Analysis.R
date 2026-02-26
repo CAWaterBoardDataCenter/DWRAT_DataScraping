@@ -552,45 +552,44 @@ requestFlowPath <- function (pod) {
   
   # Submit the POST request
   flowReq <- POST("https://streamstats.usgs.gov/navigationservices/navigation/flowpath/route", 
-                  add_headers(.headers = c(#:authority:
-                    #  streamstats.usgs.gov
-                    ":method:" = "POST",
-                    ":path:" = "/navigationservices/navigation/flowpath/route",
-                    ":scheme:" = "https",
+                  add_headers(.headers = c(
+                    #":authority:" = "streamstats.usgs.gov",
+                    #":method:" = "POST",
+                    #":path:" = "/navigationservices/navigation/flowpath/route",
+                    #":scheme:" = "https",
                     "Accept" = "application/json, text/plain, */*",
-                    "Accept-Encoding" = "gzip, deflate, br",
+                    "Accept-Encoding" = "gzip, deflate, br, zstd",
                     "Accept-Language" = "en-US,en;q=0.9",
-                    #Content-Length:
-                    #  294
-                    "Content-Type" = "application/json;charset=UTF-8", 
+                    #"Content-Length" = 294,
+                    "Content-Type" = "application/json;charset=UTF-8",
                     # Cookie:
                     #   AWSALB=47A+MRlQ4OVQMuc5ytXvkQekgQsquFNd1ZLy8T2C4vXMJXMgmX5
                     #   KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9UtfLZiyuiarVOFgBDH8Sg
                     #   PmpiQtX6vhkpyzP; AWSALBCORS=47A+MRlQ4OVQMuc5ytXvkQekgQsquF
                     #   Nd1ZLy8T2C4vXMJXMgmX5KzilKA8imFfX7emnbioHjsY5QMua5CQAs65u9
                     #   UtfLZiyuiarVOFgBDH8SgPmpiQtX6vhkpyzP
-                    "Dnt" = 1,
-                    #Origin:
-                    #  https://streamstats.usgs.gov
-                    "Referer" = "https://streamstats.usgs.gov/ss/", 
-                    "Sec-Ch-Ua" = '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"', 
-                    "Sec-Ch-Ua-Mobile" = "?0",
-                    "Sec-Ch-Ua-Platform" = "Windows",
-                    #Sec-Fetch-Dest:
-                    #  empty
-                    #Sec-Fetch-Mode:
-                    #  cors
-                    #Sec-Fetch-Site:
-                    #  same-origin
-                    "User-Agent" = "R version 4.2.3",
-                    "User-Contact" = "DWR-SDA@waterboards.ca.gov")),
+                    #"Dnt" = 1,
+                    #"Priority" = "u=1,i",
+                    #"Origin" = "https://streamstats.usgs.gov",
+                    #"Referer" = "https://streamstats.usgs.gov/ss/", 
+                    #"Sec-Ch-Ua" = '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"', 
+                    #"Sec-Ch-Ua-Mobile" = "?0",
+                    #"Sec-Ch-Ua-Platform" = "Windows",
+                    #"Sec-Fetch-Dest" = "empty",
+                    #"Sec-Fetch-Mode" = "cors",
+                    #"Sec-Fetch-Site" = "same-origin",
+                    #"User_Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
+                    "User-Agent" = sessionInfo()[["R.version"]][["version.string"]],
+                    "X-User-Name" = Sys.info()[["user"]],
+                    "X-User-Contact" = "DWR-SDA@waterboards.ca.gov")),
                   body = paste0('[{"id":1,"name":"Start point location","required":true,',
                                 '"description":"Specified lat/long/crs  navigation start location",', 
                                 '"valueType":"geojson point geometry",', 
                                 '"value":{"type":"Point","coordinates":[', 
                                 st_coordinates(pod) %>% paste0(collapse = ","), 
-                                '],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}}]'))
-  
+                                '],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}}]'),
+                  #config(http_version=2), 
+                  verbose())
   
   
   # Wait a bit after sending the request
