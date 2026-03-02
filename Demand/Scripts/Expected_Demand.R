@@ -1533,8 +1533,7 @@ makeKey_APP_YEAR_AMOUNT <- function (dataDF) {
   # Create a column titled "KEY" with these three variables
   # Then return 'dataDF'
   return(dataDF %>%
-           mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", YEAR_TOTAL)))
-  
+           mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", round(YEAR_TOTAL, digits = 16))))
   
 }
 
@@ -1548,15 +1547,12 @@ compareKeys <- function (mainDF, compareDF) {
   
   
   
-  # Iterate with different rounding digits used
-  for (i in 0:16) {
-    
-    mainDF <- mainDF %>%
-      mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", round(YEAR_TOTAL, digits = i))) %>%
-      filter(!(KEY %in% compareDF$KEY)) %>%
-      select(-KEY)
-    
-  }
+  # Apply a consistent set of rounding digits 
+  # It should match what's used in makeKey_APP_YEAR_AMOUNT()
+  mainDF <- mainDF %>%
+    mutate(KEY = paste0(APPLICATION_NUMBER, "_", YEAR, "_", round(YEAR_TOTAL, digits = 16))) %>%
+    filter(!(KEY %in% compareDF$KEY)) %>%
+    select(-KEY)
   
   
   

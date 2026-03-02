@@ -68,7 +68,7 @@ mainProcedure <- function () {
   
   
   # Check that each 'POD' intersects with a subbasin
-  checkOverlap(POD, subWS)
+  POD <- checkOverlap(POD, subWS)
   
   
   
@@ -120,6 +120,118 @@ checkOverlap <- function (POD, subWS) {
   
   
   
+  # SPECIAL CASE
+  # If the only issue is having PODs that don't intersect any sub-basin,
+  # check for this special case
+  if (sum(overlapCheck > 1) == 0 && sum(overlapCheck < 1) > 0) {
+    
+    # Maybe because of the elevation model used with the catchments, the 
+    # sub-basin boundaries may not align perfectly with the watershed boundary
+    
+    # checkOverlap() may be failing if a POD is located within the watershed, but 
+    # it does not directly overlap with a sub-basin because of this mismatch
+    
+    
+    
+    # Read in the watershed boundaries
+    wsBound <- getGIS(ws = ws, 
+                      GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                      GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                      GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME") |>
+      st_transform("epsg:3488")
+    
+    
+    
+    # Check to make sure that all PODs overlap with the watershed
+    # (If any do not, the special case does not apply)
+    wsOverlapCheck <- st_intersects(POD, wsBound) %>% lengths()
+    
+    
+    
+    if (sum(wsOverlapCheck > 1) == 0 && sum(wsOverlapCheck < 1) == 0) {
+      
+      # This means that one or more PODs are located within the watershed, 
+      # but they are not overlapping with a sub-basin
+      
+      # The implemented correction is honestly just a hot fix
+      # "LATITUDE2" and "LONGITUDE2" will be updated to fall within the
+      # sub-basin boundaries ("LATITUDE" and "LONGITUDE" will still contain 
+      # the real coordinates)
+      
+      
+      
+      # Get the PODs where this issue is occurring
+      issuePODs <- which(overlapCheck == 0)
+      
+      
+      
+      # Output a message to notify the user of this issue
+      message(paste0(length(issuePODs), " POD",
+                     if_else(length(issuePODs) == 1, " is ", "s are "),
+                     "within the watershed, but ",
+                     if_else(length(issuePODs) == 1, "it does", "they do"), 
+                     " not overlap with any subbasin. This is ",
+                     "probably due to the subbasin layer boundaries ",
+                     "not matching the watershed boundary perfectly (so just a ",
+                     "modeling error). The POD", 
+                     if_else(length(issuePODs) == 1, "", "s"), " will be assigned ",
+                     "to the nearest neighboring subbasin",
+                     if_else(length(issuePODs) == 1, "", "s"), ".") |>
+                strwrap(width = 0.99 * getOption("width")) |>
+                paste0(collapse = "\n"))
+      
+      
+      
+      # Iterate through the PODs with this issue
+      for (i in 1:length(issuePODs)) {
+        
+        # Find the nearest neighboring catchment
+        nearestCatch <- st_distance(POD[issuePODs[i], ], subWS) |> which.min()
+        
+        
+        
+        # Make sure only one match was found
+        if (length(nearestCatch) != 1) {
+          
+          stop(paste0("Script Issue\n\nA single neighboring subbasin could not be found!") |>
+                 strwrap(width = 0.99 * getOption("width")) |>
+                 paste0(collapse = "\n"))
+          
+        }
+        
+        
+        
+        # Also, make sure that the nearest sub-basin is within 10 meters of the POD
+        # Otherwise, the error might be something else
+        if (st_distance(POD[issuePODs[i], ], subWS) |> min() |> as.numeric() > 10) {
+          
+          stop(paste0("No Neighboring Subbasin Within 10 Meters\n\n",
+                      "No subbasin is close to POD #", POD[issuePODs[i], ]$POD_ID,
+                      ". This might be a different type of issue than expected, so an ",
+                      "alternative resolution may be necessary.") |>
+                 strwrap(width = 0.99 * getOption("width")) |>
+                 paste0(collapse = "\n"))
+          
+        }
+        
+        
+        # Set the location of the POD to the centroid of the nearest sub-basin
+        POD[issuePODs[i], ]$geometry <- subWS[nearestCatch, ] |> 
+          select(geometry) |> st_centroid() |> st_geometry()
+        
+      }
+      
+      
+      
+      # After making updates to 'POD', check the intersections with sub-basins again
+      overlapCheck <- st_intersects(POD, subWS) %>% lengths()
+      
+    }
+    
+  }
+  
+  
+  
   # Stop if there are any lengths greater than or less than 1 
   # (points present in more than one subbasin or points not present in any subbasin)
   # (No code has been written to handle either case)
@@ -128,8 +240,8 @@ checkOverlap <- function (POD, subWS) {
   
   
   
-  # Return nothing
-  return(invisible(NULL))
+  # Return 'POD' (regardless of whether changes were made)
+  return(POD)
   
 }
 
@@ -162,8 +274,8 @@ checkForMultiBasinRights <- function (podTable, fieldNames, subWS, ws, yearRange
   
   # If the procedure reaches this code, then 
   # there are rights with multiple assigned sub-basins
-  cat("\n\nThe dataset contains water rights with multiple assigned sub-basins\n")
-  cat("This can happen when a right has multiple PODs, and they are located in different sub-basins\n")
+  cat("\n\nThe dataset contains water rights with multiple assigned subbasins\n")
+  cat("This can happen when a right has multiple PODs, and they are located in different subbasins\n")
   cat("This script will attempt to use the basin connectivity matrix to resolve these issues\n\n")
   
   

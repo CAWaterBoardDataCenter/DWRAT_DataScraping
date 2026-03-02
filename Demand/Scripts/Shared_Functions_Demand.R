@@ -12,7 +12,7 @@ makeSharePointPath <- function (filePathFragment) {
   
   # (This function assumes that the SharePoint filepath is "C:/Users/[username]/[Initial SharePoint Path String]/...")
   
-  paste0("C:/Users/", Sys.info()[["user"]], "/", getFromControl("INITIAL_SHAREPOINT_FILE_PORTION"), filePathFragment)
+  paste0("C:/Users/", Sys.info()[["user"]], "/", getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"), filePathFragment)
   
 }
 
@@ -201,7 +201,7 @@ fileRead <- function (filePath, commandType, col_types = NULL, select = NULL) {
 
 
 
-getFromControl <- function (fieldName) {
+getFromMasterControl <- function (fieldName) {
   
   # Extract a value from the main control file for the repository
   # ("Repo_Control_File.xlsx")
