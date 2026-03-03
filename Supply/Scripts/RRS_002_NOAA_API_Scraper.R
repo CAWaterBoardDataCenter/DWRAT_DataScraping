@@ -20,14 +20,16 @@
 remove(list = ls())
 
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
+
+
+# 
+options(timeout = 500)
 
 
 #### Functions ####
@@ -82,8 +84,7 @@ mainProcedure <- function () {
     stop(paste0("NOAA API Call Failed\n\n",
                 "The output file was not detected in the expected directory\n\n",
                 "The API call may have failed, please investigate this issue\n\n") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(not)", col_red("\\1")) |>
            str_replace("(investigate)", col_green("\\1")))
     
@@ -120,8 +121,7 @@ validateInput <- function (stationDF, sourceField) {
                 "for each target location\n\n",
                 "Also, the name of this column must match exactly\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(exactly)", col_red("\\1")))
     
@@ -136,8 +136,7 @@ validateInput <- function (stationDF, sourceField) {
                 "missing elements in its required column (\"STATION_ID\")\n\n", 
                 "Please fill in any empty entries in this column\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }

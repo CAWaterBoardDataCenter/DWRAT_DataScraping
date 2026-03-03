@@ -3,10 +3,8 @@
 
 #### Dependencies ####
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 #### Functions ####
@@ -64,8 +62,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
                 "The file type specified in `getFile()` should only be one of ",
                 "these strings: ",
                 "\"XLSX\", \"CSV\", \"DELIM\", or \"OTHER\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace_all("\"(.+)\"", paste0("\"", col_green("\\1"), "\"")))
     
   }
@@ -88,8 +85,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
                 "The specified file could not be found\n\n",
                 "Please confirm that this path is correct: '", 
                 normalizePath(filePath, mustWork = FALSE), "'") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(could not be found)", col_red("\\1")))
     
   }
@@ -169,7 +165,7 @@ getXLSX <- function (filePath, worksheet = NULL,
                            skip = skip, n_max = n_max, guess_max = guess_max), silent = TRUE)
   
   
-  if (is.character(sheetDF)) {
+  if ("try-error" %in% class(sheetDF)) {
     
     # In every case, output the actual error message first
     message(sheetDF)
@@ -182,8 +178,7 @@ getXLSX <- function (filePath, worksheet = NULL,
                   "The above error message usually occurs if the target ",
                   "spreadsheet is open in Excel.\n\nPlease close '", filePath, 
                   "' and try again.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(open)", col_red("\\1")) |>
              str_replace("(close)", col_green("\\1")))
       
@@ -194,8 +189,7 @@ getXLSX <- function (filePath, worksheet = NULL,
                   "is incorrect.\n\nPlease double-check that '", 
                   normalizePath(filePath, mustWork = FALSE), 
                   "' is a valid path.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(incorrect)", col_red("\\1")))
       
     } else if (grepl("Error in UseMethod..as.cell_limits", sheetDF, ignore.case = TRUE)) {
@@ -205,16 +199,14 @@ getXLSX <- function (filePath, worksheet = NULL,
                   "worksheet name is incorrect.\n\nPlease double-check '", 
                   filePath, "' and verify that the worksheet name '",
                   worksheet, "' is correct.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(incorrect)", col_red("\\1")))
       
     } else {
       
       stop(paste0("Please resolve the error specified above\n\n",
                   "If the issue persists, definitely reach out for assistance") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n"))
+             errWrap())
       
     }
     
@@ -229,7 +221,7 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
-                      select = NULL, col_types = NULL) {
+                      select = NULL, col_types = NULL, skip = 0) {
   
   # Use read_delim() or fread() to import a file as a data frame
   
@@ -243,13 +235,14 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   } else {
     
     fileDF <- try(read_delim(filePath, delim = delim, 
-                             col_types = col_types, show_col_types = FALSE))
+                             col_types = col_types, show_col_types = FALSE,
+                             skip = skip))
     
   }
   
   
   # Check for errors in 'fileDF'
-  if (is.character(fileDF)) {
+  if ("try-error" %in% class(fileDF)) {
     
     # In every case, output the actual error message first
     message(fileDF)
@@ -262,16 +255,14 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
                   "The above error message usually occurs if the filepath ",
                   "is incorrect.\n\nPlease double-check that '", filePath, 
                   "' is a valid path.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(incorrect)", col_red("\\1")))
       
     } else {
       
       stop(paste0("Please resolve the error specified above\n\n",
                   "If the issue persists, definitely reach out for assistance") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n"))
+             errWrap())
       
     }
     
@@ -308,8 +299,7 @@ getFromMasterControl <- function (fieldName) {
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of ",
                 "'../Master_Control_File.xlsx' is in use") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -339,8 +329,7 @@ getFromMasterControl <- function (fieldName) {
                        "Please consider updating '../Master_Control_File.xlsx'\n\n",
                        "\n\n_______\n\n",
                        "(This message will only display once per session/day)") |>
-                  strwrap(width = 0.99 * getOption("width")) |>
-                  paste0(collapse = "\n"))
+                  errWrap())
         
         
         # After the message has been displayed, update the custom option 
@@ -367,8 +356,7 @@ getFromMasterControl <- function (fieldName) {
                   "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
                   "is empty\n\n",
                   "Please update '../Master_Control_File.xlsx'") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n"))
+             errWrap())
       
     }
     
@@ -435,8 +423,7 @@ getFromSupplyControl_RR <- function (fieldName) {
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of '",
                 controlPath, "' is in use") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -448,8 +435,7 @@ getFromSupplyControl_RR <- function (fieldName) {
                 "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
                 "is empty\n\n",
                 "Please update '", controlPath, "'") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -457,6 +443,109 @@ getFromSupplyControl_RR <- function (fieldName) {
   # Extract a string from the "VALUE" column based on the row where
   # 'fieldName' matches the string in "FIELD"
   return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
+  
+}
+
+
+
+writeOutput <- function (x, outPath, writeFunction = "write_csv",
+                         addTab = FALSE) {
+  
+  # Write a variable 'x' to 'outPath'
+  
+  # Use "write_csv", "write_tsv", or "write_lines" depending on the specification in 'writeFunction'
+  
+  # 'addTab' just adds a tab space to the beginning of the final output message
+  
+  
+  # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
+  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv")) {
+    
+    stop(paste0("Improper Input For `writeOutput()`\n\n",
+                "If \"write_csv\" will be called to write this output, ",
+                "the input variable has to be a data frame. Please revise ",
+                "the procedure.\n\n",
+                "(Note: Nothing was written to \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Try to apply the file writing functions next
+  if (writeFunction == "write_csv") {
+    
+    writeRes <- try(write_csv(x, outPath))
+    
+  } else if (writeFunction == "write_lines") {
+    
+    writeRes <- try(write_lines(x, outPath))
+    
+  } else if (writeFunction == "write_tsv") {
+    
+    writeRes <- try(write_tsv(x, outPath))
+    
+  } else {
+    
+    stop(paste0("Improper Input For `writeOutput()`\n\n",
+                "\"", writeFunction, "\" is not a recognized value for ",
+                "the function argument 'writeFunction'. Please revise it.\n\n",
+                "\"write_csv\", \"write_tsv\", and \"write_lines\" are the only ",
+                "acceptable values.\n\n",
+                "(Note: Nothing was written to \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Check for any errors in the process
+  if ("try-error" %in% class(writeRes)) {
+    
+    # Output the actual error message first
+    message(writeRes)
+    
+    
+    # Then, output a custom acknowledgement 
+    stop(paste0("Please resolve the error specified above\n\n",
+                "If the issue persists, definitely reach out for assistance") |>
+           errWrap())
+  
+  }
+  
+  
+  # As a penultimate step, confirm that the output file was generated
+  if (!file.exists(outPath)) {
+    
+    stop(paste0("File Output Failed\n\n",
+                "The output file was not detected in the expected location. ",
+                "`", writeFunction, "` may have failed, please investigate ",
+                "this issue.\n\n",
+                "(Note: Nothing was written to \"", outPath, "\")") |>
+           errWrap() |>
+           str_replace("(not)", col_red("\\1")) |>
+           str_replace("(investigate)", col_green("\\1")))
+    
+  }
+  
+  
+  # Output a message to the user about the result
+  cat(paste0("\n",
+             if_else(addTab, "\t", ""),
+             "Wrote data to \"", outPath, "\"!\n\n"))
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
+  
+}
+
+
+
+errWrap <- function (message, widthRatio = 0.99) {
+  
+  # Modify the wrapping of an error message to reduce the need for horizontal scrolling
+  return(message |>
+           strwrap(width = widthRatio * getOption("width")) |>
+           paste0(collapse = "\n"))
   
 }
 

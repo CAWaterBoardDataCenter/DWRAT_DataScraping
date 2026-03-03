@@ -30,11 +30,8 @@
 remove(list = ls())
 
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -84,24 +81,7 @@ mainProcedure <- function () {
   
   
   # Write the file to the "WebData" folder
-  write_csv(cimisDF, outFile)
-  
-  
-  # Confirm that 'outFile' exists
-  # If not, output an error message
-  if (!file.exists(outFile)) {
-    
-    stop(paste0("CIMIS File Output Failed\n\n",
-                "The output file was not detected in the expected directory\n\n",
-                "The final `write_csv()` step may have failed, please investigate ",
-                "this issue\n\n") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(not)", col_red("\\1")) |>
-           str_replace("(investigate)", col_green("\\1")) |>
-           str_replace("(write_csv\\(\\))", col_blue("\\1")))
-    
-  }
+  writeOutput(cimisDF, outFile, "write_csv")
   
   
   # Output a completion message
@@ -133,8 +113,7 @@ validateStationInput <- function (stationDF, sourceField) {
                 "Also, the name of this column must match exactly\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(exactly)", col_red("\\1")))
     
@@ -150,8 +129,7 @@ validateStationInput <- function (stationDF, sourceField) {
                 "Please fill in any empty entries in this column\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }
@@ -170,8 +148,7 @@ validateStationInput <- function (stationDF, sourceField) {
                 "numeric values\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }
@@ -253,8 +230,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
                 "The most likely cause is a network firewall issue, but please ",
                 "examine the error message to double-check this:\n\n",
                 req[[1]][1]) |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -270,8 +246,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
                 requestURL, "\n\n",
                 "Alternatively, there may be a problem with CIMIS's server, ",
                 "so please consider contacting them for assistance") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -304,8 +279,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "header\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(.txt)", col_green("\\1")) |>
            str_replace("(something else)", col_green("\\1")) |>
@@ -327,8 +301,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "header\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(.txt)", col_green("\\1")) |>
            str_replace("(something else)", col_green("\\1")) |>
@@ -350,8 +323,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "header\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")) |>
            str_replace("(.txt)", col_green("\\1")) |>
            str_replace("(something else)", col_green("\\1")) |>
@@ -372,8 +344,7 @@ validateAPI <- function (apiKey, sourceField) {
                    "issues encountered later on when submitting the API call.\n\n",
                    "(This flag occurred for '", getFromSupplyControl_RR(sourceField), 
                    "')") |>
-              strwrap(width = 0.99 * getOption("width")) |>
-              paste0(collapse = "\n"))
+              errWrap())
     
   }
   
@@ -432,8 +403,7 @@ formatResponse <- function (res) {
                 "Please investigate this issue further. Either this script ",
                 "requires revisions, or CIMIS must be contacted about a ",
                 "server issue.\n\n") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
