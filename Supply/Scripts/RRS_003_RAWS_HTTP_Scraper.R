@@ -20,12 +20,8 @@
 remove(list = ls())
 
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
-require(rvest)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -89,24 +85,7 @@ mainProcedure <- function () {
   
   
   # Write the file to the "WebData" folder
-  write_csv(rawsDF, outFile)
-  
-  
-  # Confirm that 'outFile' exists
-  # If not, output an error message
-  if (!file.exists(outFile)) {
-    
-    stop(paste0("RAWS File Output Failed\n\n",
-                "The output file was not detected in the expected directory\n\n",
-                "The final `write_csv()` step may have failed, please investigate ",
-                "this issue\n\n") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(not)", col_red("\\1")) |>
-           str_replace("(investigate)", col_green("\\1")) |>
-           str_replace("(write_csv\\(\\))", col_blue("\\1")))
-    
-  }
+  writeOutput(rawsDF, outFile, "write_csv")
   
   
   # Output a completion message
@@ -138,8 +117,7 @@ validateInput <- function (stationDF, sourceField) {
                 "Also, the name of this column must match exactly\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(exactly)", col_red("\\1")))
     
@@ -155,8 +133,7 @@ validateInput <- function (stationDF, sourceField) {
                 "Please fill in any empty entries in this column\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }
@@ -229,8 +206,7 @@ requestRAWS <- function (stationID, startDate, endDate) {
                 req$status_code, "\n\n",
                 "This could be a problem with the request and/or RAWS's server\n\n",
                 "Please investigate this issue for station \"", stationID, "\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -249,8 +225,7 @@ requestRAWS <- function (stationID, startDate, endDate) {
                 "No <table> element was found in the response text\n\n", 
                 "This could be a problem with the request and/or RAWS's server\n\n",
                 "Please investigate this issue for station \"", stationID, "\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -285,8 +260,7 @@ requestRAWS <- function (stationID, startDate, endDate) {
                 length(which(!(expectedCols %in% names(htmlTable)))), " Missing Column(s):\n\n",
                 paste0("(*) ", expectedCols[which(!(expectedCols %in% names(htmlTable)))],
                        collapse = "\n\n")) |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -418,8 +392,7 @@ getDatasetBounds <- function (stationID) {
                 "website (you can check that by viewing this URL: \"",
                 pageURL, "\"); there should be a text element that starts with ",
                 "\"Earliest available data\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(not)", col_red("\\1")) |>
            str_replace("(network)", col_red("\\1")) |>
            str_replace("(error)", col_red("\\1")) |>
@@ -434,8 +407,7 @@ getDatasetBounds <- function (stationID) {
                 "There should have been only one match on the page for ",
                 "\"Earliest available data\" (you can investigate that by ",
                 "viewing this URL: \"", pageURL, "\")") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(more)", col_red("\\1")) |>
            str_replace("(than)", col_red("\\1")) |>
            str_replace("(one)", col_red("\\1")) |>
@@ -469,8 +441,7 @@ getDatasetBounds <- function (stationID) {
                 "website (you can check that by viewing this URL: \"",
                 pageURL, "\"); there should be a text element that starts with ",
                 "\"Latest available data\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(not)", col_red("\\1")) |>
            str_replace("(network)", col_red("\\1")) |>
            str_replace("(error)", col_red("\\1")) |>
@@ -485,8 +456,7 @@ getDatasetBounds <- function (stationID) {
                 "There should have been only one match on the page for ",
                 "\"Latest available data\" (you can investigate that by ",
                 "viewing this URL: \"", pageURL, "\")") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(more)", col_red("\\1")) |>
            str_replace("(than)", col_red("\\1")) |>
            str_replace("(one)", col_red("\\1")) |>
