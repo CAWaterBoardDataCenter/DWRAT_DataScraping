@@ -54,7 +54,6 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   }
   
   
-  
   # Make sure 'fileType' is one of the accepted values
   if (!(fileType %in% c("XLSX", "CSV", "DELIM", "OTHER"))) {
     
@@ -448,14 +447,13 @@ getFromSupplyControl_RR <- function (fieldName) {
 
 
 
-writeOutput <- function (x, outPath, writeFunction = "write_csv",
-                         addTab = FALSE) {
+writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALSE) {
   
   # Write a variable 'x' to 'outPath'
   
   # Use "write_csv", "write_tsv", or "write_lines" depending on the specification in 'writeFunction'
   
-  # 'addTab' just adds a tab space to the beginning of the final output message
+  # 'quietly' is a boolean for whether an output message will be given
   
   
   # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
@@ -527,10 +525,13 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv",
   }
   
   
-  # Output a message to the user about the result
-  cat(paste0("\n",
-             if_else(addTab, "\t", ""),
-             "Wrote data to \"", outPath, "\"!\n\n"))
+  # Output a message to the user about the result (if 'quietly' is FALSE)
+  if (!quietly) {
+    
+    cat(paste0("\nWrote data to \"", normalizePath(outPath), "\"!\n\n") |>
+          col_cyan())
+    
+  }
   
   
   # Return nothing if there are no issues
@@ -568,5 +569,51 @@ twoDigitText <- function (num) {
   # If it has only one digit, a zero will be added to the beginning
   
   return(sprintf("%.2d", num))
+  
+}
+
+
+
+vec2QuotedStr <- function (strVec) {
+  
+  # Given a vector of strings, wrap each element in quotation marks
+  # Then, return them in a single string as a list
+  
+  # Example Strings:
+  # '"Element 1", "Element 2", and "Element 3"'
+  # '"Element 1" and "Element 2"'
+  # '"Element 1"'
+  
+  
+  # First, add quotation marks to each element
+  strVec <- paste0("\"", strVec, "\"")
+  
+  
+  # If 'strVec' has only one element, return the string 
+  # without any further changes
+  if (length(strVec) == 1) {
+    return(strVec)
+  }
+  
+  
+  # If 'strVec' has only two elements, return a string 
+  # with the elements separated by " and "
+  if (length(strVec) == 2) {
+    
+    return(paste0(strVec, collapse = " and "))
+    
+  }
+  
+  
+  # If 'strVec' has 3 or more elements, separate the elements with commas
+  # However, the final element should also have "and" after the comma
+  if (length(strVec) > 2) {
+    
+    strVec[length(strVec)] <- paste0("and ", strVec[length(strVec)])
+    
+    
+    return(paste0(strVec, collapse = ", "))
+    
+  }
   
 }
