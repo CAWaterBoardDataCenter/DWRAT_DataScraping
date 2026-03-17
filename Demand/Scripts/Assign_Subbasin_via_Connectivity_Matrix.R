@@ -95,6 +95,18 @@ mainProcedure <- function () {
     arrange(APPLICATION_NUMBER, POD_ID)
   
   
+  # If the watershed doesn't have any water rights with PODs split across 
+  # multiple sub-basins, it will not have the column "ASSIGNED_MULTIPLE_SUBBASINS"
+  # However, this column is needed in later steps, so it will be added (with all 
+  # values set as FALSE)
+  if (!("ASSIGNED_MULTIPLE_SUBBASINS" %in% names(podTable))) {
+    
+    podTable <- podTable %>%
+      mutate(ASSIGNED_MULTIPLE_SUBBASINS = FALSE)
+    
+  }
+  
+  
   
   # The next step is to export 'podTable' to a file
   podTable %>%
