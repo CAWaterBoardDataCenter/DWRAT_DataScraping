@@ -456,7 +456,7 @@ assignBasins <- function (assignedDF, huc12, catchDF) {
   # Assign "NHD_CAT" and "HUC12" to 'assignedDF'
   # (The catchment and HUC12 IDs for sub-basins that the POD overlaps with)
   assignedDF <- assignedDF %>%
-    mutate(NHD_CAT = catchDF$NHD_CAT[st_intersects(assignedDF, catchDF) %>% unlist()]) %>%
+    mutate(NHD_CAT = ASSIGNED_NHD_CAT) %>%
     mutate(HUC12 = huc12$huc12[st_intersects(assignedDF, huc12) %>% unlist()])
   
   
@@ -832,7 +832,7 @@ generateMetadata <- function (ws) {
                              "corresponding sections on Portal!"),
                       "</p>"),
                paste0("<a href = ",
-                      "\"", getFromControl("PORTAL_URL_MY_CONTENT"), "\" ",
+                      "\"", getFromMasterControl("PORTAL_URL_MY_CONTENT"), "\" ",
                       "target = \"_blank\">",
                       "Link to Portal Content",
                       "</a>"),

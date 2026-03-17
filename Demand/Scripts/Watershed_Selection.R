@@ -21,9 +21,9 @@ index <- 2 # Change the index to your desired watershed's corresponding "INDEX" 
 
 
 # Get watershed names and identifiers
-if (file.exists(makeSharePointPath(getFromControl("SHAREPOINT_DEMAND_CONTROL_FILE")))) {
+if (file.exists(makeSharePointPath(getFromMasterControl("SHAREPOINT_DEMAND_CONTROL_FILE")))) {
   
-  ws <- makeSharePointPath(getFromControl("SHAREPOINT_DEMAND_CONTROL_FILE")) %>%
+  ws <- makeSharePointPath(getFromMasterControl("SHAREPOINT_DEMAND_CONTROL_FILE")) %>%
     read_xlsx(sheet = "Main_Sheet", skip = 1)
   
 } else {

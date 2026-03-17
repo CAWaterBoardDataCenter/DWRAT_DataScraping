@@ -10,6 +10,7 @@
 
 require(tidyverse)
 require(httr)
+require(readxl)
 
 
 source("../Demand/Scripts/Shared_Functions_Demand.R")
