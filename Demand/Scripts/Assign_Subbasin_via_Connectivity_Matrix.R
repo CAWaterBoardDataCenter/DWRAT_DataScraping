@@ -96,13 +96,23 @@ mainProcedure <- function () {
   
   
   # If the watershed doesn't have any water rights with PODs split across 
-  # multiple sub-basins, it will not have the column "ASSIGNED_MULTIPLE_SUBBASINS"
-  # However, this column is needed in later steps, so it will be added (with all 
-  # values set as FALSE)
+  # multiple sub-basins, it will not have the columns "ASSIGNED_MULTIPLE_SUBBASINS"
+  # and "ORIGINAL_ASSIGNMENT"
+  # However, these columns are needed in later steps, so they will be added (with 
+  # all values set as FALSE for "ASSIGNED_MULTIPLE_SUBBASINS" and "NA" used for
+  # "ORIGINAL_ASSIGNMENT")
   if (!("ASSIGNED_MULTIPLE_SUBBASINS" %in% names(podTable))) {
     
     podTable <- podTable %>%
       mutate(ASSIGNED_MULTIPLE_SUBBASINS = FALSE)
+    
+  }
+  
+  
+  if (!("ORIGINAL_ASSIGNMENT" %in% names(podTable))) {
+    
+    podTable <- podTable %>%
+      mutate(ORIGINAL_ASSIGNMENT = NA)
     
   }
   
