@@ -28,8 +28,10 @@ source("Scripts/HLP_000_Load_Packages.R")
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
 
 
-# 
-options(timeout = 500)
+# Allow greater time to download data from NOAA
+# (This is only relevant for large data downloads)
+options(timeout = 500) # 500 seconds
+
 
 
 #### Functions ####

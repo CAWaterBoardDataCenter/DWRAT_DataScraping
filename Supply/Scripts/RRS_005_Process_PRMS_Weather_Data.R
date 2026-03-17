@@ -48,7 +48,7 @@ source("Scripts/HLP_001_Shared_Functions_Supply.R")
 mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRS_005_Process_Weather_Data.R'!\n")
+  cat("Starting 'RRS_005_Process_PRMS_Weather_Data.R'!\n")
   
   
   # Import the start and end date
@@ -154,7 +154,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_005_Process_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRS_005_Process_PRMS_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -423,52 +423,6 @@ validateStationInputs <- function (inputDF, inputPath) {
   
   # Return nothing if there are no issues
   return(invisible(NULL))
-  
-}
-
-
-
-vec2QuotedStr <- function (strVec) {
-  
-  # Given a vector of strings, wrap each element in quotation marks
-  # Then, return them in a single string as a list
-  
-  # Example Strings:
-  # '"Element 1", "Element 2", and "Element 3"'
-  # '"Element 1" and "Element 2"'
-  # '"Element 1"'
-  
-  
-  # First, add quotation marks to each element
-  strVec <- paste0("\"", strVec, "\"")
-  
-  
-  # If 'strVec' has only one element, return the string 
-  # without any further changes
-  if (length(strVec) == 1) {
-    return(strVec)
-  }
-  
-  
-  # If 'strVec' has only two elements, return a string 
-  # with the elements separated by " and "
-  if (length(strVec) == 2) {
-    
-    return(paste0(strVec, collapse = " and "))
-    
-  }
-  
-  
-  # If 'strVec' has 3 or more elements, separate the elements with commas
-  # However, the final element should also have "and" after the comma
-  if (length(strVec) > 2) {
-    
-    strVec[length(strVec)] <- paste0("and ", strVec[length(strVec)])
-    
-    
-    return(paste0(strVec, collapse = ", "))
-    
-  }
   
 }
 
@@ -867,6 +821,10 @@ prismSub <- function (meteorDF, prismDF, prismInput, allTempSub) {
   
   # After that, if 'allTempSub' is TRUE, replace all TMIN and TMAX columns with PRISM data
   if (allTempSub) {
+    
+    # Notify the user of this option being applied
+    message("Replacing all temperature data with values from PRISM!")
+    
     
     # Get a subset of 'prismProcessed' that just contains temperature columns (and "DATE")
     tempSub <- prismProcessed |>
