@@ -447,13 +447,17 @@ getFromSupplyControl_RR <- function (fieldName) {
 
 
 
-writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALSE) {
+writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALSE,
+                         col_names = TRUE) {
   
   # Write a variable 'x' to 'outPath'
   
   # Use "write_csv", "write_tsv", or "write_lines" depending on the specification in 'writeFunction'
   
   # 'quietly' is a boolean for whether an output message will be given
+  
+  # If 'col_names' is TRUE, column names will be written in the output for 
+  # "write_csv" and "write_tsv"
   
   
   # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
@@ -472,7 +476,7 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
   # Try to apply the file writing functions next
   if (writeFunction == "write_csv") {
     
-    writeRes <- try(write_csv(x, outPath))
+    writeRes <- try(write_csv(x, outPath, col_names = col_names))
     
   } else if (writeFunction == "write_lines") {
     
@@ -480,7 +484,7 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
     
   } else if (writeFunction == "write_tsv") {
     
-    writeRes <- try(write_tsv(x, outPath))
+    writeRes <- try(write_tsv(x, outPath, col_names = col_names))
     
   } else {
     
@@ -502,11 +506,26 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
     message(writeRes)
     
     
-    # Then, output a custom acknowledgement 
-    stop(paste0("Please resolve the error specified above\n\n",
-                "If the issue persists, definitely reach out for assistance") |>
-           errWrap())
-  
+    if (grepl("Cannot open file for writing", writeRes, ignore.case = TRUE)) {
+      
+      stop(paste0("Inaccessible File Issue\n\n",
+                  "The above error message usually occurs if the file already ",
+                  "exists and is open in a program like Excel. This prevents ",
+                  "the script from overwriting the file.\n\nPlease close '", 
+                  filePath, "' and try again.") |>
+             errWrap() |>
+             str_replace("(open)", col_red("\\1")) |>
+             str_replace("(close)", col_green("\\1")))
+      
+    # In all other cases, output a custom acknowledgement 
+    } else {
+      
+      stop(paste0("Please resolve the error specified above\n\n",
+                  "If the issue persists, definitely reach out for assistance") |>
+             errWrap())
+      
+    }
+
   }
   
   
@@ -615,5 +634,239 @@ vec2QuotedStr <- function (strVec) {
     return(paste0(strVec, collapse = ", "))
     
   }
+  
+}
+
+
+
+read_out2 <- function (outPath) {
+  
+  # Given the path to a .out2 file, 
+  # read it in and format it as a proper tibble
+  
+  # The data is space-delimited
+  
+  # However, the column headers are trapped between rows of metadata
+  
+  # In addition, sometimes, data entries don't have any spaces between them
+  # (generally it can happen when there's a negative number)
+  
+  
+  # First, use read_lines() to read in the file
+  outDF <- read_lines(outPath)
+  
+  
+  # Remove empty strings from the vector
+  outDF <- outDF |> 
+    str_subset("^$", negate = TRUE)
+  
+  
+  # Find the row containing the headers
+  headerRow <- grep("Year\\s+mo", outDF, ignore.case = TRUE)
+  
+  
+  if (length(headerRow) != 1) {
+    
+    stop(paste0("Could Not Find Header Row of Out2 File\n\n",
+                "The header was expected to be a line that uniquely starts with ",
+                "\"Year\", followed by spaces, and then \"mo\". However ",
+                length(headerRow), " matches were found with this pattern. ",
+                "Please investigate the file and update the script if ",
+                "needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Remove the rows before 'headerRow' in 'outDF'
+  outDF <- outDF[headerRow:length(outDF)]
+  
+  
+  # Get a vector of the header names
+  columnNames <- outDF[1] |>
+    spaceSplit()
+  
+  
+  # If the second row contains units for the columns,
+  # append them to 'columnNames'
+  if (grepl("\\s+\\(in\\)\\s+", outDF[2], ignore.case = TRUE)) {
+    
+    unitVec <- outDF[2] |>
+      spaceSplit() |>
+      str_split("[\\(\\)]") |> unlist() |>
+      str_subset("^$", negate = TRUE)
+    
+    
+    # The "Year", "mo", and "day" variables at the beginning do not have any units
+    # Add three empty strings to the start of 'unitVec'
+    unitVec <- c("", "", "",
+                 unitVec)
+    
+    
+    if (length(unitVec) != length(columnNames)) {
+      
+      stop(paste0("Could Not Assign Units in Out2 File\n\n",
+                  "There are ", length(columnNames), " columns in this file, ",
+                  "and units were detected in the second row. However, they ",
+                  "could not be properly matched to their corresponding ",
+                  "headings. Please investigate the file and update the ",
+                  "script if needed.\n\n",
+                  "(This issue occurred for \"", outPath, "\")") |>
+             errWrap())
+      
+    }
+    
+    
+    # Paste these units at the end of 'columnNames'
+    columnNames <- map2_chr(columnNames, unitVec,
+                            ~ if_else(.y == "", .x, paste0(.x, " (", .y, ")")))
+    
+  }
+  
+  
+  # The last non-data row contains the value "initial"
+  # Find its index
+  removalIndex <- grep("^\\s*initial", outDF)
+  
+  
+  if (length(removalIndex) != 1) {
+    
+    stop(paste0("Could Not Find Data Cutoff Row of Out2 File\n\n",
+                "The non-data rows were expected to end with a line that ",
+                "uniquely starts with \"initial\" (and maybe some spaces at ",
+                "the beginning). However, ", length(removalIndex), " matches ",
+                "were found with this pattern. Please investigate the file ",
+                "and update the script if needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Remove all rows up to 'removalIndex'
+  outDF <- outDF[-c(1:removalIndex)]
+  
+  
+  # Remove the "Execution elapsed time" row at the end as well
+  outDF <- outDF |>
+    str_subset("^\\s*Execution elapsed time", negate = TRUE)
+  
+  
+  # The only rows left in 'outDF' should be the data now
+  # Within each row, split the data at the spaces
+  outDF <- outDF |>
+    map(spaceSplit)
+  
+  
+  # Get a vector of lengths for each row
+  # Check for rows that do not have the expected length 
+  # (there should be one element per column heading)
+  rowLens <- lengths(outDF)
+  
+  
+  # Check for entries that have the incorrect number of elements
+  problemRows <- which(rowLens != length(columnNames))
+  
+  
+  # Iterate through the problematic rows
+  # Try to fix them
+  if (length(problemRows) > 0) {
+    
+    for (i in 1:length(problemRows)) {
+      
+      # Issue Type #1
+      # One potential error comes from having a number followed by 
+      # a negative number with no space in-between
+      if (sum(grepl("^\\-?[0-9\\.]+\\-[0-9\\.]+$", outDF[[problemRows[i]]])) > 0) {
+        
+        # Iterate through the entries in this row of 'outDF'
+        for (j in 1:length(outDF[[problemRows[i]]])) {
+          
+          # If this is a row with both a number and a negative number, separate them
+          if (grepl("^\\-?[0-9\\.]+\\-[0-9\\.]+$", outDF[[problemRows[i]]][j])) {
+            
+            # Use a positive look-ahead regex to split the numbers 
+            # (while preserving the negative sign)
+            outDF[[problemRows[i]]][j] <- outDF[[problemRows[i]]][j] |>
+              str_split("(?=\\-)")
+            
+          }
+          
+        }
+        
+        
+        # Splitting operations within the list element may create a sub-list there
+        # Remove any sub-lists
+        outDF[[problemRows[i]]] <- outDF[[problemRows[i]]] |>
+          unlist() |> 
+          str_subset("^$", negate = TRUE)
+        
+      } # End of Issue Type #1 resolution
+      
+    } # End of loop through 'problemRows'
+    
+  }
+  
+  
+  # Make sure that every row has the proper length now
+  rowLens <- lengths(outDF)
+  
+  
+  # Output an error if there are still issues
+  if (unique(rowLens) |> length() != 1) {
+    
+    problemRows <- which(rowLens != length(columnNames))
+    
+    stop(paste0("Problematic Data in the Out2 File\n\n",
+                "Each row is expected to have ", length(columnNames),
+                " values. However, ", length(problemRows), " row",
+                if_else(length(problemRows) > 1, "s have ", " has "),
+                "an issue: \n\n", 
+                outDF[problemRows] |>
+                  map_chr(~ paste0(., collapse = " ")) |>
+                  vec2QuotedStr(), 
+                "\n\n",
+                "Please investigate the file and update the script if ",
+                "needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  } else if (unique(rowLens) != length(columnNames)) {
+    
+    stop(paste0("Problematic Data in the Out2 File\n\n",
+                "Each row is expected to have ", length(columnNames),
+                " values. However, every row has ", unique(rowLens),
+                if_else(unique(rowLens) > 1, " entries", " entry"), ". ",
+                "Please investigate the file and update the script if ",
+                "needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Convert 'outDF' into a proper tibble
+  outDF <- outDF |>
+    unlist() |> as.numeric() |>
+    matrix(ncol = length(columnNames), byrow = TRUE) |>
+    data.frame() |> tibble() |>
+    set_names(columnNames)
+  
+  
+  # After these changes, return 'outDF'
+  return(outDF)
+  
+}
+
+
+
+spaceSplit <- function (str) {
+  
+  # Split a string at spaces
+  # Remove empty strings and return the string
+  return(str|>
+           str_split("\\s") |> unlist(use.names = FALSE) |>
+           str_subset("^$", negate = TRUE))
   
 }

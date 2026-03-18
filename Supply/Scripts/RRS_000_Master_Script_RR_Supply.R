@@ -15,6 +15,7 @@ require(readxl)
 require(cli)
 require(httr)
 require(rvest)
+require(fs)
 
 
 #### Scripts ####
@@ -68,7 +69,7 @@ source("Scripts/RRS_008_Finalize_PRMS_Input.R")
 
 
 # Run PRMS
-"Scripts/RRS_009_Run_PRMS.R"
+source("Scripts/RRS_009_Run_PRMS.R")
 
 
 
@@ -103,6 +104,16 @@ source("Scripts/RRS_008_Finalize_PRMS_Input.R")
 # Run DWRAT
 
 # Model Post-processing and data analysis steps
+
+
+
+
+
+
+# Maintenance scripts
+
+# Generating SPI dataset
+# Generating new long-running DAT file
 
 
 

@@ -373,12 +373,3 @@ mainProcedure()
 
 # Clean up
 remove(list = ls())
-
-
-
-
-
-
-
-
-
