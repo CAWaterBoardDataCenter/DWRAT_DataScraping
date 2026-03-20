@@ -50,6 +50,19 @@ mainProcedure <- function () {
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
+  # CIMIS does not have data earlier than 1982-06-07
+  # If 'startDate' is earlier than this date, output an error message
+  if (startDate < "1982-06-07") {
+    
+    stop(paste0("Requested Date Range - Start Date Issue\n\n",
+                "The earliest date for which CIMIS has data available is ",
+                "1982-06-07. The input start date (\"", startDate, "\") is ",
+                "too early. Please revise this input.") |>
+           errWrap())
+    
+  }
+  
+  
   # Read in the list of stations 
   stationDF <- getFromSupplyControl_RR("CIMIS_STATIONS_CSV") |>
     getFile() |>
@@ -254,7 +267,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
   # Check the content of the response and mold it into a data frame format
   # Then, return that result
   return(content(req) |>
-           formatResponse())
+           formatResponse(startDate, endDate))
   
 }
 
@@ -356,10 +369,31 @@ validateAPI <- function (apiKey, sourceField) {
 
 
 
-formatResponse <- function (res) {
+formatResponse <- function (res, startDate, endDate) {
   
   # After a successful request to CIMIS, reformat the returned data
   # Return a tibble with that information
+  
+  
+  # First check that the request was actually successful
+  # Sometimes, the response seems valid, but its contents are an error message
+  if ("node" %in% names(res) && 
+      grepl("requested URL was rejected", as.character(res)[1])) {
+    
+    cat("\n\n")
+    cat(as.character(res))
+    
+    
+    stop(paste0("CIMIS API Server Issue\n\n",
+                "CIMIS's server may have been overloaded with requests. As a ",
+                "result, the request URL was rejected. Please contact CIMIS ",
+                "for assistance (or try again later).") |>
+           errWrap())
+    
+  }
+  
+  
+  # If no issue was found, proceed with reformatting the response
   
   
   # 'res' should have a JSON structure
@@ -387,6 +421,7 @@ formatResponse <- function (res) {
     #     "Data" > "Providers" > "Records"
     is.null(res[["Data"]][["Providers"]]) ||
     !("Records" %in% names(res[["Data"]][["Providers"]][[1]])) ||
+    length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0 ||
     # [2] Every entry in "Records" should contain elements for "Date",  
     #     "Station", and the parameters listed in 'varNames'
     anyFalse(c("Date", "Station", varNames) %in% 
@@ -396,6 +431,23 @@ formatResponse <- function (res) {
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[1]]])) ||
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[2]]])) ||
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[3]]]))) {
+    
+    # Output the returned content
+    print(res)
+    
+    
+    # One of the above conditions will have a unique message
+    # In this instance, no data is available for the requested date range
+    if (length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0) {
+      
+      stop(paste0("Empty CIMIS Response\n\n",
+                  "CIMIS returned zero records for the requested date ",
+                  "range (\"", startDate, "\" to \"", endDate, "\"). Please ",
+                  "revise the input date range.") |>
+             errWrap())
+      
+    }
+    
     
     stop(paste0("Could Not Parse CIMIS Response\n\n",
                 "The information returned by CIMIS could not be interpreted ",

@@ -15,6 +15,7 @@ require(readxl)
 require(cli)
 require(httr)
 require(rvest)
+require(fs)
 
 
 #### Scripts ####
@@ -68,25 +69,22 @@ source("Scripts/RRS_008_Finalize_PRMS_Input.R")
 
 
 # Run PRMS
-"Scripts/RRS_009_Run_PRMS.R"
+source("Scripts/RRS_009_Run_PRMS.R")
+
+
+# Store key outputs and clear out the copied model files
+source("Scripts/RRS_010_PRMS_Cleanup.R")
+
+
+#### SRP ####
+
+# source("Scripts/RRS_011_Process_SRP_Weather_Data.R")
+
+# source("Scripts/RRS_012_Setup_SRP_Model.R")
 
 
 
-"Scripts/RRS_010_PRMS_Cleanup.R"
-# (Including deleting the files from "ProcessedData/RR_PRMS")
-
-
-
-
-# Setup model run folder for PRMS
-
-# Edit PRMS control file 
-
-# Running PRMS
-
-# SPI/Similar Water Year (+ Rerun Dat PRMS and PRMS)
-
-# Copy inputs and outputs to Hydrology folder
+#### Hydro ####
 
 # Process PRMS output (copies model outputs to GitHub folder)
 
@@ -103,6 +101,16 @@ source("Scripts/RRS_008_Finalize_PRMS_Input.R")
 # Run DWRAT
 
 # Model Post-processing and data analysis steps
+
+
+
+
+
+
+# Maintenance scripts
+
+# Generating SPI dataset
+# Generating new long-running DAT file
 
 
 

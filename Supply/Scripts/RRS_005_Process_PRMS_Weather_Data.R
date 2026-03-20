@@ -26,7 +26,7 @@
 
 
 # These files will be combined into a single output file:
-#  (1) "ProcessedData/Weather_Processed_Data_[startDate]_[endDate].csv"
+#  (1) "ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv"
 
 
 #### Setup ####
@@ -41,6 +41,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
+source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 
 
 #### Functions ####
@@ -135,6 +136,13 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
                                             startDate, endDate)
   
   
+  # For archival purposes, save 'meteorDF' without any PRISM data substitution
+  meteorDF |>
+    writeOutput(paste0("ProcessedData/PRMS_Pre-PRISM_Meteorological_", 
+                       startDate, "_", endDate, ".csv"), "write_csv",
+                quietly = TRUE)
+  
+  
   # Missing entries in this dataset will be substituted with PRISM data
   # (And if 'allTempColumnsFromPRISM' is set to TRUE, all temperature data will 
   #  come from PRISM)
@@ -164,81 +172,30 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
 
 
 
-getPRISM <- function (prismPath) {
-  
-  # Read in the PRISM web data CSV
-  
-  # Because multiple lines serve as a header, first find the number of header lines
-  # Then, use the proper CSV processing function to 
-  
-  
-  prismVec <- getFile(prismPath, fileType = "OTHER")
-  
-  
-  # Get the line where the headers start
-  
-  # The line will start with "Name,Longitude,Latitude"
-  headerRegex <- "^Name,Longitude,Latitude"
-  
-  
-  headerLine <- grep(headerRegex, prismVec)
-  
-  
-  # Return an error if 'headerLine' was not found (or if multiple matches were found)
-  if (length(headerLine) == 0) {
-    
-    stop(paste0("PRISM Data File - Missing Column Header Issue\n\n", 
-                "This script attempted to find the header row in the PRISM ",
-                "CSV file containing climate data. However, the header row ",
-                "could not be found.\n\n",
-                "There could be data corruption issues, or the formatting of ",
-                "PRISM's output files may have changed. This script may need ",
-                "updates, depending on the cause of this problem.\n\n",
-                "Please investigate '", prismPath, "'") |>
-           errWrap())
-    
-  } else if (length(headerLine) > 1) {
-    
-    stop(paste0("PRISM Data File - Could Not Identify Column Header\n\n", 
-                "This script attempted to find the header row in the PRISM ",
-                "CSV file containing climate data. However, an unusual issue ",
-                "was encountered.\n\n",
-                "The header row is usually identified via this regular expression:\n\n",
-                "(*) \"", headerRegex, "\"\n\n",
-                "There should be exactly one row in the input file that has this ",
-                "pattern. However, more than one match was found.\n\n", 
-                "Please investigate '", prismPath, "'") |>
-           errWrap())
-    
-  }
-  
-  
-  # If there are no issues, read in the PRISM data again
-  # This time, skip lines so that the first row is the header row (identified by 'headerLine')
-  return(getDelim(prismPath, delim = ",", skip = headerLine - 1))
-  
-}
-
-
-
 validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
                             prismDF, noaaDF, rawsDF, cimisDF, inputFiles) {
   
   # Verify that all eight tibbles are formatted as expected
   
   
+  # The number of expected PRMS precipitation columns is hard-coded as 15
+  # Similarly, the number of expected minimum/maximum temperature columns is 8
+  numPrecip <- 15
+  numTemp <- 8
+  
+  
   # First, check the four "INPUT" tibbles
-  validateStationInputs(prismInput, inputFiles[1])
-  validateStationInputs(noaaInput, inputFiles[2])
-  validateStationInputs(rawsInput, inputFiles[3])
-  validateStationInputs(cimisInput, inputFiles[4])
+  validateStationInputs(prismInput, inputFiles[1], "PRMS", numPrecip, numTemp)
+  validateStationInputs(noaaInput, inputFiles[2], "PRMS", numPrecip, numTemp)
+  validateStationInputs(rawsInput, inputFiles[3], "PRMS", numPrecip, numTemp)
+  validateStationInputs(cimisInput, inputFiles[4], "PRMS", numPrecip, numTemp)
   
   
   # Validate the four weather output tibbles next
   
   # Each website returns data in a slightly different format
   # But the general expectations are similar in all cases
-  validateWebData(prismDF, inputFiles[5], prismInput$STATION_ID)
+  validateWebData(prismDF, inputFiles[5], prismInput$STATION_ID, siPRISM = TRUE)
   validateWebData(noaaDF, inputFiles[6], noaaInput$STATION_ID)
   validateWebData(rawsDF, inputFiles[7], rawsInput$STATION_ID)
   validateWebData(cimisDF, inputFiles[8], cimisInput$STATION_ID)
@@ -246,364 +203,6 @@ validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
   
   # Return nothing
   return(invisible(NULL))
-  
-}
-
-
-
-validateStationInputs <- function (inputDF, inputPath) {
-  
-  # The station input files for PRISM, NOAA, RAWS, and CIMIS were previously 
-  # validated in their respective web scraping scripts
-  
-  # However, this script has additional requirements
-  
-  # This function checks specifically for the fields and formatting required in this procedure
-  
-  
-  # HARD-CODED EXPECTATION
-  # The number of PRMS "PRECIP" and "TMIN"/"TMAX" fields is specified here 
-  # These numbers dictate the acceptable range of values for the station input 
-  # file's PRMS-related fields 
-  numPrecipFields <- 15 
-  numTempFields <- 8 
-  
-  # With the values set above, the precipitation field can have values between 
-  # "PRECIP1" and "PRECIP15" (inclusive)
-  # Similarly, the maximum and minimum temperature fields can have values between 
-  # "TMAX1"/"TMIN1" and "TMAX8"/"TMIN8" (inclusive)
-  
-  
-  # For this script's procedure to succeed, all input files must have these four columns:
-  #    (*) STATION_ID
-  #    (*) PRMS_PRECIP_NAME
-  #    (*) PRMS_TMIN_NAME
-  #    (*) PRMS_TMAX_NAME
-  inputFieldNames <- c("STATION_ID", "PRMS_PRECIP_NAME", 
-                       "PRMS_TMIN_NAME", "PRMS_TMAX_NAME")
-  
-  
-  # Start by confirming that the field names appear in 'inputDF'
-  if (anyFalse(inputFieldNames %in% names(inputDF))) {
-    
-    # Identify which fields are missing
-    missingFields <- which(!(inputFieldNames %in% names(inputDF)))
-    
-    
-    # Output an error message
-    stop(paste0("Station Input File - Missing Column Issue\n\n", 
-                "For this script to work, the PRISM, NOAA, RAWS, and CIMIS input ",
-                "files must contain ", length(inputFieldNames), " key column",
-                if_else(length(inputFieldNames) > 1, "s", ""), " (",
-                vec2QuotedStr(inputFieldNames), ")\n\n",
-                "However, the \"", names(inputPath), "\" file is missing ",
-                if_else(length(missingFields) > 1, "fields", "a field"), ":\n\n",
-                paste0("(*) ", inputFieldNames[missingFields], collapse = "\n\n"), "\n\n",
-                "Please revise the input file (\"", inputPath, "\") accordingly") |>
-           errWrap())
-    
-  }
-  
-  
-  # The station ID was previously validated in the scraping scripts
-  # The next focus will be the "PRMS" fields
-  
-  
-  # In the PRMS DAT file, there are 15 precipitation fields and 8 max/min
-  # temperature fields
-  
-  # The values that appear in the PRMS fields should be one of these column names (or NA)
-  
-  
-  # Start with the PRMS Precipitation field
-  # The values should be "NA", or something between "PRECIP1" and "PRECIP15" (inclusive)
-  if (anyFalse(inputDF[[inputFieldNames[2]]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)))) {
-    
-    stop(paste0("Station Input File - Invalid PRMS Value Issue\n\n", 
-                "The \"", names(inputPath), "\" file contains an invalid value for the ",
-                "field \"", inputFieldNames[2], "\" \n\n",
-                "Each row should either be blank, or it should contain a text string ",
-                "like \"PRECIP1\" (up to \"PRECIP", numPrecipFields, "\")\n\n", 
-                "Please revise the input file (\"", inputPath, "\") accordingly") |>
-           errWrap())
-    
-  }
-  
-  
-  # Use a similar check for the minimum temperature field next
-  # The values should be "NA", or something between "TMIN1" and "TMIN8" (inclusive)
-  if (anyFalse(inputDF[[inputFieldNames[3]]] %in% c(NA, paste0("TMIN", 1:numTempFields)))) {
-    
-    stop(paste0("Station Input File - Invalid PRMS Value Issue\n\n", 
-                "The \"", names(inputPath), "\" file contains an invalid value for the ",
-                "field \"", inputFieldNames[3], "\" \n\n",
-                "Each row should either be blank, or it should contain a text string ",
-                "like \"TMIN1\" (up to \"TMIN", numTempFields, "\")\n\n", 
-                "Please revise the input file (\"", inputPath, "\") accordingly") |>
-           errWrap())
-    
-  }
-  
-  
-  # Repeat the check for the "TMAX" field
-  # The values should be "NA", or something between "TMAX1" and "TMAX8" (inclusive)
-  if (anyFalse(inputDF[[inputFieldNames[4]]] %in% c(NA, paste0("TMAX", 1:numTempFields)))) {
-    
-    stop(paste0("Station Input File - Invalid PRMS Value Issue\n\n", 
-                "The \"", names(inputPath), "\" file contains an invalid value for the ",
-                "field \"", inputFieldNames[4], "\" \n\n",
-                "Each row should either be blank, or it should contain a text string ",
-                "like \"TMAX1\" (up to \"TMAX", numTempFields, "\")\n\n", 
-                "Please revise the input file (\"", inputPath, "\") accordingly") |>
-           errWrap())
-    
-  }
-  
-  
-  
-  # Next, confirm that every row has at least one non-NA value for the three PRMS fields
-  # Every station should have a corresponding PRMS field
-  # So at least one column between "PRECIP", "TMIN", and "TMAX" should have a non-NA value
-  # in each row
-  
-  # Define a temporary variable to help with this
-  # If all three columns contain "NA", this column's value will be TRUE
-  inputDF <- inputDF |>
-    mutate(ALL_NA = is.na(get(inputFieldNames[2])) & 
-             is.na(get(inputFieldNames[3])) &
-             is.na(get(inputFieldNames[4])))
-  
-  
-  # If TRUE appears for any row in "ALL_NA", output an error message
-  if (TRUE %in% inputDF$ALL_NA) {
-    
-    stop(paste0("Station Input File - Invalid PRMS Value Issue\n\n", 
-                "The \"", names(inputPath), "\" file contains a station without ",
-                "a corresponding PRMS field identified\n\n",
-                "Across the ", length(inputFieldNames) - 1, " PRMS columns, each ",
-                "row should contain a PRMS field name in at least one column\n\n",
-                "Please revise the input file (\"", inputPath, "\") accordingly") |>
-           errWrap())
-    
-  }
-  
-  
-  # The final check is to ensure that "TMIN" and "TMAX" have corresponding 
-  # values in the same row
-  # If the "TMIN" value is "NA", it should be "NA" for "TMAX" too
-  # Similarly, if "TMIN" has a value, "TMAX" should have an equivalent value
-  # (The numbers in both labels should be the same)
-  inputDF <- inputDF |>
-    mutate(TEMP_MISMATCH = (is.na(get(inputFieldNames[3])) & !is.na(get(inputFieldNames[4]))) |
-             (!is.na(get(inputFieldNames[3])) & is.na(get(inputFieldNames[4]))) |
-             (!is.na(get(inputFieldNames[3])) & !is.na(get(inputFieldNames[4])) &
-                as.numeric(str_extract(get(inputFieldNames[3]), "[0-9]+$")) != 
-                as.numeric(str_extract(get(inputFieldNames[4]), "[0-9]+$"))))
-  
-  # There are three different "mismatch" conditions described in the above code
-  # (1) The "TMIN" field is "NA", but the "TMAX" field is NOT "NA"
-  # (2) The "TMAX" field is not "NA", but the "TMAX" field IS "NA"
-  # (3) Both "TMIN" and "TMAX" do not contain "NA", but the numbers at the end
-  #     of their values do not match (e.g., "TMIN7" and "TMAX8")
-  if (TRUE %in% inputDF$TEMP_MISMATCH) {
-    
-    stop(paste0("Station Input File - Invalid PRMS Value Issue\n\n", 
-                "The \"", names(inputPath), "\" file contains ", sum(inputDF$TEMP_MISMATCH),
-                " instance", if_else(sum(inputDF$TEMP_MISMATCH) > 1, "s", ""), " ",
-                "where \"", inputFieldNames[3], "\" and \"", inputFieldNames[4], 
-                "\" do not contain matching values\n\n",
-                "Either both PRMS temperature columns should be empty, or they ",
-                "should have corresponding values (e.g., \"TMIN3\" and \"TMAX3\" ",
-                " in the same row)\n\n",
-                "Please revise the input file (\"", inputPath, "\") accordingly") |>
-           errWrap())
-    
-  }
-  
-  
-  # Return nothing if there are no issues
-  return(invisible(NULL))
-  
-}
-
-
-
-validateWebData <- function (climateDF, inputPath, stationVec) {
-  
-  # Check for errors in the downloaded web data
-  
-  # This function mainly checks for expected column names and "NA" values
-  
-  
-  # First, extract the data source name from the element name for 'inputPath'
-  dataSource <- names(inputPath) |> str_extract("^[A-Z]+")
-  
-  
-  # Make sure that procedure was successful
-  if (!(dataSource %in% c("PRISM", "NOAA", "CIMIS", "RAWS"))) {
-    
-    stop(paste0("Unexpected Data Source\n\n", 
-                "The name \"", dataSource, "\" is not recognized; ",
-                "please fix the script\n\n",
-                "The function `validateWebData()` uses the vector names ",
-                "in 'inputFiles' and extracts the data source name. It ",
-                "expects \"PRISM\", \"NOAA\", \"RAWS\", or \"CIMIS\" as ",
-                "acceptable values.") |>
-           errWrap())
-    
-  }
-  
-  
-  # After that, get a vector of the expected column names for this dataset
-  colVec <- expectedColumnNames(dataSource)
-  
-  
-  # Confirm that all of these column names appear in 'climateDF'
-  if (anyFalse(colVec %in% names(climateDF))) {
-    
-    # Identify which columns are missing
-    missingVals <- which(!(colVec %in% names(climateDF)))
-    
-    
-    stop(paste0("Web Data Output File - Formatting Issue\n\n",
-                if_else(length(colVec) > 1,
-                        paste0(length(missingVals), " of the ", 
-                               length(colVec), " expected columns"),
-                        "The expected column "),
-                " could not be found in the \"", names(inputPath), "\" file (",
-                vec2QuotedStr(colVec[missingVals]),
-                ")\n\n",
-                "The formatting of the data may have changed (this would require ",
-                "revisions to the script). ",
-                "Alternatively, there may be an issue with the downloaded file.\n\n",
-                "Please investigate \"", inputPath, "\"") |>
-           errWrap())
-    
-  }
-  
-  
-  # For ease of investigating 'climateDF' further, apply the column name updates
-  # using the element names in 'colVec'
-  # Since the revised names are the same in all cases ("STATION_ID", "DATE", etc.),
-  # the code is simpler to write
-  climateDF <- climateDF |> rename(all_of(colVec))
-  
-  
-  # After that, confirm that every station that appears in 'climateDF' 
-  # has a corresponding entry in the input list of stations ('stationVec')
-  if (anyFalse(unique(climateDF$STATION_ID) %in% stationVec)) {
-    
-    # Identify the unexpected stations
-    extraStations <- which(!(unique(climateDF$STATION_ID) %in% stationVec))
-    
-    
-    stop(paste0("Web Data Output File - Unrecognized Station(s)\n\n",
-                "The \"", names(inputPath), "\" file has one or more stations ",
-                "that do not appear in its corresponding input file (",
-                vec2QuotedStr(unique(climateDF$STATION_ID)[extraStations]), 
-                ")\n\n", 
-                "Please investigate \"", inputPath, "\"") |>
-           errWrap())
-    
-  }
-  
-  
-  # Note: The reverse is not required because some stations may lack data 
-  #       for the user-specified date range and be missing from the output
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-expectedColumnNames <- function (dataSource) {
-  
-  # Different websites return climate data in different formats
-  # As a result, the expected column names will differ in formatting
-  
-  # To make it easier to address changes to column names in the future, 
-  # this function has the "hard-coded" column names for each data source
-  
-  # Other functions in this script will call this function to get this information
-  
-  
-  # This function returns a named vector
-  # The element names are the desired column names
-  # The actual elements themselves are the names that appear in the weather data files
-  
-  # Note: In all cases, the expected revised column names are "STATION_ID", "DATE",
-  # "PRECIP", "TMIN", and "TMAX" (i.e., these should all appear as the element names)
-  
-  
-  if (dataSource == "PRISM") {
-    
-    nameVec <- c("STATION_ID" = "Name",
-                 "DATE" = "Date",
-                 "PRECIP" = "ppt (mm)",
-                 "TMIN" = "tmin (degrees C)",
-                 "TMAX" = "tmax (degrees C)")
-    
-  } else if (dataSource == "NOAA") {
-    
-    nameVec <- c("STATION_ID" = "STATION",
-                 "DATE" = "DATE",
-                 "PRECIP" = "PRCP",
-                 "TMIN" = "TMIN",
-                 "TMAX" = "TMAX")
-    
-  } else if (dataSource == "RAWS") {
-    
-    nameVec <- c("STATION_ID" = "STATION_ID",
-                 "DATE" = "DATE",
-                 "PRECIP" = "PRECIPITATION",
-                 "TMIN" = "TMIN",
-                 "TMAX" = "TMAX")
-    
-  } else if (dataSource == "CIMIS") {
-    
-    nameVec <- c("STATION_ID" = "STATION_ID",
-                 "DATE" = "DATE",
-                 "PRECIP" = "PRECIP",
-                 "TMIN" = "TMIN",
-                 "TMAX" = "TMAX")
-    
-  } else {
-    
-    # An error message will appear for any unrecognized input
-    stop(paste0("Misuse of `expectedColumnNames()`\n\n", 
-                "The input \"", dataSource, "\" is not recognized; ",
-                "please fix the script\n\n",
-                "The function `expectedColumnNames()` requires a data ",
-                "source's name as input (either \"PRISM\", \"NOAA\", ",
-                "\"RAWS\", or \"CIMIS\")\n\n") |>
-           errWrap())
-    
-  }
-  
-  
-  # Check that the developer coded this vector correctly
-  # (All vectors should have the same length and the same replacement names)
-  if (length(nameVec) != 5 ||
-      anyFalse(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX") %in% 
-               names(nameVec))) {
-    
-    stop(paste0("Issue in `expectedColumnNames()`\n\n", 
-                "The name vector for ", dataSource, " may contain an issue\n\n",
-                "Regardless of source, 5 specific columns are expected (",
-                vec2QuotedStr(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX")),
-                ")\n\n",
-                "The name vector should contain the corresponding raw data names ",
-                "(and link them to one of these columns)") |>
-           errWrap())
-    
-  }
-  
-  
-  # If there are no issues, return 'nameVec'
-  return(nameVec)
   
 }
 
@@ -700,13 +299,14 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
   
   # The "PRMS" column names in 'climateInput' will then be used to switch 
   # from the station IDs to the PRMS field names
+  fieldNameVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = TRUE)
   
   
   # Start by renaming the columns in 'climateDF' to be consistent 
   # Then, pivot the dataset into a wider format (where each station has 
   # three of its own columns--one for each PRMS field)
   widerDF <- climateDF |>
-    select(all_of(expectedColumnNames(dataSource))) |>
+    select(all_of(fieldNameVec)) |>
     pivot_wider(names_from = STATION_ID,
                 values_from = c(PRECIP, TMIN, TMAX),
                 names_sep = "_")
@@ -869,5 +469,3 @@ mainProcedure()
 
 # Clean up
 remove(list = ls())
-
-
