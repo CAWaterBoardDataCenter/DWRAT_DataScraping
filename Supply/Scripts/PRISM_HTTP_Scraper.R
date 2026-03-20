@@ -4,7 +4,7 @@
 # This script downloads precipitation data in millimeters (mm) for 15 locations in the Russian River watershed
 # and minimum and maximum temperature data in degrees Celsius for 8 locations in the Russian River watershed.
 
-# Last Updated by: Payman Alemi on 6/26/2025
+# Last Updated by: Aakash Prashar on 3/20/2026
 
 
 #### Dependencies ####
