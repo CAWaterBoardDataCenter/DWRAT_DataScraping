@@ -404,10 +404,16 @@ Dat_SRP_Final = rbind(Dat_SRP_Heading, Dat_SRP_Final)
 # Export Dat_SRP_Final to the ProcessedData folder 
   # Include the final observed date, EndDate as the suffix to the file name
 
+# Export SRP Dat file-----
+## Export to ProcessedData folder
 write.table(x = Dat_SRP_Final,
             file = paste0("ProcessedData/Dat_SRP_", modeler_name, "_Observed_EndDate_", EndDate$date, ".dat"),
             sep = "/t", row.names =  F, quote =  F, col.names = F)
 
+## Export to SRPHM_Update_Ag folder
+write.table(x= Dat_SRP_Final,
+            file = paste0("C:/SRPHM_update_ag_andy_rich/Dat_SRP_", modeler_name, "_Observed_EndDate_", EndDate$date, ".dat"),
+            sep = "/t", row.names =  F, quote =  F, col.names = F)
 
 # Calculate Run Time and Print Completion Statement
 

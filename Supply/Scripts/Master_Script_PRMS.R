@@ -4,7 +4,7 @@
 # process the model outputs to generate a single supply dataset, Raw_Flows.csv, which
 # serves as an input for DWRAT. 
 
-# Last Updated: By Payman Alemi on 10/2/2025
+# Last Updated: By Payman Alemi on 2/3/2026
 
 # #install.packages ("tinytex")
 # load packages -----------------------------------------------------------
@@ -25,9 +25,9 @@ require(openxlsx)
 
 includeForecast <- FALSE
 
-# Include flagging and remediation blocks in Dat_PRMS.R? 
+# Include flagging and remediation blocks in Dat_PRMS.R and Dat_SRP.R? 
 #  Set to TRUE or FALSE after consulting with SDU management for that month's runs. TRUE means
-# that the flagging and remediation code blocks in the Dat_PRMS.R script will be executed. FALSE
+# that the flagging and remediation code blocks in the Dat_PRMS.R and Dat_SRP.R script will be executed. FALSE
 # means that those blocks will be skipped;
 
 includeFlagging <- FALSE
@@ -36,8 +36,8 @@ includeRemediation <- FALSE
 # set start and end dates -------------------------------------------------
 ## Set start dates----
 
-StartDate <- as.Date("2024-10-01") # start of the water year
-Hydro_StartDate = as.Date("2024-10-01", format = "%Y-%m-%d") #, start of the current water year,
+StartDate <- as.Date("2025-10-01") # start of the water year
+Hydro_StartDate = as.Date("2025-10-01", format = "%Y-%m-%d") #, start of the current water year,
 # serves as the start date of the hydro simulation, 
 
   #usually the 1st day of the following month
@@ -54,7 +54,7 @@ print(StartDate)
 
 ## set end date----
 
-EndDate <- as.Date("2025-09-30")# set to desired end date for observed meteorological data range
+EndDate <- as.Date("2026-01-31")# set to desired end date for observed meteorological data range
 
 EndDay <- day(EndDate) 
 EndMonth <- month(EndDate)
@@ -64,9 +64,9 @@ EndDate <- data.frame(date = EndDate, day = EndDay, month = EndMonth, year = End
 print(EndDate)
 
 TimeFrame = seq(from = StartDate$date, to = EndDate$date, by = 'day') 
-End_Date <- as.Date("2025-09-30", format = "%Y-%m-%d") # End of current Water Year
+End_Date <- as.Date("2026-09-30", format = "%Y-%m-%d") # End of current Water Year
 
-Hydro_EndDate = as.Date("2025-09-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
+Hydro_EndDate = as.Date("2026-09-30", format = "%Y-%m-%d") #serves as the end date for the hydrological flows;
   # usually the last day of the next month
 
 #Define the modeler_name variable-this is the first initial and last name of the modeler
