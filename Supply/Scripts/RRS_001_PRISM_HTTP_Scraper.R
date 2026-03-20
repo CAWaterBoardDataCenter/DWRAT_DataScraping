@@ -48,6 +48,19 @@ mainProcedure <- function () {
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
+  # PRISM does not have data earlier than 1981-01-01
+  # If 'startDate' is earlier than this date, output an error message
+  if (startDate < "1981-01-01") {
+    
+    stop(paste0("Requested Date Range - Start Date Issue\n\n",
+                "The earliest date for which PRISM has data available is ",
+                "1981-01-01. The input start date (\"", startDate, "\") is ",
+                "too early. Please revise this input.") |>
+           errWrap())
+    
+  }
+  
+  
   cat("\n[1/2]\tGetting precipitation and temperature data for PRMS-related stations...\n")
   
   

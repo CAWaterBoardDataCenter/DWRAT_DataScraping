@@ -72,22 +72,19 @@ source("Scripts/RRS_008_Finalize_PRMS_Input.R")
 source("Scripts/RRS_009_Run_PRMS.R")
 
 
-
-"Scripts/RRS_010_PRMS_Cleanup.R"
-# (Including deleting the files from "ProcessedData/RR_PRMS")
-
+# Store key outputs and clear out the copied model files
+source("Scripts/RRS_010_PRMS_Cleanup.R")
 
 
+#### SRP ####
 
-# Setup model run folder for PRMS
+# source("Scripts/RRS_011_Process_SRP_Weather_Data.R")
 
-# Edit PRMS control file 
+# source("Scripts/RRS_012_Setup_SRP_Model.R")
 
-# Running PRMS
 
-# SPI/Similar Water Year (+ Rerun Dat PRMS and PRMS)
 
-# Copy inputs and outputs to Hydrology folder
+#### Hydro ####
 
 # Process PRMS output (copies model outputs to GitHub folder)
 

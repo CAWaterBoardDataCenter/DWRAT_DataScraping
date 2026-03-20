@@ -560,6 +560,61 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
 
 
 
+copyFile <- function (from, to, overwrite = TRUE, quietly = FALSE) {
+  
+  # Copy a file to a new location
+  
+  # This is a wrapper for `file.copy` with a custom error message
+  
+  
+  # First, confirm that the file 'from' actually exists
+  if (!file.exists(from)) {
+    
+    paste0("Attempting to Copy Non-Existent File\n\n",
+           "The script attempted to copy a file (\"", from, "\") to a new ",
+           "location. However, the original file does not appear to exist! ",
+           "Please investigate.\n\n",
+           "The intended new file was: \"", to, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there is no issue with 'from', attempt to copy it
+  copyRes <- file.copy(from = from, to = to, overwrite = overwrite)
+  
+  
+  # Confirm that the file was copied successfully
+  if (!copyRes || !file.exists(to)) {
+    
+    paste0("Could Not Copy File\n\n",
+           "The script attempted to copy a file (\"", from, "\") to a new ",
+           "location. However, the processed failed for an unknown reason ",
+           "(possibly a permission issue). Please investigate.\n\n",
+           "The intended new file was: \"", to, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Output a message too if 'quietly' is FALSE
+  if (!quietly) {
+    
+    cat(paste0("Copied \"", from, "\" to \"", to, "\"!\n\n") |>
+          col_cyan())
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
 errWrap <- function (message, widthRatio = 0.99) {
   
   # Modify the wrapping of an error message to reduce the need for horizontal scrolling
@@ -868,5 +923,82 @@ spaceSplit <- function (str) {
   return(str|>
            str_split("\\s") |> unlist(use.names = FALSE) |>
            str_subset("^$", negate = TRUE))
+  
+}
+
+
+
+getPRISM <- function (prismPath) {
+  
+  # Read in the PRISM web data CSV
+  
+  # Because multiple lines serve as a header, first find the number of header lines
+  # Then, use the proper CSV processing function to 
+  
+  
+  prismVec <- getFile(prismPath, fileType = "OTHER")
+  
+  
+  # Get the line where the headers start
+  
+  # The line will start with "Name,Longitude,Latitude"
+  headerRegex <- "^Name,Longitude,Latitude"
+  
+  
+  headerLine <- grep(headerRegex, prismVec)
+  
+  
+  # Return an error if 'headerLine' was not found (or if multiple matches were found)
+  if (length(headerLine) == 0) {
+    
+    stop(paste0("PRISM Data File - Missing Column Header Issue\n\n", 
+                "This script attempted to find the header row in the PRISM ",
+                "CSV file containing climate data. However, the header row ",
+                "could not be found.\n\n",
+                "There could be data corruption issues, or the formatting of ",
+                "PRISM's output files may have changed. This script may need ",
+                "updates, depending on the cause of this problem.\n\n",
+                "Please investigate '", prismPath, "'") |>
+           errWrap())
+    
+  } else if (length(headerLine) > 1) {
+    
+    stop(paste0("PRISM Data File - Could Not Identify Column Header\n\n", 
+                "This script attempted to find the header row in the PRISM ",
+                "CSV file containing climate data. However, an unusual issue ",
+                "was encountered.\n\n",
+                "The header row is usually identified via this regular expression:\n\n",
+                "(*) \"", headerRegex, "\"\n\n",
+                "There should be exactly one row in the input file that has this ",
+                "pattern. However, more than one match was found.\n\n", 
+                "Please investigate '", prismPath, "'") |>
+           errWrap())
+    
+  }
+  
+  
+  # If there are no issues, read in the PRISM data again
+  # This time, skip lines so that the first row is the header row (identified by 'headerLine')
+  prismDF <- getDelim(prismPath, delim = ",", skip = headerLine - 1)
+  
+  
+  # Make sure no rows that only contain "NA" are present
+  # Use the "Name" column for that check
+  prismDF <- prismDF |>
+    filter(!is.na(Name))
+  
+  
+  # Also, confirm that "Date" was parsed as a date column correctly
+  # If not, apply that type manually
+  if (is.character(prismDF$Date[1])) {
+    
+    prismDF <- prismDF |>
+      mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+    
+  }
+  
+  
+  # Return 'prismDF'
+  return(prismDF)
   
 }
