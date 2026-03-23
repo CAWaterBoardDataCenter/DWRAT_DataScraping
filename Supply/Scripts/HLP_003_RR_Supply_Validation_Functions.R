@@ -432,17 +432,350 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
 
 
 
+validateInputDAT <- function (datFile, sourceField, model, modelCols,
+                              startDate, endDate, datType) {
+  
+  # Verify the formatting of a DAT file for PRMS or SRP
+  # This function will be applied to the long-running meteorological
+  # DAT file, the SPI DAT file, and the final DAT file
+  
+  # DAT files run through this function gain a "DATE" column
+  
+  # 'model' and 'modelCols' are specific to either PRMS or SRP
+  
+  # 'datType' will be used if certain checks are specific to 
+  # the main DAT file, the SPI DAT file, or the final DAT file
+  
+  
+  if (!(model %in% c("PRMS", "SRP"))) {
+    
+    paste0("Script Error - Unknown Value for 'model'\n\n",
+           "The input variable 'model' must be one of two ",
+           "values (", vec2QuotedStr(c("PRMS", "SRP")), 
+           "). \"", model, "\" is not a recognized value. ",
+           "Please revise the script.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  if (!(datType %in% c("Main", "SPI", "Final"))) {
+    
+    paste0("Script Error - Unknown Value for 'datType'\n\n",
+           "The input variable 'datType' must be one of three ",
+           "values (", 
+           vec2QuotedStr(c("Main", "SPI", "Final")), "). \"",
+           datType, "\" is not a recognized value. Please revise ",
+           "the script.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # First, check that the date- and time-related fields are present
+  datetimeCols <- c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND")
+  
+  
+  if (anyFalse(datetimeCols %in% names(datFile))) {
+    
+    # Identify the missing columns
+    missingCols <- which(!(datetimeCols %in% names(datFile)))
+    
+    
+    paste0("DAT File - Column Issue\n\n",
+           "The ", datType, " input file for ", model, " does not have ",
+           "all of the required datetime columns (",
+           vec2QuotedStr(datetimeCols[missingCols]), ").\n\n",
+           "The DAT file must contain headers that match the names in ",
+           "the meteorological CSV (\"", model, "_Meteorological_",  
+           startDate, "_", endDate, ".csv\"). Please correct this file ",
+           "and try again.\n\n", 
+           if_else(datType != "Final",
+                   paste0("(This error occurred for '", 
+                          getFromSupplyControl_RR(sourceField), "')"),
+                   paste0("Please investigate the component DAT files."))) |>
+      errWrap() |>
+      str_replace("(does not)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # After that, perform a similar check for the model-specific columns
+  if (anyFalse(modelCols %in% names(datFile))) {
+    
+    # Identify the missing columns
+    missingCols <- which(!(modelCols %in% names(datFile)))
+    
+    
+    paste0("DAT File - Column Issue\n\n",
+           "The ", datType, " input file for ", model, " does not have ",
+           "all of the required ", model, " columns (",
+           vec2QuotedStr(prmsCols[missingCols]), ").\n\n",
+           "The number of precipitation and temperature columns (and their ",
+           "names) must match exactly with the meteorological CSV ",
+           "(\"", model, "_Meteorological_", startDate, "_", endDate, 
+           ".csv\"). Please correct this file and try again.\n\n", 
+           if_else(datType != "Final",
+                   paste0("(This error occurred for '", 
+                          getFromSupplyControl_RR(sourceField), "')"),
+                   paste0("Please investigate the component DAT files."))) |>
+      errWrap() |>
+      str_replace("(does not)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # Make sure all fields are numeric next ("DATE" is an allowable exception)
+  if (anyFalse(map_lgl(datFile[names(datFile) != "DATE"], is.numeric))) {
+    
+    # Identify the non-numeric columns
+    nonNumCols <- which(!map_lgl(datFile, is.numeric))
+    
+    
+    # Exclude the "DATE" column from this list, if it's present in 'datFile'
+    if ("DATE" %in% names(datFile)) {
+      
+      nonNumCols <- nonNumCols |>
+        base::setdiff(which(names(datFile) == "DATE"))
+      
+    }
+    
+    
+    paste0("DAT File - Column Type Issue\n\n",
+           "Every column in the ", datType, " input file for ", model, 
+           " is expected to be numeric. However, ", length(nonNumCols),
+           " column", if_else(length(nonNumCols) > 1, "s have", " has"), 
+           " a different type (",
+           vec2QuotedStr(names(datFile)[nonNumCols]), ").\n\n",
+           "Please correct this file and try again.\n\n", 
+           if_else(datType != "Final",
+                   paste0("(This error occurred for '", 
+                          getFromSupplyControl_RR(sourceField), "')"),
+                   paste0("Please investigate the component DAT files."))) |>
+      errWrap() |>
+      str_replace("(does not)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # For the next checks, give 'datFile' a "DATE" column
+  datFile <- datFile |>
+    mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |> 
+             as.Date(format = "%Y-%m-%d"))
+  
+  
+  # Next, get the start and end dates of the DAT file
+  datRange <- datFile |>
+    select(DATE) |>
+    filter(DATE == min(DATE) | DATE == max(DATE)) |>
+    arrange(DATE)
+  
+  
+  # Make sure there are no missing dates in 'datFile'
+  expectedDates <- seq(from = datRange$DATE[1],
+                       to = datRange$DATE[2],
+                       by = "days")
+  
+  
+  # Check for missing dates
+  if (anyFalse(expectedDates %in% datFile$DATE)) {
+    
+    # Identify the missing dates
+    missingDates <- which(!(expectedDates %in% datFile$DATE))
+    
+    
+    paste0("DAT File - Date Issue\n\n",
+           "The ", datType, " input file for ", model, " is missing data for ", 
+           length(missingDates), " day",
+           if_else(length(missingDates) > 1, "s", ""), " (", 
+           vec2QuotedStr(expectedDates[missingDates]), "). Please correct ",
+           "this file and try again.\n\n", 
+           if_else(datType != "Final",
+                   paste0("(This error occurred for '", 
+                          getFromSupplyControl_RR(sourceField), "')"),
+                   paste0("Please investigate the component DAT files."))) |>
+      errWrap() |>
+      str_replace("(does not)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # Similarly, check for mismatches between 'datFile' and 'expectedDates'
+  # (Because of the previous check, this error will likely occur if a date is 
+  #  duplicated in the DAT file)
+  if (nrow(datFile) != length(expectedDates)) {
+    
+    # If the cause is a duplicate error, identify the duplicated dates
+    dupDates <- table(datFile$DATE)
+    
+    dupDates <- dupDates[dupDates > 1]
+    
+    
+    if (length(dupDates) > 0) {
+      
+      paste0("DAT File - Date Issue\n\n",
+             "The ", datType, " input file for ", model, 
+             " has multiple rows for the same date",
+             if_else(length(dupDates) > 1, "s", ""), " (",
+             vec2QuotedStr(names(dupDates)), ").\n\n", 
+             "Please correct this issue. Every date should have exactly ",
+             "one row in the DAT file.\n\n", 
+             if_else(datType != "Final",
+                     paste0("(This error occurred for '", 
+                            getFromSupplyControl_RR(sourceField), "')"),
+                     paste0("Please investigate the component ",
+                            "DAT files."))) |>
+        errWrap() |>
+        str_replace("(does not)", col_red("\\1")) |>
+        stop()
+      
+      # If this error occurred because of some other unknown issue,  
+      # use this error message instead
+    } else {
+      
+      paste0("DAT File - Data Issue\n\n",
+             "The ", datType, " input file for ", model, " has an ",
+             "unknown data issue. The number of rows in the dataset does ",
+             "not match the number of days between the start and end ",
+             "dates in that file. Please investigate.\n\n", 
+             if_else(datType != "Final",
+                     paste0("(This error occurred for '", 
+                            getFromSupplyControl_RR(sourceField), "')"),
+                     paste0("Please investigate the component ",
+                            "DAT files."))) |>
+        errWrap() |>
+        str_replace("(unknown)", col_red("\\1")) |>
+        stop()
+      
+    }
+    
+  }
+  
+  
+  # If there are missing entries in the DAT file, alert the user
+  if (anyNA(datFile)) {
+    
+    # Output the locations of missing values
+    cat("\n\n\"NA\" Entries:\n")
+    print(which(is.na(datFile), arr.ind = TRUE))
+    
+    paste0("DAT File - Missing Data Issue\n\n",
+           if_else(sum(is.na(datFile)) > 1, 
+                   "Missing values were ",
+                   "A missing value was "), 
+           " detected in the ", datType, " DAT file (see the above message ",
+           "for locations). Please correct the file.\n\n", 
+           if_else(datType != "Final",
+                   paste0("(This error occurred for '", 
+                          getFromSupplyControl_RR(sourceField), "')"),
+                   paste0("Please investigate the component DAT files."))) |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # For the next check, look for a logistical issue for the primary DAT file
+  # (The one with long-running meteorological data)
+  # 'startDate' can overlap with 'datFile', but if not, there should be no gaps
+  # 'startDate' for the meteorological dataset should be, at most, on the next day
+  # after the end of the dates in 'primaryDAT'
+  if (datType == "Main" && startDate > max(datFile$DATE) + 1) {
+    
+    paste0("Main DAT File and 'startDate' - Data Gap Issue\n\n",
+           "Because the meteorological dataset starts at ", startDate,
+           ", there will be a data gap issue with this DAT file. Its ",
+           "latest date is ", max(datFile$DATE), ", which means ",
+           "that not all dates will have data when running ", model, 
+           " with these files. Please adjust either the DAT file or ",
+           "'startDate' in the control script.\n\n",
+           "(This error occurred for '", 
+           getFromSupplyControl_RR(sourceField), "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The final checks are specific to the SPI DAT file 
+  if (datType == "SPI") {
+    
+    # Get the bounds of the water year being modeled
+    wyBounds <- getModeledWY(endDate)
+    
+    
+    # The predicted values in 'datFile' must extend to the end of the water year
+    if (max(datFile$DATE) < wyBounds[2]) {
+      
+      paste0("Incomplete SPI DAT File - End of Water Year\n\n",
+             "The DAT file that contains predictions for the current water ",
+             "year is missing data. It does not extend to the end of the ",
+             "water year (\"", wyBounds[2], "\"). Please adjust ",
+             "this file.\n\n",
+             "(This error occurred for '", 
+             getFromSupplyControl_RR(sourceField), "')") |>
+        errWrap() |>
+        stop()
+      
+      # Similarly, if 'endDate' is an earlier date than the start of 'datFile', 
+      # there should be no gap between then
+    } else if (endDate + 1 < min(datFile$DATE)) {
+      
+      paste0("SPI DAT File and 'endDate' - Data Gap Issue\n\n",
+             "Because the meteorological dataset ends at ", endDate,
+             ", there will be a data gap issue with this DAT file. Its ",
+             "earliest date is ", min(datFile$DATE), ", which means ",
+             "that not all dates will have data when running ", model,
+             " with these files. Please adjust either the DAT file or ",
+             "'endDate' in the control script.\n\n",
+             "(This error occurred for '", 
+             getFromSupplyControl_RR(sourceField), "')") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+  }
+  
+  
+  # If there are no issues, return 'datFile'
+  # (It now has a "DATE" column)
+  return(datFile |> arrange(DATE))
+  
+}
+
+
+
 checkForPreviousOutput <- function (filePath) {
   
   # Check for a file that was generated at a prior step in the workflow
   
+  # 'filePath' can be a single string or a vector of paths
   
-  if (!file.exists(filePath)) {
+  
+  if (anyFalse(file.exists(filePath))) {
     
-    paste0("File From Previous Script Not Found\n\n",
-           "The file \"", filePath, "\" should have been generated by a ",
-           "preceding script in this process. However, it was not found. ",
-           "Please run the previous scripts before running this one.\n\n") |>
+    # Identify which files in 'filePath' are missing
+    missingFiles <- which(!file.exists(filePath))
+    
+    
+    # Use that in an error message
+    paste0("File", if_else(length(missingFiles) > 1, "s", ""), " ",
+           "From Previous Script Not Found\n\n",
+           "The file", if_else(length(missingFiles) > 1, "s", ""), " ",
+           vec2QuotedStr(filePath[missingFiles]), "should have been generated ",
+           "by ", if_else(length(missingFiles) > 1, "", "a"), " ",
+           "preceding script", if_else(length(missingFiles) > 1, "s", ""), " ",
+           "in this process. However, ",
+           if_else(length(missingFiles) > 1, "they were ", "it was "),
+           "not found. Please run the previous scripts to completion before ",
+           "running this one.\n\n") |>
       errWrap() |>
       stop()
     
@@ -451,6 +784,109 @@ checkForPreviousOutput <- function (filePath) {
   
   # Return the normalized filepath if there are no issues
   return(filePath |> normalizePath(mustWork = TRUE))
+  
+}
+
+
+
+validateSourceModelDirectory <- function (sourceDir, sourceField, model,
+                                          reqFolders, reqFiles) {
+  
+  # Ensure that the user-provided directory containing model files is valid
+  # For the PRMS and SRP models, certain files and folders are expected
+  
+  # If there are no errors, this function will return the normalized path to  
+  # the model directory at the end
+  
+  
+  # Make sure the script was given "PRMS" or "SRP" as input for 'model'
+  if (!(model %in% c("PRMS", "SRP"))) {
+    
+    paste0("Script Error - Unrecognized Value for 'model'\n\n", 
+           "The function `validateSourceModelDirectory` checks a source model ",
+           "directory that contains files for running a specified model. ",
+           "Therefore, the input variable 'model' should be either \"PRMS\" ",
+           "or \"SRP\". However, it was input as \"", model, "\" instead.\n\n", 
+           "Please correct the script and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # After that, check if the directory is a SharePoint fragment
+  # If it exists on SharePoint, convert 'sourceDir' into a SharePoint path
+  if (dir.exists(makeSharePointPath(sourceDir))) {
+    
+    sourceDir <- makeSharePointPath(sourceDir)
+    
+  }
+  
+  
+  # If the directory cannot be found, notify the user
+  if (!dir.exists(sourceDir)) {
+    
+    paste0("Cannot Find the Specified ", model, " Directory\n\n",
+           "In the RR Supply Control File, the location of the ", model, 
+           " model files was specified in \"", sourceField, "\". ",
+           "However, \"", sourceDir, "\" does not appear to exist.\n\n",
+           "Please correct the value specified for \"", sourceField,
+           "\" in the control spreadsheet.") |>
+      errWrap() |> 
+      stop()
+    
+  }
+  
+  
+  # Next, check that the folders specified in 'reqFolders' are present
+  folderExists <- paste0(sourceDir, "/", reqFolders) |>
+    normalizePath(mustWork = FALSE) |>
+    dir.exists()
+  
+  
+  if (anyFalse(folderExists)) {
+    
+    paste0("Missing Components in the ", model, " Model Folder\n\n",
+           "In the RR Supply Control File, the location of the ", model, 
+           " model files was set to be \"", sourceDir, "\"\n\n", 
+           "However, this directory does not contain of all the required ",
+           "folders that a proper installation of ", model, " would have ", 
+           "(", vec2QuotedStr(reqFolders[!folderExists]), "). Please obtain ",
+           "a proper installation of ", model, " and/or correct the value ",
+           "given in the control spreadsheet for \"", sourceField, "\".") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Repeat a similar check for files rather than folders this time
+  # Every file in 'reqFiles' should appear in the model folder
+  fileExists <- paste0(sourceDir, "/", reqFiles) |>
+    normalizePath(mustWork = FALSE) |>
+    file.exists()
+  
+  
+  if (anyFalse(fileExists)) {
+    
+    paste0("Missing Components in the ", model, " Model Folder\n\n",
+           "In the RR Supply Control File, the location of the ", model, 
+           " model files was set to be \"", sourceDir, "\"\n\n", 
+           "However, this directory does not contain of all the required ",
+           "files that a proper installation of ", model, " would have ", 
+           "(", vec2QuotedStr(reqFiles[!fileExists]), "). Please obtain ",
+           "a proper installation of ", model, " and/or correct the value ",
+           "given in the control spreadsheet for \"", sourceField, "\".") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'sourceDir' if there are no issues
+  # (If 'sourceDir' points to a SharePoint location, it has been updated 
+  #  in this function to reflect that)
+  return(sourceDir |> normalizePath())
   
 }
 
@@ -663,3 +1099,73 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
   
 }
 
+
+
+validateModelCopy_SRP <- function () {
+  
+  # In a prior script, SRP model files were copied to the "ProcessedData" folder
+  # Verify that it exists
+  
+  # This function also returns the path to the model folder
+  
+  
+  # The expected path of the "SRPHM_update_ag" folder
+  srpPath <- "ProcessedData/SRPHM_update_ag" |> normalizePath(mustWork = FALSE)
+  
+  
+  # Make sure that that folder exists 
+  if (!dir.exists(srpPath)) {
+    
+    paste0("SRP Folder Not Found\n\n",
+           "A copy of the SRP model files should have been added ",
+           "to the \"ProcessedData\" folder in an earlier script. ",
+           "However, it was not found. ",
+           "Please run the previous scripts before running this one.\n\n",
+           "The expected directory was \"", srpPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Also confirm that the control file for SRP exists
+  controlPath <- paste0(srpPath, "/SRPHM_update.control") |> 
+    normalizePath(mustWork = FALSE)
+  
+  
+  if (!file.exists(controlPath)) {
+    
+    paste0("Missing SRP Control File\n\n",
+           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "folder, a control file was present in the root folder. ",
+           "However, it cannot be found now. Please investigate.\n\n",
+           "(This error occurred for \"", controlPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # A batch file should be present in the model files too
+  # Check for that as well
+  batPath <- paste0(srpPath, "/Run_updated_Model.bat") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  if (!file.exists(batPath)) {
+    
+    paste0("Missing SRP Batch File\n\n",
+           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "folder, a batch file was present among the model files. ", 
+           "However, it cannot be found now. Please investigate.\n\n",
+           "(This error occurred for \"", batPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'srpPath' if there are no issues
+  return(srpPath)
+  
+}
