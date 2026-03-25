@@ -110,9 +110,9 @@ mainProcedure <- function (predictWY = TRUE) {
   # Read in the two files next (while also verifying that they exist)
   meteorDF <- filePaths[1] |> 
     checkForPreviousOutput() |> 
-    getDelim(, ",")
+    getDelim(",")
   
-  primaryDAT <- getDelim(filePaths[2], ",")
+  primaryDAT <- getFile(filePaths[2], ",")
   
   
   # Validate the primary DAT file next
@@ -271,7 +271,7 @@ spiPrediction <- function (mergedDAT, startDate, endDate, prmsCols) {
   
   
   spiDAT <- pathSPI |>
-    getDelim(",")
+    getFile(",")
   
   
   # Validate the DAT file before continuing
@@ -423,7 +423,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
                                         str_subset("TMIN") |> length()),
                                paste0("runoff ", names(finalDAT) |> 
                                         str_subset("RUNOFF") |> length()),
-                               rep("#", 73) |> paste0(collapse = "")))
+                               str_dup("#", 73)))
   
   
   finalDAT <- bind_rows(headerDAT,
@@ -475,7 +475,7 @@ updateControlFilePRMS <- function (prmsPath, datName, endDate, predictWY) {
   
   # First, read in the file
   controlPath <- paste0(prmsPath, "/windows/prms_rr.control") |>
-    normalizePath()
+    normalizePath(mustWork = TRUE)
   
   
   prmsControl <- controlPath |>

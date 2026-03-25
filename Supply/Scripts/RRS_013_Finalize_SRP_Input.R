@@ -26,8 +26,8 @@
 #  (2) A long-running DAT file (whose filepath is input into "MAIN_SRP_DAT_FILE"
 #      of the control file)
 
-#  (3) A DAT file containing predictions for the current water year (its filepath
-#      should be given in "SRP_DAT_SPI_FILE" of the control file)
+#  (3) A DAT file containing predictions for the current water year (its 
+#      filepath should be given in "SRP_DAT_SPI_FILE" of the control file)
 
 
 
@@ -113,7 +113,7 @@ mainProcedure <- function (predictWY = TRUE) {
     checkForPreviousOutput() |> 
     getDelim(",")
   
-  primaryDAT <- getFile(filePaths[2], "\t")
+  primaryDAT <- getFile(filePaths[2], ",")
   
   
   # Validate the primary DAT file next
@@ -146,10 +146,12 @@ mainProcedure <- function (predictWY = TRUE) {
   cat("\tDone!\n\n")
   
   
-  # After that, if 'predictWY' is TRUE, add predictions for the current water year
+  # After that, if 'predictWY' is TRUE, add predictions for 
+  # the current water year
   if (predictWY) {
     
-    cat("[4/5]\tAppending forecasted predictions for the current water year...\n")
+    cat(paste0("[4/5]\tAppending forecasted predictions for ",
+               "the current water year...\n"))
     
     
     mergedDAT <- predictCurrentWY(mergedDAT, startDate, endDate, 
@@ -160,7 +162,8 @@ mainProcedure <- function (predictWY = TRUE) {
     cat("\tDone!\n\n")
     
     
-    # Even if predictions will not be used, update metadata in the hydrology folder
+    # Even if predictions will not be used, 
+    # update metadata in the hydrology folder
   } else {
     
     updateMetadata_DAT(dirPath, NA_character_, filePaths[2], endDate)
@@ -272,7 +275,7 @@ spiPrediction <- function (mergedDAT, startDate, endDate, srpCols) {
   
   
   spiDAT <- pathSPI |>
-    getFile("\t")
+    getFile(",")
   
   
   # Validate the DAT file before continuing
@@ -305,15 +308,16 @@ updateMetadata_DAT <- function (dirPath, predictionMethod, pathMainDAT,
   updateMetadataCSV(dirPath,
                     newCols = list("SRP_MAIN_DAT_FILE" = pathMainDAT,
                                    "SRP_SPI_DAT_FILE" = pathSPI,
-                                   "WY_PREDICTION_METHOD" = predictionMethod,
-                                   "MOST_SIMILAR_WY" = similarWY,
-                                   "REGRESSION_MODEL_SLOPE" = 
-                                     if_else(is.null(linModel),
-                                             NA_real_, linModel$m),
-                                   "REGRESSION_MODEL_INTERCEPT" = 
-                                     if_else(is.null(linModel),
-                                             NA_real_, linModel$b),
-                                   "MODEL_END_DATE" = modelEndDate))
+                                   #"WY_PREDICTION_METHOD" = predictionMethod,
+                                   #"MOST_SIMILAR_WY" = similarWY,
+                                   #"REGRESSION_MODEL_SLOPE" = 
+                                  #   if_else(is.null(linModel),
+                                  #           NA_real_, linModel$m),
+                                  # "REGRESSION_MODEL_INTERCEPT" = 
+                                  #   if_else(is.null(linModel),
+                                  #           NA_real_, linModel$b),
+                                  # "MODEL_END_DATE" = modelEndDate
+                                  ))
   
   
   # Return nothing
@@ -399,56 +403,90 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   
   # 'datName' will appear in the hydrology folder only
-  # In "RR_SRP", a generic name will be used instead
+  # In "SRPHM_update_ag", a generic name will be used instead
   genericName <- "RR_SRP_Input.dat"
   
   
   # Create a finalized version of 'mergedDAT':
   #  (1) Remove the "DATE" column
-  #  (2) Round every numeric value to one decimal place (at most)
+  #  (2) Round every numeric value to four decimal places (at most)
   #  (3) Convert every column to character (needed for the next step)
   finalDAT <- mergedDAT |>
     select(-DATE) |>
-    mutate(across(where(is.numeric), ~ round(., 1))) |>
+    mutate(across(where(is.numeric), ~ round(., 4))) |>
     mutate(across(everything(), as.character))
   
   
-  # Add a header to the DAT file as well
+  # The final format of 'finalDAT' will be a string with spaces separating
+  # each of the column values
+  # However, the number of spaces is inconsistent:
+  #  (*) Between all of the datetime columns, there is only one space
+  #  (*) Before and after "PRECIP1", there are five spaces
+  #  (*) Between all subsequent columns, there are four spaces
+  finalDAT <- finalDAT |>
+    # Add a column to 'finalDAT' that merges the datetime columns
+    # (with a single space of separation)
+    unite(col = "DATETIME_MERGED",
+          c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND"),
+          sep = " ", remove = FALSE) |>
+    # Add another column that combines "DATETIME_MERGED" with "PRECIP1"
+    # (this time, there are five spaces of separation)
+    unite(col = "DATETIME_PRECIP1_APPENDED",
+          c("DATETIME_MERGED", "PRECIP1"),
+          sep = str_dup(" ", 5), remove = FALSE) |>
+    # Then, merge together the precipitation and temperature columns 
+    # (ignoring "PRECIP1", which was already merged with the datetime values)
+    # (There are four spaces of separation between these climate columns)
+    unite(col = "OTHER_CLIMATE_COLS",
+          matches("^(PRE)|(TM)") & !matches("^PRECIP1$"),
+          sep = str_dup(" ", 4), remove = FALSE) |>
+    # Finally, merge together "DATETIME_PRECIP1_APPENDED" and
+    # "OTHER_CLIMATE_COLS"
+    # Put five spaces of separation (so that "PRECIP1" has five spaces 
+    # before and after its value)
+    unite(col = "FINAL",
+          c("DATETIME_PRECIP1_APPENDED", "OTHER_CLIMATE_COLS"),
+          sep = str_dup(" ", 5), remove = TRUE)
+  
+  
+  # Add a header to the DAT file next
   # It mainly describes the number of columns 
-  headerDAT <- tibble(YEAR = c("Originally generated by J.A.Engott",
-                               paste0("precip ", names(finalDAT) |> 
+  headerDAT <- tibble(FINAL = c(paste0("Originally generated in Excel : ",
+                                      "1947-1980 USGS daily grid, 1981-2018 ",
+                                      "PRISM daily interp station, Author: ",
+                                      "Pascual Benito ",
+                                      "(pbenito@elmontgomery.com)"),
+                               paste0("precip ", names(mergedDAT) |> 
                                         str_subset("PRECIP") |> length()),
-                               paste0("tmax ", names(finalDAT) |> 
+                               paste0("tmax ", names(mergedDAT) |> 
                                         str_subset("TMAX") |> length()),
-                               paste0("tmin ", names(finalDAT) |> 
+                               paste0("tmin ", names(mergedDAT) |> 
                                         str_subset("TMIN") |> length()),
-                               paste0("runoff ", names(finalDAT) |> 
-                                        str_subset("RUNOFF") |> length()),
-                               rep("#", 73) |> paste0(collapse = "")))
+                               c("###################", names(mergedDAT)) |> 
+                                 tolower() |> str_replace("second", "sec") |>
+                                 str_replace("([a-z])([0-9])$", "\\10\\2") |>
+                                 paste0(collapse = str_dup(" ", 10))))
   
   
   finalDAT <- bind_rows(headerDAT,
                         finalDAT) |>
-    mutate(across(everything(), ~replace_na(., "")))
+    select(FINAL)
   
   
   # Write 'finalDAT' to the hydrology folder first
-  finalDAT |>
+  finalDAT$FINAL |>
     writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
                   normalizePath(mustWork = FALSE),
-                writeFunction = "write_tsv", quietly = quietly,
-                col_names = FALSE)
+                writeFunction = "write_lines", quietly = quietly)
   
   
   # Write 'finalDAT' to the SRP model folder next
   # The name will be fixed as "RR_SRP_Input.dat" 
   # for ease of modeling automation
-  finalDAT |>
-    writeOutput(paste0(srpPath, 
-                       "/SRP/input/climate_scenarios/", genericName) |> 
+  finalDAT$FINAL |>
+    writeOutput(paste0(srpPath, "/", genericName) |> 
                   normalizePath(mustWork = FALSE),
-                writeFunction = "write_tsv", quietly = quietly,
-                col_names = FALSE)
+                writeFunction = "write_lines", quietly = quietly)
   
   
   # Update the SRP control file next
@@ -475,15 +513,15 @@ updateControlFileSRP <- function (srpPath, datName, endDate, predictWY) {
   
   
   # First, read in the file
-  controlPath <- paste0(srpPath, "/windows/prms_rr.control") |>
-    normalizePath()
+  controlPath <- paste0(srpPath, "/SRPHM_update.control") |>
+    normalizePath(mustWork = TRUE)
   
   
-  prmsControl <- controlPath |>
+  srpControl <- controlPath |>
     getFile(fileType = "OTHER")
   
   
-  # 'prmsControl' is a vector of strings, with each element corresponding to a 
+  # 'srpControl' is a vector of strings, with each element corresponding to a 
   # line of the control file
   # The parameters in these lines will be customized in preparation 
   # for the model run
@@ -506,41 +544,29 @@ updateControlFileSRP <- function (srpPath, datName, endDate, predictWY) {
   
   
   # Locate "end_time" in the control file
-  targetLoc <- grep("^end_time$", prmsControl)[1]
+  targetLoc <- grep("^end_time$", srpControl)[1]
   
   
   # Three lines after "end_time", the next three lines are the components of 
   # the end date for the model run
-  prmsControl[targetLoc + 3] <- modelEnd |> year()
-  prmsControl[targetLoc + 4] <- modelEnd |> month() |> sprintf(fmt = "%.2d")
-  prmsControl[targetLoc + 5] <- modelEnd |> day() |> sprintf(fmt = "%.2d")
+  srpControl[targetLoc + 3] <- modelEnd |> year()
+  srpControl[targetLoc + 4] <- modelEnd |> month() |> sprintf(fmt = "%.2d")
+  srpControl[targetLoc + 5] <- modelEnd |> day() |> sprintf(fmt = "%.2d")
   
   
   # The next parameter to update is the name of the input DAT file
   # This will be a fixed name in all cases for ease of automation
   
   # This information is stored under the "data_file" parameter
-  targetLoc <- grep("^data_file$", prmsControl)[1]
+  targetLoc <- grep("^data_file$", srpControl)[1]
   
   
   # Three lines after "data_file", the DAT filename is specified
-  prmsControl[targetLoc + 3] <- paste0("..\\SRP\\input\\climate_scenarios\\",
-                                       datName)
+  srpControl[targetLoc + 3] <- paste0(datName)
   
   
-  # The final parameter to change is the name of the output file
-  # This is stored under "nsubOutBaseFileName"
-  targetLoc <- grep("^nsubOutBaseFileName$", prmsControl)[1]
-  
-  
-  # Three lines after "nsubOutBaseFileName", the final output name is specified
-  # To make the automated process easier, the name will always 
-  # be "RR_SRP_Output_"
-  prmsControl[targetLoc + 3] <- "..\\SRP\\output\\RR_SRP_Output_"
-  
-  
-  # Write 'prmsControl' back to a file (overwriting the previous version)
-  writeOutput(prmsControl, controlPath, "write_lines", quietly = TRUE)
+  # Write 'srpControl' back to a file (overwriting the previous version)
+  writeOutput(srpControl, controlPath, "write_lines", quietly = TRUE)
   
   
   # Return nothing
@@ -556,22 +582,21 @@ updateBatchFileSRP <- function (srpPath) {
   
   
   # This file contains two commands:
-  # cd [RR_SRP "WINDOW" FOLDER]
-  # [PATH TO GSFLOW.EXE] [PATH TO CONTROL FILE]
+  # cd [PATH TO "SRPHM_update_ag" FOLDER]
+  # call [PATH TO "gsflow_ag.exe"] [PATH TO CONTROL FILE]
   
   
-  batchCommands <- c(paste0("cd ", srpPath, "\\windows"),
-                     "..\\bin\\gsflow.exe prms_rr.control")
+  batchCommands <- c(paste0("cd ", srpPath),
+                     "call gsflow_ag.exe SRPHM_update.control")
   
-  # The first command changes the working directory to the "windows" sub-folder
-  # of "RR_SRP"
-  # The second command then executes gsflow.exe using "prms_rr.control" (which
-  # is also located in the "windows" sub-folder)
+  # The first command changes the working directory to the SRP model folder
+  # The second command then executes gsflow_ag.exe using "SRPHM_update.control" 
+  # (which is also located in the root directory)
   
   
-  # Write these commands to "run.bat"
+  # Write these commands to "Run_updated_Model.bat"
   batchCommands |>
-    writeOutput(paste0(srpPath, "/windows/run.bat") |> 
+    writeOutput(paste0(srpPath, "/Run_updated_Model.bat") |> 
                   normalizePath(mustWork = FALSE),
                 "write_lines", quietly = TRUE)
   
@@ -739,8 +764,8 @@ similarWY_findWY <- function (endDate, outDF, dirPath, endMonth, linModel) {
                 "a month between February and August (inclusive) to predict ",
                 "the total precipitation for the current water year. As a ",
                 "result, the input \"endMonth\" should have a value between 2 ",
-                "and 8 (inclusive). However, \"", endMonth, "\" was provided to ",
-                "`similarWY_findWY` instead. Please revise the script.") |>
+                "and 8 (inclusive). However, \"", endMonth, "\" was provided ",
+                "to `similarWY_findWY` instead. Please revise the script.") |>
            errWrap())
     
   }
