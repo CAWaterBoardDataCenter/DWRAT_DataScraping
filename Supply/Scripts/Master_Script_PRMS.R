@@ -70,7 +70,7 @@ Hydro_EndDate = as.Date("2026-09-30", format = "%Y-%m-%d") #serves as the end da
   # usually the last day of the next month
 
 #Define the modeler_name variable-this is the first initial and last name of the modeler
-modeler_name = "PAlemi" # has to be altered manually
+modeler_name = "Rlazin" # has to be altered manually
 
 # generate PRMS model input -----------------------------------------------
 source(here("Scripts/PRISM_HTTP_Scraper.R")) #downloads PRISM climate data for both PRMS and SRP stations simultaneously
