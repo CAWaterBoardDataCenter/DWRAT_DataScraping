@@ -8,6 +8,7 @@ require(tidyverse)
 require(readxl)
 require(writexl)
 require(sf)
+require(polylabelr)
 
 
 
@@ -177,7 +178,7 @@ mainProcedure <- function () {
   
   
   # Assign HUC12 sub-basins to 'catchDF' as well
-  catchDF[["HUC12"]] <- huc12$huc12[st_intersects(st_centroid(catchDF), huc12) %>% 
+  catchDF[["HUC12"]] <- huc12$huc12[st_intersects(st_poi(catchDF), huc12) %>% 
                                       unlist()]
   
   
