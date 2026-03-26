@@ -45,6 +45,21 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   #       be used instead of read_delim() from the 'readr' package
   
   
+  # First make sure that 'filePath' is not NA
+  # This is a sign of a missing input
+  if (is.na(filePath)) {
+    
+    stop(paste0("No Filepath Specified\n\n",
+                "The function `getFile` was called without a proper filepath as ",
+                " input\n\n", 
+                "Please investigate this issue and revise the script, ",
+                "if needed") |>
+           errWrap() |>
+           str_replace("(without)", col_red("\\1")))
+    
+  }
+  
+  
   # Check if 'fileType' is NULL
   # If so, guess the type
   if (is.null(fileType)) {
@@ -648,6 +663,68 @@ twoDigitText <- function (num) {
 
 
 
+getModeledWY <- function (endDate) {
+  
+  # Based on the value of 'endDate', identify the water year being modeled
+  # Then, return a vector of dates containing the bounds of that water year
+  
+  
+  # (1) Determining the starting bound:
+  
+  #     If 'endDate' is between January and September (inclusive), the water year
+  #     matches the calendar year in 'endDate'
+  
+  #     If that is true, then the water year starts on October 1st of the 
+  #     preceding calendar year
+  
+  #     (e.g., if it's 2026-03-09, we are modeling WY2026, which began on 
+  #      2025-10-01)
+  
+  #     If 'endDate' is in the October - December range, the water year is the
+  #     calendar year plus one
+  
+  #     In addition, the start of the water year is October 1st of the same year
+  #     as 'endDate'
+  
+  #     (e.g., if it's 2024-12-12, we are modeling WY2025, which began on 
+  #      2024-10-01)
+  
+  
+  # (2) Determining the ending bound:
+  
+  #     If 'endDate' is between January and September (inclusive), the water year
+  #     matches the calendar year in 'endDate'
+  
+  #     If that is true, then the water year ends on September 30th of the 
+  #     current calendar year
+  
+  #     (e.g., if it's 2026-03-09, we are modeling WY2026, which ends on 
+  #      2026-09-30)
+  
+  #     If 'endDate' is in the October - December range, the water year is the
+  #     calendar year plus one
+  
+  #     In addition, the end of the water year is September 30th of the next year
+  #     after the year in 'endDate'
+  
+  #     (e.g., if it's 2024-12-12, we are modeling WY2025, which ends on 
+  #      2025-09-30)
+  
+  
+  # Get the start and end dates of the water year
+  # Then, return them as a vector of dates
+  return(c(start = if_else(month(endDate) < 10,
+                           paste0(year(endDate) - 1, "-10-01"),
+                           paste0(year(endDate), "-10-01")),
+           end = if_else(month(endDate) < 10,
+                         paste0(year(endDate), "-09-30"),
+                         paste0(year(endDate) + 1, "-09-30"))) |>
+           as.Date(format = "%Y-%m-%d"))
+  
+}
+
+
+
 vec2QuotedStr <- function (strVec) {
   
   # Given a vector of strings, wrap each element in quotation marks
@@ -1002,3 +1079,75 @@ getPRISM <- function (prismPath) {
   return(prismDF)
   
 }
+
+
+
+updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
+  
+  # Update a CSV file containing metadata 
+  # Add new columns to it using 'newCols'
+  
+  # 'newCols' should be a list containing named elements
+  
+  
+  # Start by validating 'newCols'
+  # Every element should have a name
+  if (is.null(names(newCols)) || "" %in% names(newCols)) {
+    
+    cat("\n\nNames in 'newCols':\n")
+    print(names(newCols))
+    
+    
+    paste0("Improper Value for 'newCols'\n\n",
+           "The function `updateMetadataCSV` requires a named list of new ",
+           "columns to add to the metadata table. However, the input 'newCols' ",
+           "does not have names for each element in the list.\n\n",
+           "Please correct this issue and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # In addition, every entry in 'newCols' should only have one element each
+  # (One value for each new column)
+  if (anyFalse(lengths(newCols) == 1)) {
+    
+    cat("\n\nNumber of Elements per Entry in 'newCols':\n")
+    print(lengths(newCols))
+    
+    
+    paste0("Improper Value for 'newCols'\n\n",
+           "The function `updateMetadataCSV` requires a named list of new ",
+           "columns to add to the metadata table. Each element of this list ",
+           "should have only one value. However, the input 'newCols' does not ",
+           "abide by this requirement.\n\n",
+           "Please correct this issue and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Next, read in the metadata CSV
+  metaPath <- paste0(dirPath, "/", filename) |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # The metadata file should be a CSV file
+  metaDF <- getDelim(metaPath, ",")
+  
+  
+  # Add 'newCols to 'metaDF'
+  metaDF[names(newCols)] <- newCols
+  
+  
+  # Save 'metaDF'
+  writeOutput(metaDF, metaPath, "write_csv", quietly = TRUE)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+

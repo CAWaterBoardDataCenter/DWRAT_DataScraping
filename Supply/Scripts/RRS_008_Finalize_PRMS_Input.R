@@ -46,7 +46,7 @@
 #  (2) If the similar WY needs to be identified, components from that procedure
 #      are generated as well
 
-# Technically, "prms_rr.control" and "run.bat" are setup by this script as well
+# Technically, "prms_rr.control" and "run.bat" are output by this script as well
 # (Though, the copied "RR_PRMS" contents will be deleted at the end of the model
 #  run procedure, so they will not stick around for long)
 
@@ -110,15 +110,15 @@ mainProcedure <- function (predictWY = TRUE) {
   # Read in the two files next (while also verifying that they exist)
   meteorDF <- filePaths[1] |> 
     checkForPreviousOutput() |> 
-    getDelim(, ",")
+    getDelim(",")
   
-  primaryDAT <- getFile(filePaths[2], "\t")
+  primaryDAT <- getFile(filePaths[2], ",")
   
   
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, "MAIN_PRMS_DAT_FILE",
+  primaryDAT <- validateInputDAT(primaryDAT, "MAIN_PRMS_DAT_FILE", "PRMS", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -192,302 +192,6 @@ mainProcedure <- function (predictWY = TRUE) {
 
 
 
-validateInputDAT <- function (datFile, sourceField, prmsCols,
-                              startDate, endDate, datType = "Main") {
-  
-  # Verify the formatting of a DAT file for PRMS
-  # This function will be applied to both the long-running meteorological
-  # DAT file as well as the SPI DAT file
-  
-  # 'datType' will be used if certain checks are specific to 
-  # the main DAT file, the SPI DAT file, or the final DAT file
-  
-  
-  if (!(datType %in% c("Main", "SPI", "Final"))) {
-    
-    stop(paste0("Script Error - Unknown Value for 'datType'\n\n",
-                "The input variable 'datType' must be one of three ",
-                "values (", 
-                vec2QuotedStr(c("Main", "SPI", "Final")), "). \"",
-                datType, "\" is not a recognized value. Please revise ",
-                "the script.") |>
-           errWrap())
-    
-  }
-  
-  
-  # First, check that the date- and time-related fields are present
-  datetimeCols <- c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND")
-  
-  
-  if (anyFalse(datetimeCols %in% names(datFile))) {
-    
-    # Identify the missing columns
-    missingCols <- which(!(datetimeCols %in% names(datFile)))
-    
-    
-    stop(paste0("DAT File - Column Issue\n\n",
-                "The ", datType,
-                " input file for PRMS does not have all of the required ",
-                "datetime columns (",
-                vec2QuotedStr(datetimeCols[missingCols]), ").\n\n",
-                "The DAT file must contain headers that match the names in ",
-                "the meteorological CSV (\"PRMS_Meteorological_", startDate, 
-                "_", endDate, ".csv\"). Please correct this file and try ",
-                "again.\n\n", 
-                if_else(datType != "Final",
-                        paste0("(This error occurred for '", 
-                               getFromSupplyControl_RR(sourceField), "')"),
-                        paste0("Please investigate the component DAT files."))) |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")))
-    
-  }
-  
-  
-  # After that, perform a similar check for the PRMS columns
-  if (anyFalse(prmsCols %in% names(datFile))) {
-    
-    # Identify the missing columns
-    missingCols <- which(!(prmsCols %in% names(datFile)))
-    
-    
-    stop(paste0("DAT File - Column Issue\n\n",
-                "The ", datType,
-                " input file for PRMS does not have all of the required ",
-                "PRMS columns (",
-                vec2QuotedStr(prmsCols[missingCols]), ").\n\n",
-                "The number of precipitation and temperature columns (and their ",
-                "names) must match exactly with the meteorological CSV ",
-                "(\"PRMS_Meteorological_", startDate, "_", endDate, ".csv\"). ",
-                "Please correct this file and try again.\n\n", 
-                if_else(datType != "Final",
-                        paste0("(This error occurred for '", 
-                               getFromSupplyControl_RR(sourceField), "')"),
-                        paste0("Please investigate the component DAT files."))) |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")))
-    
-  }
-  
-  
-  # Make sure all fields are numeric next
-  if (anyFalse(map_lgl(datFile[names(datFile) != "DATE"], is.numeric))) {
-    
-    # Identify the non-numeric columns
-    nonNumCols <- which(!map_lgl(datFile, is.numeric))
-    
-    
-    # Exclude the "DATE" column from this list, if it's present in 'datFile'
-    if ("DATE" %in% names(datFile)) {
-      
-      nonNumCols <- nonNumCols |>
-        base::setdiff(which(names(datFile) == "DATE"))
-      
-    }
-    
-    
-    stop(paste0("DAT File - Column Type Issue\n\n",
-                "Every column in the ", datType, " input file for PRMS is ",
-                "expected to be numeric. However, ", length(nonNumCols),
-                " column", if_else(length(nonNumCols) > 1, "s have", " has"), 
-                " a different type (",
-                vec2QuotedStr(names(datFile)[nonNumCols]), ").\n\n",
-                "Please correct this file and try again.\n\n", 
-                if_else(datType != "Final",
-                        paste0("(This error occurred for '", 
-                               getFromSupplyControl_RR(sourceField), "')"),
-                        paste0("Please investigate the component DAT files."))) |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")))
-    
-  }
-  
-  
-  # For the next checks, give 'datFile' a "DATE" column
-  datFile <- datFile |>
-    mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |> 
-             as.Date(format = "%Y-%m-%d"))
-  
-  
-  # Next, get the start and end dates of the DAT file
-  datRange <- datFile |>
-    select(DATE) |>
-    filter(DATE == min(DATE) | DATE == max(DATE)) |>
-    arrange(DATE)
-  
-  
-  # Make sure there are no missing dates in 'datFile'
-  expectedDates <- seq(from = datRange$DATE[1],
-                       to = datRange$DATE[2],
-                       by = "days")
-  
-  
-  # Check for missing dates
-  if (anyFalse(expectedDates %in% datFile$DATE)) {
-    
-    # Identify the missing dates
-    missingDates <- which(!(expectedDates %in% datFile$DATE))
-    
-    
-    stop(paste0("DAT File - Date Issue\n\n",
-                "The ", datType,
-                " input file for PRMS is missing data for ", 
-                length(missingDates), " day",
-                if_else(length(missingDates) > 1, "s", ""), " (", 
-                vec2QuotedStr(expectedDates[missingDates]), "). Please correct ",
-                "this file and try again.\n\n", 
-                if_else(datType != "Final",
-                        paste0("(This error occurred for '", 
-                               getFromSupplyControl_RR(sourceField), "')"),
-                        paste0("Please investigate the component DAT files."))) |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")))
-    
-  }
-  
-  
-  # Similarly, check for mismatches between 'datFile' and 'expectedDates'
-  # (Because of the previous check, this error will likely occur if a date is 
-  #  duplicated in the DAT file)
-  if (nrow(datFile) != length(expectedDates)) {
-    
-    # If the cause is a duplicate error, identify the duplicated dates
-    dupDates <- table(datFile$DATE)
-    
-    dupDates <- dupDates[dupDates > 1]
-    
-    
-    if (length(dupDates) > 0) {
-      
-      stop(paste0("DAT File - Date Issue\n\n",
-                  "The ", datType,
-                  " input file for PRMS has multiple rows for the same date",
-                  if_else(length(dupDates) > 1, "s", ""), " (",
-                  vec2QuotedStr(names(dupDates)), ").\n\n", 
-                  "Please correct this issue. Every date should have exactly ",
-                  "one row in the DAT file.\n\n", 
-                  if_else(datType != "Final",
-                          paste0("(This error occurred for '", 
-                                 getFromSupplyControl_RR(sourceField), "')"),
-                          paste0("Please investigate the component ",
-                                 "DAT files."))) |>
-             errWrap() |>
-             str_replace("(does not)", col_red("\\1")))
-      
-      # If this error occurred because of some other unknown issue,  
-      # use this error message instead
-    } else {
-      
-      stop(paste0("DAT File - Data Issue\n\n",
-                  "The ", datType,
-                  " input file for PRMS has an unknown data issue. The number ",
-                  "of rows in the dataset does not match the number of days ",
-                  "between the start and end dates in that file. Please ",
-                  "investigate.\n\n", 
-                  if_else(datType != "Final",
-                          paste0("(This error occurred for '", 
-                                 getFromSupplyControl_RR(sourceField), "')"),
-                          paste0("Please investigate the component ",
-                                 "DAT files."))) |>
-             errWrap() |>
-             str_replace("(unknown)", col_red("\\1")))
-      
-    }
-    
-  }
-  
-  
-  # If there are missing entries in the DAT file, alert the user
-  if (anyNA(datFile)) {
-    
-    # Output the locations of missing values
-    cat("\n\n\"NA\" Entries:\n")
-    print(which(is.na(datFile), arr.ind = TRUE))
-    
-    stop(paste0("DAT File - Missing Data Issue\n\n",
-                if_else(sum(is.na(datFile)) > 1, 
-                        "Missing values were ",
-                        "A missing value was "), 
-                " detected in the DAT file (see the above message for locations",
-                "). Please correct the file.\n\n", 
-                if_else(datType != "Final",
-                        paste0("(This error occurred for '", 
-                               getFromSupplyControl_RR(sourceField), "')"),
-                        paste0("Please investigate the component DAT files."))) |>
-           errWrap())
-    
-  }
-  
-  
-  # For the next check, look for a logistical issue for the primary DAT file
-  # (The one with long-running meteorological data)
-  # 'startDate' can overlap with 'datFile', but if not, there should be no gaps
-  # 'startDate' for the meteorological dataset should be, at most, on the next day
-  # after the end of the dates in 'primaryDAT'
-  if (datType == "Main" && startDate > max(datFile$DATE) + 1) {
-    
-    stop(paste0("Main DAT File and 'startDate' - Data Gap Issue\n\n",
-                "Because the meteorological dataset starts at ", startDate,
-                ", there will be a data gap issue with this DAT file. Its ",
-                "latest date is ", max(datFile$DATE), ", which means ",
-                "that not all dates will have data when running PRMS with ",
-                "these files. Please adjust either the DAT file or 'startDate' ",
-                "in the control script.\n\n",
-                "(This error occurred for '", 
-                getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap())
-    
-  }
-  
-  
-  # The final checks are specific to the SPI DAT file 
-  if (datType == "SPI") {
-    
-    # Get the bounds of the water year being modeled
-    wyBounds <- getModeledWY(endDate)
-    
-    
-    # The predicted values in 'datFile' must extend to the end of the water year
-    if (max(datFile$DATE) < wyBounds[2]) {
-      
-      stop(paste0("Incomplete SPI DAT File - End of Water Year\n\n",
-                  "The DAT file that contains predictions for the current water ",
-                  "year is missing data. It does not extend to the end of the ",
-                  "water year (\"", wyBounds[2], "\"). Please adjust ",
-                  "this file.\n\n",
-                  "(This error occurred for '", 
-                  getFromSupplyControl_RR(sourceField), "')") |>
-             errWrap())
-      
-    # Similarly, if 'endDate' is an earlier date than the start of 'datFile', 
-    # there should be no gap between then
-    } else if (endDate + 1 < min(datFile$DATE)) {
-      
-      stop(paste0("SPI DAT File and 'endDate' - Data Gap Issue\n\n",
-                  "Because the meteorological dataset ends at ", endDate,
-                  ", there will be a data gap issue with this DAT file. Its ",
-                  "earliest date is ", min(datFile$DATE), ", which means ",
-                  "that not all dates will have data when running PRMS with ",
-                  "these files. Please adjust either the DAT file or 'endDate' ",
-                  "in the control script.\n\n",
-                  "(This error occurred for '", 
-                  getFromSupplyControl_RR(sourceField), "')") |>
-             errWrap())
-      
-    }
-    
-  }
-  
-  
-  # If there are no issues, return 'datFile'
-  # (It now has a "DATE" column)
-  return(datFile |> arrange(DATE))
-  
-}
-
-
-
 predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
                               dirPath, prmsPath, pathMainDAT) {
   
@@ -544,7 +248,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
   
   
   # Perform a few checks on 'finalDAT'
-  validateInputDAT(finalDAT, sourceField = NULL, prmsCols,
+  validateInputDAT(finalDAT, sourceField = NULL, "PRMS", prmsCols,
                    startDate, endDate, datType = "Final")
   
   
@@ -567,11 +271,11 @@ spiPrediction <- function (mergedDAT, startDate, endDate, prmsCols) {
   
   
   spiDAT <- pathSPI |>
-    getFile("\t")
+    getFile(",")
   
   
   # Validate the DAT file before continuing
-  spiDAT <- validateInputDAT(spiDAT, "PRMS_DAT_SPI_FILE", prmsCols, 
+  spiDAT <- validateInputDAT(spiDAT, "PRMS_DAT_SPI_FILE", "PRMS", prmsCols, 
                              startDate, endDate, datType = "SPI")
   
   
@@ -587,68 +291,6 @@ spiPrediction <- function (mergedDAT, startDate, endDate, prmsCols) {
 
 
 
-getModeledWY <- function (endDate) {
-  
-  # Based on the value of 'endDate', identify the water year being modeled
-  # Then, return a vector of dates containing the bounds of that water year
-  
-  
-  # (1) Determining the starting bound:
-  
-  #     If 'endDate' is between January and September (inclusive), the water year
-  #     matches the calendar year in 'endDate'
-  
-  #     If that is true, then the water year starts on October 1st of the 
-  #     preceding calendar year
-  
-  #     (e.g., if it's 2026-03-09, we are modeling WY2026, which began on 
-  #      2025-10-01)
-  
-  #     If 'endDate' is in the October - December range, the water year is the
-  #     calendar year plus one
-  
-  #     In addition, the start of the water year is October 1st of the same year
-  #     as 'endDate'
-  
-  #     (e.g., if it's 2024-12-12, we are modeling WY2025, which began on 
-  #      2024-10-01)
-  
-  
-  # (2) Determining the ending bound:
-  
-  #     If 'endDate' is between January and September (inclusive), the water year
-  #     matches the calendar year in 'endDate'
-  
-  #     If that is true, then the water year ends on September 30th of the 
-  #     current calendar year
-  
-  #     (e.g., if it's 2026-03-09, we are modeling WY2026, which ends on 
-  #      2026-09-30)
-  
-  #     If 'endDate' is in the October - December range, the water year is the
-  #     calendar year plus one
-  
-  #     In addition, the end of the water year is September 30th of the next year
-  #     after the year in 'endDate'
-  
-  #     (e.g., if it's 2024-12-12, we are modeling WY2025, which ends on 
-  #      2025-09-30)
-  
-  
-  # Get the start and end dates of the water year
-  # Then, return them as a vector of dates
-  return(c(start = if_else(month(endDate) < 10,
-                           paste0(year(endDate) - 1, "-10-01"),
-                           paste0(year(endDate), "-10-01")),
-           end = if_else(month(endDate) < 10,
-                         paste0(year(endDate), "-09-30"),
-                         paste0(year(endDate) + 1, "-09-30"))) |>
-           as.Date(format = "%Y-%m-%d"))
-  
-}
-
-
-
 updateMetadata_DAT <- function (dirPath, predictionMethod, pathMainDAT, 
                                 modelEndDate, pathSPI = NA_character_, 
                                 similarWY = NA_real_, linModel = NULL) {
@@ -659,33 +301,18 @@ updateMetadata_DAT <- function (dirPath, predictionMethod, pathMainDAT,
   # component DAT files
   
   
-  # Get the expected path of the metadata CSV file
-  # (Its existence was already confirmed at the start of the script using  
-  #  the function `validateHydroFolder`)
-  metaPath <- paste0(dirPath, "/metadata.csv") |>
-    normalizePath()
-  
-  
-  # Read in the file
-  metaDF <- getFile(metaPath, fileType = "CSV")
-  
-  
-  # Add the water prediction method into 'metaDF'
-  metaDF <- metaDF |>
-    mutate(MAIN_DAT_FILE = pathMainDAT,
-           SPI_DAT_FILE = pathSPI,
-           WY_PREDICTION_METHOD = predictionMethod,
-           MOST_SIMILAR_WY = similarWY,
-           REGRESSION_MODEL_SLOPE = if_else(is.null(linModel),
-                                            NA_real_, linModel$m),
-           REGRESSION_MODEL_INTERCEPT = if_else(is.null(linModel),
-                                                NA_real_, linModel$b),
-           MODEL_END_DATE = modelEndDate)
-  
-  
-  # Write 'metaDF' back to "metadata.csv" 
-  metaDF |> 
-    writeOutput(metaPath, quietly = TRUE)
+  updateMetadataCSV(dirPath,
+                    newCols = list("PRMS_MAIN_DAT_FILE" = pathMainDAT,
+                                   "PRMS_SPI_DAT_FILE" = pathSPI,
+                                   "WY_PREDICTION_METHOD" = predictionMethod,
+                                   "MOST_SIMILAR_WY" = similarWY,
+                                   "REGRESSION_MODEL_SLOPE" = 
+                                     if_else(is.null(linModel),
+                                             NA_real_, linModel$m),
+                                   "REGRESSION_MODEL_INTERCEPT" = 
+                                     if_else(is.null(linModel),
+                                             NA_real_, linModel$b),
+                                   "MODEL_END_DATE" = modelEndDate))
   
   
   # Return nothing
@@ -796,7 +423,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
                                         str_subset("TMIN") |> length()),
                                paste0("runoff ", names(finalDAT) |> 
                                         str_subset("RUNOFF") |> length()),
-                               rep("#", 73) |> paste0(collapse = "")))
+                               str_dup("#", 73)))
   
   
   finalDAT <- bind_rows(headerDAT,
@@ -848,7 +475,7 @@ updateControlFilePRMS <- function (prmsPath, datName, endDate, predictWY) {
   
   # First, read in the file
   controlPath <- paste0(prmsPath, "/windows/prms_rr.control") |>
-    normalizePath()
+    normalizePath(mustWork = TRUE)
   
   
   prmsControl <- controlPath |>
@@ -1307,5 +934,3 @@ mainProcedure()
 
 # Clean up
 remove(list = ls())
-
-
