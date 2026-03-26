@@ -731,7 +731,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   st_write(catchDF %>%
-             select(NHD_CAT, HUC12, HUC12_NAME),
+             select(NHD_CAT, HUC12, HUC12_NAME) |>
+             st_make_valid(),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Catchments",
            append = FALSE)
