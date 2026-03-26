@@ -367,7 +367,7 @@ c30	output file path (a continuous string)	input (weather) file path (a continuo
 	Navarro\Output\	Navarro\Input\Weather\	0.010000
 c-----------------------------------------------------------------------------------------
 c31	point source file path	point source file name  (each must be a continuous string)
-	C:\Users\aprashar\Documents\Github\DWRAT_DataScraping\LSPC\Navarro\Input\	Navarro_extended_2025-07-31.ps
+	LSPC\Navarro\Input\	Navarro_extended_2025-07-31.ps
 c-----------------------------------------------------------------------------------------
 c40 general watershed controls
 c
