@@ -304,7 +304,10 @@ generateMap <- function (catchDF, fieldName, ws) {
                  select(all_of(fieldName), 
                         NUM_POLYGONS, DISCONNECTED_POLYGONS,
                         AREA, SMALL_CATCHMENT) |>
-                 mutate(AREA = round(AREA)), 
+                 mutate(AREA = round(AREA)) |>
+                 rename(!! paste0("AREA (", 
+                                  deparse_unit(catchDF$AREA[1]),
+                                  ")") := AREA), 
                colPal = "lightgray", fillOpacity = 0.65, 
                lineOpacity = 1.0, lineWeight = 1.5, lineCol = "black", 
                group = tail(layerDF$NAME, 1), 
@@ -331,7 +334,10 @@ generateMap <- function (catchDF, fieldName, ws) {
                select(all_of(fieldName), 
                       NUM_POLYGONS, DISCONNECTED_POLYGONS,
                       AREA, SMALL_CATCHMENT) |>
-               mutate(AREA = round(AREA)), 
+               mutate(AREA = round(AREA)) |>
+               rename(!! paste0("AREA (", 
+                                deparse_unit(catchDF$AREA[1]),
+                                ")") := AREA), 
              colPal = colorPal, fillOpacity = 0.75, 
              lineOpacity = 1.0, lineWeight = 1.5, lineCol = "black", 
              group = layerDF$NAME[1], 
@@ -349,7 +355,8 @@ generateMap <- function (catchDF, fieldName, ws) {
     leafMap <- leafMap |>
       addLayer(catchDF |> 
                  filter(DISCONNECTED_POLYGONS) |> 
-                 select(NUM_POLYGONS, DISCONNECTED_POLYGONS), 
+                 select(all_of(fieldName),
+                        NUM_POLYGONS, DISCONNECTED_POLYGONS), 
                colPal = "red", fillOpacity = 1.0, 
                lineOpacity = 1.0, lineWeight = 2.0, lineCol = "red", 
                group = layerDF$NAME[2], 
@@ -379,8 +386,11 @@ generateMap <- function (catchDF, fieldName, ws) {
     leafMap <- leafMap |>
       addLayer(catchDF |> 
                  filter(SMALL_CATCHMENT) |> 
-                 select(AREA, SMALL_CATCHMENT) |>
-                 mutate(AREA = round(AREA)), 
+                 select(all_of(fieldName), AREA, SMALL_CATCHMENT) |>
+                 mutate(AREA = round(AREA)) |>
+                 rename(!! paste0("AREA (", 
+                                  deparse_unit(catchDF$AREA[1]),
+                                  ")") := AREA), 
                colPal = "orange", fillOpacity = 1.0, 
                lineOpacity = 1.0, lineWeight = 2.0, lineCol = "orange", 
                group = layerDF$NAME[3], 
