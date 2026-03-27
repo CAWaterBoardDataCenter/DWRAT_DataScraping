@@ -89,6 +89,11 @@ source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 #source("Scripts/DuplicateReport_SameOwner.R")
 
 
+# QA/QC Catchment Layer
+# Inspect catchment layers for potential issues before using them!
+source("Scripts/Catchment_QAQC.R")
+
+
 # POD Sub-basin Assignment
 #source("Scripts/Assign_Subbasin_to_POD.R")
 source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
