@@ -12,6 +12,7 @@ require(readxl)
 require(janitor)
 require(writexl)
 require(polylabelr)
+require(webshot)
 
 options(viewer = NULL) # For mapview
 
