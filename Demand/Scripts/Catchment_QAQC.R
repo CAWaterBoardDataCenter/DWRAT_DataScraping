@@ -23,6 +23,7 @@ require(colorspace)
 require(leaflet)
 require(leafem)
 require(mapview)
+require(webshot)
 
 
 #### FUNCTIONS ####
