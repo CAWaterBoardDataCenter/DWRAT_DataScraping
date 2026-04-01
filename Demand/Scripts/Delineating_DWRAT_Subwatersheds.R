@@ -10,6 +10,7 @@ require(sf)
 require(mapview)
 require(readxl)
 require(writexl)
+require(polylabelr)
 
 
 
@@ -145,7 +146,7 @@ subWS <- subWS %>%
 
 
 
-subHUC12 <- huc12[["huc12"]][st_intersects(st_centroid(subWS), huc12) %>% unlist()]
+subHUC12 <- huc12[["huc12"]][st_intersects(st_poi(subWS), huc12) %>% unlist()]
 
 
 stopifnot(length(subHUC12) == nrow(subWS))
@@ -419,7 +420,7 @@ print(mapview(huc12 %>% mutate(ID = row_number()),
 
 
 
-subHUC12 <- huc12[["huc12"]][st_intersects(st_centroid(newSubWS), huc12) %>% unlist()]
+subHUC12 <- huc12[["huc12"]][st_intersects(st_poi(newSubWS), huc12) %>% unlist()]
 
 
 stopifnot(length(subHUC12) == nrow(newSubWS))

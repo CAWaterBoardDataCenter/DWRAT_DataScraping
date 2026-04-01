@@ -8,6 +8,7 @@ require(tidyverse)
 require(readxl)
 require(writexl)
 require(sf)
+require(polylabelr)
 
 
 
@@ -101,12 +102,13 @@ mainProcedure <- function () {
   
   
   # Modified NHD Catchments (used in hydrologic model)
+  # (Ensure that the catchment boundaries are valid too)
   catchDF <- getGIS(ws = ws, 
                     GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
                     GIS_FILE_PATH = "SUBBASIN_POLYGONS_DATABASE_PATH",
                     GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME") %>%
-    st_transform(st_crs(assignedDF))
-  
+    st_transform(st_crs(assignedDF)) |>
+    st_make_valid()
   
   
   
@@ -176,7 +178,7 @@ mainProcedure <- function () {
   
   
   # Assign HUC12 sub-basins to 'catchDF' as well
-  catchDF[["HUC12"]] <- huc12$huc12[st_intersects(st_centroid(catchDF), huc12) %>% 
+  catchDF[["HUC12"]] <- huc12$huc12[st_intersects(st_poi(catchDF), huc12) %>% 
                                       unlist()]
   
   
@@ -456,7 +458,7 @@ assignBasins <- function (assignedDF, huc12, catchDF) {
   # Assign "NHD_CAT" and "HUC12" to 'assignedDF'
   # (The catchment and HUC12 IDs for sub-basins that the POD overlaps with)
   assignedDF <- assignedDF %>%
-    mutate(NHD_CAT = catchDF$NHD_CAT[st_intersects(assignedDF, catchDF) %>% unlist()]) %>%
+    mutate(NHD_CAT = ASSIGNED_NHD_CAT) %>%
     mutate(HUC12 = huc12$huc12[st_intersects(assignedDF, huc12) %>% unlist()])
   
   
@@ -710,7 +712,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   # "ASSIGNED_HUC12" and "ASSIGNED_NHD_CAT" are appended before writing 'assignedDF'
   st_write(assignedDF %>%
              select(POD_ID, APPLICATION_NUMBER,
-                    HUC12, HUC12_NAME, NHD_CAT, 
+                    HUC12, HUC12_NAME, NHD_CAT,
                     ASSIGNED_HUC12, ASSIGNED_HUC12_NAME,
                     ASSIGNED_NHD_CAT),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
@@ -729,18 +731,9 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   
-  # Ensure that the catchments layer is valid
-  if (sum(st_is_valid(catchDF)) != nrow(catchDF)) {
-
-    catchDF <- catchDF %>%
-      st_make_valid()
-
-  }
-  
-  
-  
   st_write(catchDF %>%
-             select(NHD_CAT, HUC12, HUC12_NAME),
+             select(NHD_CAT, HUC12, HUC12_NAME) |>
+             st_make_valid(),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Catchments",
            append = FALSE)
@@ -751,7 +744,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Flowlines",
            append = FALSE)
-  
+
   
   
   st_write(wsMask,
