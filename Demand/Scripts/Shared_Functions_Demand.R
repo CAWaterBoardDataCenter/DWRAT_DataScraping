@@ -238,3 +238,38 @@ getFromMasterControl <- function (fieldName) {
   
   
 }
+
+
+
+st_poi <- function (x) {
+  
+  # Given an 'sf' object, calculate the approximate 
+  # Pole of Inaccessibility (POI) for each polygon
+  
+  # Return an 'sf' object with this information
+  
+  
+  # First, use the `poi` function to calculate the POI for each element
+  poiRes <- poi(x)
+  
+  
+  # 'poiRes' contains a list with a separate entry for each element of 'x'
+  # Inside each list element, there is a vector, and the first two entries 
+  # of these vectors are "x" and "y" coordinates
+  
+  
+  # Convert 'poiRes' to a data frame with "x" and "y" columns
+  poiRes <- data.frame(x = poiRes |> map_dbl(~ pluck(., 1)),
+                       y = poiRes |> map_dbl(~ pluck(., 2)))
+  
+  
+  # Convert 'poiRes' into a "sf" object next
+  # (Get the "CRS" from the original object 'x')
+  poiRes <- poiRes |>
+    st_as_sf(coords = c("x", "y"), crs = st_crs(x))
+  
+  
+  # Return 'poiRes'
+  return(poiRes)
+  
+}

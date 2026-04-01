@@ -4,6 +4,6 @@
 
 # Please input these variables as strings in the format "YYYY-MM-DD"
 
-startDate <- "2025-10-01"
+startDate <- "2024-10-01"
 
-endDate <- "2026-01-20"
+endDate <- "2026-03-10"

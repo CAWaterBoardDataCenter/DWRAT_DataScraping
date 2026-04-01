@@ -11,6 +11,7 @@ require(DBI)
 require(readxl)
 require(janitor)
 require(writexl)
+require(polylabelr)
 
 options(viewer = NULL) # For mapview
 
@@ -66,7 +67,6 @@ source("Scripts/Priority_Date_Postprocessing.R") # FLAGGING SCRIPT and REMEDIATI
 source("Scripts/Multiple_Owner_Analysis.R") # FLAGGING SCRIPT
 
 # Expected Demand Module
-#skipped by Payman on 5/2/2024
 source("Scripts/Expected_Demand.R") # FLAGGING SCRIPT
 
 # Supplemental Expected Demand Module
@@ -74,7 +74,6 @@ source("Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
 
 
 # Try to fix reports with NA values for all months and diversion types
-#skipped by Payman on 5/2/2024
 source("Scripts/Check_Empty_Reports.R") # FLAGGING AND REMEDIATION SCRIPT
 
 # Beneficial Use, Return Flow Module
@@ -88,6 +87,11 @@ source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 
 # Duplicate Report, Same Owner Module*
 #source("Scripts/DuplicateReport_SameOwner.R")
+
+
+# QA/QC Catchment Layer
+# Inspect catchment layers for potential issues before using them!
+source("Scripts/Catchment_QAQC.R")
 
 
 # POD Sub-basin Assignment

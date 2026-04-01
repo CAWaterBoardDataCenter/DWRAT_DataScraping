@@ -1,0 +1,5 @@
+For users in a restricted network, use these commands to address SSL certificate issues: 
+
+conda activate lspc-climate-processing-restructure
+
+conda config --set ssl_verify truststore

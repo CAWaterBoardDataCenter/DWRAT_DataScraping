@@ -11,12 +11,12 @@
 # Each of these files must contain three columns:
 #  (1) LATITUDE
 #  (2) LONGITUDE
-#  (3) ID
+#  (3) STATION_ID
 
 
 # Two corresponding output CSV files are produced and stored in the "WebData" folder
-#  (1) "PRISM_PRMS_Raw_[startDate]_[endDate].csv"
-#  (2) "PRISM_SRP_Raw_[startDate]_[endDate].csv"
+#  (1) "PRISM_PRMS_Data_[startDate]_[endDate].csv"
+#  (2) "PRISM_SRP_Data_[startDate]_[endDate].csv"
 
 
 # Note: The PRMS-related output file uses SI units (mm and Celsius), 
@@ -28,11 +28,8 @@
 remove(list = ls())
 
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -51,6 +48,19 @@ mainProcedure <- function () {
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
+  # PRISM does not have data earlier than 1981-01-01
+  # If 'startDate' is earlier than this date, output an error message
+  if (startDate < "1981-01-01") {
+    
+    stop(paste0("Requested Date Range - Start Date Issue\n\n",
+                "The earliest date for which PRISM has data available is ",
+                "1981-01-01. The input start date (\"", startDate, "\") is ",
+                "too early. Please revise this input.") |>
+           errWrap())
+    
+  }
+  
+  
   cat("\n[1/2]\tGetting precipitation and temperature data for PRMS-related stations...\n")
   
   
@@ -67,10 +77,10 @@ mainProcedure <- function () {
   # Prepare the request content
   bodyList <- list(call = "pp/daily_timeseries_mp",
                    proc = "gridserv",
-                   lons = stationDF$LONGITUDE |> paste0(collapse = "|"),  # Latitude
-                   lats = stationDF$LATITUDE |> paste0(collapse = "|"), # Longitude
-                   names = stationDF$ID |> paste0(collapse = "|"),       # Station Names
-                   spares = "4km",             # Resolution
+                   lons = stationDF$LONGITUDE |> paste0(collapse = "|"),   # Latitude
+                   lats = stationDF$LATITUDE |> paste0(collapse = "|"),    # Longitude
+                   names = stationDF$STATION_ID |> paste0(collapse = "|"), # Station Names
+                   spares = "800m",            # Resolution (4km or 800m)
                    interp = "idw",             # Interpolate grid cell values ("0" if no)
                    stats = "ppt tmin tmax",    # Precipitation + Minimum & Maximum Temperature
                    units = "si",               # Metric units
@@ -81,7 +91,7 @@ mainProcedure <- function () {
   
   
   # Submit the request for precipitation data
-  getPRISM(bodyList, paste0("WebData/PRISM_PRMS_Raw_", startDate, "_", endDate, ".csv"))
+  getPRISM(bodyList, paste0("WebData/PRISM_PRMS_Data_", startDate, "_", endDate, ".csv"))
   
   
   # Add to the message
@@ -114,8 +124,8 @@ mainProcedure <- function () {
                    proc = "gridserv",
                    lons = stationDF$LONGITUDE |> paste0(collapse = "|"),  # Latitude
                    lats = stationDF$LATITUDE |> paste0(collapse = "|"), # Longitude
-                   names = stationDF$ID |> paste0(collapse = "|"),       # Station Names
-                   spares = "4km",
+                   names = stationDF$STATION_ID |> paste0(collapse = "|"),       # Station Names
+                   spares = "800m",
                    interp = "idw",
                    stats = "ppt tmin tmax", # Precipitation + Minimum and maximum temperatures
                    units = "eng", # US Customary units
@@ -126,7 +136,7 @@ mainProcedure <- function () {
   
   
   # Submit the request for precipitation and temperature data
-  getPRISM(bodyList, paste0("WebData/PRISM_SRP_Raw_", startDate, "_", endDate, ".csv"))
+  getPRISM(bodyList, paste0("WebData/PRISM_SRP_Data_", startDate, "_", endDate, ".csv"))
   
   
   # Output a completion message
@@ -148,19 +158,18 @@ validateInput <- function (stationDF, sourceField) {
   # If there are any issues, notify the user
   
   
-  # 'stationDF' should contain at least three columns: "LATITUDE", "LONGITUDE", and "ID"
-  if (anyFalse(c("LATITUDE", "LONGITUDE", "ID") %in% names(stationDF))) {
+  # 'stationDF' should contain at least three columns: "LATITUDE", "LONGITUDE", and "STATION_ID"
+  if (anyFalse(c("LATITUDE", "LONGITUDE", "STATION_ID") %in% names(stationDF))) {
     
     stop(paste0("Station Input File - Column Issue\n\n",
                 "The input file containing PRISM target coordinates does not have ",
                 "the three required columns (\"LATITUDE\", \"LONGITUDE\", and ",
-                "\"ID\"). Please correct this file and try again.\n\n",
+                "\"STATION_ID\"). Please correct this file and try again.\n\n",
                 "The input file must contain the WGS84 coordinates and unique ",
                 "identifiers for each location\n\n",
                 "Also, the names of these columns must match exactly\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(exactly)", col_red("\\1")))
     
@@ -168,38 +177,36 @@ validateInput <- function (stationDF, sourceField) {
   
   
   # Make sure there are no missing entries in these three columns
-  if (anyNA(stationDF$LATITUDE) || anyNA(stationDF$LONGITUDE) || anyNA(stationDF$ID)) {
+  if (anyNA(stationDF$LATITUDE) || anyNA(stationDF$LONGITUDE) || anyNA(stationDF$STATION_ID)) {
     
     stop(paste0("Station Input File - Missing Data Issue\n\n",
                 "The input file containing PRISM target coordinates has one or more ",
                 "missing elements in its required columns (\"LATITUDE\", ",
-                "\"LONGITUDE\", and \"ID\")\n\n", 
+                "\"LONGITUDE\", and \"STATION_ID\")\n\n", 
                 "Please fill in any empty entries in these three columns\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }
   
   
   # Ensure that no IDs are duplicated in 'stationDF'
-  if (length(stationDF$ID) != length(unique(stationDF$ID))) {
+  if (length(stationDF$STATION_ID) != length(unique(stationDF$STATION_ID))) {
     
     stop(paste0("Station Input File - Duplicate ID Issue\n\n",
                 "The input file containing PRISM target coordinates has one or more ",
-                "values in its \"ID\" column that are duplicated\n\n", 
+                "values in its \"STATION_ID\" column that are duplicated\n\n", 
                 "Please ensure that each row of the input file has a unique value for ",
                 "this column\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(duplicated)", col_red("\\1")))
     
   }
   
   
-  # Finally, check the types of "LATITUDE", "LONGITUDE", and "ID"
+  # Finally, check the types of "LATITUDE" and "LONGITUDE"
   if (is.character(stationDF$LATITUDE) || is.character(stationDF$LONGITUDE)) {
     
     stop(paste0("Station Input File - Coordinates Type Issue\n\n",
@@ -210,8 +217,7 @@ validateInput <- function (stationDF, sourceField) {
                 "characters (or the absence of any values at all)\n\n",
                 "Please correct these columns and ensure that they are numeric values\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(character)", col_red("\\1")))
     
   } else if (!is.numeric(stationDF$LATITUDE) || !is.numeric(stationDF$LONGITUDE)) {
@@ -223,8 +229,7 @@ validateInput <- function (stationDF, sourceField) {
                 "cannot be parsed as numeric columns for some reason, such as being empty\n\n",
                 "Please correct these columns and ensure that they are numeric values\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(empty)", col_red("\\1")))
     
   }
@@ -356,7 +361,7 @@ getPRISM <- function (bodyList, writePath) {
   # Access that file and save it to a file
   paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
     read_lines() |>
-    writeLines(writePath)
+    writeOutput(writePath, "write_lines")
   
   
   # Return nothing
@@ -382,8 +387,7 @@ validateReqResults <- function (req, checkForContentErrors = TRUE) {
                 req$status_code, "\n\n",
                 "This could be a problem with the request and/or PRISM's server\n\n",
                 "Please investigate this issue") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   } else if (checkForContentErrors && grepl("errors\": \\[\\[", as.character(content(req)))) {
     
@@ -395,8 +399,7 @@ validateReqResults <- function (req, checkForContentErrors = TRUE) {
                 "shown above\n\n",
                 "This could be a problem with the format of the request\n\n",
                 "Please investigate this issue") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(format)", col_red("\\1")))
     
   }

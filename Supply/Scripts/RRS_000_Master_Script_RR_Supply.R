@@ -15,6 +15,7 @@ require(readxl)
 require(cli)
 require(httr)
 require(rvest)
+require(fs)
 
 
 #### Scripts ####
@@ -24,6 +25,7 @@ require(rvest)
 
 # Please open the following scripts and update them:
 "CTR_001_Set_Start_and_End_Dates.R"
+
 
 
 ##### Web Scraping #####
@@ -51,30 +53,42 @@ source("Scripts/RRS_004_CIMIS_API_Scraper.R")
 ##### PRMS ####
 
 # Process the downloaded weather files
-source("Scripts/RRS_005_Process_Weather_Data.R")
+source("Scripts/RRS_005_Process_PRMS_Weather_Data.R")
 
 
-# Generate a DAT file for PRMS
-#
+# Setup the output directory for the PRMS and SRP model runs
+source("Scripts/RRS_006_Setup_Output_Directory.R")
 
 
-##### Hydrology Directory Setup #####
-
-# Generate a new folder to store files related to the model
-
-# Have a script-controlled control file that contains the folder name
-# (Automatically update this in the procedure)
+# Setup the temporary PRMS model location
+source("Scripts/RRS_007_Setup_PRMS_Model.R")
 
 
-# Setup model run folder for PRMS
+# Generate the input DAT file for PRMS
+source("Scripts/RRS_008_Finalize_PRMS_Input.R")
 
-# Edit PRMS control file 
 
-# Running PRMS
+# Run PRMS
+source("Scripts/RRS_009_Run_PRMS.R")
 
-# SPI/Similar Water Year (+ Rerun Dat PRMS and PRMS)
 
-# Copy inputs and outputs to Hydrology folder
+# Store key outputs and clear out the copied model files
+source("Scripts/RRS_010_PRMS_Cleanup.R")
+
+
+#### SRP ####
+
+# source("Scripts/RRS_011_Process_SRP_Weather_Data.R")
+
+# source("Scripts/RRS_012_Setup_SRP_Model.R")
+
+# source("Scripts/RRS_013_Finalize_SRP_Input.R")
+
+# source("Scripts/RRS_014_Run_SRP.R")
+
+
+
+#### Hydro ####
 
 # Process PRMS output (copies model outputs to GitHub folder)
 
@@ -91,6 +105,16 @@ source("Scripts/RRS_005_Process_Weather_Data.R")
 # Run DWRAT
 
 # Model Post-processing and data analysis steps
+
+
+
+
+
+
+# Maintenance scripts
+
+# Generating SPI dataset
+# Generating new long-running DAT file
 
 
 

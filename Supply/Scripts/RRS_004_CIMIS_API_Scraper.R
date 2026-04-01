@@ -30,11 +30,8 @@
 remove(list = ls())
 
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -51,6 +48,19 @@ mainProcedure <- function () {
   
   # Import the start and end date
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  
+  
+  # CIMIS does not have data earlier than 1982-06-07
+  # If 'startDate' is earlier than this date, output an error message
+  if (startDate < "1982-06-07") {
+    
+    stop(paste0("Requested Date Range - Start Date Issue\n\n",
+                "The earliest date for which CIMIS has data available is ",
+                "1982-06-07. The input start date (\"", startDate, "\") is ",
+                "too early. Please revise this input.") |>
+           errWrap())
+    
+  }
   
   
   # Read in the list of stations 
@@ -84,24 +94,7 @@ mainProcedure <- function () {
   
   
   # Write the file to the "WebData" folder
-  write_csv(cimisDF, outFile)
-  
-  
-  # Confirm that 'outFile' exists
-  # If not, output an error message
-  if (!file.exists(outFile)) {
-    
-    stop(paste0("CIMIS File Output Failed\n\n",
-                "The output file was not detected in the expected directory\n\n",
-                "The final `write_csv()` step may have failed, please investigate ",
-                "this issue\n\n") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
-           str_replace("(not)", col_red("\\1")) |>
-           str_replace("(investigate)", col_green("\\1")) |>
-           str_replace("(write_csv\\(\\))", col_blue("\\1")))
-    
-  }
+  writeOutput(cimisDF, outFile, "write_csv")
   
   
   # Output a completion message
@@ -133,8 +126,7 @@ validateStationInput <- function (stationDF, sourceField) {
                 "Also, the name of this column must match exactly\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(exactly)", col_red("\\1")))
     
@@ -150,8 +142,7 @@ validateStationInput <- function (stationDF, sourceField) {
                 "Please fill in any empty entries in this column\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }
@@ -170,8 +161,7 @@ validateStationInput <- function (stationDF, sourceField) {
                 "numeric values\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")))
     
   }
@@ -253,8 +243,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
                 "The most likely cause is a network firewall issue, but please ",
                 "examine the error message to double-check this:\n\n",
                 req[[1]][1]) |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -270,8 +259,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
                 requestURL, "\n\n",
                 "Alternatively, there may be a problem with CIMIS's server, ",
                 "so please consider contacting them for assistance") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -279,7 +267,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
   # Check the content of the response and mold it into a data frame format
   # Then, return that result
   return(content(req) |>
-           formatResponse())
+           formatResponse(startDate, endDate))
   
 }
 
@@ -304,8 +292,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "header\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(.txt)", col_green("\\1")) |>
            str_replace("(something else)", col_green("\\1")) |>
@@ -327,8 +314,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "header\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
            str_replace("(.txt)", col_green("\\1")) |>
            str_replace("(something else)", col_green("\\1")) |>
@@ -350,8 +336,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "header\n\n",
                 "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
                 "')") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(missing)", col_red("\\1")) |>
            str_replace("(.txt)", col_green("\\1")) |>
            str_replace("(something else)", col_green("\\1")) |>
@@ -372,8 +357,7 @@ validateAPI <- function (apiKey, sourceField) {
                    "issues encountered later on when submitting the API call.\n\n",
                    "(This flag occurred for '", getFromSupplyControl_RR(sourceField), 
                    "')") |>
-              strwrap(width = 0.99 * getOption("width")) |>
-              paste0(collapse = "\n"))
+              errWrap())
     
   }
   
@@ -385,10 +369,31 @@ validateAPI <- function (apiKey, sourceField) {
 
 
 
-formatResponse <- function (res) {
+formatResponse <- function (res, startDate, endDate) {
   
   # After a successful request to CIMIS, reformat the returned data
   # Return a tibble with that information
+  
+  
+  # First check that the request was actually successful
+  # Sometimes, the response seems valid, but its contents are an error message
+  if ("node" %in% names(res) && 
+      grepl("requested URL was rejected", as.character(res)[1])) {
+    
+    cat("\n\n")
+    cat(as.character(res))
+    
+    
+    stop(paste0("CIMIS API Server Issue\n\n",
+                "CIMIS's server may have been overloaded with requests. As a ",
+                "result, the request URL was rejected. Please contact CIMIS ",
+                "for assistance (or try again later).") |>
+           errWrap())
+    
+  }
+  
+  
+  # If no issue was found, proceed with reformatting the response
   
   
   # 'res' should have a JSON structure
@@ -416,6 +421,7 @@ formatResponse <- function (res) {
     #     "Data" > "Providers" > "Records"
     is.null(res[["Data"]][["Providers"]]) ||
     !("Records" %in% names(res[["Data"]][["Providers"]][[1]])) ||
+    length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0 ||
     # [2] Every entry in "Records" should contain elements for "Date",  
     #     "Station", and the parameters listed in 'varNames'
     anyFalse(c("Date", "Station", varNames) %in% 
@@ -426,14 +432,30 @@ formatResponse <- function (res) {
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[2]]])) ||
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[3]]]))) {
     
+    # Output the returned content
+    print(res)
+    
+    
+    # One of the above conditions will have a unique message
+    # In this instance, no data is available for the requested date range
+    if (length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0) {
+      
+      stop(paste0("Empty CIMIS Response\n\n",
+                  "CIMIS returned zero records for the requested date ",
+                  "range (\"", startDate, "\" to \"", endDate, "\"). Please ",
+                  "revise the input date range.") |>
+             errWrap())
+      
+    }
+    
+    
     stop(paste0("Could Not Parse CIMIS Response\n\n",
                 "The information returned by CIMIS could not be interpreted ",
                 " correctly. The response text was not in the expected format.\n\n", 
                 "Please investigate this issue further. Either this script ",
                 "requires revisions, or CIMIS must be contacted about a ",
                 "server issue.\n\n") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
