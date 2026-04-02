@@ -25,11 +25,11 @@
 #  (1) "ProcessedData/Weather_Processed_Data_[startDate]_[endDate].csv"
 #      The processed weather data
 
-#  (2) A long-running DAT file (whose filepath is input into "MAIN_PRMS_DAT_FILE"
-#      of the control file)
+#  (2) A long-running DAT file (whose filepath is input into 
+#      "MAIN_PRMS_DAT_FILE" of the control file)
 
-#  (3) A DAT file containing predictions for the current water year (its filepath
-#      should be given in "PRMS_DAT_SPI_FILE" of the control file)
+#  (3) A DAT file containing predictions for the current water year (its 
+#      filepath should be given in "PRMS_DAT_SPI_FILE" of the control file)
 
 #  (4) From the PRMS model files, the "prms_rr.control" file will be edited
 
@@ -100,14 +100,17 @@ mainProcedure <- function (predictWY = TRUE) {
              "]\tLoading meteorological data and long-running DAT file...\n"))
   
   
-  # Read in two of the main input files
-  # (The PRMS Meteorological CSV and the primary DAT file)
+  # Read in two of the main input files:
+  #  (*) The PRMS Meteorological CSV 
+  #  (*) The primary DAT file
+  # (These files are used in all cases, regardless of the value for 'predictWY')
   filePaths <- c(paste0("ProcessedData/PRMS_Meteorological_", startDate,
                         "_", endDate, ".csv"),
                  getFromSupplyControl_RR("MAIN_PRMS_DAT_FILE"))
   
   
-  # Read in the two files next (while also verifying that they exist)
+  # Read in the first two files after that 
+  # (while also verifying that they exist)
   meteorDF <- filePaths[1] |> 
     checkForPreviousOutput() |> 
     getDelim(",")
@@ -145,13 +148,16 @@ mainProcedure <- function (predictWY = TRUE) {
   cat("\tDone!\n\n")
   
   
-  # After that, if 'predictWY' is TRUE, add predictions for the current water year
+  # After that, if 'predictWY' is TRUE, add predictions 
+  # for the current water year
   if (predictWY) {
     
-    cat("[4/5]\tAppending forecasted predictions for the current water year...\n")
+    cat(paste0("[4/5]\tAppending forecasted predictions for the ",
+               "current water year...\n"))
     
     
-    mergedDAT <- predictCurrentWY(mergedDAT, startDate, endDate, 
+    mergedDAT <- predictCurrentWY(mergedDAT, historicPrecip, currentPrecipURR,
+                                  startDate, endDate, 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
                                   dirPath, prmsPath, filePaths[2])
     
@@ -159,7 +165,8 @@ mainProcedure <- function (predictWY = TRUE) {
     cat("\tDone!\n\n")
     
     
-  # Even if predictions will not be used, update metadata in the hydrology folder
+    # Even if predictions will not be used, 
+    # update metadata in the hydrology folder
   } else {
     
     updateMetadata_DAT(dirPath, NA_character_, filePaths[2], endDate)
@@ -192,52 +199,109 @@ mainProcedure <- function (predictWY = TRUE) {
 
 
 
-predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
+predictCurrentWY <- function (mergedDAT, historicPrecip, currentPrecip,
+                              startDate, endDate, prmsCols,
                               dirPath, prmsPath, pathMainDAT) {
   
   # Based on 'endDate', apply different methods to select predictions 
   # to append to 'mergedDAT'
   
   
-  # For October - February, use the SPI prediction method
-  if (month(endDate) < 3 || month(endDate) > 9) {
+  # Before doing anything else, check if 'endDate' is equal to the 
+  # end of the current water year
+  # (No predictions are required in this edge case)
+  if (endDate == getModeledWY(endDate)[2]) {
     
-    # Append SPI data to 'mergedDAT'
-    finalDAT <- spiPrediction(mergedDAT, startDate, endDate, prmsCols)
-    
-    
-    # Update the metadata file next
-    updateMetadata_DAT(dirPath, "SPI", pathMainDAT, getModeledWY(endDate)[2],
-                       pathSPI = pathSPI)
+    # The final DAT file will be an unchanged copy of 'mergedDAT'
+    finalDAT <- mergedDAT
     
     
-  # If 'endDate' is within March - September, the most similar WY will be used
+    # But still update the metadata file after that
+    updateMetadata_DAT(dirPath, "Not Required", pathMainDAT, 
+                       getModeledWY(endDate)[2])
+    
   } else {
     
-    # But first confirm that 'endDate' is not the end of the current water year
-    # If that is the case, no predictions are needed
-    if (endDate == getModeledWY(endDate)[2]) {
+    # Otherwise, a prediction method is required
+    
+    # One of two methods will be used:
+    
+    # (*) SPI-based prediction
+    # (*) "Most Similar WY" prediction
+    
+    # In both cases, historic precipitation data is required for
+    # the PRMS model domain
+    
+    # Read in that file and validate its data
+    pastPrecip <- getFromSupplyControl_RR("PRISM_PRMS_HISTORIC_PRECIP_CSV") |>
+      getFile()
+    
+    pastPrecip |>
+      validateHistoricPrecipFile("PRISM_PRMS_HISTORIC_PRECIP_CSV",
+                                 getModeledWY(endDate)[1])
+    
+    
+    # For October - February, use the SPI prediction method
+    if (month(endDate) < 3 || month(endDate) > 9) {
       
-      # No additional data is needed for the water year
-      finalDAT <- mergedDAT
+      # Use 'pastPrecip' to calculate the Standard Precipitation Index
+      # Then, choose months with the driest conditions and use them 
+      # as predictions for the remaining months of the current water year
+      finalDAT <- spiPrediction(mergedDAT, historicPrecip, 
+                                startDate, endDate, prmsCols)
       
       
-      # Update the metadata file after that
-      updateMetadata_DAT(dirPath, "Not Required", pathMainDAT, 
-                         getModeledWY(endDate)[2])
+      # Update the metadata file next
+      updateMetadata_DAT(dirPath, "SPI", pathMainDAT, getModeledWY(endDate)[2],
+                         pathSPI = pathSPI)
       
+      
+      # If 'endDate' is within March - September, the most similar WY will be used
     } else {
       
-      # Otherwise, perform all operations for the similar water year procedure
-      # in a separate function 
-      finalDAT <- similarWYPrediction(mergedDAT, startDate, endDate,
-                                      dirPath, prmsPath, pathMainDAT)
-      
-      # The metadata will be updated in that function too
+      # But first confirm that 'endDate' is not the end of the current water year
+      # If that is the case, no predictions are needed
+      if (endDate == getModeledWY(endDate)[2]) {
+        
+        # No additional data is needed for the water year
+        finalDAT <- mergedDAT
+        
+        
+        # Update the metadata file after that
+        updateMetadata_DAT(dirPath, "Not Required", pathMainDAT, 
+                           getModeledWY(endDate)[2])
+        
+      } else {
+        
+        # Otherwise, perform all operations for the similar water year procedure
+        # in a separate function 
+        finalDAT <- similarWYPrediction(mergedDAT, startDate, endDate,
+                                        dirPath, prmsPath, pathMainDAT)
+        
+        # The metadata will be updated in that function too
+        
+      }
       
     }
     
+    
   }
+  
+  
+  
+  # Validate these files too
+  historicPrecip |>
+    validateHistoricPrecipFile("PRISM_URR_HISTORIC_PRECIP_CSV",
+                               getModeledWY(endDate)[1])
+  
+  currentPrecipURR |>
+    mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
+    validateWebData(inputPath = c("PRISM" = filePaths[3]), 
+                    stationVec = currentPrecipURR$Name |> unique(), 
+                    siPRISM = TRUE)
+  
+  
+  
   
   
   # Make sure the "Runoff" columns all contain "1" for every row
@@ -259,13 +323,64 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
 
 
 
-spiPrediction <- function (mergedDAT, startDate, endDate, prmsCols) {
+spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) {
   
-  # Use the Standard Precipitation Index (SPI) to predict precipitation
+  # Use the 12-month Standard Precipitation Index (SPI) to predict precipitation
   # and temperature for the rest of the water year
   
-  
   # At this point in time, insufficient precipitation data is available
+  
+  # The "worst case scenario" from past months will be used to fill in the 
+  # missing data gaps
+  
+  
+  # Summarize 'pastPrecip' on a monthly timescale
+  # (But ignore records from the current water year)
+  monthDF <- pastPrecip |>
+    filter(Date < getModeledWY(endDate)[1]) |>
+    mutate(YEAR = year(Date), MONTH = month(Date)) |>
+    group_by(YEAR, MONTH) |>
+    summarize(PRECIP = sum(`ppt (mm)`), .groups = "drop") |>
+    arrange(YEAR, MONTH)
+  
+  
+  # Add dummy entries for the last three months of the year in 'monthDF'
+  # (This data will round out 'monthDF' into 12 months of data per year)
+  dummyDF <- tibble(YEAR = max(monthDF$YEAR),
+                    MONTH = 10:12,
+                    PRECIP = 0) |>
+    mutate(YEAR_MONTH = paste0(YEAR, "_", MONTH))
+  
+  
+  monthDF <- monthDF |>
+    bind_rows(dummyDF)
+  
+  
+  # Calculate the twelve-month scale SPI for this dataset
+  spiRes <- spi(monthDF$PRECIP, scale = 12, verbose = TRUE)
+  
+  
+  # Add 'spiRes' to a new column in 'monthDF'
+  monthDF <- monthDF |>
+    mutate(SPI = spiRes[["fitted"]])
+  
+  
+  # For the next step, exclude certain entries from 'monthDF'
+  #  (*) Year-month pairs with a "NA" value for "SPI"
+  #  (*) Year-month pairs that are not present in 'mergedDF'
+  #  (*) Year-month pairs present in 'dummyDF'
+  
+  # Define a "YEAR-MONTH" column to help with these edits
+  monthDF <- monthDF |>
+    filter(!is.na(SPI)) |>
+    mutate(YEAR_MONTH = paste0(YEAR, "-", MONTH))
+  
+  dummyDF
+  
+  
+  
+  
+  
   # Predictions using the SPI will be appended to the DAT file
   pathSPI <- getFromSupplyControl_RR("PRMS_DAT_SPI_FILE")
   
@@ -325,6 +440,9 @@ updateMetadata_DAT <- function (dirPath, predictionMethod, pathMainDAT,
 similarWYPrediction <- function (mergedDAT, startDate, endDate, 
                                  dirPath, prmsPath, pathMainDAT) {
   
+  # Use 
+  
+  
   # Use 'mergedDAT' as-is without any predictions appended and 
   # prepare for a model run
   
@@ -332,18 +450,32 @@ similarWYPrediction <- function (mergedDAT, startDate, endDate,
   
   # Then, apply a regression model to identify the most similar water year
   # The hard-coded model coefficients are here:
-  linModel <- list("FEB" = list(m = 1.06123659152113, b = 3.84494429543525),
-                   "MAR" = list(m = 1.08706793979007, b = 0.833608488137486),
-                   "APR" = list(m = 1.02259029456379, b = 0.627031577682994),
-                   "MAY" = list(m = 1.00332226548437, b = 0.263608157053314),
-                   "JUN" = list(m = 0.998668183546254, b = 0.148860933464808),
-                   "JUL" = list(m = 0.998945430679489, b = 0.12814054299168),
-                   "AUG" = list(m = 0.998332437810631, b = 0.118465777984958))
+  linModel <- list("FEB" = list(m = 1.17609533458122, b = 179.674010163306),
+                   "MAR" = list(m = 1.10546021129827, b = 25.5273627224535),
+                   "APR" = list(m = 1.00852388216750, b = 47.0563971511456))
   
   
   # The model to use depends on the current month in 'endDate'
   # The chosen model will cover October to the previous month
-  linModel <- linModel[[toupper(month.abb[month(endDate) - 1])]]
+  selectedMonth <- month(endDate) - 1
+  
+  
+  if (selectedMonth == 2) {
+    
+    linModel <- linModel[["FEB"]]
+    
+  } else if (selectedMonth == 3) {
+    
+    linModel <- linModel[["MAR"]]
+    
+  } else {
+    
+    # For April through August, use the "April" model
+    linModel <- linModel[["APR"]]
+    
+  }
+  
+  
   
   
   # Perform the model run first
@@ -648,7 +780,8 @@ similarWY_processOut2 <- function (prmsPath, dirPath) {
     normalizePath(mustWork = TRUE)
   
   
-  newOutPath <- paste0(dirPath, "/PRMS/Input/SimilarWY_NoPredict_rr_budget.out2")
+  newOutPath <- paste0(dirPath, "/PRMS/Input/",
+                       "SimilarWY_NoPredict_rr_budget.out2")
   
   
   copyRes <- file.copy(from = out2Path, to = newOutPath, 
@@ -713,8 +846,8 @@ similarWY_findWY <- function (endDate, outDF, dirPath, endMonth, linModel) {
   # In WY2024, SDA staff developed a calibrated and validated linear regression
   # model that linked Oct - Feb Precipitation to Total WY Precipitation
   
-  # In WY2026, similar models were developed for Oct - Mar, Oct - Apr, Oct - May,
-  # Oct - Jun, Oct - July, and Oct - Aug using data for WY2025
+  # In WY2026, similar models were developed for Oct - Mar, Oct - Apr, 
+  # Oct - May, Oct - Jun, Oct - July, and Oct - Aug using data for WY2025
   
   # These models will now be applied here to find the most similar water year
   # for the current water year
@@ -738,8 +871,8 @@ similarWY_findWY <- function (endDate, outDF, dirPath, endMonth, linModel) {
                 "a month between February and August (inclusive) to predict ",
                 "the total precipitation for the current water year. As a ",
                 "result, the input \"endMonth\" should have a value between 2 ",
-                "and 8 (inclusive). However, \"", endMonth, "\" was provided to ",
-                "`similarWY_findWY` instead. Please revise the script.") |>
+                "and 8 (inclusive). However, \"", endMonth, "\" was provided ",
+                "to `similarWY_findWY` instead. Please revise the script.") |>
            errWrap())
     
   }
@@ -832,7 +965,7 @@ similarWY_findWY <- function (endDate, outDF, dirPath, endMonth, linModel) {
   precipDF <- outDF |>
     group_by(WY) |>
     summarize(!! paste0("OCT_TO_", toupper(month.abb[endMonth]), 
-                     "_PARTIAL_PRECIP") := 
+                        "_PARTIAL_PRECIP") := 
                 sum(PRECIP[MONTH > 9 | MONTH <= endMonth]),
               TOTAL_WY_PRECIP = sum(PRECIP), 
               .groups = "drop")
@@ -909,7 +1042,8 @@ similarWY_appendDAT <- function (mergedDAT, endDate, similarWY) {
   
   # Adjust the "YEAR" and "DATE" columns to be for the current water year
   wyDAT <- wyDAT |>
-    mutate(YEAR = if_else(MONTH < 10, year(currentWY[2]), year(currentWY[1]))) |>
+    mutate(YEAR = if_else(MONTH < 10, 
+                          year(currentWY[2]), year(currentWY[1]))) |>
     mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |> 
              as.Date(format = "%Y-%m-%d"))
   

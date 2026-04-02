@@ -20,6 +20,7 @@ require(cli)
 require(httr)
 require(rvest)
 require(fs)
+require(SPEI)
 
 
 # Import shared functions

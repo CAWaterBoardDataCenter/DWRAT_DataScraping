@@ -16,6 +16,7 @@ require(cli)
 require(httr)
 require(rvest)
 require(fs)
+require(SPEI)
 
 
 #### Scripts ####

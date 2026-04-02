@@ -36,6 +36,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
+source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 
 
 #### Functions ####
@@ -70,7 +71,7 @@ mainProcedure <- function () {
   
   
   # Perform data validation on 'stationDF' next
-  validateStationInput(stationDF, "CIMIS_STATIONS_CSV")
+  validateStationInputFile(stationDF, "CIMIS_STATIONS_CSV", "CIMIS")
   
   
   # Output a message
@@ -102,72 +103,6 @@ mainProcedure <- function () {
   
   
   # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-validateStationInput <- function (stationDF, sourceField) {
-  
-  # Make sure that 'stationDF' is formatted correctly
-  # If there are any issues, notify the user
-  
-  
-  # 'stationDF' should contain at least one column: "STATION_ID"
-  if (!("STATION_ID" %in% names(stationDF))) {
-    
-    stop(paste0("Station Input File - Column Issue\n\n",
-                "The input file containing CIMIS stations does not have ",
-                "the required column (\"STATION_ID\"). ",
-                "Please correct this file and try again.\n\n",
-                "The input file must contain the numeric IDs that correspond ",
-                "to different CIMIS stations (e.g., '103' for 'Windsor')\n\n",
-                "Also, the name of this column must match exactly\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
-                "')") |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")) |>
-           str_replace("(exactly)", col_red("\\1")))
-    
-  }
-  
-  
-  # Make sure there are no missing entries in the "STATION_ID" column
-  if (anyNA(stationDF$STATION_ID)) {
-    
-    stop(paste0("Station Input File - Missing Data Issue\n\n",
-                "The input file containing target CIMIS stations has one or more ",
-                "missing rows in its required column (\"STATION_ID\")\n\n", 
-                "Please fill in any empty entries in this column\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
-                "')") |>
-           errWrap() |>
-           str_replace("(missing)", col_red("\\1")))
-    
-  }
-  
-  
-  # Make sure "STATION_ID" is a numeric column
-  if (!is.numeric(stationDF$STATION_ID)) {
-    
-    stop(paste0("Station Input File - ID Type Issue\n\n",
-                "The \"STATION_ID\" column of the input file is being read in ",
-                "as something other than a numeric column\n\n", 
-                "Since types are assigned automatically, this indicates that the ",
-                "column cannot be parsed as a numeric column due to the presence of ",
-                "non-number-related characters (or the absence of any value at all)\n\n",
-                "Please correct this column and ensure that it contains only ",
-                "numeric values\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
-                "')") |>
-           errWrap() |>
-           str_replace("(missing)", col_red("\\1")))
-    
-  }
-  
-  
-  # Return nothing if there are no issues
   return(invisible(NULL))
   
 }

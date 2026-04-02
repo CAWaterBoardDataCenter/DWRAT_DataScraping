@@ -26,6 +26,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
+source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 
 
 # Allow greater time to download data from NOAA
@@ -56,7 +57,7 @@ mainProcedure <- function () {
   
   
   # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "NOAA_STATIONS_CSV")
+  validateStationInputFile(stationDF, "NOAA_STATIONS_CSV", "NOAA")
   
   
   # Prepare the request URL for NOAA
@@ -104,50 +105,6 @@ mainProcedure <- function () {
   
 }
 
-
-
-validateInput <- function (stationDF, sourceField) {
-  
-  # Make sure that 'stationDF' is formatted correctly
-  # If there are any issues, notify the user
-  
-  
-  # 'stationDF' should contain at least one column: "STATION_ID"
-  if (!("STATION_ID" %in% names(stationDF))) {
-    
-    stop(paste0("Station Input File - Column Issue\n\n",
-                "The input file containing GHCND stations does not have ",
-                "the required column (\"STATION_ID\"). ",
-                "Please correct this file and try again.\n\n",
-                "The input file must contain the GHCND IDs (e.g., 'USC00043875') ",
-                "for each target location\n\n",
-                "Also, the name of this column must match exactly\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")) |>
-           str_replace("(exactly)", col_red("\\1")))
-    
-  }
-  
-  
-  # Make sure there are no missing entries in the "STATION_ID" column
-  if (anyNA(stationDF$STATION_ID)) {
-    
-    stop(paste0("Station Input File - Missing Data Issue\n\n",
-                "The input file containing target GHCND stations has one or more ",
-                "missing elements in its required column (\"STATION_ID\")\n\n", 
-                "Please fill in any empty entries in this column\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(missing)", col_red("\\1")))
-    
-  }
-  
-  
-  # Return nothing if there are no issues
-  return(invisible(NULL))
-  
-}
 
 
 #### Script Execution ####

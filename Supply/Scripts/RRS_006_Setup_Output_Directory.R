@@ -307,8 +307,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
                    MODELER_NAME = Sys.info()[["user"]],
-                   LATEST_GIT_HASH = system("git rev-parse --short HEAD", 
-                                            intern = TRUE),
+                   LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
                    METEOROLOGICAL_END = endDate,
                    PRMS_METEOROLOGICAL_FILE_CREATED = 

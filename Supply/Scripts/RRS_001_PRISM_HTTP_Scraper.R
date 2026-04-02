@@ -4,9 +4,11 @@
 # These locations correspond to NOAA, RAWS, and CIMIS weather stations
 
 
-# The required input is two CSV files that correspond to: 
+# The required input is four CSV files that correspond to: 
 #   (1) PRMS-related precipitation and temperature stations
 #   (2) SRP-related precipitation and temperature stations 
+#   (3) PRMS model domain PRISM grid cells
+#   (4) SRP model domain PRISM grid cells
 
 # Each of these files must contain three columns:
 #  (1) LATITUDE
@@ -14,13 +16,17 @@
 #  (3) STATION_ID
 
 
-# Two corresponding output CSV files are produced and stored in the "WebData" folder
+# Four corresponding output CSV files are produced and stored in the "WebData" folder
 #  (1) "PRISM_PRMS_Data_[startDate]_[endDate].csv"
 #  (2) "PRISM_SRP_Data_[startDate]_[endDate].csv"
+#  (3) "PRISM_PRMS_Domain_Data_[startDate]_[endDate].csv"
+#  (4) "PRISM_SRP_Domain_Data_[startDate]_[endDate].csv"
 
 
 # Note: The PRMS-related output file uses SI units (mm and Celsius), 
 #       while the SRP-related output file has US customary units (in and Fahrenheit)
+
+#       (The model domain outputs use SI units as well)
 
 
 #### Setup ####
@@ -34,6 +40,12 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
+
+
+# Allow greater time to download data from PRISM
+# (This is only relevant for large data downloads)
+options(timeout = 500) # 500 seconds
+
 
 
 #### Functions ####
@@ -61,7 +73,7 @@ mainProcedure <- function () {
   }
   
   
-  cat("\n[1/2]\tGetting precipitation and temperature data for PRMS-related stations...\n")
+  cat("\n[1/4]\tGetting precipitation and temperature data for PRMS-related stations...\n")
   
   
   # Read in the list of stations 
@@ -71,27 +83,14 @@ mainProcedure <- function () {
   
   
   # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "PRISM_PRMS_STATIONS_CSV")
+  validateStationInputFile(stationDF, "PRISM_PRMS_STATIONS_CSV", "PRISM")
   
   
-  # Prepare the request content
-  bodyList <- list(call = "pp/daily_timeseries_mp",
-                   proc = "gridserv",
-                   lons = stationDF$LONGITUDE |> paste0(collapse = "|"),   # Latitude
-                   lats = stationDF$LATITUDE |> paste0(collapse = "|"),    # Longitude
-                   names = stationDF$STATION_ID |> paste0(collapse = "|"), # Station Names
-                   spares = "800m",            # Resolution (4km or 800m)
-                   interp = "idw",             # Interpolate grid cell values ("0" if no)
-                   stats = "ppt tmin tmax",    # Precipitation + Minimum & Maximum Temperature
-                   units = "si",               # Metric units
-                   range = "daily",            # Daily values
-                   start = paste0(year(startDate), twoDigitText(month(startDate)), twoDigitText(day(startDate))),
-                   end = paste0(year(endDate), twoDigitText(month(endDate)), twoDigitText(day(endDate))),
-                   stability = "provisional")
-  
-  
-  # Submit the request for precipitation data
-  getPRISM(bodyList, paste0("WebData/PRISM_PRMS_Data_", startDate, "_", endDate, ".csv"))
+  # Prepare and submit a request for meteorological data
+  getPRISM(stationDF, startDate, endDate, 
+           paste0("WebData/PRISM_PRMS_Data_", startDate, "_", endDate, ".csv"),
+           useHighRes = TRUE, interpCells = TRUE,
+           getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
   
   
   # Add to the message
@@ -102,10 +101,10 @@ mainProcedure <- function () {
   Sys.sleep(1)
   
   
-  # The final step is to get both precipitation and temperature data for the SRP stations
+  # The next step is to get both precipitation and temperature data for the SRP stations
   
   
-  cat("[2/2]\tGetting precipitation and temperature data for SRP-related stations...\n")
+  cat("[2/4]\tGetting precipitation and temperature data for SRP-related stations...\n")
   
   
   # Read in a list of SRP stations
@@ -115,32 +114,78 @@ mainProcedure <- function () {
   
   
   # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "PRISM_SRP_STATIONS_CSV")
+  validateStationInputFile(stationDF, "PRISM_SRP_STATIONS_CSV", "PRISM")
   
   
-  # Prepare the POST request content
+  # Prepare and submit a POST request for data
   # The SRP stations require English units (inches and Fahrenheit)
-  bodyList <- list(call = "pp/daily_timeseries_mp",
-                   proc = "gridserv",
-                   lons = stationDF$LONGITUDE |> paste0(collapse = "|"),  # Latitude
-                   lats = stationDF$LATITUDE |> paste0(collapse = "|"), # Longitude
-                   names = stationDF$STATION_ID |> paste0(collapse = "|"),       # Station Names
-                   spares = "800m",
-                   interp = "idw",
-                   stats = "ppt tmin tmax", # Precipitation + Minimum and maximum temperatures
-                   units = "eng", # US Customary units
-                   range = "daily",
-                   start = paste0(year(startDate), twoDigitText(month(startDate)), twoDigitText(day(startDate))),
-                   end = paste0(year(endDate), twoDigitText(month(endDate)), twoDigitText(day(endDate))),
-                   stability = "provisional")
-  
-  
-  # Submit the request for precipitation and temperature data
-  getPRISM(bodyList, paste0("WebData/PRISM_SRP_Data_", startDate, "_", endDate, ".csv"))
+  getPRISM(stationDF, startDate, endDate, 
+           paste0("WebData/PRISM_SRP_Data_", startDate, "_", endDate, ".csv"),
+           useHighRes = TRUE, interpCells = TRUE,
+           getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
   
   
   # Output a completion message
   cat("\tDone!\n\n")
+  
+  
+  # After that, get precipitation data for the PRMS domain PRISM grid cells
+  cat(paste0("[3/4]\tGetting precipitation data for PRISM grid cells ",
+             "in the PRMS model domain...\n"))
+  
+  
+  # Read in a list of grid cells for the PRMS model domain
+  stationDF <- getFromSupplyControl_RR("PRISM_PRMS_GRID_CELLS_CSV") |>
+    getFile() |>
+    unique()
+  
+  
+  # Perform data validation on 'stationDF' next
+  validateStationInputFile(stationDF, "PRISM_PRMS_GRID_CELLS_CSV", "PRISM")
+  
+  
+  # Prepare the POST request for precipitation data
+  # No grid cell interpolation will be performed for this request
+  getPRISM(stationDF, startDate, endDate, 
+           paste0("WebData/PRISM_PRMS_Domain_Data_", startDate, "_", 
+                  endDate, ".csv"),
+           useHighRes = TRUE, interpCells = FALSE,
+           getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
+  
+  
+  # Output a completion message
+  cat("\tDone!\n\n")
+  
+  
+  # Finally, download precipitation data for the SRP domain PRISM grid cells
+  
+  
+  cat(paste0("[4/4]\tGetting precipitation data for PRISM grid cells ",
+             "in the SRP model domain...\n"))
+  
+  
+  # Read in a list of grid cells for the SRP model domain
+  stationDF <- getFromSupplyControl_RR("PRISM_SRP_GRID_CELLS_CSV") |>
+    getFile() |>
+    unique()
+  
+  
+  # Perform data validation on 'stationDF' next
+  validateStationInputFile(stationDF, "PRISM_SRP_GRID_CELLS_CSV", "PRISM")
+  
+  
+  # Prepare and submit POST requests
+  # No grid cell interpolation will be performed for this request
+  getPRISM(stationDF, startDate, endDate, 
+           paste0("WebData/PRISM_SRP_Domain_Data_", startDate, "_", 
+                  endDate, ".csv"),
+           useHighRes = TRUE, interpCells = FALSE,
+           getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
+  
+  
+  # Output a completion message
+  cat("\tDone!\n\n")
+  
   
   cat(col_green("\n'RRS_001_PRISM_HTTP_Scraper.R' is complete!\n\n"))
   
@@ -152,102 +197,72 @@ mainProcedure <- function () {
 
 
 
-validateInput <- function (stationDF, sourceField) {
+getPRISM <- function (stationDF, startDate, endDate, writePath,
+                      useHighRes = TRUE, interpCells = TRUE, 
+                      getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE,
+                      quietly = FALSE, maxRetries = 15) {
   
-  # Make sure that 'stationDF' is formatted correctly
-  # If there are any issues, notify the user
+  # The process of getting daily data from PRISM involves 
+  # making two POST requests
   
-  
-  # 'stationDF' should contain at least three columns: "LATITUDE", "LONGITUDE", and "STATION_ID"
-  if (anyFalse(c("LATITUDE", "LONGITUDE", "STATION_ID") %in% names(stationDF))) {
-    
-    stop(paste0("Station Input File - Column Issue\n\n",
-                "The input file containing PRISM target coordinates does not have ",
-                "the three required columns (\"LATITUDE\", \"LONGITUDE\", and ",
-                "\"STATION_ID\"). Please correct this file and try again.\n\n",
-                "The input file must contain the WGS84 coordinates and unique ",
-                "identifiers for each location\n\n",
-                "Also, the names of these columns must match exactly\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")) |>
-           str_replace("(exactly)", col_red("\\1")))
-    
-  }
-  
-  
-  # Make sure there are no missing entries in these three columns
-  if (anyNA(stationDF$LATITUDE) || anyNA(stationDF$LONGITUDE) || anyNA(stationDF$STATION_ID)) {
-    
-    stop(paste0("Station Input File - Missing Data Issue\n\n",
-                "The input file containing PRISM target coordinates has one or more ",
-                "missing elements in its required columns (\"LATITUDE\", ",
-                "\"LONGITUDE\", and \"STATION_ID\")\n\n", 
-                "Please fill in any empty entries in these three columns\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(missing)", col_red("\\1")))
-    
-  }
-  
-  
-  # Ensure that no IDs are duplicated in 'stationDF'
-  if (length(stationDF$STATION_ID) != length(unique(stationDF$STATION_ID))) {
-    
-    stop(paste0("Station Input File - Duplicate ID Issue\n\n",
-                "The input file containing PRISM target coordinates has one or more ",
-                "values in its \"STATION_ID\" column that are duplicated\n\n", 
-                "Please ensure that each row of the input file has a unique value for ",
-                "this column\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(duplicated)", col_red("\\1")))
-    
-  }
-  
-  
-  # Finally, check the types of "LATITUDE" and "LONGITUDE"
-  if (is.character(stationDF$LATITUDE) || is.character(stationDF$LONGITUDE)) {
-    
-    stop(paste0("Station Input File - Coordinates Type Issue\n\n",
-                "The \"LATITUDE\" and/or \"LONGITUDE\" columns of the input file ",
-                "are being read in as character columns instead of numeric columns\n\n", 
-                "Since types are assigned automatically, this indicates that the columns ",
-                "cannot be parsed as numeric columns due to the presence of non-number-related ",
-                "characters (or the absence of any values at all)\n\n",
-                "Please correct these columns and ensure that they are numeric values\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(character)", col_red("\\1")))
-    
-  } else if (!is.numeric(stationDF$LATITUDE) || !is.numeric(stationDF$LONGITUDE)) {
-    
-    stop(paste0("Station Input File - Coordinates Type Issue\n\n",
-                "The \"LATITUDE\" and/or \"LONGITUDE\" columns of the input file ",
-                "are being read in as a different type of column instead of numeric\n\n", 
-                "Since types are assigned automatically, this indicates that the columns ",
-                "cannot be parsed as numeric columns for some reason, such as being empty\n\n",
-                "Please correct these columns and ensure that they are numeric values\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), "')") |>
-           errWrap() |>
-           str_replace("(empty)", col_red("\\1")))
-    
-  }
-  
-  
-  # Return nothing if there are no issues
-  return(invisible(NULL))
-  
-}
-
-
-
-getPRISM <- function (bodyList, writePath) {
-  
-  # The process of getting data from PRISM involves making two POST requests
   # This function contains a generic process for that 
-  # 'bodyList' is the body content of the initial request
+  
+  # 'stationDF' contains the coordinates and IDs of locations to get data
+  
+  # 'startDate' and 'endDate' define the range for which data will be obtained
+  
   # 'writePath' is the filepath where the output CSV file will be stored
+  
+  # 'quietly' determines whether an output message is provided 
+  # once the file is written
+  
+  # The remaining options customize the request
+  
+  
+  # To start, check if the request is too large 
+  if (nrow(stationDF) > 400) {
+    
+    # If data for more than 500 locations is requested, split up the request
+    # (The actual limit is 500, but let's not bother PRISM too much)
+    return(splitRequest(stationDF = stationDF, 
+                        startDate = startDate, endDate = endDate, 
+                        writePath = writePath, useHighRes = useHighRes,
+                        interpCells = interpCells, getPrecip = getPrecip, 
+                        getTemp = getTemp, useMetric = useMetric,
+                        quietly = quietly, maxVal = 400))
+    
+  }
+  
+  
+  # Prepare the body of the initial request
+  bodyList <- list(call = "pp/daily_timeseries_mp",
+                   proc = "gridserv",
+                   # Latitude
+                   lons = stationDF$LONGITUDE |> paste0(collapse = "|"),
+                   # Longitude
+                   lats = stationDF$LATITUDE |> paste0(collapse = "|"),    
+                   # Station Names
+                   names = stationDF$STATION_ID |> paste0(collapse = "|"), 
+                   # Resolution (4km or 800m)
+                   spares = if_else(useHighRes, "800m", "4km"),            
+                   # Interpolate grid cell values
+                   interp = if_else(interpCells, "idw", "0"),
+                   # Precipitation + Minimum & Maximum Temperature
+                   stats = paste(if_else(getPrecip, "ppt", ""),
+                                 if_else(getTemp, "tmin tmax", ""),
+                                 sep = " ") |>
+                     trimws(),    
+                   # Metric or US Customary units
+                   units = if_else(useMetric, "si", "eng"),
+                   range = "daily",
+                   # Start and end dates in YYMMDD format
+                   start = paste0(year(startDate), 
+                                  twoDigitText(month(startDate)), 
+                                  twoDigitText(day(startDate))),
+                   end = paste0(year(endDate), 
+                                twoDigitText(month(endDate)), 
+                                twoDigitText(day(endDate))),
+                   stability = "provisional")
   
   
   # Both requests will use the same headers
@@ -299,8 +314,9 @@ getPRISM <- function (bodyList, writePath) {
   
   
   # While 'csvStr' is NULL or NA, try to request data from PRISM 
-  # However, to prevent infinite retries, only do this while 'attemptCounter' is less than 5
-  while ((is.null(csvStr) || is.na(csvStr)) && attemptCounter < 5) {
+  # However, to prevent infinite retries, 
+  # only do this while 'attemptCounter' is less than 'maxRetries'
+  while ((is.null(csvStr) || is.na(csvStr)) && attemptCounter < maxRetries) {
     
     # Wait before sending the next request
     # (This gives PRISM's server time to process the request and prepare the output)
@@ -318,9 +334,10 @@ getPRISM <- function (bodyList, writePath) {
       # As the number of tries increases, increase the wait-time 
       cat("\n\n")
       message(paste0("PRISM needs more time to process the request! Retrying in ",
-                     5 * attemptCounter, " seconds!\n\n"))
+                     5 * attemptCounter, " seconds! [Attempt ",
+                     attemptCounter + 1, "/", maxRetries, "]\n\n"))
       
-      Sys.sleep(5 * attemptCounter)
+      Sys.sleep(5 * attemptCounter + runif(1, min = 0, max = 1))
       
     }
     
@@ -354,14 +371,48 @@ getPRISM <- function (bodyList, writePath) {
   }
   
   
+  # Check if 'csvStr' could not be extracted successfully
+  if (is.na(csvStr)) {
+    
+    paste0("PRISM HTTP Request Failed\n\n",
+           "The request sent to PRISM's server was unsuccessful. ",
+           "Please investigate this issue and try again later.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
   # Wait a little before proceeding to the final step
   Sys.sleep(1.2)
   
   
-  # Access that file and save it to a file
+  # Save the result to a file
   paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
-    read_lines() |>
-    writeOutput(writePath, "write_lines")
+    download.file(writePath, mode = "wb", quiet = TRUE)
+  
+  
+  if (!file.exists(writePath)) {
+    
+    paste0("PRISM Request Failed\n\n",
+           "The output file was not detected in the expected directory\n\n",
+           "The POST request may have failed, please investigate this issue\n\n") |>
+      errWrap() |>
+      str_replace("(not)", col_red("\\1")) |>
+      str_replace("(investigate)", col_green("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # If the file was written successfully, output a message
+  # (only if 'quietly' is FALSE)
+  if (!quietly) {
+    
+    cat(paste0("\nWrote data to \"", normalizePath(writePath), "\"!\n\n") |>
+          col_cyan())
+    
+  }
   
   
   # Return nothing
@@ -389,7 +440,7 @@ validateReqResults <- function (req, checkForContentErrors = TRUE) {
                 "Please investigate this issue") |>
            errWrap())
     
-  } else if (checkForContentErrors && grepl("errors\": \\[\\[", as.character(content(req)))) {
+  } else if (checkForContentErrors && grepl("errors\": [\\[\\{]", as.character(content(req))[1])) {
     
     cat("\n\n")
     cat(as.character(content(req)))
@@ -409,6 +460,141 @@ validateReqResults <- function (req, checkForContentErrors = TRUE) {
   return(invisible(NULL))
   
 }
+
+
+
+splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
+                          interpCells, getPrecip, getTemp, useMetric,
+                          quietly, maxVal = 500) {
+  
+  # If a PRISM request contains too many requested locations, it must be split
+  
+  
+  # Determine the total number of requests required
+  numRequests <- ceiling(nrow(stationDF) / maxVal)
+  
+  
+  # Notify the user about this
+  cat(paste0("\tThe number of requested locations is too large! This step ",
+             "will be divided into ", numRequests, " smaller requests!\n\n"))
+  
+  
+  # Modify 'writePath' to have a value for each intermediate file that
+  # will be downloaded
+  nameVec <- 1:numRequests |>
+    map_chr(~ writePath |> str_replace("(\\.[A-Za-z]+)$",
+                                       paste0("_", ., "\\1")))
+  
+  
+  # Determine the cutoffs for each request
+  rowRanges <- seq(from = 1, to = nrow(stationDF), by = maxVal)
+  
+  
+  # Beginning making partial requests
+  for (i in 1:numRequests) {
+    
+    # Start with a status message
+    cat(paste0("\n\t[", i, "/", numRequests, "]\tRequesting...\n"))
+    
+    
+    # Extract a subset of 'stationDF'
+    subsetDF <- stationDF[rowRanges[i]:min(c(rowRanges[i] + maxVal - 1,
+                                             nrow(stationDF))), ]
+    
+    
+    # Submit a request for PRISM data
+    getPRISM(stationDF = subsetDF, 
+             startDate = startDate, endDate = endDate, 
+             writePath = nameVec[i], useHighRes = useHighRes,
+             interpCells = interpCells, getPrecip = getPrecip, 
+             getTemp = getTemp, useMetric = useMetric,
+             quietly = quietly)
+    
+    
+    # Wait a little before continuing to the next iteration
+    Sys.sleep(runif(1, min = 1.2, max = 2.5))
+    
+  }
+  
+  
+  # The final step is to combine the downloaded CSV files into one output file
+  cat("\n\tCombining downloaded files...\n\n")
+  
+  
+  combineRawOutputs(nameVec, writePath)
+  
+  
+  # Return nothing
+  return(invisible())
+  
+}
+
+
+
+combineRawOutputs <- function (nameVec, writePath) {
+  
+  # Combine the split CSV files downloaded from PRISM into one CSV
+  
+  # The metadata should only appear once at the beginning
+  
+  # After that, append data from each file into one long CSV file
+  
+  
+  # The first downloaded CSV file will be the initial part of this combined file
+  mainFile <- getFile(nameVec[1], fileType = "OTHER")
+  
+  
+  # Record the number of locations stated in 'mainFile'
+  # (This metadata must be updated as more rows are appended)
+  numLocations <- mainFile |>
+    str_subset("^Locations: [0-9]+$") |>
+    str_extract("[0-9]+") |> as.numeric()
+  
+  
+  # Iterate through the remaining files in 'nameVec'
+  for (i in 2:length(nameVec)) {
+    
+    # Read in that other file
+    tempFile <- getFile(nameVec[i], fileType = "OTHER")
+    
+    
+    # Extract the number of locations in 'tempFile'
+    # Add that number to 'numLocations'
+    tempNum <- tempFile |>
+      str_subset("^Locations: [0-9]+$") |>
+      str_extract("[0-9]+") |> as.numeric()
+    
+    
+    numLocations <- numLocations + tempNum
+    
+    
+    # Remove everything up to and including the column headers in 'tempFile'
+    tempFile <- tempFile[(grep("Name,Longitude", tempFile) + 1):length(tempFile)]
+    
+    
+    # Append 'tempFile' to 'mainFile' 
+    # (with a blank row before the start of 'tempFile')
+    mainFile <- c(mainFile,
+                  "",
+                  tempFile)
+    
+  }
+  
+  
+  # Update the number of locations at the start of the metadata in 'mainFile'
+  mainFile[grep("^Locations: [0-9]+$", mainFile)[1]] <- paste0("Locations: ", 
+                                                               numLocations)
+  
+  
+  # Save 'mainFile' to 'writePath'
+  writeOutput(mainFile, writePath, "write_lines")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
 
 
 #### Script Execution ####
