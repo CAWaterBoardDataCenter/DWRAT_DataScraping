@@ -13,14 +13,11 @@ remove(list = ls())
 
 
 # Import packages
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
-require(rvest)
-require(fs)
-require(SPEI)
+require(renv)
+
+restore()
+
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions

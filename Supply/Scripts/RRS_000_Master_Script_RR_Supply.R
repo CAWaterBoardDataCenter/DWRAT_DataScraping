@@ -10,14 +10,10 @@ base::remove(list = ls())
 
 # Import packages
 require(renv)
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
-require(rvest)
-require(fs)
-require(SPEI)
+
+restore()
+
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 #### Scripts ####
