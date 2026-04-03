@@ -672,6 +672,24 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
   }
   
   
+  # Define a list that defines the final portion of the error messages
+  # based on the value of 'datType'
+  if (datType == "Main") {
+    
+    finalMessage <- paste0("(This error occurred for '", 
+                           getFromSupplyControl_RR(sourceField), "')")
+    
+  } else if (datType == "SPI") {
+    
+    finalMessage <- paste0("Please investigate the SPI prediction procedure.")
+    
+  } else {
+    
+    finalMessage <- paste0("Please investigate the component DAT files.")
+    
+  }
+  
+  
   # First, check that the date- and time-related fields are present
   datetimeCols <- c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND")
   
@@ -690,10 +708,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            "the meteorological CSV (\"", model, "_Meteorological_",  
            startDate, "_", endDate, ".csv\"). Please correct this file ",
            "and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -716,10 +731,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            "names) must match exactly with the meteorological CSV ",
            "(\"", model, "_Meteorological_", startDate, "_", endDate, 
            ".csv\"). Please correct this file and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -750,10 +762,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            " a different type (",
            vec2QuotedStr(names(datFile)[nonNumCols]), ").\n\n",
            "Please correct this file and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -793,10 +802,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            if_else(length(missingDates) > 1, "s", ""), " (", 
            vec2QuotedStr(expectedDates[missingDates]), "). Please correct ",
            "this file and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -824,11 +830,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              vec2QuotedStr(names(dupDates)), ").\n\n", 
              "Please correct this issue. Every date should have exactly ",
              "one row in the DAT file.\n\n", 
-             if_else(datType != "Final",
-                     paste0("(This error occurred for '", 
-                            getFromSupplyControl_RR(sourceField), "')"),
-                     paste0("Please investigate the component ",
-                            "DAT files."))) |>
+             finalMessage) |>
         errWrap() |>
         str_replace("(does not)", col_red("\\1")) |>
         stop()
@@ -842,11 +844,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              "unknown data issue. The number of rows in the dataset does ",
              "not match the number of days between the start and end ",
              "dates in that file. Please investigate.\n\n", 
-             if_else(datType != "Final",
-                     paste0("(This error occurred for '", 
-                            getFromSupplyControl_RR(sourceField), "')"),
-                     paste0("Please investigate the component ",
-                            "DAT files."))) |>
+             finalMessage) |>
         errWrap() |>
         str_replace("(unknown)", col_red("\\1")) |>
         stop()
@@ -869,10 +867,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
                    "A missing value was "), 
            " detected in the ", datType, " DAT file (see the above message ",
            "for locations). Please correct the file.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       stop()
     
@@ -893,8 +888,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            "that not all dates will have data when running ", model, 
            " with these files. Please adjust either the DAT file or ",
            "'startDate' in the control script.\n\n",
-           "(This error occurred for '", 
-           getFromSupplyControl_RR(sourceField), "')") |>
+           finalMessage) |>
       errWrap() |>
       stop()
     
@@ -916,8 +910,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              "year is missing data. It does not extend to the end of the ",
              "water year (\"", wyBounds[2], "\"). Please adjust ",
              "this file.\n\n",
-             "(This error occurred for '", 
-             getFromSupplyControl_RR(sourceField), "')") |>
+             finalMessage) |>
         errWrap() |>
         stop()
       
@@ -932,8 +925,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              "that not all dates will have data when running ", model,
              " with these files. Please adjust either the DAT file or ",
              "'endDate' in the control script.\n\n",
-             "(This error occurred for '", 
-             getFromSupplyControl_RR(sourceField), "')") |>
+             finalMessage) |>
         errWrap() |>
         stop()
       
@@ -1092,8 +1084,8 @@ checkForPreviousOutput <- function (filePath) {
     paste0("File", if_else(length(missingFiles) > 1, "s", ""), " ",
            "From Previous Script Not Found\n\n",
            "The file", if_else(length(missingFiles) > 1, "s", ""), " ",
-           vec2QuotedStr(filePath[missingFiles]), "should have been generated ",
-           "by ", if_else(length(missingFiles) > 1, "", "a"), " ",
+           vec2QuotedStr(filePath[missingFiles]), " should have been ",
+           "generated by ", if_else(length(missingFiles) > 1, "", "a"), " ",
            "preceding script", if_else(length(missingFiles) > 1, "s", ""), " ",
            "in this process. However, ",
            if_else(length(missingFiles) > 1, "they were ", "it was "),

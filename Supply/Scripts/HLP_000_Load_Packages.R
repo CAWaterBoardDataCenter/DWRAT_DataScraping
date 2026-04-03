@@ -6,6 +6,7 @@
 # even if some packages are used by only some of the scripts
 
 
+require(renv)
 require(data.table)
 require(tidyverse)
 require(readxl)

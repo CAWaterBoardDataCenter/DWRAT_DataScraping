@@ -31,7 +31,7 @@
 
 #### Setup ####
 
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
@@ -40,6 +40,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
+source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 
 
 # Allow greater time to download data from PRISM
@@ -134,6 +135,11 @@ mainProcedure <- function () {
              "in the PRMS model domain...\n"))
   
   
+  # For the next two data downloads, get data from the start of the 
+  # current water year to 'endDate'
+  wyStart <- getModeledWY(endDate)[1]
+  
+  
   # Read in a list of grid cells for the PRMS model domain
   stationDF <- getFromSupplyControl_RR("PRISM_PRMS_GRID_CELLS_CSV") |>
     getFile() |>
@@ -146,8 +152,8 @@ mainProcedure <- function () {
   
   # Prepare the POST request for precipitation data
   # No grid cell interpolation will be performed for this request
-  getPRISM(stationDF, startDate, endDate, 
-           paste0("WebData/PRISM_PRMS_Domain_Data_", startDate, "_", 
+  getPRISM(stationDF, wyStart, endDate, 
+           paste0("WebData/PRISM_PRMS_Domain_Data_", wyStart, "_", 
                   endDate, ".csv"),
            useHighRes = TRUE, interpCells = FALSE,
            getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
@@ -176,8 +182,8 @@ mainProcedure <- function () {
   
   # Prepare and submit POST requests
   # No grid cell interpolation will be performed for this request
-  getPRISM(stationDF, startDate, endDate, 
-           paste0("WebData/PRISM_SRP_Domain_Data_", startDate, "_", 
+  getPRISM(stationDF, wyStart, endDate, 
+           paste0("WebData/PRISM_SRP_Domain_Data_", wyStart, "_", 
                   endDate, ".csv"),
            useHighRes = TRUE, interpCells = FALSE,
            getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
@@ -512,7 +518,10 @@ splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
     
     
     # Wait a little before continuing to the next iteration
-    Sys.sleep(runif(1, min = 1.2, max = 2.5))
+    Sys.sleep(runif(1, min = 1.2, max = 2.1))
+    
+    
+    cat(paste0("\n\t\tDone!\n"))
     
   }
   
@@ -602,4 +611,4 @@ combineRawOutputs <- function (nameVec, writePath) {
 mainProcedure()
 
 
-remove(list = ls())
+base::remove(list = ls())

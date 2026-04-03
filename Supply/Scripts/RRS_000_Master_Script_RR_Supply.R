@@ -5,10 +5,11 @@
 #### Setup ####
 
 # Clear the environment first
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
+require(renv)
 require(data.table)
 require(tidyverse)
 require(readxl)
@@ -77,7 +78,7 @@ source("Scripts/RRS_009_Run_PRMS.R")
 source("Scripts/RRS_010_PRMS_Cleanup.R")
 
 
-#### SRP ####
+##### SRP #####
 
 # source("Scripts/RRS_011_Process_SRP_Weather_Data.R")
 
