@@ -39,7 +39,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -47,7 +47,7 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_011_Process_SRP_Weather_Data.R'!\n")
+  cat("Starting 'RRW_011_Process_SRP_Weather_Data.R'!\n")
   
   
   # Import the start and end date
@@ -55,7 +55,7 @@ mainProcedure <- function () {
   
   
   # Start with a vector containing every single required input file
-  inputFiles <- c("PRISM INPUT" = getFromSupplyControl_RR("PRISM_SRP_STATIONS_CSV"),
+  inputFiles <- c("PRISM INPUT" = getFromControl_RR("PRISM_SRP_STATIONS_CSV"),
                   "PRISM OUTPUT" = paste0("WebData/PRISM_SRP_Data_",
                                           startDate, "_", endDate, ".csv"))
   
@@ -140,7 +140,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_011_Process_SRP_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_011_Process_SRP_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing

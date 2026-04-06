@@ -26,14 +26,14 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 #### Functions ####
 
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_003_RAWS_HTTP_Scraper.R'!\n")
+  cat("Starting 'RRW_003_RAWS_HTTP_Scraper.R'!\n")
   
   
   # Import the start and end date
@@ -41,7 +41,7 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("RAWS_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("RAWS_STATIONS_CSV") |>
     getFile() |>
     unique()
   
@@ -89,7 +89,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_003_RAWS_HTTP_Scraper.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_003_RAWS_HTTP_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing

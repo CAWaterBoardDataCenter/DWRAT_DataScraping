@@ -15,10 +15,9 @@
 #      SPI-based predictions will be used
 
 #  (*) If 'endDate' is between March and September:
-#        (1) PRMS will be run with the "SPI" approach
-#        (2) The output will be collected and used to find the 
-#            most similar water year
-#        (3) PRMS will be run with the "Most Similar Water Year" approach
+#        (1) One of three linear regression models will be applied
+#            to identify the most similar water year for the current
+#            water year and the remainder of the water year 
 
 
 # The script has several input files:
@@ -39,7 +38,7 @@
 # A single output will be generated in all cases, and additional outputs will 
 # be included whenever the "Similar WY" procedure is executed: 
 
-#  (1) "ProcessedData/DAT_PRMS_[startDate]_[endDate].dat"
+#  (1) "DAT_PRMS_[startDate]_[endDate].dat"
 #      The final DAT file to use in the model run
 #      (This file is also copied to the "RR_PRMS" folder as "RR_PRMS_Input.dat")
 
@@ -63,7 +62,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -71,7 +70,7 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function (predictWY = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRS_008_Finalize_PRMS_Input.R'!\n")
+  cat("Starting 'RRW_008_Finalize_PRMS_Input.R'!\n")
   
   
   # Import the start and end date
@@ -106,7 +105,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # (These files are used in all cases, regardless of the value for 'predictWY')
   filePaths <- c(paste0("ProcessedData/PRMS_Meteorological_", startDate,
                         "_", endDate, ".csv"),
-                 getFromSupplyControl_RR("MAIN_PRMS_DAT_FILE"))
+                 getFromControl_RR("MAIN_PRMS_DAT_FILE"))
   
   
   # Read in the first two files after that 
@@ -190,7 +189,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_008_Finalize_PRMS_Input.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_008_Finalize_PRMS_Input.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -233,7 +232,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     # the PRMS model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromSupplyControl_RR("PRISM_PRMS_HISTORIC_PRECIP_CSV")
+    pastPrecipPath <- getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_CSV")
     
     
     # Read in the file and validate it
@@ -275,17 +274,6 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       # The metadata will be updated in that function too
       
     }
-    
-    
-    # Regardless of which water year prediction method is used, 'pastPrecip'
-    # should be archived in the hydrology folder ('dirPath')
-    copyFile(from = if_else(!file.exists(pastPrecipPath),
-                            makeSharePointPath(pastPrecipPath),
-                            pastPrecipPath),
-             to = paste0(dirPath, "/PRMS/Input/",
-                         pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
-               normalizePath(mustWork = FALSE), 
-             overwrite = TRUE)
     
   }
   
@@ -460,15 +448,15 @@ updateMetadata_DAT <- function (dirPath, modelEndDate,
   
   updateMetadataCSV(dirPath,
                     newCols = list("PRMS_MAIN_DAT_FILE" = pathMainDAT,
-                                   "WY_PREDICTION_METHOD" = predictionMethod,
+                                   "PRMS_WY_PREDICTION_METHOD" = predictionMethod,
                                    "PRMS_MODEL_DOMAIN_HISTORIC_PRECIP" = 
                                      pathPastPrecip,
                                    "PRMS_MODEL_DOMAIN_CURRENT_WY_PRECIP" = 
                                      pathCurrentPrecip,
-                                   "MOST_SIMILAR_WY" = similarWY,
-                                   "REGRESSION_MODEL_SLOPE" = linModel$m,
-                                   "REGRESSION_MODEL_INTERCEPT" = linModel$b,
-                                   "MODEL_END_DATE" = modelEndDate))
+                                   "PRMS_MOST_SIMILAR_WY" = similarWY,
+                                   "PRMS_REGRESSION_MODEL_SLOPE" = linModel$m,
+                                   "PRMS_REGRESSION_MODEL_INTERCEPT" = linModel$b,
+                                   "PRMS_MODEL_END_DATE" = modelEndDate))
   
   
   # Return nothing
@@ -583,8 +571,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   copyFile(prismPath,
            paste0(dirPath, "/PRMS/Input/",
                   prismPath |> str_remove("^.+[/\\\\]")) |>
-             normalizePath(mustWork = FALSE), 
-           overwrite = TRUE)
+             normalizePath(mustWork = FALSE))
   
   
   # Return 'finalDAT'
@@ -831,6 +818,13 @@ similarWY_appendDAT <- function (mergedDAT, endDate, similarWY) {
     }
     
   }
+  
+  
+  # The above procedure is kinda extraneous since the "Most Similar WY"
+  # method is only used for data substitutions from March onwards 
+  
+  # However, let's keep it in case upstream modifications to the procedure
+  # change that restriction
   
   
   # Filter 'wyDAT' to after 'endDate'

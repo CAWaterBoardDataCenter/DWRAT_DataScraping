@@ -86,7 +86,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
                                  "stations (e.g., '103' for ",
                                  "'Windsor')."))[[dataSource]], " ",  
            "Also, the names of these columns must match exactly.\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField),
+           "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
@@ -108,7 +108,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
            "Please fill in any empty entries in ",
            if_else(length(expectedCols) > 1, "these columns", "this column"),
            "\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+           "(This error occurred for '", getFromControl_RR(sourceField), 
            "')") |>
       errWrap() |>
       str_replace("(missing)", col_red("\\1")) |>
@@ -127,7 +127,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
            "duplicated.\n\n", 
            "Please ensure that each row of the input file has a unique ",
            "value for this column\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+           "(This error occurred for '", getFromControl_RR(sourceField), 
            "')") |>
       errWrap() |>
       str_replace("(duplicated)", col_red("\\1")) |>
@@ -156,7 +156,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
              "Please correct these columns and ensure that they are ",
              "numeric values\n\n",
              "(This error occurred for '", 
-             getFromSupplyControl_RR(sourceField), "')") |>
+             getFromControl_RR(sourceField), "')") |>
         errWrap() |>
         str_replace("(character)", col_red("\\1")) |>
         stop()
@@ -173,7 +173,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
              "Please correct these columns and ensure that they are ",
              "numeric values\n\n",
              "(This error occurred for '", 
-             getFromSupplyControl_RR(sourceField), "')") |>
+             getFromControl_RR(sourceField), "')") |>
         errWrap() |>
         str_replace("(empty)", col_red("\\1")) |>
         stop()
@@ -197,7 +197,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
              "at all)\n\n",
              "Please correct this column and ensure that it contains only ",
              "numeric values\n\n",
-             "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+             "(This error occurred for '", getFromControl_RR(sourceField), 
              "')") |>
         errWrap() |>
         str_replace("(missing)", col_red("\\1")) |>
@@ -677,7 +677,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
   if (datType == "Main") {
     
     finalMessage <- paste0("(This error occurred for '", 
-                           getFromSupplyControl_RR(sourceField), "')")
+                           getFromControl_RR(sourceField), "')")
     
   } else if (datType == "SPI") {
     
@@ -976,7 +976,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            paste0("(*) ", expectedCols[missingFields], collapse = "\n\n"), 
            "\n\n",
            "Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField),
+           "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
       errWrap() |>
       stop()
@@ -991,7 +991,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "One or more missing elements were noted in the historic ",
            "precipitation CSV file. All data columns should have a value. ",
            "Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField),
+           "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
       errWrap() |>
       stop()
@@ -1016,7 +1016,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            wyStart - 1, ". However, ", length(missingDates), " ",
            "date", if_else(length(missingDates) > 1, "s are", " is"), " ",
            "missing. Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField),
+           "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
       errWrap() |>
       stop()
@@ -1032,7 +1032,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "one precipitation value per day (an average daily value for ",
            "the entire watershed domain). However, one or more dates in ",
            "this file are duplicated. Please revise this file.\n\n",
-           "(This error occurred for '", getFromSupplyControl_RR(sourceField),
+           "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
       errWrap() |>
       stop()
@@ -1052,7 +1052,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "Please adjust this file and ensure that this column contains only ",
            "numeric values.\n\n",
            "(This error occurred for '", 
-           getFromSupplyControl_RR(sourceField), "')") |>
+           getFromControl_RR(sourceField), "')") |>
       errWrap() |>
       str_replace("(not)", col_red("\\1")) |>
       stop()
@@ -1408,6 +1408,11 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
       cat("\n\nModel Output Message(s):\n\n")
       print(modelOutput)
       
+      
+      # Save 'modelOutput' to a file too
+      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt", 
+                  "write_lines")
+      
     }
     
     
@@ -1417,7 +1422,7 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
            "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
            "). Please investigate ",
            if_else(is.null(modelOutput),
-                   "the model's output messages (included above)",
+                   "the model's output messages (included above and in a file)",
                    "this issue"),
            ".\n\n", 
            "(This error occurred for \"", prmsPath, "\")") |>
@@ -1499,7 +1504,7 @@ validateModelCopy_SRP <- function () {
   
   
   # Finally, check for the main executable file
-  exePath <- paste0(prmsPath, "/gsflow_ag.exe") |>
+  exePath <- paste0(srpPath, "/gsflow_ag.exe") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -1523,8 +1528,7 @@ validateModelCopy_SRP <- function () {
 
 
 
-checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
-                                      includeScriptGeneratedOutput = FALSE) {
+checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
   
   # Double-check that the model ran successfully
   
@@ -1533,17 +1537,20 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
   
   # These files were all generated by SRP
   outFiles <- c("gsflow.log",
-                paste0("SRP_inflow_", 1:6, ".gag"))
-  
-  
-  # If 'includeScriptGeneratedOutput' is TRUE, include the console output 
-  # text file generated by an earlier script in this check
-  if (includeScriptGeneratedOutput) {
-    
-    outFiles <- c(outFiles,
-                  "SRP_Console_Output.txt")
-    
-  }
+                paste0("SRP_inflow_", 1:6, ".gag"),
+                "SRP_inflow_11465500.gag",
+                "SRP_inflow_11465660.gag",
+                "SRP_inflow_11465680.gag",
+                "SRP_inflow_11465690.gag",
+                "SRP_inflow_11465700.gag",
+                "SRP_inflow_11465750.gag",
+                "SRP_inflow_11466170.gag",
+                "SRP_inflow_11466200.gag",
+                "SRP_inflow_11466320.gag",
+                "SRP_inflow_11466800.gag",
+                "model_output_summary.txt",
+                "basin/basin_.csv",
+                "basin/basin__monthly.csv")
   
   
   # Check if any files are missing
@@ -1561,6 +1568,11 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
       cat("\n\nModel Output Message(s):\n\n")
       print(modelOutput)
       
+      
+      # Save 'modelOutput' to a file too
+      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt", 
+                  "write_lines")
+      
     }
     
     
@@ -1570,7 +1582,7 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
            "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
            "). Please investigate ",
            if_else(is.null(modelOutput),
-                   "the model's output messages (included above)",
+                   "the model's output messages (included above and in a file)",
                    "this issue"),
            ".\n\n", 
            "(This error occurred for \"", srpPath, "\")") |>

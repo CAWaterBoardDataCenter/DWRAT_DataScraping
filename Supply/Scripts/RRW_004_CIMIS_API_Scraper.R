@@ -36,7 +36,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -44,7 +44,7 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_004_CIMIS_API_Scraper.R'!\n")
+  cat("Starting 'RRW_004_CIMIS_API_Scraper.R'!\n")
   
   
   # Import the start and end date
@@ -65,7 +65,7 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("CIMIS_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("CIMIS_STATIONS_CSV") |>
     getFile() |>
     unique()
   
@@ -99,7 +99,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_004_CIMIS_API_Scraper.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_004_CIMIS_API_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -119,7 +119,7 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
   
   # First, obtain the user's API key
   # It should be specified in a file linked via the RR Supply Control File
-  apiKey <- getFromSupplyControl_RR("CIMIS_API_KEY") |>
+  apiKey <- getFromControl_RR("CIMIS_API_KEY") |>
     getFile()
   
   
@@ -225,7 +225,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "If the input file is something else (like a CSV, TSV, or XLSX file) ",
                 "the API key should be alone on the first line after the column ",
                 "header\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "(This error occurred for '", getFromControl_RR(sourceField), 
                 "')") |>
            errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
@@ -247,7 +247,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "If the input file is something else (like a CSV, TSV, or XLSX file) ",
                 "the API key should be alone on the first line after the column ",
                 "header\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "(This error occurred for '", getFromControl_RR(sourceField), 
                 "')") |>
            errWrap() |>
            str_replace("(does not)", col_red("\\1")) |>
@@ -269,7 +269,7 @@ validateAPI <- function (apiKey, sourceField) {
                 "If the input file is something else (like a CSV, TSV, or XLSX file) ",
                 "the API key should be alone on the first line after the column ",
                 "header\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
+                "(This error occurred for '", getFromControl_RR(sourceField), 
                 "')") |>
            errWrap() |>
            str_replace("(missing)", col_red("\\1")) |>
@@ -290,7 +290,7 @@ validateAPI <- function (apiKey, sourceField) {
                    "separated by hyphens\n\n",
                    "The provided API key does not match this format. There may be ",
                    "issues encountered later on when submitting the API call.\n\n",
-                   "(This flag occurred for '", getFromSupplyControl_RR(sourceField), 
+                   "(This flag occurred for '", getFromControl_RR(sourceField), 
                    "')") |>
               errWrap())
     

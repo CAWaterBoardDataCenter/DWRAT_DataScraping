@@ -1,4 +1,4 @@
-# Run the SRP model
+# Run the PRMS model
 # Use the copy of the model files in the "ProcessedData" folder 
 
 
@@ -14,7 +14,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -22,15 +22,15 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_014_Run_SRP.R'!\n")
+  cat("Starting 'RRW_009_Run_PRMS.R'!\n")
   
   
-  # Confirm that the "SRPHM_update_ag" folder was copied to "ProcessedData"
-  srpPath <- validateModelCopy_SRP()
+  # Confirm that the "RR_PRMS" folder was copied to "ProcessedData"
+  prmsPath <- validateModelCopy_PRMS()
   
   
-  # Get the path to the batch file stored in the root directory
-  batPath <- paste0(srpPath, "/Run_updated_Model.bat") |>
+  # Get the path to the batch file stored in the "windows" folder
+  batPath <- paste0(prmsPath, "/windows/run.bat") |>
     normalizePath(mustWork = TRUE)
   
   
@@ -53,22 +53,28 @@ mainProcedure <- function () {
   
   # Check for errors
   # There should be several output files
-  checkForModelOutputs_SRP(srpPath, modelOutput, 
-                           includeScriptGeneratedOutput = FALSE)
+  checkForModelOutputs_PRMS(prmsPath, modelOutput, 
+                            includeScriptGeneratedOutput = FALSE)
   
   
   # Output a completion message
   cat("\tDone!\n\n")
   
   
+  # Save the model output to a file
+  modelOutput |>
+    writeOutput(paste0(prmsPath, "/PRMS/output/PRMS_Console_Output.txt"),
+                "write_lines", quietly = TRUE)
+  
+  
   # After that, tell the user how long the model run took
   cat(paste0("\n\nThe model ran in ", 
-             difftime(endTime, startTime, units = "mins") |> round(),
-             " minutes!\n"))
+            difftime(endTime, startTime, units = "mins") |> round(),
+            " minutes!\n"))
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_014_Run_SRP.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_009_Run_PRMS.R' is complete!\n\n"))
   
   
   # Return nothing

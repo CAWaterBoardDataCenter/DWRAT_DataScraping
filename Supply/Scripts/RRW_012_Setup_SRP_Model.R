@@ -20,7 +20,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -28,11 +28,11 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_012_Setup_SRP_Model.R'!\n\n")
+  cat("Starting 'RRW_012_Setup_SRP_Model.R'!\n\n")
   
   
   # Get the location of the SRP model files
-  sourceDir <- getFromSupplyControl_RR("RR_SRP_SOURCE_LOCATION")
+  sourceDir <- getFromControl_RR("RR_SRP_SOURCE_LOCATION")
   
   
   # Validate the user's input and ensure that this directory contains
@@ -59,7 +59,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_012_Setup_SRP_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_012_Setup_SRP_Model.R' is complete!\n\n"))
   
   
   # Return nothing

@@ -1,5 +1,5 @@
-# This script contains the fully automated procedure for the "supply side" 
-# of the Russian River watershed's modeling workflow
+# This script contains the fully automated procedure for the supply and demand
+# components of the Russian River watershed's modeling workflow
 
 
 #### Setup ####
@@ -19,7 +19,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 #### Scripts ####
 
 
-##### User Inputs ####
+##### User Inputs #####
 
 # Please open the following scripts and update them:
 "CTR_001_Set_Start_and_End_Dates.R"
@@ -39,50 +39,66 @@ source("Scripts/HLP_000_Load_Packages.R")
 #   (*) CIMIS
 
 
-source("Scripts/RRS_001_PRISM_HTTP_Scraper.R")
+source("Scripts/RRW_001_PRISM_HTTP_Scraper.R")
 
-source("Scripts/RRS_002_NOAA_API_Scraper.R")
+source("Scripts/RRW_002_NOAA_API_Scraper.R")
 
-source("Scripts/RRS_003_RAWS_HTTP_Scraper.R")
+source("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
 
-source("Scripts/RRS_004_CIMIS_API_Scraper.R")
+source("Scripts/RRW_004_CIMIS_API_Scraper.R")
 
 
 ##### PRMS ####
 
 # Process the downloaded weather files
-source("Scripts/RRS_005_Process_PRMS_Weather_Data.R")
+source("Scripts/RRW_005_Process_PRMS_Weather_Data.R")
 
 
 # Setup the output directory for the PRMS and SRP model runs
-source("Scripts/RRS_006_Setup_Output_Directory.R")
+source("Scripts/RRW_006_Setup_Output_Directory.R")
 
 
 # Setup the temporary PRMS model location
-source("Scripts/RRS_007_Setup_PRMS_Model.R")
+source("Scripts/RRW_007_Setup_PRMS_Model.R")
 
 
 # Generate the input DAT file for PRMS
-source("Scripts/RRS_008_Finalize_PRMS_Input.R")
+source("Scripts/RRW_008_Finalize_PRMS_Input.R")
 
 
 # Run PRMS
-source("Scripts/RRS_009_Run_PRMS.R")
+source("Scripts/RRW_009_Run_PRMS.R")
 
 
 # Store key outputs and clear out the copied model files
-source("Scripts/RRS_010_PRMS_Cleanup.R")
+source("Scripts/RRW_010_PRMS_Cleanup.R")
 
 
 ##### SRP #####
 
-# source("Scripts/RRS_011_Process_SRP_Weather_Data.R")
+# Process the downloaded weather file for SRP
+source("Scripts/RRW_011_Process_SRP_Weather_Data.R")
 
-# source("Scripts/RRS_012_Setup_SRP_Model.R")
 
-# source("Scripts/RRS_013_Finalize_SRP_Input.R")
+# Setup the temporary SRP model location
+source("Scripts/RRW_012_Setup_SRP_Model.R")
 
-# source("Scripts/RRS_014_Run_SRP.R")
+
+# Generate the input DAT file for SRP
+source("Scripts/RRW_013_Finalize_SRP_Input.R")
+
+
+# Run SRP
+source("Scripts/RRW_014_Run_SRP.R")
+
+
+# Store key outputs and clear out the copied model files
+source("Scripts/RRW_015_SRP_Cleanup.R")
+
+
+##### Raw Flows #####
+
+# 
 
 
 

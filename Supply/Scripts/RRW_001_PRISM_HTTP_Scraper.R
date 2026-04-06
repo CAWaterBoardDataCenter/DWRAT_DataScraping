@@ -40,7 +40,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 # Allow greater time to download data from PRISM
@@ -54,7 +54,7 @@ options(timeout = 500) # 500 seconds
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_001_PRISM_HTTP_Scraper.R'!\n")
+  cat("Starting 'RRW_001_PRISM_HTTP_Scraper.R'!\n")
   
   
   # Import the start and end date
@@ -78,7 +78,7 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("PRISM_PRMS_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("PRISM_PRMS_STATIONS_CSV") |>
     getFile() |>
     unique()
   
@@ -109,7 +109,7 @@ mainProcedure <- function () {
   
   
   # Read in a list of SRP stations
-  stationDF <- getFromSupplyControl_RR("PRISM_SRP_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
     getFile() |>
     unique()
   
@@ -141,7 +141,7 @@ mainProcedure <- function () {
   
   
   # Read in a list of grid cells for the PRMS model domain
-  stationDF <- getFromSupplyControl_RR("PRISM_PRMS_GRID_CELLS_CSV") |>
+  stationDF <- getFromControl_RR("PRISM_PRMS_GRID_CELLS_CSV") |>
     getFile() |>
     unique()
   
@@ -171,7 +171,7 @@ mainProcedure <- function () {
   
   
   # Read in a list of grid cells for the SRP model domain
-  stationDF <- getFromSupplyControl_RR("PRISM_SRP_GRID_CELLS_CSV") |>
+  stationDF <- getFromControl_RR("PRISM_SRP_GRID_CELLS_CSV") |>
     getFile() |>
     unique()
   
@@ -193,7 +193,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'RRS_001_PRISM_HTTP_Scraper.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_001_PRISM_HTTP_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -481,8 +481,8 @@ splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
   
   
   # Notify the user about this
-  cat(paste0("\tThe number of requested locations is too large! This step ",
-             "will be divided into ", numRequests, " smaller requests!\n\n"))
+  cat(paste0("\n\tSplitting his step into ", numRequests, 
+             " smaller requests!\n\n"))
   
   
   # Modify 'writePath' to have a value for each intermediate file that

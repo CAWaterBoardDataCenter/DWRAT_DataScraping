@@ -26,7 +26,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 # Allow greater time to download data from NOAA
@@ -40,7 +40,7 @@ options(timeout = 500) # 500 seconds
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_002_NOAA_API_Scraper.R'!\n")
+  cat("Starting 'RRW_002_NOAA_API_Scraper.R'!\n")
   
   
   # Import the start and end date
@@ -51,7 +51,7 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("NOAA_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("NOAA_STATIONS_CSV") |>
     getFile() |>
     unique()
   
@@ -97,7 +97,7 @@ mainProcedure <- function () {
   # Output a completion message
   cat("\tDone!\n\n")
   
-  cat(col_green("\n'RRS_002_NOAA_API_Scraper.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_002_NOAA_API_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing
