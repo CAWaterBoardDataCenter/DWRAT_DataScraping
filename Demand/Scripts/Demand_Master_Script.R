@@ -96,7 +96,7 @@ source("Scripts/Catchment_QAQC.R")
 
 
 # POD Sub-basin Assignment
-#source("Scripts/Assign_Subbasin_to_POD.R")
+source("Scripts/Assign_Subbasin_to_POD.R") # use this script for the Russian River watershed
 source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 # ^ Alternative script that uses connectivity matrix for sub-basin assignment
 
