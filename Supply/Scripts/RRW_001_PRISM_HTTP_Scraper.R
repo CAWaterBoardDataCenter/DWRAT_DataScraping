@@ -395,7 +395,16 @@ getPRISM <- function (stationDF, startDate, endDate, writePath,
   
   # Save the result to a file
   paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
-    download.file(writePath, mode = "wb", quiet = TRUE)
+    read_lines() |>
+    write_lines(writePath)
+  
+  # Note: The superior method using `download.file` does not work on our network :/
+  # `read_lines` is able to bypass the SSL issues that occur with `download.file`
+  
+  # Otherwise, this code is preferred because it doesn't involve storing the data
+  # temporarily in RAM:
+  # paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
+  #   download.file(writePath, mode = "w", quiet = TRUE, method = "libcurl")
   
   
   if (!file.exists(writePath)) {

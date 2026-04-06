@@ -98,7 +98,12 @@ source("Scripts/RRW_015_SRP_Cleanup.R")
 
 ##### Raw Flows #####
 
-# 
+# Process the PRMS and SRP model results into raw flows for each sub-basin
+# (This is the final result of the "supply" part of the process)
+source("Scripts/RRW_016_Generate_Raw_Flows.R")
+
+
+##### DWRAT #####
 
 
 

@@ -1235,3 +1235,86 @@ getGitHash <- function () {
   return(hashRes)
   
 }
+
+
+
+detectAnacondaBat <- function () {
+  
+  # Locate an installation of "Anaconda" on the user's device
+  # Get the path to "activate.bat", which is located under "Scripts"
+  
+  # Return that path as a string to the user
+  
+  
+  # First, check for for "Anaconda" in the "ProgramData" folder
+  anacondaInstallation <- list.files("C:/ProgramData", pattern = "[Aa]naconda",
+                                     full.names = TRUE) |>
+    sort() |> tail(1)
+  
+  
+  # If no match was found, throw an error
+  if (length(anacondaInstallation) == 1) {
+    
+    paste0("Anaconda Not Found\n\n",
+           "This procedure requires an installation of Anaconda. However, ",
+           "the program was not found. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Otherwise, look for "activate.bat"
+  batPath <- paste0(anacondaInstallation, "/Scripts/activate.bat") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'batPath' exists
+  if (!file.exists(batPath)) {
+    
+    paste0("Anaconda Prompt Batch File Not Found\n\n",
+           "This procedure executes Python scripts using Anaconda Prompt. ",
+           "However, the required batch file was not found in \"", 
+           anacondaInstallation, "\". Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues were encountered, return 'batPath'
+  return(batPath)
+  
+}
+
+
+
+detectRScriptExe <- function () {
+  
+  # Look for "Rscript.exe" in the active installation of R
+  # (It should be in the "bin" folder)
+  
+  # Return a path to that exe file
+  
+  
+  # Check the expected location of "Rscript.exe"
+  exePath <- paste0(R.home(), "/bin/Rscript.exe") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'exePath' exists
+  if (!file.exists(exePath)) {
+    
+    paste0("RScript.Exe Not Found\n\n",
+           "This procedure requires the executable version of R. However, \"",
+           exePath, "\" did not point to a valid file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'exePath' if there are no issues
+  return(exePath)
+  
+}

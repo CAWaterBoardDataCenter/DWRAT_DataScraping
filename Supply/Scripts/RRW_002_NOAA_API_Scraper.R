@@ -77,7 +77,7 @@ mainProcedure <- function () {
   
   
   # Download the file to the "WebData" folder
-  download.file(requestURL, outFile, mode = "wb", quiet = TRUE)
+  download.file(requestURL, outFile, mode = "w", quiet = TRUE)
   
   
   # Confirm that 'outFile' exists
