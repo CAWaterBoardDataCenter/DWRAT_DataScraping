@@ -17,7 +17,7 @@
 #### Setup ####
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
@@ -26,14 +26,14 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 #### Functions ####
 
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_003_RAWS_HTTP_Scraper.R'!\n")
+  cat("Starting 'RRW_003_RAWS_HTTP_Scraper.R'!\n")
   
   
   # Import the start and end date
@@ -41,13 +41,13 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromSupplyControl_RR("RAWS_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("RAWS_STATIONS_CSV") |>
     getFile() |>
     unique()
   
   
   # Perform data validation on 'stationDF' next
-  validateInput(stationDF, "RAWS_STATIONS_CSV")
+  validateStationInputFile(stationDF, "RAWS_STATIONS_CSV", "RAWS")
   
   
   # Iteratively submit requests to RAWS in a for loop
@@ -89,57 +89,10 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_003_RAWS_HTTP_Scraper.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_003_RAWS_HTTP_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-validateInput <- function (stationDF, sourceField) {
-  
-  # Make sure that 'stationDF' is formatted correctly
-  # If there are any issues, notify the user
-  
-  
-  # 'stationDF' should contain at least one column: "STATION_ID"
-  if (!("STATION_ID" %in% names(stationDF))) {
-    
-    stop(paste0("Station Input File - Column Issue\n\n",
-                "The input file containing RAWS stations does not have ",
-                "the required column (\"STATION_ID\"). ",
-                "Please correct this file and try again.\n\n",
-                "The input file must contain the IDs that appear in RAWS's ",
-                "URLs for each target location (e.g., 'CHAW' for 'Hawkeye')\n\n",
-                "Also, the name of this column must match exactly\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
-                "')") |>
-           errWrap() |>
-           str_replace("(does not)", col_red("\\1")) |>
-           str_replace("(exactly)", col_red("\\1")))
-    
-  }
-  
-  
-  # Make sure there are no missing entries in the "STATION_ID" column
-  if (anyNA(stationDF$STATION_ID)) {
-    
-    stop(paste0("Station Input File - Missing Data Issue\n\n",
-                "The input file containing target RAWS stations has one or more ",
-                "missing rows in its required column (\"STATION_ID\")\n\n", 
-                "Please fill in any empty entries in this column\n\n",
-                "(This error occurred for '", getFromSupplyControl_RR(sourceField), 
-                "')") |>
-           errWrap() |>
-           str_replace("(missing)", col_red("\\1")))
-    
-  }
-  
-  
-  # Return nothing if there are no issues
   return(invisible(NULL))
   
 }
@@ -479,4 +432,4 @@ mainProcedure()
 
 
 # Clean up
-remove(list = ls())
+base::remove(list = ls())

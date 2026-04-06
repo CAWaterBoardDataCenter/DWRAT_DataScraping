@@ -174,6 +174,19 @@ getXLSX <- function (filePath, worksheet = NULL,
   # It has additional error handling processes
   
   
+  # First, make sure 'filePath' is a character variable
+  if (!is.character(filePath)) {
+    
+    stop(paste0("Unusable File Path\n\n",
+                "The provided file path is not a character variable.\n\n",
+                "Please double-check that '", filePath, "' is a valid path. ",
+                "Script revisions may be necessary.") |>
+           errWrap() |>
+           str_replace("(incorrect)", col_red("\\1")))
+    
+  }
+  
+  
   sheetDF <- try(read_xlsx(filePath, sheet = worksheet, range = range,
                            col_names = col_names, col_types = col_types,
                            skip = skip, n_max = n_max, guess_max = guess_max), silent = TRUE)
@@ -240,6 +253,19 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   # Use read_delim() or fread() to import a file as a data frame
   
   
+  # First, make sure 'filePath' is a character variable
+  if (!is.character(filePath)) {
+    
+    stop(paste0("Unusable File Path\n\n",
+                "The provided file path is not a character variable.\n\n",
+                "Please double-check that '", filePath, "' is a valid path. ",
+                "Script revisions may be necessary.") |>
+           errWrap() |>
+           str_replace("(incorrect)", col_red("\\1")))
+    
+  }
+  
+  
   # If 'largeFile' is TRUE, use fread() and import the file as a data frame
   # Otherwise, use read_delim() and read in the file as a tibble
   if (largeFile) {
@@ -259,7 +285,9 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   if ("try-error" %in% class(fileDF)) {
     
     # In every case, output the actual error message first
-    message(fileDF)
+    cat("\n\n")
+    print(fileDF)
+    cat("\n\n")
     
     
     # Next, address different errors with custom messages
@@ -385,9 +413,9 @@ getFromMasterControl <- function (fieldName) {
 
 
 
-getFromSupplyControl_RR <- function (fieldName) {
+getFromControl_RR <- function (fieldName) {
   
-  # Return a value from the RR Supply control file
+  # Return a value from the RR Workflow control file
   
   # The name of the parameter is given in 'fieldName'
   # The "FIELD" column of the spreadsheet should have a matching value
@@ -398,12 +426,12 @@ getFromSupplyControl_RR <- function (fieldName) {
   # It can either be a SharePoint version or a local copy
   
   # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
-  # and "SHAREPOINT_RR_SUPPLY_CONTROL_FILE" must be specified in 
+  # and "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE" must be specified in 
   # "Master_Control_File.xlsx"
   if (!is.na(getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"))) {
     
-    # Try and read the SharePoint fragment for the RR Supply control file
-    controlPath <- getFromMasterControl("SHAREPOINT_RR_SUPPLY_CONTROL_FILE")
+    # Try and read the SharePoint fragment for the RR Worfklow control file
+    controlPath <- getFromMasterControl("SHAREPOINT_RR_WORKFLOW_CONTROL_FILE")
     
     
     # If that value is indeed specified, read it in as 'controlDF'
@@ -421,7 +449,7 @@ getFromSupplyControl_RR <- function (fieldName) {
   # In all other cases, use the local version of the control file
   if (!exists("controlDF")) {
     
-    controlPath <- "InputData/RR_Supply_Control_File.xlsx"
+    controlPath <- "InputData/RR_Workflow_Control_File.xlsx"
     
     controlDF <- getXLSX(controlPath)
     
@@ -433,7 +461,7 @@ getFromSupplyControl_RR <- function (fieldName) {
     
     stop(paste0("Field Does Not Exist\n\n",
                 "'", fieldName, "' does not appear in the 'FIELD' column of the ",
-                "RR Supply Control File\n\n",
+                "RR Workflow Control File\n\n",
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of '",
                 controlPath, "' is in use") |>
@@ -1151,3 +1179,142 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
 }
 
+
+
+getGitHash <- function () {
+  
+  # Generate a temporary batch file that calls "git rev-parse"
+  # to get the short hash of the current commit in the repository
+  
+  # Obtain the hash string from that command and return it
+  
+  
+  # First, start by generating a temporary batch file
+  # Save it into the current repository location
+  tempName <- "temp_git_check.bat"
+  
+  
+  c("git rev-parse --short HEAD",
+    "exit") |>
+    writeOutput(tempName, "write_lines", quietly = TRUE)
+  
+  
+  # Execute the batch file
+  hashRes <- system(tempName, intern = TRUE)
+  
+  
+  # The hash will be located on a line by itself after the "rev-parse" call
+  hashLoc <- grep("rev-parse", hashRes)[1] + 1
+  
+  
+  # Check for errors at this point
+  if (length(hashLoc) == 0 || is.na(hashLoc) || 
+      any(grepl("Error", hashRes, ignore.case = TRUE))) {
+    
+    print(hashRes)
+    
+    paste0("Git Call Failed\n\n",
+           "An error occurred when running a batch script that contanied ",
+           "a git command (\"", normalizePath(tempName, mustWork = TRUE), 
+           "\"). The results were printed above. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues occurred, extract the hash string from 'hashRes'
+  hashRes <- hashRes[hashLoc]
+  
+  
+  # Finally, delete the temporary batch file
+  unlink(tempName)
+  
+  
+  # Return the short commit hash
+  return(hashRes)
+  
+}
+
+
+
+detectAnacondaBat <- function () {
+  
+  # Locate an installation of "Anaconda" on the user's device
+  # Get the path to "activate.bat", which is located under "Scripts"
+  
+  # Return that path as a string to the user
+  
+  
+  # First, check for for "Anaconda" in the "ProgramData" folder
+  anacondaInstallation <- list.files("C:/ProgramData", pattern = "[Aa]naconda",
+                                     full.names = TRUE) |>
+    sort() |> tail(1)
+  
+  
+  # If no match was found, throw an error
+  if (length(anacondaInstallation) == 1) {
+    
+    paste0("Anaconda Not Found\n\n",
+           "This procedure requires an installation of Anaconda. However, ",
+           "the program was not found. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Otherwise, look for "activate.bat"
+  batPath <- paste0(anacondaInstallation, "/Scripts/activate.bat") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'batPath' exists
+  if (!file.exists(batPath)) {
+    
+    paste0("Anaconda Prompt Batch File Not Found\n\n",
+           "This procedure executes Python scripts using Anaconda Prompt. ",
+           "However, the required batch file was not found in \"", 
+           anacondaInstallation, "\". Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues were encountered, return 'batPath'
+  return(batPath)
+  
+}
+
+
+
+detectRScriptExe <- function () {
+  
+  # Look for "Rscript.exe" in the active installation of R
+  # (It should be in the "bin" folder)
+  
+  # Return a path to that exe file
+  
+  
+  # Check the expected location of "Rscript.exe"
+  exePath <- paste0(R.home(), "/bin/Rscript.exe") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'exePath' exists
+  if (!file.exists(exePath)) {
+    
+    paste0("RScript.Exe Not Found\n\n",
+           "This procedure requires the executable version of R. However, \"",
+           exePath, "\" did not point to a valid file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'exePath' if there are no issues
+  return(exePath)
+  
+}

@@ -1,4 +1,4 @@
-# This script runs the entire RR Supply process
+# This script runs the entire RR Workflow process
 
 # It enables further automation by automatically choosing the start and end dates
 
@@ -9,17 +9,15 @@
 #### Setup ####
 
 # Clear the environment first
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
-require(rvest)
-require(fs)
+require(renv)
+
+restore()
+
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -98,8 +96,8 @@ writeOutput(controlScript, controlPath, "write_lines", quietly = TRUE)
 
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())
 
 
-# Finally, run the master script and begin the RR Supply process
-source("Scripts/RRS_000_Master_Script_RR_Supply.R")
+# Finally, run the master script and begin the RR Workflow process
+source("Scripts/RRW_000_Master_Script_RR_Supply.R")

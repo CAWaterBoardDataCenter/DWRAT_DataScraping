@@ -16,6 +16,204 @@ source("Scripts/HLP_001_Shared_Functions_Supply.R")
 
 #### Functions ####
 
+validateStationInputFile <- function (stationDF, sourceField, dataSource) {
+  
+  # This function is used for initial validation of an input file that
+  # identifies stations and/or locations where climate data will be downloaded
+  
+  # Make sure that 'stationDF' is formatted correctly
+  # If there are any issues, notify the user
+  
+  
+  # This function is intended to be used for the "PRISM", "NOAA", "CIMIS",
+  # and "RAWS" station input files
+  if (!(dataSource %in% c("PRISM", "NOAA", "CIMIS", "RAWS"))) {
+    
+    paste0("Unexpected Data Source\n\n", 
+           "The name \"", dataSource, "\" is not recognized; ",
+           "please fix the script\n\n",
+           "The function `validateStationInputFile()` expects \"PRISM\", ",
+           "\"NOAA\", \"RAWS\", or \"CIMIS\" as acceptable values.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The expected columns differ depending on 'dataSource'
+  # Most sources only require a "STATION_ID" column
+  if (dataSource %in% c("PRISM")) {
+    
+    expectedCols <- c("LATITUDE", "LONGITUDE", "STATION_ID")
+    
+  } else if (dataSource %in% c("NOAA", "RAWS", "CIMIS")) {
+    
+    expectedCols <- c("STATION_ID")
+    
+  }
+  
+  
+  # Check for missing columns
+  missingColumns <- which(!(expectedCols %in% names(stationDF)))
+  
+  
+  # 'stationDF' should contain all expected columns
+  if (length(missingColumns) > 0) {
+    
+    # There are slightly different error messages depending on the data source
+    paste0("Station Input File - Column Issue\n\n",
+           "The input file containing ",
+           list("PRISM" = "PRISM target coordinates ",
+                "NOAA" = "GHCND stations ",
+                "RAWS" = "RAWS stations ",
+                "CIMIS" = "CIMIS stations ")[[dataSource]], 
+           "does not have ", 
+           if_else(length(expectedCols) == 1, 
+                   " the required column ", "all required columns "),
+           "(", vec2QuotedStr(expectedCols), "). Please correct this file ",
+           "and try again.\n\n",
+           list("PRISM" = paste0("The input file must contain the WGS84 ",
+                                 "coordinates and unique identifiers for ",
+                                 "each location."),
+                "NOAA" = paste0("The input file must contain the GHCND IDs ",
+                                "(e.g., 'USC00043875') for each target ",
+                                "location."),
+                "RAWS" = paste0("The input file must contain the IDs that ",
+                                "appear in RAWS's URLs for each target ",
+                                "location (e.g., 'CHAW' for 'Hawkeye')."),
+                "CIMIS" = paste0("The input file must contain the numeric ",
+                                 "IDs that correspond to different CIMIS ",
+                                 "stations (e.g., '103' for ",
+                                 "'Windsor')."))[[dataSource]], " ",  
+           "Also, the names of these columns must match exactly.\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField),
+           "')") |>
+      errWrap() |>
+      str_replace("(does not)", col_red("\\1")) |>
+      str_replace("(exactly)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # Make sure there are no missing entries in the required columns
+  if (anyNA(stationDF[expectedCols])) {
+    
+    paste0("Station Input File - Missing Data Issue\n\n",
+           "The input file containing target ", dataSource, " ",
+           if_else(dataSource == "PRISM", "coordinates", "stations"), " ",
+           "has one or more missing elements in its required column",
+           if_else(length(expectedCols) > 1, "s", ""), " (",
+           vec2QuotedStr(expectedCols), ")\n\n", 
+           "Please fill in any empty entries in ",
+           if_else(length(expectedCols) > 1, "these columns", "this column"),
+           "\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField), 
+           "')") |>
+      errWrap() |>
+      str_replace("(missing)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # Ensure that no IDs are duplicated in 'stationDF'
+  if (length(stationDF$STATION_ID) != length(unique(stationDF$STATION_ID))) {
+    
+    paste0("Station Input File - Duplicate ID Issue\n\n",
+           "The input file containing target ", dataSource, " ",
+           if_else(dataSource == "PRISM", "coordinates", "stations"), " ",
+           "has one or more values in its \"STATION_ID\" column that are ",
+           "duplicated.\n\n", 
+           "Please ensure that each row of the input file has a unique ",
+           "value for this column\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField), 
+           "')") |>
+      errWrap() |>
+      str_replace("(duplicated)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # Finally, check the types of different columns
+  
+  
+  # If "LATITUDE" and "LONGITUDE" are present in 'expectedCols',
+  # check if those columns are both numeric 
+  if (all(c("LATITUDE", "LONGITUDE") %in% expectedCols)) {
+    
+    if (is.character(stationDF$LATITUDE) || is.character(stationDF$LONGITUDE)) {
+      
+      paste0("Station Input File - Coordinates Type Issue\n\n",
+             "The \"LATITUDE\" and/or \"LONGITUDE\" columns of the input ",
+             "file are being read in as character columns instead of ",
+             "numeric columns\n\n", 
+             "Since types are assigned automatically, this indicates ",
+             "that the columns cannot be parsed as numeric columns due ",
+             "to the presence of non-number-related characters (or the ",
+             "absence of any values at all)\n\n",
+             "Please correct these columns and ensure that they are ",
+             "numeric values\n\n",
+             "(This error occurred for '", 
+             getFromControl_RR(sourceField), "')") |>
+        errWrap() |>
+        str_replace("(character)", col_red("\\1")) |>
+        stop()
+      
+    } else if (!is.numeric(stationDF$LATITUDE) || !is.numeric(stationDF$LONGITUDE)) {
+      
+      paste0("Station Input File - Coordinates Type Issue\n\n",
+             "The \"LATITUDE\" and/or \"LONGITUDE\" columns of the input ",
+             "file are being read in as a different type of column ",
+             "instead of numeric\n\n", 
+             "Since types are assigned automatically, this indicates that ",
+             "the columns cannot be parsed as numeric columns for some ",
+             "reason, such as being empty\n\n",
+             "Please correct these columns and ensure that they are ",
+             "numeric values\n\n",
+             "(This error occurred for '", 
+             getFromControl_RR(sourceField), "')") |>
+        errWrap() |>
+        str_replace("(empty)", col_red("\\1")) |>
+        stop()
+      
+    }
+    
+  }
+  
+  
+  # For CIMIS, the station IDs must be numeric
+  if (dataSource == "CIMIS") {
+    
+    if (!is.numeric(stationDF$STATION_ID)) {
+      
+      paste0("Station Input File - ID Type Issue\n\n",
+             "The \"STATION_ID\" column of the input file is being read in ",
+             "as something other than a numeric column\n\n", 
+             "Since types are assigned automatically, this indicates that the ",
+             "column cannot be parsed as a numeric column due to the presence ",
+             "of non-number-related characters (or the absence of any value ",
+             "at all)\n\n",
+             "Please correct this column and ensure that it contains only ",
+             "numeric values\n\n",
+             "(This error occurred for '", getFromControl_RR(sourceField), 
+             "')") |>
+        errWrap() |>
+        str_replace("(missing)", col_red("\\1")) |>
+        stop()
+      
+    }
+    
+  }
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
+  
+}
+
+
 validateStationInputs <- function (inputDF, inputPath, 
                                    model = "PRMS", numPrecipFields = 15,
                                    numTempFields = 8) {
@@ -474,6 +672,24 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
   }
   
   
+  # Define a list that defines the final portion of the error messages
+  # based on the value of 'datType'
+  if (datType == "Main") {
+    
+    finalMessage <- paste0("(This error occurred for '", 
+                           getFromControl_RR(sourceField), "')")
+    
+  } else if (datType == "SPI") {
+    
+    finalMessage <- paste0("Please investigate the SPI prediction procedure.")
+    
+  } else {
+    
+    finalMessage <- paste0("Please investigate the component DAT files.")
+    
+  }
+  
+  
   # First, check that the date- and time-related fields are present
   datetimeCols <- c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND")
   
@@ -492,10 +708,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            "the meteorological CSV (\"", model, "_Meteorological_",  
            startDate, "_", endDate, ".csv\"). Please correct this file ",
            "and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -518,10 +731,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            "names) must match exactly with the meteorological CSV ",
            "(\"", model, "_Meteorological_", startDate, "_", endDate, 
            ".csv\"). Please correct this file and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -552,10 +762,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            " a different type (",
            vec2QuotedStr(names(datFile)[nonNumCols]), ").\n\n",
            "Please correct this file and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -595,10 +802,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            if_else(length(missingDates) > 1, "s", ""), " (", 
            vec2QuotedStr(expectedDates[missingDates]), "). Please correct ",
            "this file and try again.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       str_replace("(does not)", col_red("\\1")) |>
       stop()
@@ -626,11 +830,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              vec2QuotedStr(names(dupDates)), ").\n\n", 
              "Please correct this issue. Every date should have exactly ",
              "one row in the DAT file.\n\n", 
-             if_else(datType != "Final",
-                     paste0("(This error occurred for '", 
-                            getFromSupplyControl_RR(sourceField), "')"),
-                     paste0("Please investigate the component ",
-                            "DAT files."))) |>
+             finalMessage) |>
         errWrap() |>
         str_replace("(does not)", col_red("\\1")) |>
         stop()
@@ -644,11 +844,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              "unknown data issue. The number of rows in the dataset does ",
              "not match the number of days between the start and end ",
              "dates in that file. Please investigate.\n\n", 
-             if_else(datType != "Final",
-                     paste0("(This error occurred for '", 
-                            getFromSupplyControl_RR(sourceField), "')"),
-                     paste0("Please investigate the component ",
-                            "DAT files."))) |>
+             finalMessage) |>
         errWrap() |>
         str_replace("(unknown)", col_red("\\1")) |>
         stop()
@@ -671,10 +867,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
                    "A missing value was "), 
            " detected in the ", datType, " DAT file (see the above message ",
            "for locations). Please correct the file.\n\n", 
-           if_else(datType != "Final",
-                   paste0("(This error occurred for '", 
-                          getFromSupplyControl_RR(sourceField), "')"),
-                   paste0("Please investigate the component DAT files."))) |>
+           finalMessage) |>
       errWrap() |>
       stop()
     
@@ -695,8 +888,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
            "that not all dates will have data when running ", model, 
            " with these files. Please adjust either the DAT file or ",
            "'startDate' in the control script.\n\n",
-           "(This error occurred for '", 
-           getFromSupplyControl_RR(sourceField), "')") |>
+           finalMessage) |>
       errWrap() |>
       stop()
     
@@ -718,8 +910,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              "year is missing data. It does not extend to the end of the ",
              "water year (\"", wyBounds[2], "\"). Please adjust ",
              "this file.\n\n",
-             "(This error occurred for '", 
-             getFromSupplyControl_RR(sourceField), "')") |>
+             finalMessage) |>
         errWrap() |>
         stop()
       
@@ -734,8 +925,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
              "that not all dates will have data when running ", model,
              " with these files. Please adjust either the DAT file or ",
              "'endDate' in the control script.\n\n",
-             "(This error occurred for '", 
-             getFromSupplyControl_RR(sourceField), "')") |>
+             finalMessage) |>
         errWrap() |>
         stop()
       
@@ -747,6 +937,131 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
   # If there are no issues, return 'datFile'
   # (It now has a "DATE" column)
   return(datFile |> arrange(DATE))
+  
+}
+
+
+
+validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
+  
+  # For both PRMS and SRP DAT files, calculations are performed 
+  # based on average precipitation data from PRISM
+  
+  # These daily precipitation values are averaged from grid cells located 
+  # entirely within the watershed boundary 
+  # (they correspond to the model domains of PRMS and SRP)
+  
+  # This function verifies that continuous precipitation data is present 
+  # from "1981-01-01" to the beginning of the modeled water year in 'precipDF'
+  prismStart <- "1981-01-01" |>
+    as.Date(format = "%Y-%m-%d")
+  
+  
+  # First, confirm that both expected columns are present
+  expectedCols <- c("Date", "ppt (mm)")
+  
+  
+  if (anyFalse(expectedCols %in% names(precipDF))) {
+    
+    # Identify the missing column(s)
+    missingFields <- which(!(expectedCols %in% names(precipDF)))
+    
+    
+    paste0("Historic Precipitation File - Missing Column Issue\n\n", 
+           "For this script to work, the historic precipitation CSV must ",
+           "contain ", length(expectedCols), " key column",
+           if_else(length(expectedCols) > 1, "s", ""), " (",
+           vec2QuotedStr(expectedCols), "). However, the file is missing ",
+           if_else(length(missingFields) > 1, "fields", "a field"), ":\n\n",
+           paste0("(*) ", expectedCols[missingFields], collapse = "\n\n"), 
+           "\n\n",
+           "Please revise this file accordingly.\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField),
+           "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # There should be no empty entries in 'precipDF' either
+  if (anyNA(precipDF)) {
+    
+    paste0("Historic Precipitation File - Missing Value Issue\n\n", 
+           "One or more missing elements were noted in the historic ",
+           "precipitation CSV file. All data columns should have a value. ",
+           "Please revise this file accordingly.\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField),
+           "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # After that, check for missing dates in 'precipDF'
+  dateSeq <- seq(from = prismStart, to = wyStart - 1, by = "days")
+  
+  
+  # Every date in 'dateSeq' should appear in 'precipDF' 
+  # If that is the case, 'missingDates' will be empty
+  missingDates <- dateSeq[!(dateSeq %in% precipDF$Date)]
+  
+  
+  if (length(missingDates) > 0) {
+    
+    paste0("Historic Precipitation File - Missing Data Issue\n\n", 
+           "The historic precipitation CSV is expected to contain ",
+           "daily precipitation data from ", dateSeq[1], " to ", 
+           wyStart - 1, ". However, ", length(missingDates), " ",
+           "date", if_else(length(missingDates) > 1, "s are", " is"), " ",
+           "missing. Please revise this file accordingly.\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField),
+           "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Check for duplicated dates next
+  if (nrow(precipDF) != length(unique(precipDF[[expectedCols[1]]]))) {
+    
+    paste0("Historic Precipitation File - Duplicate Date Issue\n\n", 
+           "The historic precipitation CSV file is expected to contain ",
+           "one precipitation value per day (an average daily value for ",
+           "the entire watershed domain). However, one or more dates in ",
+           "this file are duplicated. Please revise this file.\n\n",
+           "(This error occurred for '", getFromControl_RR(sourceField),
+           "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Finally, ensure that the precipitation data is numeric
+  if (!is.numeric(precipDF[[expectedCols[2]]])) {
+    
+    paste0("Historic Precipitation File - Non-Numeric Data Issue\n\n",
+           "The precipitation column of this CSV file (\"", expectedCols[2],
+           "\") is not being parsed as a numeric column. Since types ",
+           "are assigned automatically, this indicates that the column ",
+           "either contains non-number-related characters or is completely ",
+           "empty.\n\n",
+           "Please adjust this file and ensure that this column contains only ",
+           "numeric values.\n\n",
+           "(This error occurred for '", 
+           getFromControl_RR(sourceField), "')") |>
+      errWrap() |>
+      str_replace("(not)", col_red("\\1")) |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
   
 }
 
@@ -769,8 +1084,8 @@ checkForPreviousOutput <- function (filePath) {
     paste0("File", if_else(length(missingFiles) > 1, "s", ""), " ",
            "From Previous Script Not Found\n\n",
            "The file", if_else(length(missingFiles) > 1, "s", ""), " ",
-           vec2QuotedStr(filePath[missingFiles]), "should have been generated ",
-           "by ", if_else(length(missingFiles) > 1, "", "a"), " ",
+           vec2QuotedStr(filePath[missingFiles]), " should have been ",
+           "generated by ", if_else(length(missingFiles) > 1, "", "a"), " ",
            "preceding script", if_else(length(missingFiles) > 1, "s", ""), " ",
            "in this process. However, ",
            if_else(length(missingFiles) > 1, "they were ", "it was "),
@@ -1093,6 +1408,11 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
       cat("\n\nModel Output Message(s):\n\n")
       print(modelOutput)
       
+      
+      # Save 'modelOutput' to a file too
+      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt", 
+                  "write_lines")
+      
     }
     
     
@@ -1102,7 +1422,7 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
            "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
            "). Please investigate ",
            if_else(is.null(modelOutput),
-                   "the model's output messages (included above)",
+                   "the model's output messages (included above and in a file)",
                    "this issue"),
            ".\n\n", 
            "(This error occurred for \"", prmsPath, "\")") |>
@@ -1184,7 +1504,7 @@ validateModelCopy_SRP <- function () {
   
   
   # Finally, check for the main executable file
-  exePath <- paste0(prmsPath, "/gsflow_ag.exe") |>
+  exePath <- paste0(srpPath, "/gsflow_ag.exe") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -1208,8 +1528,7 @@ validateModelCopy_SRP <- function () {
 
 
 
-checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
-                                      includeScriptGeneratedOutput = FALSE) {
+checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
   
   # Double-check that the model ran successfully
   
@@ -1218,17 +1537,20 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
   
   # These files were all generated by SRP
   outFiles <- c("gsflow.log",
-                paste0("SRP_inflow_", 1:6, ".gag"))
-  
-  
-  # If 'includeScriptGeneratedOutput' is TRUE, include the console output 
-  # text file generated by an earlier script in this check
-  if (includeScriptGeneratedOutput) {
-    
-    outFiles <- c(outFiles,
-                  "SRP_Console_Output.txt")
-    
-  }
+                paste0("SRP_inflow_", 1:6, ".gag"),
+                "SRP_inflow_11465500.gag",
+                "SRP_inflow_11465660.gag",
+                "SRP_inflow_11465680.gag",
+                "SRP_inflow_11465690.gag",
+                "SRP_inflow_11465700.gag",
+                "SRP_inflow_11465750.gag",
+                "SRP_inflow_11466170.gag",
+                "SRP_inflow_11466200.gag",
+                "SRP_inflow_11466320.gag",
+                "SRP_inflow_11466800.gag",
+                "model_output_summary.txt",
+                "basin/basin_.csv",
+                "basin/basin__monthly.csv")
   
   
   # Check if any files are missing
@@ -1246,6 +1568,11 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
       cat("\n\nModel Output Message(s):\n\n")
       print(modelOutput)
       
+      
+      # Save 'modelOutput' to a file too
+      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt", 
+                  "write_lines")
+      
     }
     
     
@@ -1255,7 +1582,7 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL,
            "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
            "). Please investigate ",
            if_else(is.null(modelOutput),
-                   "the model's output messages (included above)",
+                   "the model's output messages (included above and in a file)",
                    "this issue"),
            ".\n\n", 
            "(This error occurred for \"", srpPath, "\")") |>

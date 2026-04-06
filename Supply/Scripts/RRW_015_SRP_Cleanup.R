@@ -1,13 +1,13 @@
-# After the PRMS run has completed successfully, 
+# After the SRP run has completed successfully, 
 # copy key output files into the hydrology model input/output folder
 
-# Then, delete the "RR_PRMS" folder from the "ProcessedData" folder
+# Then, delete the "SRPHM_update_ag" folder from the "ProcessedData" folder
 
 
 #### Setup ####
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
@@ -16,7 +16,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -24,7 +24,7 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_010_PRMS_Cleanup.R'!\n")
+  cat("Starting 'RRW_015_SRP_Cleanup.R'!\n")
   
   
   # Import the start and end date
@@ -32,7 +32,7 @@ mainProcedure <- function () {
   
   
   # Confirm that a proper directory exists for model input and output files
-  # The actual PRMS model files should have been successfully copied to
+  # The actual SRP model files should have been successfully copied to
   # the "ProcessedData" folder too
   cat("[1/3]\tChecking directories...\n")
   
@@ -41,8 +41,8 @@ mainProcedure <- function () {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Also confirm that the "RR_PRMS" folder was copied to "ProcessedData"
-  prmsPath <- validateModelCopy_PRMS()
+  # Also confirm that the "SRPHM_update_ag" folder was copied to "ProcessedData"
+  srpPath <- validateModelCopy_SRP()
   
   
   cat("\tDone!\n\n")
@@ -52,25 +52,25 @@ mainProcedure <- function () {
   
   
   # Copy output files into the hydrology folder
-  copyOutputs(prmsPath, dirPath, startDate, endDate)
+  copyOutputs(srpPath, dirPath, startDate, endDate)
   
   
   cat("\tDone!\n\n")
   
   
-  # The final step is to delete the "RR_PRMS" folder that was copied to 
+  # The final step is to delete the "SRPHM_update_ag" folder that was copied to 
   # the "ProcessedData" folder
   cat("[3/3]\tDeleting the model files...\n")
   
   
-  deleteFiles(prmsPath)
+  deleteFiles(srpPath)
   
   
   cat("\tDone!\n\n")
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_010_PRMS_Cleanup.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_015_SRP_Cleanup.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -80,42 +80,43 @@ mainProcedure <- function () {
 
 
 
-copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
+copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
   # Copy several files from the PRMS "output" folder
   # into the hydrology folder 
   
   
   # This vector contains the names of the desired output files
-  copyFiles <- c("rr_budget.out2", 
-                 "gsflow.csv",
-                 "RR_PRMS_Output_sub_cfs.csv",
-                 "RR_PRMS_Output_sub_inq.csv",
-                 "PRMS_Console_Output.txt")
+  copyFiles <- c("gsflow.log",
+                 paste0("SRP_inflow_", 1:6, ".gag"),
+                 "SRP_inflow_11465500.gag",
+                 "SRP_inflow_11465660.gag",
+                 "SRP_inflow_11465680.gag",
+                 "SRP_inflow_11465690.gag",
+                 "SRP_inflow_11465700.gag",
+                 "SRP_inflow_11465750.gag",
+                 "SRP_inflow_11466170.gag",
+                 "SRP_inflow_11466200.gag",
+                 "SRP_inflow_11466320.gag",
+                 "SRP_inflow_11466800.gag",
+                 "model_output_summary.txt",
+                 "basin/basin_.csv",
+                 "basin/basin__monthly.csv")
   
   
   # Confirm that they exist in the "output" folder first
-  checkForModelOutputs_PRMS(prmsPath, modelOutput = NULL,
-                            includeScriptGeneratedOutput = TRUE)
+  checkForModelOutputs_SRP(srpPath, modelOutput = NULL)
   
   
   # Prepare vectors that contain the proper filepaths and the planned filepaths
-  sourcePaths <- copyFiles |>
-    paste0(prmsPath, "/PRMS/output/", 
-           ... = _) |>
-    normalizePath(mustWork = FALSE)
+  sourcePaths <- paste0(srpPath, "/", copyFiles) |>
+    normalizePath(mustWork = TRUE)
   
   
-  # For the "sub_cfs" and "sub_inq" files, include today's date and the 
-  # modeler's name in these filenames
+  # Use the same exact filenames in the hydrology directory's SRP output folder
   writePaths <- copyFiles |>
-    str_replace("RR_PRMS_Output",
-                paste0("RR_PRMS_Output_",
-                       Sys.Date(),
-                       "_", Sys.info()[["user"]],
-                       "_", startDate,
-                       "_", endDate)) |>
-    paste0(dirPath, "/PRMS/Output/", 
+    str_remove("^.+[/\\\\]") |>
+    paste0(dirPath, "/SRP/Output/", 
            ... = _) |>
     normalizePath(mustWork = FALSE)
   
@@ -134,7 +135,7 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
     
     stop(paste0("Could Not Copy File", 
                 if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-                "The script attempted to copy PRMS output files to the ",
+                "The script attempted to copy SRP output files to the ",
                 "hydrology folder. However, the process was not successful ",
                 "for ", vec2QuotedStr(copyFiles[missingFiles]), ".\n\n",
                 "Perhaps there was a permission issue? Please investigate.\n\n",
@@ -153,22 +154,22 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
 
 
 
-deleteFiles <- function (prmsPath) {
+deleteFiles <- function (srpPath) {
   
-  # Delete the "RR_PRMS" directory in the "ProcessedData" folder
+  # Delete the "SRPHM_update_ag" directory in the "ProcessedData" folder
   
   # Start by deleting that folder
-  dir_delete(prmsPath)
+  dir_delete(srpPath)
   
   
   # Confirm that it was deleted
-  if (dir.exists(prmsPath)) {
+  if (dir.exists(srpPath)) {
     
-    stop(paste0("Failed to Delete PRMS Directory\n\n",
-                "The script attempted to delete the PRMS model files that ",
+    stop(paste0("Failed to Delete SRP Directory\n\n",
+                "The script attempted to delete the SRP model files that ",
                 "were located in the \"ProcessedData\" folder. However, it ",
                 "was unsuccessful for an unknown reason. Please investigate.\n\n",
-                "(This error occurred for \"", prmsPath, "\")") |>
+                "(This error occurred for \"", srpPath, "\")") |>
            errWrap())
     
   }
@@ -186,4 +187,4 @@ mainProcedure()
 
 
 # Clean up
-remove(list = ls())
+base::remove(list = ls())
