@@ -248,7 +248,8 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
-                      select = NULL, col_types = NULL, skip = 0) {
+                      select = NULL, col_types = NULL, skip = 0,
+                      trim_ws = FALSE) {
   
   # Use read_delim() or fread() to import a file as a data frame
   
@@ -270,13 +271,14 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   # Otherwise, use read_delim() and read in the file as a tibble
   if (largeFile) {
     
-    fileDF <- try(fread(filePath, sep = delim, select = select), silent = TRUE)
+    fileDF <- try(fread(filePath, sep = delim, select = select,
+                        strip.white = trim_ws), silent = TRUE)
     
   } else {
     
     fileDF <- try(read_delim(filePath, delim = delim, 
                              col_types = col_types, show_col_types = FALSE,
-                             skip = skip))
+                             skip = skip, trim_ws = trim_ws))
     
   }
   
@@ -1105,6 +1107,132 @@ getPRISM <- function (prismPath) {
   
   # Return 'prismDF'
   return(prismDF)
+  
+}
+
+
+
+read_gag <- function (gagPath) {
+  
+  # Read in a ".gag" file as a tibble
+  # (These files are outputs from SRP)
+  
+  
+  # Read in the lines of the file
+  gagVec <- getFile(gagPath, fileType = "OTHER")
+  
+  
+  # GAG files start with metadata
+  
+  # Find the actual headers using the "DATA" text string 
+  # that starts the header row
+  headerRegex <- "\"DATA:"
+  
+  
+  headerLine <- grep(headerRegex, gagVec)
+  
+  
+  # Return an error if 'headerLine' was not found (or if multiple matches were found)
+  if (length(headerLine) == 0) {
+    
+    paste0("GAG Data File - Missing Column Header Issue\n\n", 
+           "This script attempted to find the header row in an SRP ",
+           "GAG output file. However, the header row could not be ",
+           "found.\n\n",
+           "There could be data corruption issues, or the formatting of ",
+           "the GAG files may have changed. This script may need ",
+           "updates, depending on the cause of this problem.\n\n",
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  } else if (length(headerLine) > 1) {
+    
+    paste0("GAG Data File - Could Not Identify Column Header\n\n", 
+           "This script attempted to find the header row in an SRP ",
+           "GAG output file. However, an unusual issue was ",
+           "encountered.\n\n",
+           "The header row is usually identified via this regular ",
+           "expression:\n\n",
+           "(*) \"", headerRegex, "\"\n\n",
+           "There should be exactly one row in the input file that has ",
+           "this pattern. However, more than one match was found.\n\n", 
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there are no issues, remove the metadata from 'gagVec'
+  gagVec <- gagVec[headerLine:length(gagVec)]
+  
+  
+  # The actual data of the GAG file is stored in a fixed-width format
+  # Remove 'headerRegex' and any quotation marks in the dataset 
+  # Then, break apart rows at the spaces
+  gagDF <- gagVec |>
+    str_remove(headerRegex) |>
+    str_remove_all("\"") |>
+    trimws() |>
+    str_split("\\s+") |> unlist()
+    
+  
+  # Make sure that the length of 'gagDF' is divisible by the length of 'gagVec'
+  # If there is no remainder, that means that an equal number of columns 
+  # were detected in each row of 'gagVec'
+  if (length(gagDF) %% length(gagVec) != 0) {
+    
+    paste0("GAG Data File - Data Parsing Issue\n\n", 
+           "This script attempted to split each row of data in an SRP ",
+           "GAG output file. However, a consistent number of columns ",
+           "per row could not be identified\n\n",
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Convert 'gagDF' into a matrix and then a data frame
+  gagDF <- gagDF |>
+    matrix(nrow = length(gagVec), byrow = TRUE) |>
+    data.frame()
+  
+  
+  # Use the first row of 'gagDF' as headers
+  # Then, reformat 'gagDF' into a tibble
+  gagDF <- gagDF[-1, ] |>
+    set_names(gagDF[1, ] |> unlist(use.names = FALSE)) |>
+    tibble()
+  
+  
+  # Finally, convert columns in 'gagDF' into numeric if they contain numbers
+  for (j in 1:ncol(gagDF)) {
+    
+    # Check if at least 90% of a column match this regular expression
+    # If yes, convert the column into numeric
+    if (sum(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", gagDF[[j]])) > 
+        0.90 * nrow(gagDF)) {
+      
+      gagDF[[j]] <- gagDF[[j]] |> as.numeric()
+      
+    }
+    
+    # Explanation of the regex: 
+    # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
+    
+    #  (*) The string may start with a minus sign ("-")
+    #  (*) The string contains some number of digits (1 or more)
+    #  (*) The string may contain a decimal point, followed by more digits
+    #  (*) The string may end with scientific notation 
+    #      ("e" followed by a plus or minus, and then one or more digits)
+    
+  }
+  
+  
+  # Return 'gagDF'
+  return(gagDF)
   
 }
 

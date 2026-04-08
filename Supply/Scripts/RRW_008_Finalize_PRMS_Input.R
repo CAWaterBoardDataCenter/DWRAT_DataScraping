@@ -137,11 +137,13 @@ mainProcedure <- function (predictWY = TRUE) {
   # (Overlapping dates with 'startDate' are removed from 'primaryDAT')
   # (Also, "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND" are 
   #  added to 'meteorDF')
+  # (The "RUNOFF" columns are added as well, and they may contain "NA" initially)
   mergedDAT <- primaryDAT |> 
     filter(DATE < startDate) |>
     bind_rows(meteorDF |>
                 mutate(YEAR = year(DATE), MONTH = month(DATE), DAY = day(DATE),
-                       HOUR = 0, MINUTE = 0, SECOND = 0))
+                       HOUR = 0, MINUTE = 0, SECOND = 0)) |>
+    mutate(across(starts_with("RUNOFF"), ~replace_na(., 1)))
   
   
   cat("\tDone!\n\n")
@@ -168,7 +170,8 @@ mainProcedure <- function (predictWY = TRUE) {
     # update metadata in the hydrology folder
   } else {
     
-    updateMetadata_DAT(dirPath, modelEndDate = endDate, 
+    updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
+                       modelEndDate = endDate, 
                        predictionMethod = NA_character_, filePaths[2])
     
   }
@@ -216,7 +219,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     
     
     # But still update the metadata file after that
-    updateMetadata_DAT(dirPath, modelEndDate = endDate, 
+    updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
+                       modelEndDate = endDate, 
                        "Not Required", pathMainDAT)
     
   } else {
@@ -255,7 +259,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       
       
       # Update the metadata file next
-      updateMetadata_DAT(dirPath, modelEndDate = getModeledWY(endDate)[2],
+      updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+                         modelEndDate = getModeledWY(endDate)[2],
                          predictionMethod = "SPI", 
                          pathMainDAT = pathMainDAT, 
                          pathPastPrecip = pastPrecipPath)
@@ -433,7 +438,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) 
 
 
 
-updateMetadata_DAT <- function (dirPath, modelEndDate, 
+updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate, 
                                 predictionMethod, pathMainDAT, 
                                 pathPastPrecip = NA_character_, 
                                 pathCurrentPrecip = NA_character_,
@@ -456,6 +461,7 @@ updateMetadata_DAT <- function (dirPath, modelEndDate,
                                    "PRMS_MOST_SIMILAR_WY" = similarWY,
                                    "PRMS_REGRESSION_MODEL_SLOPE" = linModel$m,
                                    "PRMS_REGRESSION_MODEL_INTERCEPT" = linModel$b,
+                                   "PRMS_DAT_START_DATE" = datStartDate,
                                    "PRMS_MODEL_END_DATE" = modelEndDate))
   
   
@@ -560,7 +566,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   
   # After that, update the metadata file
-  updateMetadata_DAT(dirPath, modelEndDate = getModeledWY(endDate)[2],
+  updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+                     modelEndDate = getModeledWY(endDate)[2],
                      predictionMethod = "WY", pathMainDAT = pathMainDAT,
                      pathPastPrecip = pathPastPrecip, 
                      pathCurrentPrecip = prismPath,
@@ -911,11 +918,16 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   # Update the PRMS control file next
   # (Its presence was already confirmed at the beginning of the script in 
   #  `validateModelCopy_PRMS`)
-  updateControlFilePRMS(prmsPath, genericName, endDate, predictWY)
+  updateControlFilePRMS(dirPath, prmsPath, genericName, endDate, predictWY)
   
   
-  # Finally, update the PRMS batch file
+  # Update the PRMS batch file
   updateBatchFilePRMS(prmsPath)
+  
+  
+  # Finally, add metadata containing 'datName'
+  updateMetadataCSV(dirPath,
+                    list("PRMS_FINAL_DAT_FILE_NAME" = datName))
   
   
   # Return nothing
@@ -925,10 +937,13 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
 
 
 
-updateControlFilePRMS <- function (prmsPath, datName, endDate, predictWY) {
+updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate, 
+                                   predictWY) {
   
   # Update the fields in the "prms_rr" control file
   # This customizes the PRMS model run
+  
+  # (Some metadata will be saved at the end of this function as well)
   
   
   # First, read in the file
@@ -998,6 +1013,14 @@ updateControlFilePRMS <- function (prmsPath, datName, endDate, predictWY) {
   
   # Write 'prmsControl' back to a file (overwriting the previous version)
   writeOutput(prmsControl, controlPath, "write_lines", quietly = TRUE)
+  
+  
+  # Finally, save metadata about the model start date
+  updateMetadataCSV(dirPath,
+                    list("PRMS_MODEL_START_DATE" = 
+                           prmsControl[grep("start_time", prmsControl) + 3:5] |>
+                           paste0(collapse = "-") |>
+                           as.Date(format = "%Y-%m-%d")))
   
   
   # Return nothing
