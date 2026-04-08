@@ -26,7 +26,7 @@ Demand/OutputData/*.html
 #IGNORE PARADIGM_DWRAT FILES
 Paradigm_DWRAT/dwrat/output/*.csv
 Paradigm_DWRAT/dwrat/output/*.log
-Paradigm_DWRAT/**/**/__pycache__
+Paradigm_DWRAT/**/__pycache__
 
 #IGNORE LSPC FILES
 LSPC/*.log
