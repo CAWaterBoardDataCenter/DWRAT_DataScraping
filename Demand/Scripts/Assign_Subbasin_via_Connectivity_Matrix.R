@@ -10,6 +10,7 @@ library(tidyverse)
 library(readxl)
 library(writexl)
 library(sf)
+library(polylabelr)
 
 
 cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
@@ -93,6 +94,28 @@ mainProcedure <- function () {
   # Make sure 'podTable' is sorted by "APPLICATION_NUMBER" and "POD_ID"
   podTable <- podTable %>%
     arrange(APPLICATION_NUMBER, POD_ID)
+  
+  
+  # If the watershed doesn't have any water rights with PODs split across 
+  # multiple sub-basins, it will not have the columns "ASSIGNED_MULTIPLE_SUBBASINS"
+  # and "ORIGINAL_ASSIGNMENT"
+  # However, these columns are needed in later steps, so they will be added (with 
+  # all values set as FALSE for "ASSIGNED_MULTIPLE_SUBBASINS" and "NA" used for
+  # "ORIGINAL_ASSIGNMENT")
+  if (!("ASSIGNED_MULTIPLE_SUBBASINS" %in% names(podTable))) {
+    
+    podTable <- podTable %>%
+      mutate(ASSIGNED_MULTIPLE_SUBBASINS = FALSE)
+    
+  }
+  
+  
+  if (!("ORIGINAL_ASSIGNMENT" %in% names(podTable))) {
+    
+    podTable <- podTable %>%
+      mutate(ORIGINAL_ASSIGNMENT = NA)
+    
+  }
   
   
   
@@ -215,9 +238,10 @@ checkOverlap <- function (POD, subWS) {
         }
         
         
-        # Set the location of the POD to the centroid of the nearest sub-basin
+        # Set the location of the POD to the Pole of Inaccessibility (POI) 
+        # of the nearest sub-basin
         POD[issuePODs[i], ]$geometry <- subWS[nearestCatch, ] |> 
-          select(geometry) |> st_centroid() |> st_geometry()
+          st_poi() |> st_geometry()
         
       }
       
