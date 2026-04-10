@@ -641,6 +641,9 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   # (In an accompanying function, metadata will be generated for these layers)
   
   
+  # Ultimately, all layers should be output in "WGS84"
+  
+  
   
   # Read in NHD Flowlines
   flowLines <- getGIS(ws,
@@ -702,7 +705,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   # Write all of these layers to a file
-  st_write(wsBound,
+  st_write(wsBound |> 
+             st_transform("WGS84"),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"), 
            layer = "Watershed_Boundary",
            append = FALSE)
@@ -714,7 +718,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
              select(POD_ID, APPLICATION_NUMBER,
                     HUC12, HUC12_NAME, NHD_CAT,
                     ASSIGNED_HUC12, ASSIGNED_HUC12_NAME,
-                    ASSIGNED_NHD_CAT),
+                    ASSIGNED_NHD_CAT) |> 
+             st_transform("WGS84"),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Water_Rights",
            append = FALSE)
@@ -724,7 +729,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   st_write(huc12 %>%
              select(huc12, name) %>%
              rename(HUC12 = huc12,
-                    HUC12_NAME = name),
+                    HUC12_NAME = name) |> 
+             st_transform("WGS84"),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "HUC12_Subbasins",
            append = FALSE)
@@ -733,6 +739,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   st_write(catchDF %>%
              select(NHD_CAT, HUC12, HUC12_NAME) |>
+             st_transform("WGS84") |> 
              st_make_valid(),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Catchments",
@@ -740,14 +747,16 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   
-  st_write(flowLines,
+  st_write(flowLines |> 
+             st_transform("WGS84"),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Flowlines",
            append = FALSE)
 
   
   
-  st_write(wsMask,
+  st_write(wsMask |> 
+             st_transform("WGS84"),
            paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Watershed_Mask",
            append = FALSE)

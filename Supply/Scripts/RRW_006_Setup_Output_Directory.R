@@ -3,10 +3,10 @@
 
 
 # This script only requires "HYDROLOGY_OUTPUT_LOCATION" to be filled in
-# with a path in "RR_Supply_Control_File.xlsx"
+# with a path in "RR_Workflow_Control_File.xlsx"
 
 # A new folder will be created there with sub-folders for the inputs and outputs 
-# of PRMS and SRP
+# of PRMS, SRP, and DWRAT
 
 # A CSV file will also be generated that contains information about the procedure
 
@@ -32,7 +32,7 @@
 #### Setup ####
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
@@ -41,7 +41,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -49,7 +49,7 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRS_006_Setup_Output_Directory.R'!\n")
+  cat("Starting 'RRW_006_Setup_Output_Directory.R'!\n")
   
   
   # Import the start and end date
@@ -73,7 +73,7 @@ mainProcedure <- function () {
   
   
   # Get the location where a new folder will be created
-  saveDirectory <- getFromSupplyControl_RR("HYDROLOGY_OUTPUT_LOCATION")
+  saveDirectory <- getFromControl_RR("HYDROLOGY_OUTPUT_LOCATION")
   
   
   # Confirm that the user's specification is valid
@@ -112,7 +112,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_006_Setup_Output_Directory.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_006_Setup_Output_Directory.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -171,7 +171,7 @@ validateInput <- function (saveDirectory, sourceField) {
 generateFolders <- function (saveDirectory) {
   
   # In 'saveDirectory', a new folder will be created for the imminent 
-  # PRMS and SRP model runs
+  # model runs of PRMS, SRP, and DWRAT
   
   # By default, the folder's name will be the current date
   
@@ -183,12 +183,14 @@ generateFolders <- function (saveDirectory) {
   
   # Create the directory 'mainName'
   
-  # In addition, create sub-folders for "PRMS" and "SRP"
+  # In addition, create sub-folders for "PRMS", "SRP", and "DWRAT"
   # In each of these folders, create "Input" and "Output" folders
   newDirectories <- c(paste0(saveDirectory, "/", mainName, "/PRMS/Input"),
                       paste0(saveDirectory, "/", mainName, "/PRMS/Output"),
                       paste0(saveDirectory, "/", mainName, "/SRP/Input"),
-                      paste0(saveDirectory, "/", mainName, "/SRP/Output")) |>
+                      paste0(saveDirectory, "/", mainName, "/SRP/Output"),
+                      paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
+                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output")) |>
     normalizePath(mustWork = FALSE)
   
   
@@ -301,14 +303,13 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
                       startDate, endDate) {
   
   # Create metadata about the process in 'outputDirectory'
-  # Also, copy the meteorological file there
+  # Also, copy meteorological files and the "renv" lock file there
   
   
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
                    MODELER_NAME = Sys.info()[["user"]],
-                   LATEST_GIT_HASH = system("git rev-parse --short HEAD", 
-                                            intern = TRUE),
+                   LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
                    METEOROLOGICAL_END = endDate,
                    PRMS_METEOROLOGICAL_FILE_CREATED = 
@@ -358,8 +359,18 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "PRMS")
   copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "PRMS")
   copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "PRMS")
+  copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "PRMS")
+  copyStationInputFile("PRISM_PRMS_HISTORIC_PRECIP_CSV", outputDirectory, "PRMS")
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
+  copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
+  copyStationInputFile("PRISM_SRP_HISTORIC_PRECIP_CSV", outputDirectory, "SRP")
+  
+  
+  # Finally, copy the "renv.lock" file located in the root "Supply" directory
+  # Store it in the same location as the metadata file
+  copyFile(from = "renv.lock",
+           to = paste0(outputDirectory, "/renv.lock"))
   
   
   # Return nothing
@@ -377,7 +388,7 @@ copyStationInputFile <- function (sourceField, outputDirectory, model = "PRMS") 
   
   
   # Read in the path from the control file
-  inputPath <- getFromSupplyControl_RR(sourceField)
+  inputPath <- getFromControl_RR(sourceField)
   
   
   # If it's a SharePoint path, update 'inputPath' accordingly
@@ -412,4 +423,4 @@ mainProcedure()
 
 
 # Clean up
-remove(list = ls())
+base::remove(list = ls())

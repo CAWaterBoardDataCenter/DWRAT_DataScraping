@@ -32,7 +32,7 @@
 #### Setup ####
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
@@ -41,7 +41,7 @@ source("Scripts/HLP_000_Load_Packages.R")
 
 # Import shared functions
 source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
+source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -49,7 +49,7 @@ source("Scripts/HLP_003_RR_Supply_Validation_Functions.R")
 mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRS_005_Process_PRMS_Weather_Data.R'!\n")
+  cat("Starting 'RRW_005_Process_PRMS_Weather_Data.R'!\n")
   
   
   # Import the start and end date
@@ -57,13 +57,13 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Start with a vector containing every single required input file
-  inputFiles <- c("PRISM INPUT" = getFromSupplyControl_RR("PRISM_PRMS_STATIONS_CSV"),
+  inputFiles <- c("PRISM INPUT" = getFromControl_RR("PRISM_PRMS_STATIONS_CSV"),
                   
-                  "NOAA INPUT" = getFromSupplyControl_RR("NOAA_STATIONS_CSV"), 
+                  "NOAA INPUT" = getFromControl_RR("NOAA_STATIONS_CSV"), 
                   
-                  "RAWS INPUT" = getFromSupplyControl_RR("RAWS_STATIONS_CSV"), 
+                  "RAWS INPUT" = getFromControl_RR("RAWS_STATIONS_CSV"), 
                   
-                  "CIMIS INPUT" = getFromSupplyControl_RR("CIMIS_STATIONS_CSV"),
+                  "CIMIS INPUT" = getFromControl_RR("CIMIS_STATIONS_CSV"),
                   
                   "PRISM OUTPUT" = paste0("WebData/PRISM_PRMS_Data_",
                                           startDate, "_", endDate, ".csv"),
@@ -162,7 +162,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRS_005_Process_PRMS_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_005_Process_PRMS_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -468,4 +468,4 @@ mainProcedure()
 
 
 # Clean up
-remove(list = ls())
+base::remove(list = ls())
