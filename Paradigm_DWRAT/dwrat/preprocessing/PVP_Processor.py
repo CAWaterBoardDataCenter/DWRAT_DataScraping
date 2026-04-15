@@ -34,6 +34,13 @@ def downloadUSGSFlow(site, start_date, end_date):
 
     df = pd.read_csv(StringIO(r.text), sep="\t", comment="#", dtype=str)
 
+
+    # Save the raw gage data to a file
+    writePath = os.path.join('examples', 'RR_connected_example', 'calpella_gage_' + str(date.today()) + '.csv')
+
+    df.to_csv(writePath, index = False)
+
+
     # Keep only actual data rows (drops the RDB spec row too)
     if "agency_cd" in df.columns:
         df = df[df["agency_cd"] == "USGS"].copy()
@@ -155,6 +162,11 @@ def makeMonthlyACFT(LakeMendo_CFS_df, Calpella_CFS_df, SCWAForecast_CFS_df):
     MonthlyACFT_df = MonthlyACFT_df.reset_index()
     MonthlyACFT_df['Date'] = MonthlyACFT_df['Date'].astype(str).str[:-3]
     MonthlyACFT_df.set_index('Date', inplace = True)
+
+
+    # Zero out PVP
+    MonthlyACFT_df['acft'] = 0
+
     return MonthlyACFT_df
 
 
@@ -175,7 +187,7 @@ def makeConfigFiles(MonthlyACFT_df, dates):
     urr_configfile_df.loc[1] = MonthlyACFT_df['acft'].reindex(urr_configfile_df.columns, fill_value = 'PVP_FLOW')
 
     # Import ET Data and standardize the headers based on current WY, import URR ET data as final row of config file, replace empty forecasts with 0's
-    ET_xlsx_location = os.path.join('examples','RR_disconnected_example','_inputs','ET.xlsx')
+    ET_xlsx_location = os.path.join('examples','RR_connected_example','_inputs','ET.xlsx')
     ET_df = makeMonthlyET(ET_xlsx_location, dates)
 
     urr_configfile_df.loc[2] = ['EVAP_LOSS'] + ET_df.iloc[0].tolist()
@@ -221,6 +233,8 @@ def preprocessPVPFlows(
     ### Final DF construction and monthly time-step conversion ###
     MonthlyACFT_df = makeMonthlyACFT(
         LakeMendo_CFS_df, Calpella_CFS_df, SCWAForecast_CFS_df)
+
+
     ### Create Config File DFs
     urr_configfile_df, lrr_configfile_df = makeConfigFiles(MonthlyACFT_df, dates)
     return urr_configfile_df,lrr_configfile_df

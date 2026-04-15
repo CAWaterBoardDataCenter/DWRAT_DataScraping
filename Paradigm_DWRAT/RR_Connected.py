@@ -10,8 +10,7 @@ from dwrat.utils import RR
 # add the path to your supply file
 supply_file = os.path.join('examples','RR_connected_example','_inputs','Raw_Flows.csv')
 # add the path to your demand file
-demand_file = os.path.join('examples','RR_connected_example','_inputs',
-                           'RR_2017_2024_MDT_2025-04-04.csv')
+demand_file = os.path.join('examples','RR_connected_example','_inputs', 'RR_2017_2024_MDT_2025-04-04.csv')
 # add the path to your basins file
 basin_file = os.path.join('examples','RR_connected_example','_inputs','basins.csv')
 # add the path to your config files
@@ -42,7 +41,7 @@ LakeMendoBalance_FileLocation = os.path.join(
 
 SCWAForecast_FileLocation = os.path.join(
     'examples','PVP_example_files',
-    'PotterValleyProjectProjection_DWRAT_20260105.xlsx')
+    'PotterValleyProjectProjection_DWRAT_20260320.xlsx')
 ### Set Forecast Type ###
 Variance = 'NoVar' # <- PVP Infrastructure Variance, 'Var' or 'NoVar'
 SimilarDry = 'Dry' # <- Similar WY or Dry WY, 'Similar' or 'Dry'; set to Dry if you're using 
@@ -60,6 +59,12 @@ urrFlows,pvp = RR.processConnectedURRFlows(
     basinInfo,
     urrFlows,
     dates=dates)
+
+# Normally, the PVP + Natural flows are included at this step, 
+# replacing the (currently 0) mainstem Sub-Basin 2 flows
+
+# Instead of applying PVP data here and making it available for all water users,
+# this adjustment will occur after Riparian users have been allocated water
 urrFlows.loc['R_02_M',dates] = pvp
 
 riparian,appropriative = dp.processDemand(
@@ -76,7 +81,8 @@ upperModel = dwrat.Model(
     flows=urrFlows,
     basinConnectivity=basinConnectivity,
     basinInfo=basinInfo,
-    dates=dates
+    dates=dates,
+    pvp=pvp
 )
 
 upperModel.run()
@@ -114,7 +120,8 @@ lowerModel = dwrat.Model(
     flows=lrrFlows,
     basinConnectivity=basinConnectivity,
     basinInfo=basinInfo,
-    dates=dates
+    dates=dates,
+    pvp = None
 )
 
 lowerModel.run()

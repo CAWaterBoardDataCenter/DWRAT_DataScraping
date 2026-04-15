@@ -25,7 +25,8 @@ class Model():
             basinInfo: pd.DataFrame,
             dates: npt.ArrayLike = None,
             modelName: str = None,
-            printLinearProblemMsg: bool = False
+            printLinearProblemMsg: bool = False,
+            pvp: pd.DataFrame = None,
     ):
         nowTime = datetime.now()
         if modelName is not None:
@@ -65,6 +66,13 @@ class Model():
         self.printLinearProblemMsg = printLinearProblemMsg
 
         self.flows = flows[self.dates]
+        
+        # If pvp flows are given in a data frame (same format as 'flows'),
+        # add them to the variable as well
+        if pvp is not None:
+            self.pvp = pvp[self.dates]
+        else:
+            self.pvp = None
 
         self.riparian.getModelDemand(self.dates,inplace=True)
         self.appropriative.getModelDemand(self.dates,inplace=True)
@@ -126,6 +134,37 @@ class Model():
                 self.riparian.basinProportions,
                 printLinearProblemMsg=self.printLinearProblemMsg
             )
+
+
+        # Once flows have been allocated to riparian users, consider PVP flows for appropriative users
+        # 'pvp' contains Mainstem Sub-Basin 2 flows (with PVP releases incorporated into the values)
+        # (Basically "Natural" + "PVP")
+        # Subtract the allocated flows to riparian users from this value to get the available flow
+        # for appropriative users
+        # ("Natural" - "Natural_Allocated_to_Riparian" + "PVP")
+
+        if False and self.pvp is not None:
+            
+
+            # Formula for Historic Data & Projections (if values represent only "PVP" flows)
+            newAvailableFlow = self.availableFlow.loc['R_02_M'] + self.pvp
+            
+            
+            # Formula for Calpella Gage data
+            # Remove riparian allocations done with natural flows from self.pvp (which contains "Natural" + "PVP" flows)
+            newAvailableFlow = self.pvp - self.riparian.basinAllocations.loc['R_02_M']
+
+
+
+
+            # Replace negative flow values with zero
+            #newAvailableFlow[newAvailableFlow < 0] = 0
+            # (Not needed since negative values are handled through the optimization routine)
+
+            # Update the sub-basin 2 mainstem available flows with this value
+            self.availableFlow.loc['R_02_M'] = newAvailableFlow
+
+
 
         self.appropriative.userAllocations, \
             self.appropriative.basinAllocations = appropriativeLP(

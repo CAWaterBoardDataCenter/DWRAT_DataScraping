@@ -1381,7 +1381,7 @@ detectAnacondaBat <- function () {
   
   
   # If no match was found, throw an error
-  if (length(anacondaInstallation) == 1) {
+  if (length(anacondaInstallation) == 0) {
     
     paste0("Anaconda Not Found\n\n",
            "This procedure requires an installation of Anaconda. However, ",
@@ -1444,5 +1444,59 @@ detectRScriptExe <- function () {
   
   # Return 'exePath' if there are no issues
   return(exePath)
+  
+}
+
+
+
+installAnacondaEnv <- function (batPath, envPath) {
+  
+  # Given the path to an Anaconda installation's "activate.bat" file,
+  # install a new environment using the file referenced in 'envPath'
+  
+  
+  # Double-check that 'envPath' exists
+  if (!file.exists(envPath)) {
+    
+    paste0("Environment File Not Found\n\n",
+           "The input variable 'envPath' (", envPath, ") is invalid. It ",
+           "does not point to a real file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Create a new Anaconda environment using the requirements in 'envPath'
+  envRes <- system(paste0(shQuote(batPath), " && ",
+                          "conda env create -f ", shQuote(envPath)), 
+                   intern = TRUE)
+  
+  
+  # The output of the environment creation command is stored in 'envRes'
+  # Check for process errors using this variable
+  
+  
+  # If the final "To activate this environment, use..." message does not
+  # appear in 'envRes', that means that the environment was NOT created
+  # successfully
+  if (!any(grepl("To activate this environment, use", envRes))) {
+    
+    cat("\n\n")
+    print(envRes)
+    cat("\n\n")
+    
+    
+    paste0("Could Not Create Environment\n\n",
+           "The procedure failed for an unknown reason. Please ",
+           "investigate the messages from Anaconda shown above.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }

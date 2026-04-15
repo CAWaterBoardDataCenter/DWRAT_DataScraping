@@ -40,7 +40,7 @@ mainProcedure <- function () {
   
   
   # Locate and validate the required PRMS and SRP model files
-  cat("[1/4]\tChecking input files...\n")
+  cat("\n[1/4]\tChecking input files...\n")
   
   
   # Check that the model hydrology folder exists
@@ -53,7 +53,29 @@ mainProcedure <- function () {
     list.files(pattern = paste0("_", startDate, "_", 
                                 endDate, "_sub_inq\\.csv"), 
                full.names = TRUE) |>
-    sort() |> tail(1) |>
+    sort()
+  
+  
+  # There should only be one "sub_inq" CSV file in this folder
+  # (It is an output of PRMS)
+  if (length(inqPath) != 1) {
+    
+    # Output an error message if more than one "sub_inq" file was found
+    paste0("Could Not Detect sub_inq CSV File\n\n",
+           "The PRMS output files were stored in the hydrology folder (\"", 
+           dirPath, "\"). There should have been exactly one CSV file that ",
+           "ends with \"_sub_inq\" in the PRMS output folder. However, ",
+           length(inqPath), " matches were found instead. Please investigate ",
+           "the directory.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If exactly one CSV was found, convert its path into a full absolute path
+  # and validate it
+  inqPath <- inqPath |>
     normalizePath(mustWork = FALSE) |>
     checkForPreviousOutput()
   

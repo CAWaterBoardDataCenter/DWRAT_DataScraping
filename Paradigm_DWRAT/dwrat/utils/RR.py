@@ -542,6 +542,13 @@ def processConnectedLRRFlows(
     # TODO: should this use RAW urr flows rather than the reduced flows?
     #       seems like the reduced flows would better represent what is really
     #       available to the lower river from upstream.
+    #       (Reason for raw flows: After processing, the "Available Flows" data has 
+    #        some flows duplciated in its subbasin values. For example, PVP
+    #        flows may appear in multiple downstream subbasins' total values.)
+
+    # Using "flows" is fine
+    # These are the pre-adjusted flows, and they represent flows generated in each sub-basin
+    # (Not total available flow available in that location)
 
     lrrTotalSupply = flows.loc[:,dates].sum(axis=0)+surplusPVP
     lrrPercentET = lrrConfig.loc['EVAP_LOSS']/lrrTotalSupply

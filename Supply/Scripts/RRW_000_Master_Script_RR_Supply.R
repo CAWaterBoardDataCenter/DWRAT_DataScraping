@@ -25,6 +25,11 @@ source("Scripts/HLP_000_Load_Packages.R")
 "CTR_001_Set_Start_and_End_Dates.R"
 
 
+##### Repo Pre-Check #####
+
+# Check that the directory is correctly set
+source("Scripts/HLP_004_Check_Working_Directory.R")
+
 
 ##### Web Scraping #####
 
@@ -105,15 +110,15 @@ source("Scripts/RRW_016_Generate_Raw_Flows.R")
 
 ##### DWRAT #####
 
+# Ensure that Anaconda and a "paradigm-dwrat" environment are present
+source("Scripts/RRW_017_DWRAT_Precheck.R")
+
+
+# 
+
 
 
 #### Hydro ####
-
-# Process PRMS output (copies model outputs to GitHub folder)
-
-# SRP Processor (PRMS output + aggregated/processed gag files --> Raw Flows + Datestamp in name)
-
-# Copy SRP inputs and outputs + Raw Flows to SharePoint
 
 # Prepare CSV to help with new rows for DWRAT Run Tracker
 
