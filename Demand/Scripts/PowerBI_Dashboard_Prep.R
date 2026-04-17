@@ -155,10 +155,25 @@ mainProcedure <- function () {
   
   
   
+  # Ensure that 'wsBound' does not extend past the coastline
+  pacific <- st_read("InputData/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") |>
+    st_transform(st_crs(wsBound))
+  
+  
+  # After shrinking the watershed boundary by 5 meters, if it still extends 
+  # past the coastline, it will be clipped
+  if (length(st_intersects(st_buffer(wsBound, -5), pacific)[[1]]) > 0) {
+    
+    # Cut off the portion of 'wsBound' that extends into the Pacific Ocean
+    wsBound <- st_difference(wsBound, pacific)
+    
+  }
+  
+  
+  
   # Reduce the size of 'huc12' to only ones relevant to the watershed
   huc12 <- huc12[st_intersects(st_buffer(wsBound, -5), huc12) %>%
           unlist(), ]
-  
   
   
   # Clip the extent of the HUC12 boundaries to the watershed boundaries

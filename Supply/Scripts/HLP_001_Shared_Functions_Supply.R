@@ -248,7 +248,8 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
-                      select = NULL, col_types = NULL, skip = 0) {
+                      select = NULL, col_types = NULL, skip = 0,
+                      trim_ws = FALSE) {
   
   # Use read_delim() or fread() to import a file as a data frame
   
@@ -270,13 +271,14 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   # Otherwise, use read_delim() and read in the file as a tibble
   if (largeFile) {
     
-    fileDF <- try(fread(filePath, sep = delim, select = select), silent = TRUE)
+    fileDF <- try(fread(filePath, sep = delim, select = select,
+                        strip.white = trim_ws), silent = TRUE)
     
   } else {
     
     fileDF <- try(read_delim(filePath, delim = delim, 
                              col_types = col_types, show_col_types = FALSE,
-                             skip = skip))
+                             skip = skip, trim_ws = trim_ws))
     
   }
   
@@ -1110,6 +1112,132 @@ getPRISM <- function (prismPath) {
 
 
 
+read_gag <- function (gagPath) {
+  
+  # Read in a ".gag" file as a tibble
+  # (These files are outputs from SRP)
+  
+  
+  # Read in the lines of the file
+  gagVec <- getFile(gagPath, fileType = "OTHER")
+  
+  
+  # GAG files start with metadata
+  
+  # Find the actual headers using the "DATA" text string 
+  # that starts the header row
+  headerRegex <- "\"DATA:"
+  
+  
+  headerLine <- grep(headerRegex, gagVec)
+  
+  
+  # Return an error if 'headerLine' was not found (or if multiple matches were found)
+  if (length(headerLine) == 0) {
+    
+    paste0("GAG Data File - Missing Column Header Issue\n\n", 
+           "This script attempted to find the header row in an SRP ",
+           "GAG output file. However, the header row could not be ",
+           "found.\n\n",
+           "There could be data corruption issues, or the formatting of ",
+           "the GAG files may have changed. This script may need ",
+           "updates, depending on the cause of this problem.\n\n",
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  } else if (length(headerLine) > 1) {
+    
+    paste0("GAG Data File - Could Not Identify Column Header\n\n", 
+           "This script attempted to find the header row in an SRP ",
+           "GAG output file. However, an unusual issue was ",
+           "encountered.\n\n",
+           "The header row is usually identified via this regular ",
+           "expression:\n\n",
+           "(*) \"", headerRegex, "\"\n\n",
+           "There should be exactly one row in the input file that has ",
+           "this pattern. However, more than one match was found.\n\n", 
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there are no issues, remove the metadata from 'gagVec'
+  gagVec <- gagVec[headerLine:length(gagVec)]
+  
+  
+  # The actual data of the GAG file is stored in a fixed-width format
+  # Remove 'headerRegex' and any quotation marks in the dataset 
+  # Then, break apart rows at the spaces
+  gagDF <- gagVec |>
+    str_remove(headerRegex) |>
+    str_remove_all("\"") |>
+    trimws() |>
+    str_split("\\s+") |> unlist()
+    
+  
+  # Make sure that the length of 'gagDF' is divisible by the length of 'gagVec'
+  # If there is no remainder, that means that an equal number of columns 
+  # were detected in each row of 'gagVec'
+  if (length(gagDF) %% length(gagVec) != 0) {
+    
+    paste0("GAG Data File - Data Parsing Issue\n\n", 
+           "This script attempted to split each row of data in an SRP ",
+           "GAG output file. However, a consistent number of columns ",
+           "per row could not be identified\n\n",
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Convert 'gagDF' into a matrix and then a data frame
+  gagDF <- gagDF |>
+    matrix(nrow = length(gagVec), byrow = TRUE) |>
+    data.frame()
+  
+  
+  # Use the first row of 'gagDF' as headers
+  # Then, reformat 'gagDF' into a tibble
+  gagDF <- gagDF[-1, ] |>
+    set_names(gagDF[1, ] |> unlist(use.names = FALSE)) |>
+    tibble()
+  
+  
+  # Finally, convert columns in 'gagDF' into numeric if they contain numbers
+  for (j in 1:ncol(gagDF)) {
+    
+    # Check if at least 90% of a column match this regular expression
+    # If yes, convert the column into numeric
+    if (sum(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", gagDF[[j]])) > 
+        0.90 * nrow(gagDF)) {
+      
+      gagDF[[j]] <- gagDF[[j]] |> as.numeric()
+      
+    }
+    
+    # Explanation of the regex: 
+    # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
+    
+    #  (*) The string may start with a minus sign ("-")
+    #  (*) The string contains some number of digits (1 or more)
+    #  (*) The string may contain a decimal point, followed by more digits
+    #  (*) The string may end with scientific notation 
+    #      ("e" followed by a plus or minus, and then one or more digits)
+    
+  }
+  
+  
+  # Return 'gagDF'
+  return(gagDF)
+  
+}
+
+
+
 updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
   # Update a CSV file containing metadata 
@@ -1253,7 +1381,7 @@ detectAnacondaBat <- function () {
   
   
   # If no match was found, throw an error
-  if (length(anacondaInstallation) == 1) {
+  if (length(anacondaInstallation) == 0) {
     
     paste0("Anaconda Not Found\n\n",
            "This procedure requires an installation of Anaconda. However, ",
@@ -1316,5 +1444,59 @@ detectRScriptExe <- function () {
   
   # Return 'exePath' if there are no issues
   return(exePath)
+  
+}
+
+
+
+installAnacondaEnv <- function (batPath, envPath) {
+  
+  # Given the path to an Anaconda installation's "activate.bat" file,
+  # install a new environment using the file referenced in 'envPath'
+  
+  
+  # Double-check that 'envPath' exists
+  if (!file.exists(envPath)) {
+    
+    paste0("Environment File Not Found\n\n",
+           "The input variable 'envPath' (", envPath, ") is invalid. It ",
+           "does not point to a real file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Create a new Anaconda environment using the requirements in 'envPath'
+  envRes <- system(paste0(shQuote(batPath), " && ",
+                          "conda env create -f ", shQuote(envPath)), 
+                   intern = TRUE)
+  
+  
+  # The output of the environment creation command is stored in 'envRes'
+  # Check for process errors using this variable
+  
+  
+  # If the final "To activate this environment, use..." message does not
+  # appear in 'envRes', that means that the environment was NOT created
+  # successfully
+  if (!any(grepl("To activate this environment, use", envRes))) {
+    
+    cat("\n\n")
+    print(envRes)
+    cat("\n\n")
+    
+    
+    paste0("Could Not Create Environment\n\n",
+           "The procedure failed for an unknown reason. Please ",
+           "investigate the messages from Anaconda shown above.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }

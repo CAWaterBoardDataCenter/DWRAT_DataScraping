@@ -167,7 +167,8 @@ mainProcedure <- function (predictWY = TRUE) {
     # update metadata in the hydrology folder
   } else {
     
-    updateMetadata_DAT(dirPath, modelEndDate = endDate, 
+    updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
+                       modelEndDate = endDate, 
                        predictionMethod = NA_character_, filePaths[2])
     
   }
@@ -215,7 +216,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
     
     
     # But still update the metadata file after that
-    updateMetadata_DAT(dirPath, modelEndDate = endDate, 
+    updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+                       modelEndDate = endDate, 
                        "Not Required", pathMainDAT)
     
   } else {
@@ -254,7 +256,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       
       
       # Update the metadata file next
-      updateMetadata_DAT(dirPath, modelEndDate = getModeledWY(endDate)[2],
+      updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
+                         modelEndDate = getModeledWY(endDate)[2],
                          predictionMethod = "SPI", 
                          pathMainDAT = pathMainDAT, 
                          pathPastPrecip = pastPrecipPath)
@@ -425,7 +428,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
 
 
 
-updateMetadata_DAT <- function (dirPath, modelEndDate, 
+updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate, 
                                 predictionMethod, pathMainDAT, 
                                 pathPastPrecip = NA_character_, 
                                 pathCurrentPrecip = NA_character_,
@@ -448,6 +451,7 @@ updateMetadata_DAT <- function (dirPath, modelEndDate,
                                    "SRP_MOST_SIMILAR_WY" = similarWY,
                                    "SRP_REGRESSION_MODEL_SLOPE" = linModel$m,
                                    "SRP_REGRESSION_MODEL_INTERCEPT" = linModel$b,
+                                   "SRP_DAT_START_DATE" = datStartDate, 
                                    "SRP_MODEL_END_DATE" = modelEndDate))
   
   
@@ -552,7 +556,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   
   # After that, update the metadata file
-  updateMetadata_DAT(dirPath, modelEndDate = getModeledWY(endDate)[2],
+  updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
+                     modelEndDate = getModeledWY(endDate)[2],
                      predictionMethod = "WY", pathMainDAT = pathMainDAT,
                      pathPastPrecip = pathPastPrecip, 
                      pathCurrentPrecip = prismPath,
@@ -946,11 +951,16 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   # Update the SRP control file next
   # (Its presence was already confirmed at the beginning of the script in 
   #  `validateModelCopy_SRP`)
-  updateControlFileSRP(srpPath, genericName, endDate, predictWY)
+  updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
   
   
-  # Finally, update the SRP batch file
+  # Update the SRP batch file
   updateBatchFileSRP(srpPath)
+  
+  
+  # Finally, add metadata containing 'datName'
+  updateMetadataCSV(dirPath,
+                    list("SRP_FINAL_DAT_FILE_NAME" = datName))
   
   
   # Return nothing
@@ -960,10 +970,13 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
 
 
 
-updateControlFileSRP <- function (srpPath, datName, endDate, predictWY) {
+updateControlFileSRP <- function (dirPath, srpPath, datName, endDate, 
+                                  predictWY) {
   
   # Update the fields in the "SRPHM_update.control" control file
   # This customizes the SRP model run
+  
+  # (Some metadata will be added at the end of the function too)
   
   
   # First, read in the file
@@ -1021,6 +1034,14 @@ updateControlFileSRP <- function (srpPath, datName, endDate, predictWY) {
   
   # Write 'srpControl' back to a file (overwriting the previous version)
   writeOutput(srpControl, controlPath, "write_lines", quietly = TRUE)
+  
+  
+  # Finally, save metadata about the model start date
+  updateMetadataCSV(dirPath,
+                    list("SRP_MODEL_START_DATE" = 
+                           srpControl[grep("start_time", srpControl) + 3:5] |>
+                           paste0(collapse = "-") |>
+                           as.Date(format = "%Y-%m-%d")))
   
   
   # Return nothing
