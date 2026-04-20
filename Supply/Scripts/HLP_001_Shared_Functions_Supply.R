@@ -174,6 +174,19 @@ getXLSX <- function (filePath, worksheet = NULL,
   # It has additional error handling processes
   
   
+  # First, make sure 'filePath' is a character variable
+  if (!is.character(filePath)) {
+    
+    stop(paste0("Unusable File Path\n\n",
+                "The provided file path is not a character variable.\n\n",
+                "Please double-check that '", filePath, "' is a valid path. ",
+                "Script revisions may be necessary.") |>
+           errWrap() |>
+           str_replace("(incorrect)", col_red("\\1")))
+    
+  }
+  
+  
   sheetDF <- try(read_xlsx(filePath, sheet = worksheet, range = range,
                            col_names = col_names, col_types = col_types,
                            skip = skip, n_max = n_max, guess_max = guess_max), silent = TRUE)
@@ -235,22 +248,37 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
-                      select = NULL, col_types = NULL, skip = 0) {
+                      select = NULL, col_types = NULL, skip = 0,
+                      trim_ws = FALSE) {
   
   # Use read_delim() or fread() to import a file as a data frame
+  
+  
+  # First, make sure 'filePath' is a character variable
+  if (!is.character(filePath)) {
+    
+    stop(paste0("Unusable File Path\n\n",
+                "The provided file path is not a character variable.\n\n",
+                "Please double-check that '", filePath, "' is a valid path. ",
+                "Script revisions may be necessary.") |>
+           errWrap() |>
+           str_replace("(incorrect)", col_red("\\1")))
+    
+  }
   
   
   # If 'largeFile' is TRUE, use fread() and import the file as a data frame
   # Otherwise, use read_delim() and read in the file as a tibble
   if (largeFile) {
     
-    fileDF <- try(fread(filePath, sep = delim, select = select), silent = TRUE)
+    fileDF <- try(fread(filePath, sep = delim, select = select,
+                        strip.white = trim_ws), silent = TRUE)
     
   } else {
     
     fileDF <- try(read_delim(filePath, delim = delim, 
                              col_types = col_types, show_col_types = FALSE,
-                             skip = skip))
+                             skip = skip, trim_ws = trim_ws))
     
   }
   
@@ -259,7 +287,9 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   if ("try-error" %in% class(fileDF)) {
     
     # In every case, output the actual error message first
-    message(fileDF)
+    cat("\n\n")
+    print(fileDF)
+    cat("\n\n")
     
     
     # Next, address different errors with custom messages
@@ -385,9 +415,9 @@ getFromMasterControl <- function (fieldName) {
 
 
 
-getFromSupplyControl_RR <- function (fieldName) {
+getFromControl_RR <- function (fieldName) {
   
-  # Return a value from the RR Supply control file
+  # Return a value from the RR Workflow control file
   
   # The name of the parameter is given in 'fieldName'
   # The "FIELD" column of the spreadsheet should have a matching value
@@ -398,12 +428,12 @@ getFromSupplyControl_RR <- function (fieldName) {
   # It can either be a SharePoint version or a local copy
   
   # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
-  # and "SHAREPOINT_RR_SUPPLY_CONTROL_FILE" must be specified in 
+  # and "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE" must be specified in 
   # "Master_Control_File.xlsx"
   if (!is.na(getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"))) {
     
-    # Try and read the SharePoint fragment for the RR Supply control file
-    controlPath <- getFromMasterControl("SHAREPOINT_RR_SUPPLY_CONTROL_FILE")
+    # Try and read the SharePoint fragment for the RR Worfklow control file
+    controlPath <- getFromMasterControl("SHAREPOINT_RR_WORKFLOW_CONTROL_FILE")
     
     
     # If that value is indeed specified, read it in as 'controlDF'
@@ -421,7 +451,7 @@ getFromSupplyControl_RR <- function (fieldName) {
   # In all other cases, use the local version of the control file
   if (!exists("controlDF")) {
     
-    controlPath <- "InputData/RR_Supply_Control_File.xlsx"
+    controlPath <- "InputData/RR_Workflow_Control_File.xlsx"
     
     controlDF <- getXLSX(controlPath)
     
@@ -433,7 +463,7 @@ getFromSupplyControl_RR <- function (fieldName) {
     
     stop(paste0("Field Does Not Exist\n\n",
                 "'", fieldName, "' does not appear in the 'FIELD' column of the ",
-                "RR Supply Control File\n\n",
+                "RR Workflow Control File\n\n",
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of '",
                 controlPath, "' is in use") |>
@@ -1082,6 +1112,132 @@ getPRISM <- function (prismPath) {
 
 
 
+read_gag <- function (gagPath) {
+  
+  # Read in a ".gag" file as a tibble
+  # (These files are outputs from SRP)
+  
+  
+  # Read in the lines of the file
+  gagVec <- getFile(gagPath, fileType = "OTHER")
+  
+  
+  # GAG files start with metadata
+  
+  # Find the actual headers using the "DATA" text string 
+  # that starts the header row
+  headerRegex <- "\"DATA:"
+  
+  
+  headerLine <- grep(headerRegex, gagVec)
+  
+  
+  # Return an error if 'headerLine' was not found (or if multiple matches were found)
+  if (length(headerLine) == 0) {
+    
+    paste0("GAG Data File - Missing Column Header Issue\n\n", 
+           "This script attempted to find the header row in an SRP ",
+           "GAG output file. However, the header row could not be ",
+           "found.\n\n",
+           "There could be data corruption issues, or the formatting of ",
+           "the GAG files may have changed. This script may need ",
+           "updates, depending on the cause of this problem.\n\n",
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  } else if (length(headerLine) > 1) {
+    
+    paste0("GAG Data File - Could Not Identify Column Header\n\n", 
+           "This script attempted to find the header row in an SRP ",
+           "GAG output file. However, an unusual issue was ",
+           "encountered.\n\n",
+           "The header row is usually identified via this regular ",
+           "expression:\n\n",
+           "(*) \"", headerRegex, "\"\n\n",
+           "There should be exactly one row in the input file that has ",
+           "this pattern. However, more than one match was found.\n\n", 
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there are no issues, remove the metadata from 'gagVec'
+  gagVec <- gagVec[headerLine:length(gagVec)]
+  
+  
+  # The actual data of the GAG file is stored in a fixed-width format
+  # Remove 'headerRegex' and any quotation marks in the dataset 
+  # Then, break apart rows at the spaces
+  gagDF <- gagVec |>
+    str_remove(headerRegex) |>
+    str_remove_all("\"") |>
+    trimws() |>
+    str_split("\\s+") |> unlist()
+    
+  
+  # Make sure that the length of 'gagDF' is divisible by the length of 'gagVec'
+  # If there is no remainder, that means that an equal number of columns 
+  # were detected in each row of 'gagVec'
+  if (length(gagDF) %% length(gagVec) != 0) {
+    
+    paste0("GAG Data File - Data Parsing Issue\n\n", 
+           "This script attempted to split each row of data in an SRP ",
+           "GAG output file. However, a consistent number of columns ",
+           "per row could not be identified\n\n",
+           "Please investigate \"", gagPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Convert 'gagDF' into a matrix and then a data frame
+  gagDF <- gagDF |>
+    matrix(nrow = length(gagVec), byrow = TRUE) |>
+    data.frame()
+  
+  
+  # Use the first row of 'gagDF' as headers
+  # Then, reformat 'gagDF' into a tibble
+  gagDF <- gagDF[-1, ] |>
+    set_names(gagDF[1, ] |> unlist(use.names = FALSE)) |>
+    tibble()
+  
+  
+  # Finally, convert columns in 'gagDF' into numeric if they contain numbers
+  for (j in 1:ncol(gagDF)) {
+    
+    # Check if at least 90% of a column match this regular expression
+    # If yes, convert the column into numeric
+    if (sum(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", gagDF[[j]])) > 
+        0.90 * nrow(gagDF)) {
+      
+      gagDF[[j]] <- gagDF[[j]] |> as.numeric()
+      
+    }
+    
+    # Explanation of the regex: 
+    # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
+    
+    #  (*) The string may start with a minus sign ("-")
+    #  (*) The string contains some number of digits (1 or more)
+    #  (*) The string may contain a decimal point, followed by more digits
+    #  (*) The string may end with scientific notation 
+    #      ("e" followed by a plus or minus, and then one or more digits)
+    
+  }
+  
+  
+  # Return 'gagDF'
+  return(gagDF)
+  
+}
+
+
+
 updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
   # Update a CSV file containing metadata 
@@ -1151,3 +1307,196 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
 }
 
+
+
+getGitHash <- function () {
+  
+  # Generate a temporary batch file that calls "git rev-parse"
+  # to get the short hash of the current commit in the repository
+  
+  # Obtain the hash string from that command and return it
+  
+  
+  # First, start by generating a temporary batch file
+  # Save it into the current repository location
+  tempName <- "temp_git_check.bat"
+  
+  
+  c("git rev-parse --short HEAD",
+    "exit") |>
+    writeOutput(tempName, "write_lines", quietly = TRUE)
+  
+  
+  # Execute the batch file
+  hashRes <- system(tempName, intern = TRUE)
+  
+  
+  # The hash will be located on a line by itself after the "rev-parse" call
+  hashLoc <- grep("rev-parse", hashRes)[1] + 1
+  
+  
+  # Check for errors at this point
+  if (length(hashLoc) == 0 || is.na(hashLoc) || 
+      any(grepl("Error", hashRes, ignore.case = TRUE))) {
+    
+    print(hashRes)
+    
+    paste0("Git Call Failed\n\n",
+           "An error occurred when running a batch script that contanied ",
+           "a git command (\"", normalizePath(tempName, mustWork = TRUE), 
+           "\"). The results were printed above. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues occurred, extract the hash string from 'hashRes'
+  hashRes <- hashRes[hashLoc]
+  
+  
+  # Finally, delete the temporary batch file
+  unlink(tempName)
+  
+  
+  # Return the short commit hash
+  return(hashRes)
+  
+}
+
+
+
+detectAnacondaBat <- function () {
+  
+  # Locate an installation of "Anaconda" on the user's device
+  # Get the path to "activate.bat", which is located under "Scripts"
+  
+  # Return that path as a string to the user
+  
+  
+  # First, check for for "Anaconda" in the "ProgramData" folder
+  anacondaInstallation <- list.files("C:/ProgramData", pattern = "[Aa]naconda",
+                                     full.names = TRUE) |>
+    sort() |> tail(1)
+  
+  
+  # If no match was found, throw an error
+  if (length(anacondaInstallation) == 0) {
+    
+    paste0("Anaconda Not Found\n\n",
+           "This procedure requires an installation of Anaconda. However, ",
+           "the program was not found. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Otherwise, look for "activate.bat"
+  batPath <- paste0(anacondaInstallation, "/Scripts/activate.bat") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'batPath' exists
+  if (!file.exists(batPath)) {
+    
+    paste0("Anaconda Prompt Batch File Not Found\n\n",
+           "This procedure executes Python scripts using Anaconda Prompt. ",
+           "However, the required batch file was not found in \"", 
+           anacondaInstallation, "\". Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues were encountered, return 'batPath'
+  return(batPath)
+  
+}
+
+
+
+detectRScriptExe <- function () {
+  
+  # Look for "Rscript.exe" in the active installation of R
+  # (It should be in the "bin" folder)
+  
+  # Return a path to that exe file
+  
+  
+  # Check the expected location of "Rscript.exe"
+  exePath <- paste0(R.home(), "/bin/Rscript.exe") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'exePath' exists
+  if (!file.exists(exePath)) {
+    
+    paste0("RScript.Exe Not Found\n\n",
+           "This procedure requires the executable version of R. However, \"",
+           exePath, "\" did not point to a valid file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'exePath' if there are no issues
+  return(exePath)
+  
+}
+
+
+
+installAnacondaEnv <- function (batPath, envPath) {
+  
+  # Given the path to an Anaconda installation's "activate.bat" file,
+  # install a new environment using the file referenced in 'envPath'
+  
+  
+  # Double-check that 'envPath' exists
+  if (!file.exists(envPath)) {
+    
+    paste0("Environment File Not Found\n\n",
+           "The input variable 'envPath' (", envPath, ") is invalid. It ",
+           "does not point to a real file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Create a new Anaconda environment using the requirements in 'envPath'
+  envRes <- system(paste0(shQuote(batPath), " && ",
+                          "conda env create -f ", shQuote(envPath)), 
+                   intern = TRUE)
+  
+  
+  # The output of the environment creation command is stored in 'envRes'
+  # Check for process errors using this variable
+  
+  
+  # If the final "To activate this environment, use..." message does not
+  # appear in 'envRes', that means that the environment was NOT created
+  # successfully
+  if (!any(grepl("To activate this environment, use", envRes))) {
+    
+    cat("\n\n")
+    print(envRes)
+    cat("\n\n")
+    
+    
+    paste0("Could Not Create Environment\n\n",
+           "The procedure failed for an unknown reason. Please ",
+           "investigate the messages from Anaconda shown above.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}

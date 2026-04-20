@@ -27,7 +27,7 @@ col_widths <- (c(20,16,16,16,16,16,16,16,16,16,16,16,16))
 # Set the source folder path for importing .gag files
   # Change the source folder path to wherever you've stored your SRP model, e.g.
   # E:/SRPHSM_update_ag for example
-source_folder <- "C:/SRPHM_update_ag"
+source_folder <- "C:/GitHub/DWRAT_DataScraping/Supply/InputData"
 
 # Now import the files directly from the source folder
 gag_list <- list()  # create an empty list to store the imported dataframes
@@ -169,5 +169,5 @@ Raw_Flows <- merge(PRMS, SRP_monthly, by = "Date")
 Raw_Flows$Date = format(Raw_Flows$Date, "%m/%d/%Y")
 
 # Write Raw Flows to CSV for DWRAT input----
-write.csv(Raw_Flows, here("ProcessedData/Raw_Flows.csv"), row.names = FALSE)
+write.csv(Raw_Flows, here("ProcessedData/Raw_Flows_2025.csv"), row.names = FALSE)
 
