@@ -190,7 +190,9 @@ generateFolders <- function (saveDirectory) {
                       paste0(saveDirectory, "/", mainName, "/SRP/Input"),
                       paste0(saveDirectory, "/", mainName, "/SRP/Output"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output")) |>
+                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
+                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
+                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected")) |>
     normalizePath(mustWork = FALSE)
   
   

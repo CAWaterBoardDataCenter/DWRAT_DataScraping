@@ -174,12 +174,11 @@ mainProcedure <- function () {
   
   
   # Update the metadata CSV file to contain the names of the "Raw_Flows" and
-  # "Reduction_Factors" CSV files
+  # original "Reduction_Factors" CSV files
   updateMetadataCSV(dirPath,
                     list("RAW_FLOWS_CSV" = flowName |>
                            str_remove("^.+[/\\\\]"),
-                         "SRP_GAG_REDUCTION_FACTORS" = reductionName |>
-                           str_remove("^.+[/\\\\]")))
+                         "SRP_GAG_REDUCTION_FACTORS" = reductPath))
   
   
   cat("\tDone!\n\n")

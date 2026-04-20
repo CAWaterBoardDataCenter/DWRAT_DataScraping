@@ -2,9 +2,6 @@ import os
 import requests
 import pandas as pd
 from datetime import date, timedelta
-
-import pandas as pd
-import requests
 from io import StringIO
 
 def downloadUSGSFlow(site, start_date, end_date):
@@ -165,7 +162,7 @@ def makeMonthlyACFT(LakeMendo_CFS_df, Calpella_CFS_df, SCWAForecast_CFS_df):
 
 
     # Zero out PVP
-    MonthlyACFT_df['acft'] = 0
+    #MonthlyACFT_df['acft'] = 0
 
     return MonthlyACFT_df
 
