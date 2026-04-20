@@ -114,22 +114,21 @@ source("Scripts/RRW_016_Generate_Raw_Flows.R")
 source("Scripts/RRW_017_DWRAT_Precheck.R")
 
 
-# 
+# Prepare the input files for DWRAT and setup the Paradigm DWRAT script
+source("Scripts/RRW_018_Finalize_DWRAT_Inputs.R")
 
-
-
-#### Hydro ####
-
-# Prepare CSV to help with new rows for DWRAT Run Tracker
-
-# Copy Raw Flows into Paradigm DWRAT
-
-# Edit RR_Connected Paradigm DWRAT script
 
 # Run DWRAT
+source("Scripts/RRW_019_Run_DWRAT.R")
 
-# Model Post-processing and data analysis steps
 
+# Perform final post-processing steps
+source("Scripts/RRW_020_DWRAT_Cleanup.R")
+
+
+#### Extra Scripts: Data Analysis ####
+
+# Data analysis steps
 
 
 

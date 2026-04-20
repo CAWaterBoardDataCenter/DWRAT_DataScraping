@@ -84,11 +84,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   
   # Next, check if 'filePath' contains a SharePoint path
   # If it is, modify 'filePath' to be a complete SharePoint path
-  if (file.exists(makeSharePointPath(filePath))) {
-    
-    filePath <- makeSharePointPath(filePath)
-    
-  }
+  filePath <- sharepointPathCheck(filePath, isFolder = FALSE)
   
   
   # If it is not a SharePoint path, and the file still does not exist,
@@ -165,6 +161,56 @@ guessFileType <- function (filePath, parameterVec = NULL) {
 
 
 
+sharepointPathCheck <- function (path, isFolder = FALSE) {
+  
+  # Check if a file/folder is a SharePoint file/folder
+  
+  # Use its path ('path') to make this assessment
+  
+  # If yes, return 'path' as a full SharePoint path
+  # Otherwise, just return the path as-is
+  
+  
+  # 'isFolder' is TRUE if the input path is for a folder
+  # Otherwise, it should be FALSE for files
+  
+  
+  # Make a SharePoint version of 'path'
+  sharepointPath <- makeSharePointPath(path)
+  
+  
+  # Based on 'isFolder', use either `file.exists` or `dir.exists`
+  if (isFolder) {
+    
+    # Check if the folder exists on SharePoint
+    if (dir.exists(sharepointPath)) {
+      
+      # If yes, return the SharePoint path
+      return(sharepointPath)
+      
+    }
+    
+  } else {
+    
+    # Check if the file exists on SharePoint
+    if (file.exists(sharepointPath)) {
+      
+      # If yes, return the SharePoint path
+      return(sharepointPath)
+      
+    }
+    
+  }
+  
+  
+  # If the procedure reaches this point, the file/folder is NOT on SharePoint
+  # In that case, return 'path' without any changes
+  return(path)
+  
+}
+
+
+
 getXLSX <- function (filePath, worksheet = NULL, 
                      range = NULL, col_names = TRUE, col_types = NULL, skip = 0,
                      n_max = Inf, guess_max = min(1000, n_max)) {
@@ -201,13 +247,30 @@ getXLSX <- function (filePath, worksheet = NULL,
     # Next, address different errors with custom messages
     if (grepl("zip file .+ cannot be opened", sheetDF, ignore.case = TRUE)) {
       
-      stop(paste0("Inaccessible File Issue\n\n",
-                  "The above error message usually occurs if the target ",
-                  "spreadsheet is open in Excel.\n\nPlease close '", filePath, 
-                  "' and try again.") |>
-             errWrap() |>
-             str_replace("(open)", col_red("\\1")) |>
-             str_replace("(close)", col_green("\\1")))
+      # There are at least two different situations where this error can occur
+      
+      # This error can occur when trying to read in a file that is NOT 
+      # an Excel spreadsheet
+      if (!grepl("\\.xls.?$", filePath)) {
+        
+        stop(paste0("Incorrect File Issue\n\n",
+                    "The input file '", filePath, "' does not appear to be ",
+                    "an Excel spreadsheet. Please investigate.") |>
+               errWrap())
+        
+      # Alternatively, it can happen when trying to read a SharePoint 
+      # spreadsheet that is already open locally
+      } else {
+        
+        stop(paste0("Inaccessible File Issue\n\n",
+                    "The above error message usually occurs if the target ",
+                    "spreadsheet is open in Excel.\n\nPlease close '", filePath, 
+                    "' and try again.") |>
+               errWrap() |>
+               str_replace("(open)", col_red("\\1")) |>
+               str_replace("(close)", col_green("\\1")))
+        
+      }
       
     } else if (grepl("path. does not exist", sheetDF, ignore.case = TRUE)) {
       
@@ -506,10 +569,11 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
   
   
   # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
-  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv")) {
+  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv", "write_xlsx")) {
     
     stop(paste0("Improper Input For `writeOutput()`\n\n",
-                "If \"write_csv\" will be called to write this output, ",
+                "If `write_csv`, `write_tsv`, or `write_xlsx` will be ",
+                "called to write this output, ",
                 "the input variable has to be a data frame. Please revise ",
                 "the procedure.\n\n",
                 "(Note: Nothing was written to \"", outPath, "\")") |>
@@ -527,6 +591,10 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
     
     writeRes <- try(write_lines(x, outPath))
     
+  } else if (writeFunction == "write_xlsx") {
+    
+    writeRes <- try(write_xlsx(x, outPath, col_names = col_names))
+    
   } else if (writeFunction == "write_tsv") {
     
     writeRes <- try(write_tsv(x, outPath, col_names = col_names))
@@ -536,8 +604,8 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
     stop(paste0("Improper Input For `writeOutput()`\n\n",
                 "\"", writeFunction, "\" is not a recognized value for ",
                 "the function argument 'writeFunction'. Please revise it.\n\n",
-                "\"write_csv\", \"write_tsv\", and \"write_lines\" are the only ",
-                "acceptable values.\n\n",
+                "\"write_csv\", \"write_tsv\", \"write_xlsx\", and ",
+                "\"write_lines\" are the only acceptable values.\n\n",
                 "(Note: Nothing was written to \"", outPath, "\")") |>
            errWrap())
     
