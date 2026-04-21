@@ -160,7 +160,7 @@ mainProcedure <- function () {
   
   
   flowDF |>
-    writeOutput(flowName, "write_csv")
+    writeOutput(flowName)
   
   
   # Archive 'reductionDF' in the model hydrology folder too
@@ -169,8 +169,7 @@ mainProcedure <- function () {
   
   
   reductionDF |>
-    writeOutput(reductionName,
-                "write_csv", quietly = TRUE)
+    writeOutput(reductionName, quietly = TRUE)
   
   
   # Update the metadata CSV file to contain the names of the "Raw_Flows" and

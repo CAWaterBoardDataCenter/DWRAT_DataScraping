@@ -605,7 +605,7 @@ combineRawOutputs <- function (nameVec, writePath) {
   
   
   # Save 'mainFile' to 'writePath'
-  writeOutput(mainFile, writePath, "write_lines")
+  writeOutput(mainFile, writePath, writeFunction = "write_lines")
   
   
   # Return nothing

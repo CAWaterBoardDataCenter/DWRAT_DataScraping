@@ -139,7 +139,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # For archival purposes, save 'meteorDF' without any PRISM data substitution
   meteorDF |>
     writeOutput(paste0("ProcessedData/PRMS_Pre-PRISM_Meteorological_", 
-                       startDate, "_", endDate, ".csv"), "write_csv",
+                       startDate, "_", endDate, ".csv"),
                 quietly = TRUE)
   
   
@@ -158,7 +158,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   meteorDF |>
-    writeOutput(outFile, "write_csv")
+    writeOutput(outFile)
   
   
   # Output a completion message

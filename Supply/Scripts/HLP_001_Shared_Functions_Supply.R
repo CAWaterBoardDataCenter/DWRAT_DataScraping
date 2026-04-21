@@ -70,12 +70,12 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   
   
   # Make sure 'fileType' is one of the accepted values
-  if (!(fileType %in% c("XLSX", "CSV", "DELIM", "OTHER"))) {
+  if (!(fileType %in% c("XLSX", "CSV", "TSV", "DELIM", "OTHER"))) {
     
     stop(paste0("Unknown File Type\n\n",
                 "The file type specified in `getFile()` should only be one of ",
                 "these strings: ",
-                "\"XLSX\", \"CSV\", \"DELIM\", or \"OTHER\"") |>
+                "\"XLSX\", \"CSV\", \"TSV\", \"DELIM\", or \"OTHER\"") |>
            errWrap() |>
            str_replace_all("\"(.+)\"", paste0("\"", col_green("\\1"), "\"")))
     
@@ -110,7 +110,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
     
     return(getDelim(filePath, ",", largeFile))
     
-  } else if (fileType == "DELIM") {
+  } else if (fileType %in% c("TSV", "DELIM")) {
     
     return(getDelim(filePath, parameterVec[1], largeFile))
     
@@ -130,7 +130,7 @@ guessFileType <- function (filePath, parameterVec = NULL) {
   # Guess the type of file input by the user
   
   # The returned string will be one of these values:
-  # "XLSX", "CSV", "DELIM", or "OTHER"
+  # "XLSX", "CSV", "TSV", "DELIM", or "OTHER"
   
   
   # If the filepath ends in something akin to ".xlsx", assume it is a spreadsheet
@@ -143,10 +143,16 @@ guessFileType <- function (filePath, parameterVec = NULL) {
     
     return("CSV")
     
+  # If the file extension is ".tsv", return "TSV" instead
+  } else if (grepl("\\.tsv$", filePath, ignore.case = TRUE)) {  
+    
+    return("TSV")
+    
   # If the filepath has a parameter specified in 'parameterVec',
   # and 'parameterVec' contains a single character, assume it is a delimited file
   } else if (!is.null(parameterVec) && length(parameterVec) == 1 &&
-             is.character(parameterVec[1]) && nchar(parameterVec[1]) == 1) {
+             !is.na(parameterVec[1]) && is.character(parameterVec[1]) && 
+             nchar(parameterVec[1]) == 1) {
     
     return("DELIM")
     
@@ -563,25 +569,75 @@ getFromControl_RR <- function (fieldName) {
 
 
 
-writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALSE,
-                         col_names = TRUE) {
+writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
+                         col_names = TRUE, delim = NA_character_) {
   
   # Write a variable 'x' to 'outPath'
   
-  # Use "write_csv", "write_tsv", or "write_lines" depending on the specification in 'writeFunction'
+  # Use "write_csv", "write_tsv", "write_delim", "write_xlsx", or "write_lines" 
+  # depending on the specification in 'writeFunction'
   
-  # 'quietly' is a boolean for whether an output message will be given
+  # 'quietly' is a Boolean for whether an output message will be given
   
   # If 'col_names' is TRUE, column names will be written in the output for 
   # "write_csv" and "write_tsv"
   
   
+  # If 'writeFunction' is not specified, infer it from the file extension
+  if (is.null(writeFunction)) {
+    
+    # Guess the type of file using 'outPath'
+    fileType <- guessFileType(outPath, parameterVec = delim)
+    
+    
+    # For spreadsheets, use `write_xlsx`
+    if (fileType == "XLSX") {
+      
+      writeFunction <- "write_xlsx"
+      
+    # For CSV files, use `write_xlsx`
+    } else if (fileType == "CSV") {
+      
+      writeFunction <- "write_csv"
+      
+    # For TSV files, use `write_tsv`
+    } else if (fileType == "TSV") {
+      
+      writeFunction <- "write_tsv"
+      
+    # For other delimited files, use `write_delim`
+    } else if (fileType == "DELIM") {
+      
+      writeFunction <- "write_delim"
+      
+    # For all other file types, use `write_lines`
+    } else if (fileType == "OTHER") {
+      
+      writeFunction <- "write_lines"
+      
+    } else {
+      
+      paste0("Unrecognized File Type\n\n",
+             "The file type returned by `guessFileType` should have been one of ",
+             "these strings: ",
+             "\"XLSX\", \"CSV\", \"TSV\", \"DELIM\", or \"OTHER\".\n\n",
+             "However, it returned an unknown value '", fileType, "'.") |>
+        errWrap() |>
+        str_replace_all("\"(.+)\"", paste0("\"", col_green("\\1"), "\"")) |>
+        stop()
+      
+    }
+    
+  }
+  
+  
   # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
-  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv", "write_xlsx")) {
+  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv", 
+                                                "write_delim", "write_xlsx")) {
     
     stop(paste0("Improper Input For `writeOutput()`\n\n",
-                "If `write_csv`, `write_tsv`, or `write_xlsx` will be ",
-                "called to write this output, ",
+                "If `write_csv`, `write_tsv`, `write_delim`, or `write_xlsx` ",
+                "will be called to write this output, ",
                 "the input variable has to be a data frame. Please revise ",
                 "the procedure.\n\n",
                 "(Note: Nothing was written to \"", outPath, "\")") |>
@@ -607,13 +663,17 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
     
     writeRes <- try(write_tsv(x, outPath, col_names = col_names))
     
+  } else if (writeFunction == "write_delim") {
+    
+    writeRes <- try(write_delim(x, outPath, delim = delim, col_names = col_names))
+    
   } else {
     
     stop(paste0("Improper Input For `writeOutput()`\n\n",
                 "\"", writeFunction, "\" is not a recognized value for ",
                 "the function argument 'writeFunction'. Please revise it.\n\n",
-                "\"write_csv\", \"write_tsv\", \"write_xlsx\", and ",
-                "\"write_lines\" are the only acceptable values.\n\n",
+                "\"write_csv\", \"write_tsv\", \"write_delim\", \"write_xlsx\", ",
+                "and \"write_lines\" are the only acceptable values.\n\n",
                 "(Note: Nothing was written to \"", outPath, "\")") |>
            errWrap())
     
@@ -1361,13 +1421,13 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   }
   
   
-  # Next, read in the metadata CSV
+  # Next, read in the metadata file
   metaPath <- paste0(dirPath, "/", filename) |>
     normalizePath(mustWork = FALSE)
   
   
-  # The metadata file should be a CSV file
-  metaDF <- getDelim(metaPath, ",")
+  # (The metadata file is likely a CSV file)
+  metaDF <- getFile(metaPath)
   
   
   # Add 'newCols to 'metaDF'
@@ -1375,7 +1435,7 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
   
   # Save 'metaDF'
-  writeOutput(metaDF, metaPath, "write_csv", quietly = TRUE)
+  writeOutput(metaDF, metaPath, quietly = TRUE)
   
   
   # Return nothing
@@ -1400,7 +1460,7 @@ getGitHash <- function () {
   
   c("git rev-parse --short HEAD",
     "exit") |>
-    writeOutput(tempName, "write_lines", quietly = TRUE)
+    writeOutput(tempName, writeFunction = "write_lines", quietly = TRUE)
   
   
   # Execute the batch file
@@ -1581,7 +1641,7 @@ installAnacondaEnv <- function (batPath, envPath) {
       
       
       paste0("echo y | (", shQuote(batPath),  " && anaconda token install)") |>
-        writeOutput(tokenBat, "write_lines", quietly = TRUE)
+        writeOutput(tokenBat, writeFunction = "write_lines", quietly = TRUE)
       
       # "echo y" provides the "yes" input needed to confirm installation
       # of the token

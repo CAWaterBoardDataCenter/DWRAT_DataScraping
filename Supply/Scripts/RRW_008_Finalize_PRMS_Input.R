@@ -763,8 +763,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   # Write 'precipDF' as a CSV file to 'dirPath' next
   precipDF |>
     writeOutput(paste0(dirPath, "/PRMS/Input/SimilarWY_Analysis.csv") |>
-                  normalizePath(mustWork = FALSE),
-                "write_csv")
+                  normalizePath(mustWork = FALSE))
   
   
   # Finally, return 'similarWY'
@@ -1012,7 +1011,7 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # Write 'prmsControl' back to a file (overwriting the previous version)
-  writeOutput(prmsControl, controlPath, "write_lines", quietly = TRUE)
+  writeOutput(prmsControl, controlPath, quietly = TRUE)
   
   
   # Finally, save metadata about the model start date
@@ -1053,7 +1052,7 @@ updateBatchFilePRMS <- function (prmsPath) {
   batchCommands |>
     writeOutput(paste0(prmsPath, "/windows/run.bat") |> 
                   normalizePath(mustWork = FALSE),
-                "write_lines", quietly = TRUE)
+                quietly = TRUE)
   
   
   # Return nothing

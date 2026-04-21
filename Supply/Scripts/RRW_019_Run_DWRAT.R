@@ -99,8 +99,7 @@ checkForErrors <- function (dirPath, scriptPath, dwratRes) {
     
     
     # Save 'dwratRes' to a file too
-    writeOutput(dwratRes, "ProcessedData/DWRAT_Output_Messages.txt", 
-                "write_lines")
+    writeOutput(dwratRes, "ProcessedData/DWRAT_Output_Messages.txt")
     
     
     paste0("Paradigm DWRAT Error\n\n",
@@ -163,8 +162,7 @@ checkForErrors <- function (dirPath, scriptPath, dwratRes) {
     
     
     # Save 'dwratRes' to a file too
-    writeOutput(dwratRes, "ProcessedData/DWRAT_Output_Messages.txt", 
-                "write_lines")
+    writeOutput(dwratRes, "ProcessedData/DWRAT_Output_Messages.txt")
     
     
     paste0("Missing DWRAT Output File", 
