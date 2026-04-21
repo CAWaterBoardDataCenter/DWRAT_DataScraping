@@ -1555,11 +1555,79 @@ installAnacondaEnv <- function (batPath, envPath) {
     cat("\n\n")
     
     
-    paste0("Could Not Create Environment\n\n",
-           "The procedure failed for an unknown reason. Please ",
-           "investigate the messages from Anaconda shown above.") |>
-      errWrap() |>
-      stop()
+    # If an authentication error occurs and a token is required, 
+    # perform that update automatically here
+    if (any(grepl("AnacondaAuthError", envRes)) &&
+        any(grepl("anaconda token install", envRes))) {
+      
+      cat("\n\n")
+      paste0("It appears that a token is required! Attempting install...") |>
+        errWrap() |>
+        str_replace("Attempting install...", col_green("Attempting install...")) |>
+        cat()
+      cat("\n\n")
+      
+      
+      # Create a temporary batch file to initiate this process
+      tokenBat <- "temp-token.bat"
+      
+      
+      paste0("echo y | (", shQuote(batPath),  " && anaconda token install)") |>
+        writeOutput(tokenBat, "write_lines", quietly = TRUE)
+      
+      # "echo y" provides the "yes" input needed to confirm installation
+      # of the token
+      
+      
+      # Try to install the token
+      tokenRes <- system(tokenBat, intern = TRUE)
+      
+      
+      # Output the results of the attempt
+      cat("\n\n")
+      print(tokenRes)
+      cat("\n\n")
+      
+      
+      # Delete the batch file next
+      unlink(tokenBat)
+      
+      
+      # If the process is successful, retry this function
+      if (any(grepl("Success!", tokenRes))) {
+        
+        paste0("The token was installed successfully! Retrying the ",
+               "environment creation process...") |>
+          errWrap() |>
+          cat()
+        cat("\n\n")
+        
+        
+        # Recursively call this function
+        return(installAnacondaEnv(batPath, envPath))
+        
+      # If the token installation process failed, simply return an error 
+      } else {
+        
+        paste0("Could Not Install Token\n\n",
+               "The procedure failed for an unknown reason. Please ",
+               "investigate the messages from Anaconda shown above.") |>
+          errWrap() |>
+          stop()
+        
+      }
+      
+      
+    # In all other cases, output a generic error message
+    } else {
+      
+      paste0("Could Not Create Environment\n\n",
+             "The procedure failed for an unknown reason. Please ",
+             "investigate the messages from Anaconda shown above.") |>
+        errWrap() |>
+        stop()
+      
+    }
     
   }
   
