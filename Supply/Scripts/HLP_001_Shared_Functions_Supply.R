@@ -538,11 +538,19 @@ getFromControl_RR <- function (fieldName) {
   # If the control file has a blank entry for this field, notify the user
   if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
     
-    stop(paste0("Empty Field in Control File\n\n",
-                "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
-                "is empty\n\n",
-                "Please update '", controlPath, "'") |>
-           errWrap())
+    if (fieldName %in% c("ADDITIONAL_ARCHIVE_LOCATION")) {
+      
+      # These fields are optional, so it is okay if they are "NA"
+      
+    } else {
+      
+      stop(paste0("Empty Field in Control File\n\n",
+                  "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
+                  "is empty\n\n",
+                  "Please update '", controlPath, "'") |>
+             errWrap())
+      
+    }
     
   }
   
