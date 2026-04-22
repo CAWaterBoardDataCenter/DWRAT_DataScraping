@@ -1514,13 +1514,13 @@ updateLine <- function (pyScript, idRegex, replaceStr, scriptPath,
   # If the variable definition or function argument is part of a larger 
   # assignment, there may be additional closing parentheses that need to be
   # accounted for
-  if (str_count(pyScript[editLoc], "\\)") > str_count(pyScript[editLoc], "\\(")) {
+  if (netCount(pyScript[editLoc], "\\)") > netCount(pyScript[editLoc], "\\(")) {
     
     # If the line of code contains MORE ")" than "(" on that line, 
     # record the number of excess closing parentheses
     extraClosing <- str_dup(")", 
-                            str_count(pyScript[editLoc], "\\)") -
-                              str_count(pyScript[editLoc], "\\("))
+                            netCount(pyScript[editLoc], "\\)") -
+                              netCount(pyScript[editLoc], "\\("))
     
     # These extra ")" will be added to the end of 'replaceStr'
     
@@ -1587,6 +1587,37 @@ updateLine <- function (pyScript, idRegex, replaceStr, scriptPath,
 
 
 
+netCount <- function (string, pattern) {
+  
+  # Use `str_count` to count instances of 'pattern' in 'string'
+  
+  # However, if 'pattern' appears after a comment hashtag "#", 
+  # exclude instances of 'pattern' that come after "#"
+  
+  
+  # If 'pattern' appears after a "#", use the modified count formula
+  if (grepl(paste0("#.*", pattern), string)) {
+    
+    # Count the number of instances of 'pattern' in 'string' and 
+    # exclude the number of instances of 'pattern' that follow a comment "#"
+    count <- str_count(string, pattern) - 
+      str_count(string |> str_extract("#.*$"), pattern)
+    
+  } else {
+    
+    # If there are no comments in 'string', use `str_count` as normal
+    count <- str_count(string, pattern)
+    
+  }
+  
+  
+  # Return 'count'
+  return(count)
+  
+}
+
+
+
 continuityCheck <- function (pyScript, editLoc, scriptPath) {
   
   # Some variables may use multiple lines to define their values
@@ -1609,12 +1640,12 @@ continuityCheck <- function (pyScript, editLoc, scriptPath) {
   # then the number of subsequent related lines is equal to the number of lines
   # required to have a corresponding closing parenthesis ")" for each of the 
   # open parentheses "("
-  if (str_count(pyScript[editLoc], "\\(") > 0 && 
-      str_count(pyScript[editLoc], "\\(") > str_count(pyScript[editLoc], "\\)")) {
+  if (netCount(pyScript[editLoc], "\\(") > 0 && 
+      netCount(pyScript[editLoc], "\\(") > netCount(pyScript[editLoc], "\\)")) {
     
     # Get the initial balance of opening and closing parentheses on 'editLoc'
-    parenBalance <- str_count(pyScript[editLoc], "\\(") - 
-      str_count(pyScript[editLoc], "\\)")
+    parenBalance <- netCount(pyScript[editLoc], "\\(") - 
+      netCount(pyScript[editLoc], "\\)")
     
     # Based on the conditions in the `if` statement, 'parenBalance' should
     # start out as a positive number
@@ -1646,8 +1677,8 @@ continuityCheck <- function (pyScript, editLoc, scriptPath) {
       # Update 'parenBalance' based on the number of open and closed 
       # parentheses on 'checkLine'
       parenBalance <- parenBalance + 
-        str_count(pyScript[checkLine], "\\(") - 
-        str_count(pyScript[checkLine], "\\)")
+        netCount(pyScript[checkLine], "\\(") - 
+        netCount(pyScript[checkLine], "\\)")
       
       
       # Increment 'checkLine' for the next iteration
