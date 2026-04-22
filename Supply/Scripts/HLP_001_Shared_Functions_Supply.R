@@ -1704,3 +1704,331 @@ installAnacondaEnv <- function (batPath, envPath) {
   return(invisible(NULL))
   
 }
+
+
+
+functionStealer <- function (scriptPath, functionName) {
+  
+  # Extract a function that is present in another script ('scriptPath')
+  # Then, load it into the environment
+  
+  # WARNING
+  # The function is expected to use the full notation with curly braces
+  # ("{" and "}")
+  
+  # This function is designed with that formatting in mind
+  
+  # The curly braces are used to identify the start and end of the function
+  
+  # If there are comments in the function with "{" or "}", they can cause 
+  # this function to fail
+  
+  
+  # First, confirm that 'scriptPath' is valid
+  if (!file.exists(scriptPath)) {
+    
+    paste0("Requested Script Does Not Exist\n\n",
+           "\"", scriptPath, "\" does not point to a valid location. ",
+           "`functionStealer` requires a valid target script as input for ",
+           "'scriptPath'. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  } else if (!grepl("\\.R$", scriptPath, ignore.case = TRUE)) {
+    
+    paste0("Target Script Must Be An R Script\n\n",
+           "\"", scriptPath, "\" is not an R script (i.e., it does not have the ",
+           ".R extension). `functionStealer` requires a valid R script ",
+           "as input for 'scriptPath'. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Read the lines of the script
+  rLines <- getFile(scriptPath)
+  
+  
+  # Locate the function denoted by 'functionName'
+  functionStart <- grep(paste0("^\\s*", str_escape(functionName), 
+                               "\\s*(<-)|(=)\\s*function"),
+                        rLines, ignore.case = TRUE)
+  
+  # The regular expression that locates the function has this pattern:
+  #  (*) Starts with 0 or more spaces
+  #  (*) Contains the name of the function 
+  #      (escaped in case there are special characters, 
+  #       though that shouldn't happen)
+  #  (*) Continues with 0 or more spaces after the function name
+  #  (*) Has either "<-" or "=" to define the function
+  #  (*) Continues with 0 or more spaces after the operator
+  #  (*) Followed by the "function" keyword
+  
+  
+  # If no single function is found, output an error message
+  if (length(functionStart) != 1) {
+    
+    paste0("Function Not Found in Target Script\n\n",
+           "\"", scriptPath, "\" was expected to contain exactly one ",
+           "function with the name \"", functionName, "\". However, it could ",
+           "not be located. This input name gave ", length(functionStart), " ",
+           "matches. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The next step is to find the last line of a function
+  # This procedure uses an algorithm based on the balance of curly braces
+  # Once all open braces "{" are closed by a corresponding "}", assume that 
+  # the function code has been completely located
+  
+  # Define several variables to help with this check: 
+  
+  
+  # The line to check in the loop's current iteration
+  checkLine <- functionStart - 1
+  
+  # The current balance of open and closed braces
+  braceImbalance <- 0
+  
+  # Has the first open brace been found?
+  # (This is relevant for functions whose input parameters take up multiple 
+  #  lines, causing the first open brace to occur on a line after 'functionStart')
+  foundFirstOpen <- FALSE
+  
+  # Has the end of the function (EOF) been reached?
+  notAtEOF <- TRUE
+  
+  
+  # Keep looping while not at the end of the function
+  # (and while 'checkLine' has not reached the end of the script yet)
+  while (notAtEOF && checkLine < length(rLines)) {
+    
+    # Check the next line of the script
+    checkLine <- checkLine + 1
+    
+    
+    # Count the number of open braces on 'checkLine'
+    # Exclude open braces in comments (if present)
+    if (grepl("#.*\\{", rLines[checkLine])) {
+      
+      numOpen <- str_count(rLines[checkLine], "\\{") - 
+        str_count(rLines[checkLine] |> str_extract("#.*$"), "\\{")
+      
+    } else {
+      
+      numOpen <- str_count(rLines[checkLine], "\\{")
+      
+    }
+    
+    
+    # Check for closed braces on 'checkLine'
+    # Exclude any braces in comments
+    if (grepl("#.*\\}", rLines[checkLine])) {
+      
+      numClosed <- str_count(rLines[checkLine], "\\}") - 
+        str_count(rLines[checkLine] |> str_extract("#.*$"), "\\}")
+      
+    } else {
+      
+      numClosed <- str_count(rLines[checkLine], "\\}")
+      
+    }
+    
+    
+    # Adjust 'braceImbalance'
+    braceImbalance <- braceImbalance + numOpen - numClosed
+    
+    
+    # There should never be a negative balance of braces
+    # (That is a sign of an error)
+    if (braceImbalance < 0) {
+      
+      paste0("Negative Balance of Curly Braces\n\n",
+             "`functionStealer` uses the curly braces (\"{\" and \"}\") to ",
+             "identify the bounds of the function. However, this procedure ",
+             "failed. From Line ", functionStart, " to Line ", checkLine, ", ",
+             "there appear to be more closing braces overall than open braces. ",
+             "Please investigate.") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # If the first open brace has not yet been found yet, 'foundFirstOpen' is FALSE
+    # But, if 'numOpen' is positive, then an open brace has now been found
+    # In that case, 'foundFirstOpen' should be set to TRUE
+    if (!foundFirstOpen && numOpen > 0) {
+      foundFirstOpen <- TRUE
+    }
+    
+    
+    # While 'braceImbalance' is not 0 
+    # (or the first open curly brace has not yet been found),
+    # continue this loop
+    notAtEOF <- braceImbalance != 0 || !foundFirstOpen
+    
+  }
+  
+  
+  # If the loop ended by reaching the end of the file, 
+  # and 'notAtEOF' is still TRUE, output an error
+  if (notAtEOF) {
+    
+    paste0("Function Extraction Failed\n\n",
+           "`functionStealer` uses the curly braces (\"{\" and \"}\") to ",
+           "identify the bounds of the function. However, this procedure ",
+           "failed. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The entire function should be contained between 
+  # 'functionStart' and 'checkLine'
+  # Turn those lines of code in 'rLines' into a single string
+  functionStr <- paste0(rLines[functionStart:checkLine], collapse = "\n")
+  
+  
+  # Evaluate 'functionStr' as R code
+  eval(parse(text = functionStr))
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+calcNSE <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate the Nash Sutcliffe Model Efficiency Coefficient 
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # 1 - sum[ (obs - sim)^2 ] / sum[ (obs - mean_obs)^2 ]
+  
+  numerator <- sum((obs - sim)^2, na.rm = na.rm)
+  denominator <- sum((obs - mean(obs, na.rm = na.rm))^2, na.rm = na.rm)
+  
+  
+  # Return 1 minus 'numerator' / 'denominator'
+  return(1 - (numerator / denominator))
+  
+}
+
+
+
+calcPBias <- function (obs, sim, na.rm = FALSE, asPercent = TRUE) {
+  
+  # Calculate the Percent Bias Coefficient 
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # sum[ (sim - obs) ] / sum[ obs ]
+  
+  
+  # NOTE
+  
+  # For this equation, we are using the formula that is posted by 
+  # the HEC-HMS Technical Reference Manual
+  
+  # (Moriasi 2007) has a different version of this formula ("obs - sim" instead)
+  
+  # With the HEC-HMS formulation, positive P-Bias values indicate model 
+  # overestimation, while negative values represent model underestimation
+  
+  
+  # Calculate P-Bias
+  pbias <- sum(sim - obs, na.rm = na.rm) / sum(obs, na.rm = na.rm)
+  
+  
+  # If 'asPercent' is TRUE, return the coefficient as a percent
+  if (asPercent) {
+    pbias <- 100 * pbias
+  }
+  
+  
+  # Return 'pbias'
+  return(pbias)
+  
+}
+
+
+
+calcRSR <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate the "Ratio of the Root Mean Square Error (RMSE) to the 
+  # Standard Deviation Ratio (RSR)"
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # sqrt[ sum[ (obs - sim)^2 ] ] / sqrt[ sum[ (obs - mean_obs)^2 ] ]
+  
+  
+  numerator <- sqrt(sum((obs - sim)^2, na.rm = na.rm))
+  denominator <- sqrt(sum((obs - mean(obs, na.rm = na.rm))^2, na.rm = na.rm))
+  
+  
+  # Return 'numerator' / 'denominator'
+  return(numerator / denominator)
+  
+}
+
+
+
+calcMKGE <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate the "Modified Kling Gupta Efficiency"
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # 1 - sqrt[ (R - 1)^2 + (B - 1)^2 + (G - 1)^2 ]
+  
+  # Where 
+  # R = Pearson Correlation Coefficient (between 'obs' and 'sim')
+  # B = mean_sim / mean_obs
+  # G = (st_dev_sim / mean_sim) / (st_dev_obs / mean_obs)
+  
+  
+  # Calculate 'R' first
+  r <- cor(obs, sim, method = "pearson", na.rm = na.rm)
+  
+  
+  # Next, calculate 'B' (beta)
+  b <- mean(sim, na.rm = na.rm) / mean(obs, na.rm = na.rm)
+  
+  
+  # Then, determine 'G' (gamma)
+  g <- (sd(sim, na.rm = na.rm) / mean(sim, na.rm = na.rm)) /
+    (sd(obs, na.rm = na.rm) / mean(obs, na.rm = na.rm))
+  
+  
+  # Finally, calculate and return the MKGE
+  return(1 - sqrt((r - 1)^2 + (b - 1)^2 + (g - 1)^2))
+  
+}
+
+
+
+calcRSqrd <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate R^2, the "Coefficient of Determination"
+  
+  # Given observed and simulated values, this coefficient is simply 
+  # the square of the Pearson Correlation Coefficient (R)
+  
+  return(cor(obs, sim, method = "pearson", na.rm = na.rm))
+  
+}
+
