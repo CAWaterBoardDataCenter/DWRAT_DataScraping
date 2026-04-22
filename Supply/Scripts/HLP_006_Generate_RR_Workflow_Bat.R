@@ -38,7 +38,7 @@ mainProcedure <- function () {
   
   # Customize the call to R with these options
   # https://rstudio.github.io/r-manuals/r-intro/Invoking-R.html
-  rOpts <- " --no-save --no-environ --no-init-file --no-restore --no-Rconsole "
+  rOpts <- " --no-save --no-restore --no-Rconsole "
   
   
   # Define the output location for a log
