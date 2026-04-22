@@ -104,8 +104,7 @@ mainProcedure <- function () {
   # This will make it easier to reference in later scripts
   outputDirectory |>
     writeOutput(paste0("ProcessedData/Hydrology_Output_Location_", startDate,
-                       "_", endDate, ".txt"),
-                "write_lines")
+                       "_", endDate, ".txt"))
   
   
   cat("\tDone!\n\n")
@@ -332,8 +331,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   # Write 'metaDF' to a file
   metaDF |>
-    writeOutput(paste0(outputDirectory, "/metadata.csv"),
-                "write_csv")
+    writeOutput(paste0(outputDirectory, "/metadata.csv"))
   
   
   # After that, copy 'meteorDF' to 'outputDirectory'

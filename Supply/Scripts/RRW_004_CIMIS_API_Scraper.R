@@ -95,7 +95,7 @@ mainProcedure <- function () {
   
   
   # Write the file to the "WebData" folder
-  writeOutput(cimisDF, outFile, "write_csv")
+  writeOutput(cimisDF, outFile)
   
   
   # Output a completion message

@@ -753,8 +753,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   # Write 'precipDF' as a CSV file to 'dirPath' next
   precipDF |>
     writeOutput(paste0(dirPath, "/SRP/Input/SimilarWY_Analysis.csv") |>
-                  normalizePath(mustWork = FALSE),
-                "write_csv")
+                  normalizePath(mustWork = FALSE))
   
   
   # Finally, return 'similarWY'
@@ -1033,7 +1032,7 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   
   # Write 'srpControl' back to a file (overwriting the previous version)
-  writeOutput(srpControl, controlPath, "write_lines", quietly = TRUE)
+  writeOutput(srpControl, controlPath, quietly = TRUE)
   
   
   # Finally, save metadata about the model start date
@@ -1074,7 +1073,7 @@ updateBatchFileSRP <- function (srpPath) {
   batchCommands |>
     writeOutput(paste0(srpPath, "/Run_updated_Model.bat") |> 
                   normalizePath(mustWork = FALSE),
-                "write_lines", quietly = TRUE)
+                quietly = TRUE)
   
   
   # Return nothing

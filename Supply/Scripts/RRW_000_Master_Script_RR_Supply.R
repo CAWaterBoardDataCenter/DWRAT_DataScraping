@@ -126,18 +126,19 @@ source("Scripts/RRW_019_Run_DWRAT.R")
 source("Scripts/RRW_020_DWRAT_Cleanup.R")
 
 
-#### Extra Scripts: Data Analysis ####
+#### Extra Scripts ####
+
+# Generate a batch file for ease of future use
+source("Scripts/HLP_006_Generate_RR_Workflow_Bat.R")
+
 
 # Data analysis steps
 
 
 
+#### Maintenance Scripts ####
 
-
-# Maintenance scripts
-
-# Generating SPI dataset
 # Generating new long-running DAT file
 
-
+# Generating new 
 

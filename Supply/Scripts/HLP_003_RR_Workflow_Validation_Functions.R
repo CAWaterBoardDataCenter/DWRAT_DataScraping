@@ -1410,8 +1410,7 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt", 
-                  "write_lines")
+      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt")
       
     }
     
@@ -1570,8 +1569,7 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt", 
-                  "write_lines")
+      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt")
       
     }
     

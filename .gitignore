@@ -33,6 +33,9 @@ LSPC/*.log
 LSPC/**/*.csv
 LSPC/**/*.out
 
+#IGNORE WORKFLOW FILES
+Workflows/*.bat
+
 #Ignore Various R files
 .Rproj.user
 Supply/.Rproj.user

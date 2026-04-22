@@ -92,7 +92,8 @@ controlScript[indexLoc] <- paste0("endDate <- \"", plannedEnd, "\"")
 
 
 # Save these updates to the control file
-writeOutput(controlScript, controlPath, "write_lines", quietly = TRUE)
+writeOutput(controlScript, controlPath, 
+            writeFunction = "write_lines", quietly = TRUE)
 
 
 # Clear the environment

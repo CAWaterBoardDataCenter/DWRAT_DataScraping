@@ -205,13 +205,13 @@ mainProcedure <- function () {
   
   
   # Use 'newPathDF' and write the input files to the model hydrology folder
-  writeOutput(mdtDF, newPathDF$MDT[1], "write_csv")
+  writeOutput(mdtDF, newPathDF$MDT[1])
   
-  writeOutput(etDF, newPathDF$ET[1], "write_xlsx")
+  writeOutput(etDF, newPathDF$ET[1])
   
-  writeOutput(basinDF, newPathDF$BASIN[1], "write_csv")
+  writeOutput(basinDF, newPathDF$BASIN[1])
   
-  writeOutput(pvpHistoric, newPathDF$PVP_HISTORIC[1], "write_xlsx")
+  writeOutput(pvpHistoric, newPathDF$PVP_HISTORIC[1])
   
   
   # The PVP forecast file will be an exception though
@@ -1394,8 +1394,7 @@ updateScripts <- function (dirPath, rawFlowsPath, inputDF, newPathDF) {
   
   
   # Write 'pyScript' back to a file
-  writeOutput(pyScript, scriptPaths$RR_CONNECTED[1], 
-              "write_lines", quietly = TRUE)
+  writeOutput(pyScript, scriptPaths$RR_CONNECTED[1], quietly = TRUE)
   
   
   #### Edit "PVP_Processor.R" next ####
@@ -1431,8 +1430,7 @@ updateScripts <- function (dirPath, rawFlowsPath, inputDF, newPathDF) {
   
   
   # Write 'pyScript' back to a file
-  writeOutput(pyScript, scriptPaths$PVP_PROCESSOR[1], 
-              "write_lines", quietly = TRUE)
+  writeOutput(pyScript, scriptPaths$PVP_PROCESSOR[1], quietly = TRUE)
   
   
   # Return nothing

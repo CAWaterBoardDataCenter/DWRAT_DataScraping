@@ -124,13 +124,13 @@ mainProcedure <- function () {
   
   
   prismProcessed |>
-    writeOutput(outFile, "write_csv")
+    writeOutput(outFile)
   
   
   # Save 'prismProcessed' to the hydrology folder as well
   prismProcessed |>
     writeOutput(paste0(dirPath, "/SRP/Input/SRP_Meteorological_", startDate, 
-                       "_", endDate, ".csv"), "write_csv", quietly = TRUE)
+                       "_", endDate, ".csv"), quietly = TRUE)
   
   
   # Finally, update the metadata file as well
