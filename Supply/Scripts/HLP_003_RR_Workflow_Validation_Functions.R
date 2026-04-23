@@ -630,7 +630,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
 
 
 
-validateInputDAT <- function (datFile, sourceField, model, modelCols,
+validateInputDAT <- function (datFile, sourcePath, model, modelCols,
                               startDate, endDate, datType) {
   
   # Verify the formatting of a DAT file for PRMS or SRP
@@ -677,7 +677,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
   if (datType == "Main") {
     
     finalMessage <- paste0("(This error occurred for '", 
-                           getFromControl_RR(sourceField), "')")
+                           sourcePath, "')")
     
   } else if (datType == "SPI") {
     

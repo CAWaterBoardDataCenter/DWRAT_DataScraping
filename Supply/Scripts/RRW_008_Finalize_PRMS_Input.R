@@ -24,15 +24,12 @@
 #  (1) "ProcessedData/Weather_Processed_Data_[startDate]_[endDate].csv"
 #      The processed weather data
 
-#  (2) A long-running DAT file (whose filepath is input into 
-#      "MAIN_PRMS_DAT_FILE" of the control file)
+#  (2) A long-running DAT file (whose filepath is present within the directory
+#      specified by "MAIN_PRMS_DAT_FOLDER" of the control file)
 
-#  (3) A DAT file containing predictions for the current water year (its 
-#      filepath should be given in "PRMS_DAT_SPI_FILE" of the control file)
+#  (3) From the PRMS model files, the "prms_rr.control" file will be edited
 
-#  (4) From the PRMS model files, the "prms_rr.control" file will be edited
-
-#  (5) Similarly, the model's "run.bat" file will be updated as well
+#  (4) Similarly, the model's "run.bat" file will be updated as well
 
 
 # A single output will be generated in all cases, and additional outputs will 
@@ -103,24 +100,59 @@ mainProcedure <- function (predictWY = TRUE) {
   #  (*) The PRMS Meteorological CSV 
   #  (*) The primary DAT file
   # (These files are used in all cases, regardless of the value for 'predictWY')
-  filePaths <- c(paste0("ProcessedData/PRMS_Meteorological_", startDate,
-                        "_", endDate, ".csv"),
-                 getFromControl_RR("MAIN_PRMS_DAT_FILE"))
+  filePaths <- tibble("METEOROLOGICAL" = 
+                        paste0("ProcessedData/PRMS_Meteorological_", startDate,
+                               "_", endDate, ".csv"),
+                      "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
   
   
-  # Read in the first two files after that 
+  # "MAIN_DAT" contains a folder path right now
+  # Extract the latest primary DAT file from there
+  
+  
+  # First, check whether "MAIN_DAT" contains a SharePoint path
+  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
+    sharepointPathCheck(isFolder = TRUE)
+  
+  
+  # Get the latest file among those that have this format:
+  # "DAT_PRMS_CY1990_to_WY####.csv"
+  if (length(list.files(filePaths$MAIN_DAT[1],
+                        pattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$")) == 0) {
+    
+    paste0("PRMS Main DAT File Not Found\n\n",
+           "The directory \"", filePaths$MAIN_DAT[1], "\" does not appear to ",
+           "contain a long-running DAT file for PRMS. These files should have ",
+           "this filename format: \"DAT_PRMS_CY1990_to_WY####.csv\". Please ",
+           "make the necessary adjustments and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Extract the latest version of the DAT CSV file 
+  # and add its path to 'filePaths'
+  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
+    list.files(full.names = TRUE,
+               pattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$") |>
+    sort() |> tail(1)
+  
+  
+  
+  # Read in the two files after that (Meteorological CSV and Main PRMS DAT file)
   # (while also verifying that they exist)
-  meteorDF <- filePaths[1] |> 
+  meteorDF <- filePaths$METEOROLOGICAL[1] |> 
     checkForPreviousOutput() |> 
     getDelim(",")
   
-  primaryDAT <- getFile(filePaths[2], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
   
   
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, "MAIN_PRMS_DAT_FILE", "PRMS", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "PRMS", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -160,7 +192,7 @@ mainProcedure <- function (predictWY = TRUE) {
     mergedDAT <- predictCurrentWY(mergedDAT,
                                   startDate, endDate, 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
-                                  dirPath, filePaths[2])
+                                  dirPath, filePaths$MAIN_DAT[1])
     
     
     cat("\tDone!\n\n")
@@ -172,7 +204,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths[2])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
     
   }
   
