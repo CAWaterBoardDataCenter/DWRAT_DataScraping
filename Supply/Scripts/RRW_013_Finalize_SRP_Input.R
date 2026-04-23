@@ -241,7 +241,10 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
     # the SRP model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_CSV")
+    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
+      getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
+                           "CY1981_to_CY[0-9]{4}\\.csv$"),
+                    "SRP Historic Precip File")
     
     
     # Read in the file and validate it
@@ -249,7 +252,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       getFile()
     
     pastPrecip |>
-      validateHistoricPrecipFile("PRISM_SRP_HISTORIC_PRECIP_CSV",
+      validateHistoricPrecipFile(pastPrecipPath,
                                  getModeledWY(endDate)[1])
     
     
@@ -284,6 +287,15 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       # The metadata will be updated in that function too
       
     }
+    
+    
+    # For both the SPI and Similar Water Year methods, archive 'pastPrecipPath'
+    copyFile(pastPrecipPath, 
+             paste0(dirPath, "/SRP/Input/",
+                    pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
+               normalizePath(mustWork = FALSE), 
+             quietly = TRUE)
+    
     
   }
   

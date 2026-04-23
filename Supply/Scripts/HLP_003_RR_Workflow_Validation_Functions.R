@@ -942,7 +942,7 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
 
 
 
-validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
+validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   
   # For both PRMS and SRP DAT files, calculations are performed 
   # based on average precipitation data from PRISM
@@ -976,7 +976,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            paste0("(*) ", expectedCols[missingFields], collapse = "\n\n"), 
            "\n\n",
            "Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -991,7 +991,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "One or more missing elements were noted in the historic ",
            "precipitation CSV file. All data columns should have a value. ",
            "Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -1016,7 +1016,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            wyStart - 1, ". However, ", length(missingDates), " ",
            "date", if_else(length(missingDates) > 1, "s are", " is"), " ",
            "missing. Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -1032,7 +1032,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "one precipitation value per day (an average daily value for ",
            "the entire watershed domain). However, one or more dates in ",
            "this file are duplicated. Please revise this file.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -1052,7 +1052,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "Please adjust this file and ensure that this column contains only ",
            "numeric values.\n\n",
            "(This error occurred for '", 
-           getFromControl_RR(sourceField), "')") |>
+           sourcePath, "')") |>
       errWrap() |>
       str_replace("(not)", col_red("\\1")) |>
       stop()
