@@ -110,36 +110,9 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # "MAIN_DAT" contains a folder path right now
   # Extract the latest primary DAT file from there
-  
-  
-  # First, check whether "MAIN_DAT" contains a SharePoint path
   filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    sharepointPathCheck(isFolder = TRUE)
-  
-  
-  # Get the latest file among those that have this format:
-  # "DAT_SRP_WY1948_to_WY####.csv"
-  if (length(list.files(filePaths$MAIN_DAT[1],
-                        pattern = "^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$")) == 0) {
-    
-    paste0("SRP Main DAT File Not Found\n\n",
-           "The directory \"", filePaths$MAIN_DAT[1], "\" does not appear to ",
-           "contain a long-running DAT file for SRP. These files should have ",
-           "this filename format: \"DAT_SRP_WY1948_to_WY####.csv\". Please ",
-           "make the necessary adjustments and try again.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Extract the latest version of the DAT CSV file 
-  # and add its path to 'filePaths'
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    list.files(full.names = TRUE,
-               pattern = "^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$") |>
-    sort() |> tail(1)
-  
+    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
+                  "SRP Main DAT File")
   
   
   # Read in the two files next (while also verifying that they exist)

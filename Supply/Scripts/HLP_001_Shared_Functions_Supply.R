@@ -891,6 +891,49 @@ getModeledWY <- function (endDate) {
 
 
 
+getLatestFile <- function (dir, filePattern, title = "File") {
+  
+  # Given a directory ('dir'), get the path to a file 
+  # that can be identified using the regular expression in 'filePattern'
+  
+  # The list of files that match 'filePattern' will be sorted and the 
+  # last option in the list will be returned
+  
+  # (This generally corresponds to the most recent version of a file
+  #  when sorted by date)
+  
+  
+  # First, check whether 'dir' contains a SharePoint path
+  dir <- dir |>
+    sharepointPathCheck(isFolder = TRUE)
+  
+  
+  # Get the latest file among those that have the format 'filePattern'
+  latestFile <- list.files(dir, full.names = TRUE,
+                           pattern = filePattern) |>
+    sort() |> tail(1)
+  
+  
+  # Output an error message if no files are found at all
+  if (length(latestFile) == 0) {
+    
+    paste0(title, " Not Found\n\n",
+           "The directory \"", dir, "\" does not appear to have any file that ",
+           "satisfies this regular expression: \"", filePattern, "\". ",
+           "Please make the necessary adjustments and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there are no issues, return 'latestFile'
+  return(latestFile)
+  
+}
+
+
+
 vec2QuotedStr <- function (strVec) {
   
   # Given a vector of strings, wrap each element in quotation marks

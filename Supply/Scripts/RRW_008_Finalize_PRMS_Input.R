@@ -108,36 +108,9 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # "MAIN_DAT" contains a folder path right now
   # Extract the latest primary DAT file from there
-  
-  
-  # First, check whether "MAIN_DAT" contains a SharePoint path
   filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    sharepointPathCheck(isFolder = TRUE)
-  
-  
-  # Get the latest file among those that have this format:
-  # "DAT_PRMS_CY1990_to_WY####.csv"
-  if (length(list.files(filePaths$MAIN_DAT[1],
-                        pattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$")) == 0) {
-    
-    paste0("PRMS Main DAT File Not Found\n\n",
-           "The directory \"", filePaths$MAIN_DAT[1], "\" does not appear to ",
-           "contain a long-running DAT file for PRMS. These files should have ",
-           "this filename format: \"DAT_PRMS_CY1990_to_WY####.csv\". Please ",
-           "make the necessary adjustments and try again.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Extract the latest version of the DAT CSV file 
-  # and add its path to 'filePaths'
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    list.files(full.names = TRUE,
-               pattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$") |>
-    sort() |> tail(1)
-  
+    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}.csv$", 
+                  title = "PRMS Main DAT File")
   
   
   # Read in the two files after that (Meteorological CSV and Main PRMS DAT file)
