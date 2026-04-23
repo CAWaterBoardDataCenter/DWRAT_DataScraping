@@ -88,10 +88,10 @@ mainProcedure <- function () {
   
   
   # Prepare and submit a request for meteorological data
-  getPRISM(stationDF, startDate, endDate, 
-           paste0("WebData/PRISM_PRMS_Data_", startDate, "_", endDate, ".csv"),
-           useHighRes = TRUE, interpCells = TRUE,
-           getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
+  scrapePRISM(stationDF, startDate, endDate, 
+              paste0("WebData/PRISM_PRMS_Data_", startDate, "_", endDate, ".csv"),
+              useHighRes = TRUE, interpCells = TRUE,
+              getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
   
   
   # Add to the message
@@ -120,10 +120,10 @@ mainProcedure <- function () {
   
   # Prepare and submit a POST request for data
   # The SRP stations require English units (inches and Fahrenheit)
-  getPRISM(stationDF, startDate, endDate, 
-           paste0("WebData/PRISM_SRP_Data_", startDate, "_", endDate, ".csv"),
-           useHighRes = TRUE, interpCells = TRUE,
-           getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
+  scrapePRISM(stationDF, startDate, endDate, 
+              paste0("WebData/PRISM_SRP_Data_", startDate, "_", endDate, ".csv"),
+              useHighRes = TRUE, interpCells = TRUE,
+              getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
   
   
   # Output a completion message
@@ -152,11 +152,11 @@ mainProcedure <- function () {
   
   # Prepare the POST request for precipitation data
   # No grid cell interpolation will be performed for this request
-  getPRISM(stationDF, wyStart, endDate, 
-           paste0("WebData/PRISM_PRMS_Domain_Data_", wyStart, "_", 
-                  endDate, ".csv"),
-           useHighRes = TRUE, interpCells = FALSE,
-           getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
+  scrapePRISM(stationDF, wyStart, endDate, 
+              paste0("WebData/PRISM_PRMS_Domain_Data_", wyStart, "_", 
+                     endDate, ".csv"),
+              useHighRes = TRUE, interpCells = FALSE,
+              getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
   
   
   # Output a completion message
@@ -182,11 +182,11 @@ mainProcedure <- function () {
   
   # Prepare and submit POST requests
   # No grid cell interpolation will be performed for this request
-  getPRISM(stationDF, wyStart, endDate, 
-           paste0("WebData/PRISM_SRP_Domain_Data_", wyStart, "_", 
-                  endDate, ".csv"),
-           useHighRes = TRUE, interpCells = FALSE,
-           getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
+  scrapePRISM(stationDF, wyStart, endDate, 
+              paste0("WebData/PRISM_SRP_Domain_Data_", wyStart, "_", 
+                     endDate, ".csv"),
+              useHighRes = TRUE, interpCells = FALSE,
+              getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
   
   
   # Output a completion message
@@ -203,10 +203,10 @@ mainProcedure <- function () {
 
 
 
-getPRISM <- function (stationDF, startDate, endDate, writePath,
-                      useHighRes = TRUE, interpCells = TRUE, 
-                      getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE,
-                      quietly = FALSE, maxRetries = 15) {
+scrapePRISM <- function (stationDF, startDate, endDate, writePath,
+                         useHighRes = TRUE, interpCells = TRUE, 
+                         getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE,
+                         quietly = FALSE, maxRetries = 15) {
   
   # The process of getting daily data from PRISM involves 
   # making two POST requests
@@ -518,12 +518,12 @@ splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
     
     
     # Submit a request for PRISM data
-    getPRISM(stationDF = subsetDF, 
-             startDate = startDate, endDate = endDate, 
-             writePath = nameVec[i], useHighRes = useHighRes,
-             interpCells = interpCells, getPrecip = getPrecip, 
-             getTemp = getTemp, useMetric = useMetric,
-             quietly = quietly)
+    scrapePRISM(stationDF = subsetDF, 
+                startDate = startDate, endDate = endDate, 
+                writePath = nameVec[i], useHighRes = useHighRes,
+                interpCells = interpCells, getPrecip = getPrecip, 
+                getTemp = getTemp, useMetric = useMetric,
+                quietly = quietly)
     
     
     # Wait a little before continuing to the next iteration
