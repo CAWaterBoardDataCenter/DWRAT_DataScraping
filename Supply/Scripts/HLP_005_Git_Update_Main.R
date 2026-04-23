@@ -72,8 +72,8 @@ mainProcedure <- function () {
     
     # Output an error message for the user
     paste0("Could Not Execute Git Commands\n\n",
-           "The procedure failed for an unknown reason. Please ",
-           "investigate the messages shown above.") |>
+           "The procedure failed. Please investigate the messages ",
+           "shown above.") |>
       errWrap() |>
       stop()
     
