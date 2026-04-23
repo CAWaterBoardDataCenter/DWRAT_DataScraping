@@ -64,7 +64,7 @@ mainProcedure <- function () {
            shQuote(rPath), rOpts, shQuote("Scripts\\RRW_000A_Run_RR_Process_Today.R"),
            
            # All output is stored in a new file established at 'logPath'
-           ") > ", shQuote(logPath), 
+           ") > ", shQuote(logPath), " > 2>&1 ", 
            
            " && ",
            

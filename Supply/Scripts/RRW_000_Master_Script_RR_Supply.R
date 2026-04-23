@@ -140,5 +140,6 @@ source("Scripts/HLP_006_Generate_RR_Workflow_Bat.R")
 
 # Generating new long-running DAT file
 
-# Generating new 
+# Generating new historic precipitation averages 
+# for the PRMS and SRP model domains
 
