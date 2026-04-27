@@ -68,7 +68,8 @@ mainProcedure <- function () {
   
   
   # If an error occurred, its message will appear in 'gitRes'
-  if (any(grepl("(fatal)|(error)|(fail)|(abort)", gitRes, ignore.case = TRUE))) {
+  if (any(grepl("(fatal)|(error)|(fail)|(abort)", gitRes, ignore.case = TRUE)) ||
+      attr(gitRes, "status") == 1) {
     
     # Output an error message for the user
     paste0("Could Not Execute Git Commands\n\n",
