@@ -64,12 +64,10 @@ mainProcedure <- function () {
            shQuote(rPath), rOpts, shQuote("Scripts\\RRW_000A_Run_RR_Process_Today.R"),
            
            # All output is stored in a new file established at 'logPath'
-           ") > ", shQuote(logPath), " 2>&1 ", 
+           ") > ", shQuote(logPath), " 2>&1 "),
            
-           " && ",
-           
-           # Finally, copy the log file to the model archive folder
-           shQuote(rPath), rOpts, shQuote("Scripts\\HLP_007_Archive_Log_File.R")),
+    # Copy the log file to the model archive folder
+    shQuote(rPath), rOpts, shQuote("Scripts\\HLP_007_Archive_Log_File.R")),
     
     # Call "exit" to ensure that the batch file closes properly
     "exit") |>
