@@ -1554,8 +1554,8 @@ netCount <- function (string, pattern) {
   
   # Use `str_count` to count instances of 'pattern' in 'string'
   
-  # However, if 'pattern' appears after a comment hashtag "#", 
-  # exclude instances of 'pattern' that come after "#"
+  # However, if 'pattern' appears after a comment hashtag "#" or within quotes, 
+  # exclude instances of 'pattern' that come after "#" or within quotes (" or ')
   
   
   # If 'pattern' appears after a "#", use the modified count formula
@@ -1566,9 +1566,25 @@ netCount <- function (string, pattern) {
     count <- str_count(string, pattern) - 
       str_count(string |> str_extract("#.*$"), pattern)
     
+  # Do the same for double quotes "
+  } else if (grepl(paste0("\".*\"", pattern), string)) {
+    
+    # Count the number of instances of 'pattern' in 'string' and 
+    # exclude the number of instances of 'pattern' contained within double quotes
+    count <- str_count(string, pattern) - 
+      str_count(string |> str_extract("\".*\""), pattern)
+    
+  # Repeat the modification for single quotes
+  } else if (grepl(paste0("'.*'", pattern), string)) {
+    
+    # Count the number of instances of 'pattern' in 'string' and 
+    # exclude the number of instances of 'pattern' contained within single quotes
+    count <- str_count(string, pattern) - 
+      str_count(string |> str_extract("'.*'"), pattern)
+    
   } else {
     
-    # If there are no comments in 'string', use `str_count` as normal
+    # If there are no comments or quotes in 'string', use `str_count` as normal
     count <- str_count(string, pattern)
     
   }

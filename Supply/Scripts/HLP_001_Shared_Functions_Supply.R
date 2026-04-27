@@ -1855,11 +1855,21 @@ functionStealer <- function (scriptPath, functionName) {
     
     
     # Count the number of open braces on 'checkLine'
-    # Exclude open braces in comments (if present)
+    # Exclude open braces in comments or quotes (if present)
     if (grepl("#.*\\{", rLines[checkLine])) {
       
       numOpen <- str_count(rLines[checkLine], "\\{") - 
         str_count(rLines[checkLine] |> str_extract("#.*$"), "\\{")
+      
+    } else if (grepl("\".*\\{.*\"", rLines[checkLine])) { 
+      
+      numOpen <- str_count(rLines[checkLine], "\\{") - 
+        str_count(rLines[checkLine] |> str_extract("\".*\\{.*\""), "\\{")
+    
+    } else if (grepl("'.*\\{.*'", rLines[checkLine])) { 
+      
+      numOpen <- str_count(rLines[checkLine], "\\{") - 
+        str_count(rLines[checkLine] |> str_extract("'.*\\{.*'"), "\\{")
       
     } else {
       
@@ -1869,11 +1879,21 @@ functionStealer <- function (scriptPath, functionName) {
     
     
     # Check for closed braces on 'checkLine'
-    # Exclude any braces in comments
+    # Exclude any braces in comments or quotes
     if (grepl("#.*\\}", rLines[checkLine])) {
       
       numClosed <- str_count(rLines[checkLine], "\\}") - 
         str_count(rLines[checkLine] |> str_extract("#.*$"), "\\}")
+      
+    } else if (grepl("\".*\\}.*\"", rLines[checkLine])) { 
+      
+      numOpen <- str_count(rLines[checkLine], "\\}") - 
+        str_count(rLines[checkLine] |> str_extract("\".*\\}.*\""), "\\}")
+      
+    } else if (grepl("'.*\\}.*'", rLines[checkLine])) { 
+      
+      numOpen <- str_count(rLines[checkLine], "\\}") - 
+        str_count(rLines[checkLine] |> str_extract("'.*\\}.*'"), "\\}")
       
     } else {
       
@@ -1939,7 +1959,7 @@ functionStealer <- function (scriptPath, functionName) {
   
   
   # Evaluate 'functionStr' as R code
-  eval(parse(text = functionStr))
+  source(textConnection(functionStr))
   
   
   # Return nothing
