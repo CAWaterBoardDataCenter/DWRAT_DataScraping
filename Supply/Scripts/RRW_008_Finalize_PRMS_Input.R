@@ -109,7 +109,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # "MAIN_DAT" contains a folder path right now
   # Extract the latest primary DAT file from there
   filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}.csv$", 
+    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$", 
                   title = "PRMS Main DAT File")
   
   
