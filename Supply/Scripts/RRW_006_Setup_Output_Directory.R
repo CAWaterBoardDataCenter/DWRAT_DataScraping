@@ -309,6 +309,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
+                   WORKFLOW_VERSION = "RRW",
                    MODELER_NAME = Sys.info()[["user"]],
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
@@ -360,11 +361,9 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "PRMS")
   copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "PRMS")
   copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("PRISM_PRMS_HISTORIC_PRECIP_CSV", outputDirectory, "PRMS")
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
-  copyStationInputFile("PRISM_SRP_HISTORIC_PRECIP_CSV", outputDirectory, "SRP")
   
   
   # Finally, copy the "renv.lock" file located in the root "Supply" directory
@@ -388,15 +387,8 @@ copyStationInputFile <- function (sourceField, outputDirectory, model = "PRMS") 
   
   
   # Read in the path from the control file
-  inputPath <- getFromControl_RR(sourceField)
-  
-  
-  # If it's a SharePoint path, update 'inputPath' accordingly
-  if (file.exists(makeSharePointPath(inputPath))) {
-    
-    inputPath <- makeSharePointPath(inputPath)
-    
-  }
+  inputPath <- getFromControl_RR(sourceField) |>
+    sharepointPathCheck(isFolder = FALSE)
   
   
   # Set the output path next

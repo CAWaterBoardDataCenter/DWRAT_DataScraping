@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from io import StringIO
 
 def downloadUSGSFlow(site, start_date, end_date):
-    print("✅ NEW downloadUSGSFlow is running")
+    print("NEW downloadUSGSFlow is running")
 
     url = "https://waterservices.usgs.gov/nwis/dv/"
     params = {
@@ -23,7 +23,7 @@ def downloadUSGSFlow(site, start_date, end_date):
     # Debug: confirm we're not getting HTML
     ct = r.headers.get("Content-Type", "")
     if "html" in ct.lower() or r.text.lstrip().startswith("<"):
-        print("❌ Got HTML instead of RDB.")
+        print("Got HTML instead of RDB.")
         print("Final URL:", r.url)
         print("Content-Type:", ct)
         print("First 300 chars:\n", r.text[:300])

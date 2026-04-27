@@ -23,8 +23,8 @@
 #  (1) "ProcessedData/SRP_Meteorological_[startDate]_[endDate].csv"
 #      The processed weather data
 
-#  (2) A long-running DAT file (whose filepath is input into "MAIN_SRP_DAT_FILE"
-#      of the control file)
+#  (2) A long-running DAT file (whose parent folder is input into 
+#      "MAIN_SRP_DAT_FOLDER" of the control file)
 
 #  (3) A DAT file containing predictions for the current water year (its 
 #      filepath should be given in "SRP_DAT_SPI_FILE" of the control file)
@@ -102,24 +102,32 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Read in two of the main input files
   # (The SRP Meteorological CSV and the primary DAT file)
-  filePaths <- c(paste0("ProcessedData/SRP_Meteorological_", startDate,
-                        "_", endDate, ".csv"),
-                 getFromControl_RR("MAIN_SRP_DAT_FILE"))
+  filePaths <- tibble("METEOROLOGICAL" = 
+                        paste0("ProcessedData/SRP_Meteorological_", startDate,
+                               "_", endDate, ".csv"),
+                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
+  
+  
+  # "MAIN_DAT" contains a folder path right now
+  # Extract the latest primary DAT file from there
+  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
+    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
+                  "SRP Main DAT File")
   
   
   # Read in the two files next (while also verifying that they exist)
-  meteorDF <- filePaths[1] |> 
+  meteorDF <- filePaths$METEOROLOGICAL[1] |> 
     checkForPreviousOutput() |>
     getDelim(",")
   
   
-  primaryDAT <- getFile(filePaths[2], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
   
   
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, "MAIN_SRP_DAT_FILE", "SRP", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRP", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -157,7 +165,7 @@ mainProcedure <- function (predictWY = TRUE) {
     mergedDAT <- predictCurrentWY(mergedDAT,
                                   startDate, endDate, 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
-                                  dirPath, filePaths[2])
+                                  dirPath, filePaths$MAIN_DAT[1])
     
     
     cat("\tDone!\n\n")
@@ -169,7 +177,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths[2])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
     
   }
   
@@ -233,7 +241,10 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
     # the SRP model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_CSV")
+    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
+      getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
+                           "CY1981_to_CY[0-9]{4}\\.csv$"),
+                    "SRP Historic Precip File")
     
     
     # Read in the file and validate it
@@ -241,7 +252,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       getFile()
     
     pastPrecip |>
-      validateHistoricPrecipFile("PRISM_SRP_HISTORIC_PRECIP_CSV",
+      validateHistoricPrecipFile(pastPrecipPath,
                                  getModeledWY(endDate)[1])
     
     
@@ -276,6 +287,15 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       # The metadata will be updated in that function too
       
     }
+    
+    
+    # For both the SPI and Similar Water Year methods, archive 'pastPrecipPath'
+    copyFile(pastPrecipPath, 
+             paste0(dirPath, "/SRP/Input/",
+                    pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
+               normalizePath(mustWork = FALSE), 
+             quietly = TRUE)
+    
     
   }
   

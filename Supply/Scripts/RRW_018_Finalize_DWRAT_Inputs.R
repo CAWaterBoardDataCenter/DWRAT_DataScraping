@@ -283,65 +283,28 @@ setupInputPaths <- function (inputDF) {
   inputDF$BASIN[1] <- inputDF$BASIN[1] |>
     sharepointPathCheck(isFolder = FALSE)
   
-  inputDF$PVP_HISTORIC[1] <- inputDF$PVP_HISTORIC[1] |>
-    sharepointPathCheck(isFolder = TRUE)
+  # inputDF$PVP_HISTORIC[1] <- inputDF$PVP_HISTORIC[1] |>
+  #   sharepointPathCheck(isFolder = TRUE)
+  # 
+  # inputDF$PVP_FORECAST[1] <- inputDF$PVP_FORECAST[1] |>
+  #   sharepointPathCheck(isFolder = TRUE)
   
-  inputDF$PVP_FORECAST[1] <- inputDF$PVP_FORECAST[1] |>
-    sharepointPathCheck(isFolder = TRUE)
+  # The above commented-out code is not needed for the two PVP directories 
+  # because the next step has `sharepointPathCheck` integrated into its 
+  # procedure already
   
   
   # From the two PVP directories, extract a file
   # The script will attempt to choose the latest versions of the historic 
   # and forecasted PVP flows
-  pvpHistoricPath <- inputDF$PVP_HISTORIC[1] |>
-    list.files(full.names = TRUE,
-               pattern = "PVP_Transfers_Observed") |>
-    sort() |> tail(1)
+  inputDF$PVP_HISTORIC[1] <- inputDF$PVP_HISTORIC[1] |>
+    getLatestFile(filePattern = "PVP_Transfers_Observed",
+                  title = "Historic PVP Flows File")
   
   
-  pvpForecastPath <- inputDF$PVP_FORECAST[1] |>
-    list.files(full.names = TRUE,
-               pattern = "PotterValleyProjectProjection") |>
-    sort() |> tail(1)
-  
-  
-  # In both cases, confirm that a file was found
-  if (length(pvpHistoricPath) == 0) {
-    
-    paste0("Historic PVP Flows File Not Found\n\n", 
-           "In the directory specified by the user (\"",
-           inputDF$PVP_HISTORIC[1], "\"), the script expected to ",
-           "find at least one file that contains historic data on ",
-           "PVP transfers.\n\n",
-           "The file should contain \"PVP_Transfers_Observed\" in its ",
-           "name. However, no match was found. Please investigate.") |>
-      errWrap() |>
-      stop()
-    
-  } else {
-    
-    inputDF$PVP_HISTORIC[1] <- pvpHistoricPath
-    
-  }
-  
-  
-  if (length(pvpForecastPath) == 0) {
-    
-    paste0("Forecasted PVP Flows File Not Found\n\n", 
-           "In the directory specified by the user (\"",
-           inputDF$PVP_FORECAST[1], "\"), the script expected to ",
-           "find at least one file that contains forecasted data on ",
-           "PVP transfers.\n\n",
-           "The file should contain \"PotterValleyProjectProjection\" ",
-           "in its name. However, no match was found. Please investigate.") |>
-      errWrap() |>
-      stop()
-    
-  } else {
-    
-    inputDF$PVP_FORECAST[1] <- pvpForecastPath
-    
-  }
+  inputDF$PVP_FORECAST[1] <- inputDF$PVP_FORECAST[1] |>
+    getLatestFile(filePattern = "PotterValleyProjectProjection",
+                  title = "Forecasted PVP Flows File")
   
   
   # Return 'inputDF' after this processing is complete
@@ -1591,8 +1554,8 @@ netCount <- function (string, pattern) {
   
   # Use `str_count` to count instances of 'pattern' in 'string'
   
-  # However, if 'pattern' appears after a comment hashtag "#", 
-  # exclude instances of 'pattern' that come after "#"
+  # However, if 'pattern' appears after a comment hashtag "#" or within quotes, 
+  # exclude instances of 'pattern' that come after "#" or within quotes (" or ')
   
   
   # If 'pattern' appears after a "#", use the modified count formula
@@ -1603,9 +1566,25 @@ netCount <- function (string, pattern) {
     count <- str_count(string, pattern) - 
       str_count(string |> str_extract("#.*$"), pattern)
     
+  # Do the same for double quotes "
+  } else if (grepl(paste0("\".*\"", pattern), string)) {
+    
+    # Count the number of instances of 'pattern' in 'string' and 
+    # exclude the number of instances of 'pattern' contained within double quotes
+    count <- str_count(string, pattern) - 
+      str_count(string |> str_extract("\".*\""), pattern)
+    
+  # Repeat the modification for single quotes
+  } else if (grepl(paste0("'.*'", pattern), string)) {
+    
+    # Count the number of instances of 'pattern' in 'string' and 
+    # exclude the number of instances of 'pattern' contained within single quotes
+    count <- str_count(string, pattern) - 
+      str_count(string |> str_extract("'.*'"), pattern)
+    
   } else {
     
-    # If there are no comments in 'string', use `str_count` as normal
+    # If there are no comments or quotes in 'string', use `str_count` as normal
     count <- str_count(string, pattern)
     
   }

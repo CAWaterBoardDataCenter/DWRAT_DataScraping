@@ -95,9 +95,22 @@ mainProcedure <- function () {
     
     cat("[2/2]\tCopying archived files to another folder...\n")
     
-    dir_copy(path = dirPath,
-             new_path = paste0(extraDir, "/RR_Workflow"), 
-             overwrite = TRUE)
+    
+    # The model hydrology folder will be stored under "RR_Workflow" in 'extraDir'
+    newDir <- paste0(extraDir, "/RR_Workflow")
+    
+    
+    # Delete the "RR_Workflow" folder if it already exists 
+    if (dir.exists(newDir)) {
+      
+      dir_delete(newDir)
+      
+    }
+    
+    
+    # Copy 'dirPath' to 'newDir'
+    dir_copy(path = dirPath, new_path = newDir, overwrite = TRUE)
+    
     
     cat("\tDone!\n\n")
     
