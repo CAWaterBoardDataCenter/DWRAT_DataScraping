@@ -199,10 +199,10 @@ validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
   
   # Each website returns data in a slightly different format
   # But the general expectations are similar in all cases
-  validateWebData(prismDF, inputFiles$PRISM_OUTPUT[1], prismInput$STATION_ID, siPRISM = TRUE)
-  validateWebData(noaaDF, inputFiles$NOAA_OUTPUT[1], noaaInput$STATION_ID)
-  validateWebData(rawsDF, inputFiles$RAWS_OUTPUT[1], rawsInput$STATION_ID)
-  validateWebData(cimisDF, inputFiles$CIMIS_OUTPUT[1], cimisInput$STATION_ID)
+  validateWebData(prismDF, "PRISM", inputFiles$PRISM_OUTPUT[1], prismInput$STATION_ID, siPRISM = TRUE)
+  validateWebData(noaaDF, "NOAA", inputFiles$NOAA_OUTPUT[1], noaaInput$STATION_ID)
+  validateWebData(rawsDF, "RAWS", inputFiles$RAWS_OUTPUT[1], rawsInput$STATION_ID)
+  validateWebData(cimisDF, "CIMIS", inputFiles$CIMIS_OUTPUT[1], cimisInput$STATION_ID)
   
   
   # Return nothing

@@ -168,7 +168,7 @@ validateInputs <- function (prismInput, prismDF, inputFiles) {
   # Validate the weather output tibble next
   
   # Using a general function for all weather sources, check 'prismDF'
-  validateWebData(prismDF, inputFiles[2], prismInput$STATION_ID, siPRISM = FALSE)
+  validateWebData(prismDF, "PRISM", inputFiles[2], prismInput$STATION_ID, siPRISM = FALSE)
   
   
   # Return nothing
