@@ -307,7 +307,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
   
   
   # Perform a few checks on 'finalDAT'
-  validateInputDAT(finalDAT, sourceField = NULL, "PRMS", prmsCols,
+  validateInputDAT(finalDAT, sourcePath = NA_character_, "PRMS", prmsCols,
                    startDate, endDate, datType = "Final")
   
   
