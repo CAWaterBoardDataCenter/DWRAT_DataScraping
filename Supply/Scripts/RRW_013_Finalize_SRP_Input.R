@@ -546,7 +546,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   # so include dummy columns for "TMIN" and "TMAX" when checking the data
   currentPrecip |>
     mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
-    validateWebData(inputPath = c("PRISM" = prismPath),
+    validateWebData(dataSource = "PRISM", 
+                    inputPath = prismPath,
                     stationVec = currentPrecip$Name |> unique(),
                     siPRISM = TRUE)
   

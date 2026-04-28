@@ -434,15 +434,12 @@ validateStationInputs <- function (inputDF, inputPath,
 
 
 
-validateWebData <- function (climateDF, inputPath, stationVec, siPRISM = TRUE) {
+validateWebData <- function (climateDF, dataSource, inputPath, stationVec, 
+                             siPRISM = TRUE) {
   
   # Check for errors in the downloaded web data
   
   # This function mainly checks for expected column names and "NA" values
-  
-  
-  # First, extract the data source name from the element name for 'inputPath'
-  dataSource <- names(inputPath) |> str_extract("^[A-Z]+")
   
   
   # Make sure that procedure was successful
@@ -451,10 +448,8 @@ validateWebData <- function (climateDF, inputPath, stationVec, siPRISM = TRUE) {
     paste0("Unexpected Data Source\n\n", 
            "The name \"", dataSource, "\" is not recognized; ",
            "please fix the script\n\n",
-           "The function `validateWebData()` uses the vector names ",
-           "in 'inputFiles' and extracts the data source name. It ",
-           "expects \"PRISM\", \"NOAA\", \"RAWS\", or \"CIMIS\" as ",
-           "acceptable values.") |>
+           "The function `validateWebData()` expects \"PRISM\", \"NOAA\", ",
+           "\"RAWS\", or \"CIMIS\" as acceptable values.") |>
       errWrap() |>
       stop()
     
