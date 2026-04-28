@@ -243,7 +243,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
     # Get the path to that file
     pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
       getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
-                           "CY1981_to_CY[0-9]{4}\\.csv$"),
+                           "CY1981_to_WY[0-9]{4}\\.csv$"),
                     "SRP Historic Precip File")
     
     
@@ -327,10 +327,42 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
   wyBounds <- getModeledWY(endDate)
   
   
-  # Summarize 'pastPrecip' on a monthly timescale
-  # (But ignore records from the current water year)
+  # The next step is to summarize 'pastPrecip' on a monthly timescale
+  
+  # Before doing that, certain filters must be applied
+  # Ignore records from the current water year onwards
+  pastPrecip <- pastPrecip |>
+    filter(Date < wyBounds[1])
+  
+  
+  # Make sure the last day in 'pastPrecip' is September 30th
+  if (month(max(pastPrecip$Date)) != 9 || day(max(pastPrecip$Date)) != 30) {
+    
+    # If not, find the latest instance of September 30th and filter to that bound
+    
+    # Due to prior validation checks, 'pastPrecip' should be a continuous dataset
+    # If there is no September 30th in the latest year in 'pastPrecip',  
+    # there will definitely be one in the prior year
+    
+    # Use whichever one is available
+    
+    if (paste0(year(max(pastPrecip$Date)), "-09-30") %in% pastPrecip$Date) {
+      
+      pastPrecip <- pastPrecip |>
+        filter(Date <= paste0(year(max(pastPrecip$Date)), "-09-30"))
+      
+    } else {
+      
+      pastPrecip <- pastPrecip |>
+        filter(Date <= paste0(year(max(pastPrecip$Date)) - 1, "-09-30"))
+      
+    }
+    
+  }
+  
+  
+  # After that, summarize 'pastPrecip' into a monthly dataset
   monthDF <- pastPrecip |>
-    filter(Date < wyBounds[1]) |>
     mutate(YEAR = year(Date), MONTH = month(Date)) |>
     group_by(YEAR, MONTH) |>
     summarize(PRECIP = sum(`ppt (mm)`), .groups = "drop") |>
@@ -339,7 +371,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
   
   # Add dummy entries for the last three months of the year in 'monthDF'
   # (This data will round out 'monthDF' into 12 months of data per year)
-  # ("YEAR_MONTH" is an extra column that will be useful later)
+  # (Also, "YEAR_MONTH" is an extra column that will be useful later)
   dummyDF <- tibble(YEAR = max(monthDF$YEAR),
                     MONTH = 10:12,
                     PRECIP = 0) |>
@@ -644,6 +676,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   
   # Adjust the formatting of 'pastPrecip'
   # Add water year and date columns
+  # (Additional edits will occur later)
   pastPrecip <- pastPrecip |>
     mutate(YEAR = year(Date), MONTH = month(Date)) |>
     mutate(WY = if_else(MONTH < 10, YEAR, YEAR + 1)) |>

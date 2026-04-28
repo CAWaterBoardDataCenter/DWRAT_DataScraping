@@ -947,7 +947,8 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   # (they correspond to the model domains of PRMS and SRP)
   
   # This function verifies that continuous precipitation data is present 
-  # from "1981-01-01" to the beginning of the modeled water year in 'precipDF'
+  # from "1981-01-01" to within two water years of the modeled water year
+  # (e.g., For WY2026, there should be data through at least WY2024)
   prismStart <- "1981-01-01" |>
     as.Date(format = "%Y-%m-%d")
   
@@ -995,7 +996,9 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   
   
   # After that, check for missing dates in 'precipDF'
-  dateSeq <- seq(from = prismStart, to = wyStart - 1, by = "days")
+  dateSeq <- seq(from = prismStart, 
+                 to = max(precipDF$Date), 
+                 by = "days")
   
   
   # Every date in 'dateSeq' should appear in 'precipDF' 
@@ -1029,6 +1032,30 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
            "this file are duplicated. Please revise this file.\n\n",
            "(This error occurred for '", sourcePath,
            "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # 'precipDF' should extend at least until within two water years 
+  # of the modeled water year
+  if (!any(c(paste0(year(wyStart), "-09-30"), 
+             paste0(year(wyStart) - 1, "-09-30")) %in% precipDF$Date)) {
+    
+    # Example
+    # For WY2026, 'wyStart' is "2025-10-01"
+    # The precipitation CSV should have data through "2025-09-30" or "2024-09-30"
+    # These correspond to the ends of WY2025 and WY2024, respectively
+    
+    
+    paste0("Historic Precipitation File - Insufficient Data Issue\n\n", 
+           "Because WY", year(wyStart) + 1, " is being modeled, the historic ",
+           "precipitation CSV file should extend until at least the end of WY",
+           year(wyStart) - 1, " or WY", year(wyStart), ". However, the file ",
+           "only extends until ", max(precipDF$Date), ". Please revise this ",
+           "file.\n\n",
+           "(This error occurred for '", sourcePath, "')") |>
       errWrap() |>
       stop()
     
