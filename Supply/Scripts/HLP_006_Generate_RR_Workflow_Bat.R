@@ -67,7 +67,7 @@ mainProcedure <- function () {
            ") > ", shQuote(logPath), " 2>&1 "),
            
     # Copy the log file to the model archive folder
-    shQuote(rPath), rOpts, shQuote("Scripts\\HLP_007_Archive_Log_File.R")),
+    paste0(shQuote(rPath), rOpts, shQuote("Scripts\\HLP_007_Archive_Log_File.R")),
     
     # Call "exit" to ensure that the batch file closes properly
     "exit") |>
