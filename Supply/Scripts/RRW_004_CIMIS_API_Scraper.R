@@ -141,6 +141,11 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
   maxRequest <- floor(1750 / length(stationVec) / 3)
   
   
+  # And because we don't want to be using the actual maximum limit,
+  # Reduce 'maxRequest' by 15%
+  maxRequest <- floor(maxRequest * .85)
+  
+  
   # Even then, make sure 'maxRequest' is not too large
   # Arbitrarily limit it to 300 days per request
   maxRequest <- min(maxRequest, 300)
