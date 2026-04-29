@@ -1572,7 +1572,8 @@ netCount <- function (string, pattern) {
     # Count the number of instances of 'pattern' in 'string' and 
     # exclude the number of instances of 'pattern' contained within double quotes
     count <- str_count(string, pattern) - 
-      str_count(string |> str_extract("\".*\""), pattern)
+      str_count(string |> str_extract(paste0("\".*", pattern, ".*\"")), 
+                pattern)
     
   # Repeat the modification for single quotes
   } else if (grepl(paste0("'.*", pattern, ".*'"), string)) {
@@ -1580,7 +1581,8 @@ netCount <- function (string, pattern) {
     # Count the number of instances of 'pattern' in 'string' and 
     # exclude the number of instances of 'pattern' contained within single quotes
     count <- str_count(string, pattern) - 
-      str_count(string |> str_extract("'.*'"), pattern)
+      str_count(string |> str_extract(paste0("'.*", pattern, ".*'")), 
+                pattern)
     
   } else {
     
