@@ -226,16 +226,16 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   
   
   # To start, check if the request is too large 
-  if (nrow(stationDF) > 400) {
+  if (nrow(stationDF) > 300) {
     
-    # If data for more than 500 locations is requested, split up the request
+    # If data for more than 300 locations is requested, split up the request
     # (The actual limit is 500, but let's not bother PRISM too much)
     return(splitRequest(stationDF = stationDF, 
                         startDate = startDate, endDate = endDate, 
                         writePath = writePath, useHighRes = useHighRes,
                         interpCells = interpCells, getPrecip = getPrecip, 
                         getTemp = getTemp, useMetric = useMetric,
-                        quietly = quietly, maxVal = 400))
+                        quietly = quietly, maxVal = 300))
     
   }
   
@@ -490,7 +490,7 @@ splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
   
   
   # Notify the user about this
-  cat(paste0("\n\tSplitting his step into ", numRequests, 
+  cat(paste0("\n\tSplitting this step into ", numRequests, 
              " smaller requests!\n\n"))
   
   

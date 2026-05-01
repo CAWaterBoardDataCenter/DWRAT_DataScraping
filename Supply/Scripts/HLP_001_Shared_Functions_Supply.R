@@ -101,23 +101,50 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   }
   
   
+  # Set default arguments for the functions
+  n_max <- Inf
+  skip <- 0
+  
+  
+  # Check the inputs in 'parameterVec' 
+  # If it is a named vector or list, try to incorporate its values 
+  # into the function arguments instead of the above defaults
+  if (!is.null(parameterVec) && !is.null(names(parameterVec))) {
+    
+    if ("n_max" %in% names(parameterVec)) {
+      
+      n_max <- parameterVec[[which(names(parameterVec) == "n_max")[1]]]
+      
+    }
+    
+    
+    if ("skip" %in% names(parameterVec)) {
+      
+      skip <- parameterVec[[which(names(parameterVec) == "skip")[1]]]
+      
+    }
+    
+  }
+  
+  
   # Finally, call different functions to read in the file
   if (fileType == "XLSX") {
     
-    return(getXLSX(filePath, parameterVec))
+    return(getXLSX(filePath, parameterVec, n_max = n_max, skip = skip))
     
   } else if (fileType == "CSV") {
     
-    return(getDelim(filePath, ",", largeFile))
+    return(getDelim(filePath, ",", largeFile, n_max = n_max, skip = skip))
     
   } else if (fileType %in% c("TSV", "DELIM")) {
     
-    return(getDelim(filePath, parameterVec[1], largeFile))
+    return(getDelim(filePath, parameterVec[1], largeFile, n_max = n_max, 
+                    skip = skip))
     
   } else {
     
     # For files labeled as "OTHER", just use read_lines()
-    return(read_lines(filePath))
+    return(read_lines(filePath, n_max = n_max, skip = skip))
     
   }
   
@@ -318,7 +345,7 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
                       select = NULL, col_types = NULL, skip = 0,
-                      trim_ws = FALSE) {
+                      trim_ws = FALSE, n_max = Inf) {
   
   # Use read_delim() or fread() to import a file as a data frame
   
@@ -341,13 +368,13 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   if (largeFile) {
     
     fileDF <- try(fread(filePath, sep = delim, select = select,
-                        strip.white = trim_ws), silent = TRUE)
+                        strip.white = trim_ws, nrows = n_max), silent = TRUE)
     
   } else {
     
     fileDF <- try(read_delim(filePath, delim = delim, 
                              col_types = col_types, show_col_types = FALSE,
-                             skip = skip, trim_ws = trim_ws))
+                             skip = skip, trim_ws = trim_ws, n_max = n_max))
     
   }
   
@@ -1222,7 +1249,8 @@ getPRISM <- function (prismPath) {
   # Then, use the proper CSV processing function to 
   
   
-  prismVec <- getFile(prismPath, fileType = "OTHER")
+  prismVec <- getFile(prismPath, fileType = "OTHER", 
+                      parameterVec = c("n_max" = 50))
   
   
   # Get the line where the headers start
@@ -1854,50 +1882,181 @@ functionStealer <- function (scriptPath, functionName) {
     checkLine <- checkLine + 1
     
     
-    # Count the number of open braces on 'checkLine'
-    # Exclude open braces in comments or quotes (if present)
-    if (grepl("#.*\\{", rLines[checkLine])) {
-      
-      numOpen <- str_count(rLines[checkLine], "\\{") - 
-        str_count(rLines[checkLine] |> str_extract("#.*$"), "\\{")
-      
-    } else if (grepl("\".*\\{.*\"", rLines[checkLine])) { 
-      
-      numOpen <- str_count(rLines[checkLine], "\\{") - 
-        str_count(rLines[checkLine] |> str_extract("\".*\\{.*\""), "\\{")
+    # Store that line of 'rLines' in a temporary character variable
+    tempLine <- rLines[checkLine]
     
-    } else if (grepl("'.*\\{.*'", rLines[checkLine])) { 
+    
+    # If "#" appears in 'tempLine' (and it's not part of a quoted string),
+    # remove that portion of 'tempLine' for these checks
+    # (Braces within comments should not be included in the counts)
+    if (grepl("#", tempLine)) {
       
-      numOpen <- str_count(rLines[checkLine], "\\{") - 
-        str_count(rLines[checkLine] |> str_extract("'.*\\{.*'"), "\\{")
+      # The intention is to remove comments only (which start with "#")
+      
+      # The main complicating factor is that "#" can also appear in strings
+      # (e.g., in filenames)
+      
+      # Check for several cases and apply different regular expressions 
+      
+      
+      # In the simplest case, there are no quotation marks to worry about
+      if (grepl("^[^'\"]*#", tempLine)) {
+        
+        # In that case, just remove everything that comes after "#"
+        # (And then remove "#" as well)
+        tempLine <- tempLine |>
+          str_extract("^[^'\"]*#") |>
+          str_remove("#")
+        
+        
+        # Even if quotation marks are present, if none of them follow "#"
+        # Then the comment can be safely removed
+      } else if (grepl("^.*#[^'\"]*$", tempLine)) {
+        
+        # Keep only the portion of 'tempLine' that appears before the 
+        # comment "#"
+        tempLine <- tempLine |>
+          str_replace("^(.*)#[^'\"]*$", "\\1")
+        
+        # There can be other "#" in this string (matched by ".*"), 
+        # but only the "#" that seems to lead a comment is 
+        # matched by "#" in the regex
+        
+        # The limitation of this regex, though, is that no quotation marks
+        # can appear within the comment string
+        
+        # The next two checks will allow comments to have quotes in them
+        # However, they have to be either single quote only or double quote only
+        
+        # If a string contains single quotes (and no double quotes),
+        # check for "#" that do not appear between quotes
+      } else if (grepl("'", tempLine) && !grepl("\"", tempLine) &&
+                 grepl("^[^']*([^']*'[^']*'[^']*)*[^']*#", tempLine)) {
+        
+        # The regex looks complicated, but the main portion to focus on 
+        # is "([^']*'[^']*'[^']*)*"
+        
+        # This group pattern matches strings that are encased in single quotes
+        # (With optional non-single-quote characters able to appear before and 
+        #  after the opening and closing of the single quotes)
+        
+        # Any "#" that appears within quotes will count as 
+        # part of that group pattern
+        
+        # So the "#" at the end of the regex should belong to a comment
+        
+        tempLine <- tempLine |>
+          str_extract("^[^']*([^']*'[^']*'[^']*)*[^']*#") |>
+          str_remove("#")
+        
+        # Here's a more thorough breakdown of the regex:
+        
+        # "^[^']*([^']*'[^']*'[^']*)*[^']*#"
+        
+        #  (1) Start looking from the beginning of the string
+        
+        #  (2) Optionally starts with 0 or more non-single-quote characters
+        
+        #  (3) Optionally contains 0 or more instances of this group pattern:
+        #       (a) Optionally starts with 0 or more non-single-quote characters
+        #       (b) A single quote '
+        #       (c) Optionally contains 0 or more non-single-quote characters
+        #       (d) A single quote '
+        #       (e) Optionally followed by 0 or more non-single-quote characters
+        
+        #  (4) Optionally followed by 0 or more non-single-quote characters
+        
+        #  (5) A "#"
+        
+        
+        # Repeat the same procedure for instances where the string contains
+        # double quotes, but no single quotes
+      } else if (grepl("\"", tempLine) && !grepl("'", tempLine) &&
+                 grepl("^[^\"]*([^\"]*\"[^\"]*\"[^\"]*)*[^\"]*#", tempLine)) {
+        
+        tempLine <- tempLine |>
+          str_extract("^[^\"]*([^\"]*\"[^\"]*\"[^\"]*)*[^\"]*#") |>
+          str_remove("#")
+        
+        # This regex is essentially the same as the previously described one
+        # Just switch single quotes with double quotes
+        
+        
+        # The previous regular expressions cover most target scenarios:
+        
+        # No Quotes                                        [First Check]
+        
+        # Single Quotes Before # Only                      [Second Check] 
+        # Single Quotes After # Only                       [First Check] 
+        # Single Quotes Before & After # Only              [Third Check]
+        
+        # Double Quotes Before # Only                      [Second Check] 
+        # Double Quotes After # Only                       [First Check] 
+        # Double Quotes Before & After # Only              [Fourth Check]
+        
+        # Single &/OR Double Quotes Before # Only          [Second Check] 
+        # Single &/OR Double Quotes After # Only           [First Check] 
+        # Single &/OR Double Quotes Before & After # Only  [???]
+        
+        
+        # The next check is for strings that have both single and double quotes 
+        # In addition, to reach this point, the string should have single and/or 
+        # double quotes before AND after the "#"
+        # (To make sure this is the worth the effort, the function also confirms
+        #  whether 'pattern' may even be present after a "#")
+      } else if (grepl("'", tempLine) && grepl("\"", tempLine) &&
+                 grepl("#.*[\\(\\)]", tempLine)) {
+        
+        paste0("Rare Case Issue\n\n",
+               "The function was not designed to handle this unusual border ",
+               "case. Please investigate the procedure for excluding comments ",
+               "(denoted by \"#\") from extracting functions via ",
+               "`functionStealer`. (The line was \"", tempLine, "\").") |>
+          errWrap() |>
+          stop()
+        
+      }
+      
+    }
+    
+    # (The above section prevents braces that appear within a comment 
+    #  from being included in the counts)
+    
+    
+    # Count the number of open braces on 'checkLine'
+    # Exclude open braces in quotes (if present)
+    if (grepl("\".*\\{.*\"", tempLine)) { 
+      
+      numOpen <- str_count(tempLine, "\\{") - 
+        str_count(tempLine |> str_extract("\".*\\{.*\""), "\\{")
+    
+    } else if (grepl("'.*\\{.*'", tempLine)) { 
+      
+      numOpen <- str_count(tempLine, "\\{") - 
+        str_count(tempLine |> str_extract("'.*\\{.*'"), "\\{")
       
     } else {
       
-      numOpen <- str_count(rLines[checkLine], "\\{")
+      numOpen <- str_count(tempLine, "\\{")
       
     }
     
     
     # Check for closed braces on 'checkLine'
-    # Exclude any braces in comments or quotes
-    if (grepl("#.*\\}", rLines[checkLine])) {
+    # Exclude any braces in double or single quotes
+    if (grepl("\".*\\}.*\"", tempLine)) { 
       
-      numClosed <- str_count(rLines[checkLine], "\\}") - 
-        str_count(rLines[checkLine] |> str_extract("#.*$"), "\\}")
+      numClosed <- str_count(tempLine, "\\}") - 
+        str_count(tempLine |> str_extract("\".*\\}.*\""), "\\}")
       
-    } else if (grepl("\".*\\}.*\"", rLines[checkLine])) { 
+    } else if (grepl("'.*\\}.*'", tempLine)) { 
       
-      numOpen <- str_count(rLines[checkLine], "\\}") - 
-        str_count(rLines[checkLine] |> str_extract("\".*\\}.*\""), "\\}")
-      
-    } else if (grepl("'.*\\}.*'", rLines[checkLine])) { 
-      
-      numOpen <- str_count(rLines[checkLine], "\\}") - 
-        str_count(rLines[checkLine] |> str_extract("'.*\\}.*'"), "\\}")
+      numClosed <- str_count(tempLine, "\\}") - 
+        str_count(tempLine |> str_extract("'.*\\}.*'"), "\\}")
       
     } else {
       
-      numClosed <- str_count(rLines[checkLine], "\\}")
+      numClosed <- str_count(tempLine, "\\}")
       
     }
     
