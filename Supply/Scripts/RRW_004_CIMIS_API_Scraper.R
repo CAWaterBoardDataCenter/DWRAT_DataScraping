@@ -27,7 +27,7 @@
 #### Setup ####
 
 # Clear the environment
-base::remove(list = ls())
+# base::remove(list = ls())
 
 
 # Import packages
@@ -546,6 +546,10 @@ splitRequest <- function (stationVec, startDate, endDate, maxGap) {
     # Output another message to the user at the end of the loop
     cat("\n\t\tDone!\n")
     
+    
+    # Wait a bit before proceeding to the next request
+    Sys.sleep(runif(1, min = 1.3, max = 2.4))
+    
   }
   
   
@@ -562,4 +566,4 @@ mainProcedure()
 
 
 # Clean up
-base::remove(list = ls())
+# base::remove(list = ls())
