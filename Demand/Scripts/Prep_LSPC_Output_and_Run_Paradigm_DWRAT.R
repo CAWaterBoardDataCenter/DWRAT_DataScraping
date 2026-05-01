@@ -14,6 +14,7 @@ remove(list = ls())
 require(tidyverse)
 require(sf)
 require(readxl)
+require(polylabelr)
 
 
 
@@ -339,7 +340,7 @@ assignHUC12toCatchment <- function (subWS, huc12) {
   
   # Get the centroids of the catchments and find an overlapping sub-basin
   # (Because of the varying catchment sizes, shrinking the boundaries does not work well)
-  intersections <- st_intersects(st_centroid(subWS), huc12)
+  intersections <- st_intersects(st_poi(subWS), huc12)
   
   
   

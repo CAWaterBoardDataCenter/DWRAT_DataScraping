@@ -3,10 +3,8 @@
 
 #### Dependencies ####
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
+# Import packages
+source("Scripts/HLP_000_Load_Packages.R")
 
 
 #### Functions ####
@@ -47,6 +45,21 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   #       be used instead of read_delim() from the 'readr' package
   
   
+  # First make sure that 'filePath' is not NA
+  # This is a sign of a missing input
+  if (is.na(filePath)) {
+    
+    stop(paste0("No Filepath Specified\n\n",
+                "The function `getFile` was called without a proper filepath as ",
+                " input\n\n", 
+                "Please investigate this issue and revise the script, ",
+                "if needed") |>
+           errWrap() |>
+           str_replace("(without)", col_red("\\1")))
+    
+  }
+  
+  
   # Check if 'fileType' is NULL
   # If so, guess the type
   if (is.null(fileType)) {
@@ -56,7 +69,6 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   }
   
   
-  
   # Make sure 'fileType' is one of the accepted values
   if (!(fileType %in% c("XLSX", "CSV", "DELIM", "OTHER"))) {
     
@@ -64,8 +76,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
                 "The file type specified in `getFile()` should only be one of ",
                 "these strings: ",
                 "\"XLSX\", \"CSV\", \"DELIM\", or \"OTHER\"") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace_all("\"(.+)\"", paste0("\"", col_green("\\1"), "\"")))
     
   }
@@ -88,8 +99,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
                 "The specified file could not be found\n\n",
                 "Please confirm that this path is correct: '", 
                 normalizePath(filePath, mustWork = FALSE), "'") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n") |>
+           errWrap() |>
            str_replace("(could not be found)", col_red("\\1")))
     
   }
@@ -164,12 +174,25 @@ getXLSX <- function (filePath, worksheet = NULL,
   # It has additional error handling processes
   
   
+  # First, make sure 'filePath' is a character variable
+  if (!is.character(filePath)) {
+    
+    stop(paste0("Unusable File Path\n\n",
+                "The provided file path is not a character variable.\n\n",
+                "Please double-check that '", filePath, "' is a valid path. ",
+                "Script revisions may be necessary.") |>
+           errWrap() |>
+           str_replace("(incorrect)", col_red("\\1")))
+    
+  }
+  
+  
   sheetDF <- try(read_xlsx(filePath, sheet = worksheet, range = range,
                            col_names = col_names, col_types = col_types,
                            skip = skip, n_max = n_max, guess_max = guess_max), silent = TRUE)
   
   
-  if (is.character(sheetDF)) {
+  if ("try-error" %in% class(sheetDF)) {
     
     # In every case, output the actual error message first
     message(sheetDF)
@@ -182,8 +205,7 @@ getXLSX <- function (filePath, worksheet = NULL,
                   "The above error message usually occurs if the target ",
                   "spreadsheet is open in Excel.\n\nPlease close '", filePath, 
                   "' and try again.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(open)", col_red("\\1")) |>
              str_replace("(close)", col_green("\\1")))
       
@@ -194,8 +216,7 @@ getXLSX <- function (filePath, worksheet = NULL,
                   "is incorrect.\n\nPlease double-check that '", 
                   normalizePath(filePath, mustWork = FALSE), 
                   "' is a valid path.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(incorrect)", col_red("\\1")))
       
     } else if (grepl("Error in UseMethod..as.cell_limits", sheetDF, ignore.case = TRUE)) {
@@ -205,16 +226,14 @@ getXLSX <- function (filePath, worksheet = NULL,
                   "worksheet name is incorrect.\n\nPlease double-check '", 
                   filePath, "' and verify that the worksheet name '",
                   worksheet, "' is correct.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(incorrect)", col_red("\\1")))
       
     } else {
       
       stop(paste0("Please resolve the error specified above\n\n",
                   "If the issue persists, definitely reach out for assistance") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n"))
+             errWrap())
       
     }
     
@@ -229,9 +248,22 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
-                      select = NULL, col_types = NULL) {
+                      select = NULL, col_types = NULL, skip = 0) {
   
   # Use read_delim() or fread() to import a file as a data frame
+  
+  
+  # First, make sure 'filePath' is a character variable
+  if (!is.character(filePath)) {
+    
+    stop(paste0("Unusable File Path\n\n",
+                "The provided file path is not a character variable.\n\n",
+                "Please double-check that '", filePath, "' is a valid path. ",
+                "Script revisions may be necessary.") |>
+           errWrap() |>
+           str_replace("(incorrect)", col_red("\\1")))
+    
+  }
   
   
   # If 'largeFile' is TRUE, use fread() and import the file as a data frame
@@ -243,16 +275,19 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   } else {
     
     fileDF <- try(read_delim(filePath, delim = delim, 
-                             col_types = col_types, show_col_types = FALSE))
+                             col_types = col_types, show_col_types = FALSE,
+                             skip = skip))
     
   }
   
   
   # Check for errors in 'fileDF'
-  if (is.character(fileDF)) {
+  if ("try-error" %in% class(fileDF)) {
     
     # In every case, output the actual error message first
-    message(fileDF)
+    cat("\n\n")
+    print(fileDF)
+    cat("\n\n")
     
     
     # Next, address different errors with custom messages
@@ -262,16 +297,14 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
                   "The above error message usually occurs if the filepath ",
                   "is incorrect.\n\nPlease double-check that '", filePath, 
                   "' is a valid path.") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n") |>
+             errWrap() |>
              str_replace("(incorrect)", col_red("\\1")))
       
     } else {
       
       stop(paste0("Please resolve the error specified above\n\n",
                   "If the issue persists, definitely reach out for assistance") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n"))
+             errWrap())
       
     }
     
@@ -308,8 +341,7 @@ getFromMasterControl <- function (fieldName) {
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of ",
                 "'../Master_Control_File.xlsx' is in use") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -339,8 +371,7 @@ getFromMasterControl <- function (fieldName) {
                        "Please consider updating '../Master_Control_File.xlsx'\n\n",
                        "\n\n_______\n\n",
                        "(This message will only display once per session/day)") |>
-                  strwrap(width = 0.99 * getOption("width")) |>
-                  paste0(collapse = "\n"))
+                  errWrap())
         
         
         # After the message has been displayed, update the custom option 
@@ -367,8 +398,7 @@ getFromMasterControl <- function (fieldName) {
                   "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
                   "is empty\n\n",
                   "Please update '../Master_Control_File.xlsx'") |>
-             strwrap(width = 0.99 * getOption("width")) |>
-             paste0(collapse = "\n"))
+             errWrap())
       
     }
     
@@ -383,9 +413,9 @@ getFromMasterControl <- function (fieldName) {
 
 
 
-getFromSupplyControl_RR <- function (fieldName) {
+getFromControl_RR <- function (fieldName) {
   
-  # Return a value from the RR Supply control file
+  # Return a value from the RR Workflow control file
   
   # The name of the parameter is given in 'fieldName'
   # The "FIELD" column of the spreadsheet should have a matching value
@@ -396,12 +426,12 @@ getFromSupplyControl_RR <- function (fieldName) {
   # It can either be a SharePoint version or a local copy
   
   # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
-  # and "SHAREPOINT_RR_SUPPLY_CONTROL_FILE" must be specified in 
+  # and "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE" must be specified in 
   # "Master_Control_File.xlsx"
   if (!is.na(getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"))) {
     
-    # Try and read the SharePoint fragment for the RR Supply control file
-    controlPath <- getFromMasterControl("SHAREPOINT_RR_SUPPLY_CONTROL_FILE")
+    # Try and read the SharePoint fragment for the RR Worfklow control file
+    controlPath <- getFromMasterControl("SHAREPOINT_RR_WORKFLOW_CONTROL_FILE")
     
     
     # If that value is indeed specified, read it in as 'controlDF'
@@ -419,7 +449,7 @@ getFromSupplyControl_RR <- function (fieldName) {
   # In all other cases, use the local version of the control file
   if (!exists("controlDF")) {
     
-    controlPath <- "InputData/RR_Supply_Control_File.xlsx"
+    controlPath <- "InputData/RR_Workflow_Control_File.xlsx"
     
     controlDF <- getXLSX(controlPath)
     
@@ -431,12 +461,11 @@ getFromSupplyControl_RR <- function (fieldName) {
     
     stop(paste0("Field Does Not Exist\n\n",
                 "'", fieldName, "' does not appear in the 'FIELD' column of the ",
-                "RR Supply Control File\n\n",
+                "RR Workflow Control File\n\n",
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of '",
                 controlPath, "' is in use") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -448,8 +477,7 @@ getFromSupplyControl_RR <- function (fieldName) {
                 "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
                 "is empty\n\n",
                 "Please update '", controlPath, "'") |>
-           strwrap(width = 0.99 * getOption("width")) |>
-           paste0(collapse = "\n"))
+           errWrap())
     
   }
   
@@ -457,6 +485,185 @@ getFromSupplyControl_RR <- function (fieldName) {
   # Extract a string from the "VALUE" column based on the row where
   # 'fieldName' matches the string in "FIELD"
   return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
+  
+}
+
+
+
+writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALSE,
+                         col_names = TRUE) {
+  
+  # Write a variable 'x' to 'outPath'
+  
+  # Use "write_csv", "write_tsv", or "write_lines" depending on the specification in 'writeFunction'
+  
+  # 'quietly' is a boolean for whether an output message will be given
+  
+  # If 'col_names' is TRUE, column names will be written in the output for 
+  # "write_csv" and "write_tsv"
+  
+  
+  # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
+  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv")) {
+    
+    stop(paste0("Improper Input For `writeOutput()`\n\n",
+                "If \"write_csv\" will be called to write this output, ",
+                "the input variable has to be a data frame. Please revise ",
+                "the procedure.\n\n",
+                "(Note: Nothing was written to \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Try to apply the file writing functions next
+  if (writeFunction == "write_csv") {
+    
+    writeRes <- try(write_csv(x, outPath, col_names = col_names))
+    
+  } else if (writeFunction == "write_lines") {
+    
+    writeRes <- try(write_lines(x, outPath))
+    
+  } else if (writeFunction == "write_tsv") {
+    
+    writeRes <- try(write_tsv(x, outPath, col_names = col_names))
+    
+  } else {
+    
+    stop(paste0("Improper Input For `writeOutput()`\n\n",
+                "\"", writeFunction, "\" is not a recognized value for ",
+                "the function argument 'writeFunction'. Please revise it.\n\n",
+                "\"write_csv\", \"write_tsv\", and \"write_lines\" are the only ",
+                "acceptable values.\n\n",
+                "(Note: Nothing was written to \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Check for any errors in the process
+  if ("try-error" %in% class(writeRes)) {
+    
+    # Output the actual error message first
+    message(writeRes)
+    
+    
+    if (grepl("Cannot open file for writing", writeRes, ignore.case = TRUE)) {
+      
+      stop(paste0("Inaccessible File Issue\n\n",
+                  "The above error message usually occurs if the file already ",
+                  "exists and is open in a program like Excel. This prevents ",
+                  "the script from overwriting the file.\n\nPlease close '", 
+                  filePath, "' and try again.") |>
+             errWrap() |>
+             str_replace("(open)", col_red("\\1")) |>
+             str_replace("(close)", col_green("\\1")))
+      
+    # In all other cases, output a custom acknowledgement 
+    } else {
+      
+      stop(paste0("Please resolve the error specified above\n\n",
+                  "If the issue persists, definitely reach out for assistance") |>
+             errWrap())
+      
+    }
+
+  }
+  
+  
+  # As a penultimate step, confirm that the output file was generated
+  if (!file.exists(outPath)) {
+    
+    stop(paste0("File Output Failed\n\n",
+                "The output file was not detected in the expected location. ",
+                "`", writeFunction, "` may have failed, please investigate ",
+                "this issue.\n\n",
+                "(Note: Nothing was written to \"", outPath, "\")") |>
+           errWrap() |>
+           str_replace("(not)", col_red("\\1")) |>
+           str_replace("(investigate)", col_green("\\1")))
+    
+  }
+  
+  
+  # Output a message to the user about the result (if 'quietly' is FALSE)
+  if (!quietly) {
+    
+    cat(paste0("\nWrote data to \"", normalizePath(outPath), "\"!\n\n") |>
+          col_cyan())
+    
+  }
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
+  
+}
+
+
+
+copyFile <- function (from, to, overwrite = TRUE, quietly = FALSE) {
+  
+  # Copy a file to a new location
+  
+  # This is a wrapper for `file.copy` with a custom error message
+  
+  
+  # First, confirm that the file 'from' actually exists
+  if (!file.exists(from)) {
+    
+    paste0("Attempting to Copy Non-Existent File\n\n",
+           "The script attempted to copy a file (\"", from, "\") to a new ",
+           "location. However, the original file does not appear to exist! ",
+           "Please investigate.\n\n",
+           "The intended new file was: \"", to, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there is no issue with 'from', attempt to copy it
+  copyRes <- file.copy(from = from, to = to, overwrite = overwrite)
+  
+  
+  # Confirm that the file was copied successfully
+  if (!copyRes || !file.exists(to)) {
+    
+    paste0("Could Not Copy File\n\n",
+           "The script attempted to copy a file (\"", from, "\") to a new ",
+           "location. However, the processed failed for an unknown reason ",
+           "(possibly a permission issue). Please investigate.\n\n",
+           "The intended new file was: \"", to, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Output a message too if 'quietly' is FALSE
+  if (!quietly) {
+    
+    cat(paste0("Copied \"", from, "\" to \"", to, "\"!\n\n") |>
+          col_cyan())
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+errWrap <- function (message, widthRatio = 0.99) {
+  
+  # Modify the wrapping of an error message to reduce the need for horizontal scrolling
+  return(message |>
+           strwrap(width = widthRatio * getOption("width")) |>
+           paste0(collapse = "\n"))
   
 }
 
@@ -479,5 +686,635 @@ twoDigitText <- function (num) {
   # If it has only one digit, a zero will be added to the beginning
   
   return(sprintf("%.2d", num))
+  
+}
+
+
+
+getModeledWY <- function (endDate) {
+  
+  # Based on the value of 'endDate', identify the water year being modeled
+  # Then, return a vector of dates containing the bounds of that water year
+  
+  
+  # (1) Determining the starting bound:
+  
+  #     If 'endDate' is between January and September (inclusive), the water year
+  #     matches the calendar year in 'endDate'
+  
+  #     If that is true, then the water year starts on October 1st of the 
+  #     preceding calendar year
+  
+  #     (e.g., if it's 2026-03-09, we are modeling WY2026, which began on 
+  #      2025-10-01)
+  
+  #     If 'endDate' is in the October - December range, the water year is the
+  #     calendar year plus one
+  
+  #     In addition, the start of the water year is October 1st of the same year
+  #     as 'endDate'
+  
+  #     (e.g., if it's 2024-12-12, we are modeling WY2025, which began on 
+  #      2024-10-01)
+  
+  
+  # (2) Determining the ending bound:
+  
+  #     If 'endDate' is between January and September (inclusive), the water year
+  #     matches the calendar year in 'endDate'
+  
+  #     If that is true, then the water year ends on September 30th of the 
+  #     current calendar year
+  
+  #     (e.g., if it's 2026-03-09, we are modeling WY2026, which ends on 
+  #      2026-09-30)
+  
+  #     If 'endDate' is in the October - December range, the water year is the
+  #     calendar year plus one
+  
+  #     In addition, the end of the water year is September 30th of the next year
+  #     after the year in 'endDate'
+  
+  #     (e.g., if it's 2024-12-12, we are modeling WY2025, which ends on 
+  #      2025-09-30)
+  
+  
+  # Get the start and end dates of the water year
+  # Then, return them as a vector of dates
+  return(c(start = if_else(month(endDate) < 10,
+                           paste0(year(endDate) - 1, "-10-01"),
+                           paste0(year(endDate), "-10-01")),
+           end = if_else(month(endDate) < 10,
+                         paste0(year(endDate), "-09-30"),
+                         paste0(year(endDate) + 1, "-09-30"))) |>
+           as.Date(format = "%Y-%m-%d"))
+  
+}
+
+
+
+vec2QuotedStr <- function (strVec) {
+  
+  # Given a vector of strings, wrap each element in quotation marks
+  # Then, return them in a single string as a list
+  
+  # Example Strings:
+  # '"Element 1", "Element 2", and "Element 3"'
+  # '"Element 1" and "Element 2"'
+  # '"Element 1"'
+  
+  
+  # First, add quotation marks to each element
+  strVec <- paste0("\"", strVec, "\"")
+  
+  
+  # If 'strVec' has only one element, return the string 
+  # without any further changes
+  if (length(strVec) == 1) {
+    return(strVec)
+  }
+  
+  
+  # If 'strVec' has only two elements, return a string 
+  # with the elements separated by " and "
+  if (length(strVec) == 2) {
+    
+    return(paste0(strVec, collapse = " and "))
+    
+  }
+  
+  
+  # If 'strVec' has 3 or more elements, separate the elements with commas
+  # However, the final element should also have "and" after the comma
+  if (length(strVec) > 2) {
+    
+    strVec[length(strVec)] <- paste0("and ", strVec[length(strVec)])
+    
+    
+    return(paste0(strVec, collapse = ", "))
+    
+  }
+  
+}
+
+
+
+read_out2 <- function (outPath) {
+  
+  # Given the path to a .out2 file, 
+  # read it in and format it as a proper tibble
+  
+  # The data is space-delimited
+  
+  # However, the column headers are trapped between rows of metadata
+  
+  # In addition, sometimes, data entries don't have any spaces between them
+  # (generally it can happen when there's a negative number)
+  
+  
+  # First, use read_lines() to read in the file
+  outDF <- read_lines(outPath)
+  
+  
+  # Remove empty strings from the vector
+  outDF <- outDF |> 
+    str_subset("^$", negate = TRUE)
+  
+  
+  # Find the row containing the headers
+  headerRow <- grep("Year\\s+mo", outDF, ignore.case = TRUE)
+  
+  
+  if (length(headerRow) != 1) {
+    
+    stop(paste0("Could Not Find Header Row of Out2 File\n\n",
+                "The header was expected to be a line that uniquely starts with ",
+                "\"Year\", followed by spaces, and then \"mo\". However ",
+                length(headerRow), " matches were found with this pattern. ",
+                "Please investigate the file and update the script if ",
+                "needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Remove the rows before 'headerRow' in 'outDF'
+  outDF <- outDF[headerRow:length(outDF)]
+  
+  
+  # Get a vector of the header names
+  columnNames <- outDF[1] |>
+    spaceSplit()
+  
+  
+  # If the second row contains units for the columns,
+  # append them to 'columnNames'
+  if (grepl("\\s+\\(in\\)\\s+", outDF[2], ignore.case = TRUE)) {
+    
+    unitVec <- outDF[2] |>
+      spaceSplit() |>
+      str_split("[\\(\\)]") |> unlist() |>
+      str_subset("^$", negate = TRUE)
+    
+    
+    # The "Year", "mo", and "day" variables at the beginning do not have any units
+    # Add three empty strings to the start of 'unitVec'
+    unitVec <- c("", "", "",
+                 unitVec)
+    
+    
+    if (length(unitVec) != length(columnNames)) {
+      
+      stop(paste0("Could Not Assign Units in Out2 File\n\n",
+                  "There are ", length(columnNames), " columns in this file, ",
+                  "and units were detected in the second row. However, they ",
+                  "could not be properly matched to their corresponding ",
+                  "headings. Please investigate the file and update the ",
+                  "script if needed.\n\n",
+                  "(This issue occurred for \"", outPath, "\")") |>
+             errWrap())
+      
+    }
+    
+    
+    # Paste these units at the end of 'columnNames'
+    columnNames <- map2_chr(columnNames, unitVec,
+                            ~ if_else(.y == "", .x, paste0(.x, " (", .y, ")")))
+    
+  }
+  
+  
+  # The last non-data row contains the value "initial"
+  # Find its index
+  removalIndex <- grep("^\\s*initial", outDF)
+  
+  
+  if (length(removalIndex) != 1) {
+    
+    stop(paste0("Could Not Find Data Cutoff Row of Out2 File\n\n",
+                "The non-data rows were expected to end with a line that ",
+                "uniquely starts with \"initial\" (and maybe some spaces at ",
+                "the beginning). However, ", length(removalIndex), " matches ",
+                "were found with this pattern. Please investigate the file ",
+                "and update the script if needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Remove all rows up to 'removalIndex'
+  outDF <- outDF[-c(1:removalIndex)]
+  
+  
+  # Remove the "Execution elapsed time" row at the end as well
+  outDF <- outDF |>
+    str_subset("^\\s*Execution elapsed time", negate = TRUE)
+  
+  
+  # The only rows left in 'outDF' should be the data now
+  # Within each row, split the data at the spaces
+  outDF <- outDF |>
+    map(spaceSplit)
+  
+  
+  # Get a vector of lengths for each row
+  # Check for rows that do not have the expected length 
+  # (there should be one element per column heading)
+  rowLens <- lengths(outDF)
+  
+  
+  # Check for entries that have the incorrect number of elements
+  problemRows <- which(rowLens != length(columnNames))
+  
+  
+  # Iterate through the problematic rows
+  # Try to fix them
+  if (length(problemRows) > 0) {
+    
+    for (i in 1:length(problemRows)) {
+      
+      # Issue Type #1
+      # One potential error comes from having a number followed by 
+      # a negative number with no space in-between
+      if (sum(grepl("^\\-?[0-9\\.]+\\-[0-9\\.]+$", outDF[[problemRows[i]]])) > 0) {
+        
+        # Iterate through the entries in this row of 'outDF'
+        for (j in 1:length(outDF[[problemRows[i]]])) {
+          
+          # If this is a row with both a number and a negative number, separate them
+          if (grepl("^\\-?[0-9\\.]+\\-[0-9\\.]+$", outDF[[problemRows[i]]][j])) {
+            
+            # Use a positive look-ahead regex to split the numbers 
+            # (while preserving the negative sign)
+            outDF[[problemRows[i]]][j] <- outDF[[problemRows[i]]][j] |>
+              str_split("(?=\\-)")
+            
+          }
+          
+        }
+        
+        
+        # Splitting operations within the list element may create a sub-list there
+        # Remove any sub-lists
+        outDF[[problemRows[i]]] <- outDF[[problemRows[i]]] |>
+          unlist() |> 
+          str_subset("^$", negate = TRUE)
+        
+      } # End of Issue Type #1 resolution
+      
+    } # End of loop through 'problemRows'
+    
+  }
+  
+  
+  # Make sure that every row has the proper length now
+  rowLens <- lengths(outDF)
+  
+  
+  # Output an error if there are still issues
+  if (unique(rowLens) |> length() != 1) {
+    
+    problemRows <- which(rowLens != length(columnNames))
+    
+    stop(paste0("Problematic Data in the Out2 File\n\n",
+                "Each row is expected to have ", length(columnNames),
+                " values. However, ", length(problemRows), " row",
+                if_else(length(problemRows) > 1, "s have ", " has "),
+                "an issue: \n\n", 
+                outDF[problemRows] |>
+                  map_chr(~ paste0(., collapse = " ")) |>
+                  vec2QuotedStr(), 
+                "\n\n",
+                "Please investigate the file and update the script if ",
+                "needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  } else if (unique(rowLens) != length(columnNames)) {
+    
+    stop(paste0("Problematic Data in the Out2 File\n\n",
+                "Each row is expected to have ", length(columnNames),
+                " values. However, every row has ", unique(rowLens),
+                if_else(unique(rowLens) > 1, " entries", " entry"), ". ",
+                "Please investigate the file and update the script if ",
+                "needed.\n\n",
+                "(This error occurred for \"", outPath, "\")") |>
+           errWrap())
+    
+  }
+  
+  
+  # Convert 'outDF' into a proper tibble
+  outDF <- outDF |>
+    unlist() |> as.numeric() |>
+    matrix(ncol = length(columnNames), byrow = TRUE) |>
+    data.frame() |> tibble() |>
+    set_names(columnNames)
+  
+  
+  # After these changes, return 'outDF'
+  return(outDF)
+  
+}
+
+
+
+spaceSplit <- function (str) {
+  
+  # Split a string at spaces
+  # Remove empty strings and return the string
+  return(str|>
+           str_split("\\s") |> unlist(use.names = FALSE) |>
+           str_subset("^$", negate = TRUE))
+  
+}
+
+
+
+getPRISM <- function (prismPath) {
+  
+  # Read in the PRISM web data CSV
+  
+  # Because multiple lines serve as a header, first find the number of header lines
+  # Then, use the proper CSV processing function to 
+  
+  
+  prismVec <- getFile(prismPath, fileType = "OTHER")
+  
+  
+  # Get the line where the headers start
+  
+  # The line will start with "Name,Longitude,Latitude"
+  headerRegex <- "^Name,Longitude,Latitude"
+  
+  
+  headerLine <- grep(headerRegex, prismVec)
+  
+  
+  # Return an error if 'headerLine' was not found (or if multiple matches were found)
+  if (length(headerLine) == 0) {
+    
+    stop(paste0("PRISM Data File - Missing Column Header Issue\n\n", 
+                "This script attempted to find the header row in the PRISM ",
+                "CSV file containing climate data. However, the header row ",
+                "could not be found.\n\n",
+                "There could be data corruption issues, or the formatting of ",
+                "PRISM's output files may have changed. This script may need ",
+                "updates, depending on the cause of this problem.\n\n",
+                "Please investigate '", prismPath, "'") |>
+           errWrap())
+    
+  } else if (length(headerLine) > 1) {
+    
+    stop(paste0("PRISM Data File - Could Not Identify Column Header\n\n", 
+                "This script attempted to find the header row in the PRISM ",
+                "CSV file containing climate data. However, an unusual issue ",
+                "was encountered.\n\n",
+                "The header row is usually identified via this regular expression:\n\n",
+                "(*) \"", headerRegex, "\"\n\n",
+                "There should be exactly one row in the input file that has this ",
+                "pattern. However, more than one match was found.\n\n", 
+                "Please investigate '", prismPath, "'") |>
+           errWrap())
+    
+  }
+  
+  
+  # If there are no issues, read in the PRISM data again
+  # This time, skip lines so that the first row is the header row (identified by 'headerLine')
+  prismDF <- getDelim(prismPath, delim = ",", skip = headerLine - 1)
+  
+  
+  # Make sure no rows that only contain "NA" are present
+  # Use the "Name" column for that check
+  prismDF <- prismDF |>
+    filter(!is.na(Name))
+  
+  
+  # Also, confirm that "Date" was parsed as a date column correctly
+  # If not, apply that type manually
+  if (is.character(prismDF$Date[1])) {
+    
+    prismDF <- prismDF |>
+      mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+    
+  }
+  
+  
+  # Return 'prismDF'
+  return(prismDF)
+  
+}
+
+
+
+updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
+  
+  # Update a CSV file containing metadata 
+  # Add new columns to it using 'newCols'
+  
+  # 'newCols' should be a list containing named elements
+  
+  
+  # Start by validating 'newCols'
+  # Every element should have a name
+  if (is.null(names(newCols)) || "" %in% names(newCols)) {
+    
+    cat("\n\nNames in 'newCols':\n")
+    print(names(newCols))
+    
+    
+    paste0("Improper Value for 'newCols'\n\n",
+           "The function `updateMetadataCSV` requires a named list of new ",
+           "columns to add to the metadata table. However, the input 'newCols' ",
+           "does not have names for each element in the list.\n\n",
+           "Please correct this issue and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # In addition, every entry in 'newCols' should only have one element each
+  # (One value for each new column)
+  if (anyFalse(lengths(newCols) == 1)) {
+    
+    cat("\n\nNumber of Elements per Entry in 'newCols':\n")
+    print(lengths(newCols))
+    
+    
+    paste0("Improper Value for 'newCols'\n\n",
+           "The function `updateMetadataCSV` requires a named list of new ",
+           "columns to add to the metadata table. Each element of this list ",
+           "should have only one value. However, the input 'newCols' does not ",
+           "abide by this requirement.\n\n",
+           "Please correct this issue and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Next, read in the metadata CSV
+  metaPath <- paste0(dirPath, "/", filename) |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # The metadata file should be a CSV file
+  metaDF <- getDelim(metaPath, ",")
+  
+  
+  # Add 'newCols to 'metaDF'
+  metaDF[names(newCols)] <- newCols
+  
+  
+  # Save 'metaDF'
+  writeOutput(metaDF, metaPath, "write_csv", quietly = TRUE)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+getGitHash <- function () {
+  
+  # Generate a temporary batch file that calls "git rev-parse"
+  # to get the short hash of the current commit in the repository
+  
+  # Obtain the hash string from that command and return it
+  
+  
+  # First, start by generating a temporary batch file
+  # Save it into the current repository location
+  tempName <- "temp_git_check.bat"
+  
+  
+  c("git rev-parse --short HEAD",
+    "exit") |>
+    writeOutput(tempName, "write_lines", quietly = TRUE)
+  
+  
+  # Execute the batch file
+  hashRes <- system(tempName, intern = TRUE)
+  
+  
+  # The hash will be located on a line by itself after the "rev-parse" call
+  hashLoc <- grep("rev-parse", hashRes)[1] + 1
+  
+  
+  # Check for errors at this point
+  if (length(hashLoc) == 0 || is.na(hashLoc) || 
+      any(grepl("Error", hashRes, ignore.case = TRUE))) {
+    
+    print(hashRes)
+    
+    paste0("Git Call Failed\n\n",
+           "An error occurred when running a batch script that contanied ",
+           "a git command (\"", normalizePath(tempName, mustWork = TRUE), 
+           "\"). The results were printed above. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues occurred, extract the hash string from 'hashRes'
+  hashRes <- hashRes[hashLoc]
+  
+  
+  # Finally, delete the temporary batch file
+  unlink(tempName)
+  
+  
+  # Return the short commit hash
+  return(hashRes)
+  
+}
+
+
+
+detectAnacondaBat <- function () {
+  
+  # Locate an installation of "Anaconda" on the user's device
+  # Get the path to "activate.bat", which is located under "Scripts"
+  
+  # Return that path as a string to the user
+  
+  
+  # First, check for for "Anaconda" in the "ProgramData" folder
+  anacondaInstallation <- list.files("C:/ProgramData", pattern = "[Aa]naconda",
+                                     full.names = TRUE) |>
+    sort() |> tail(1)
+  
+  
+  # If no match was found, throw an error
+  if (length(anacondaInstallation) == 1) {
+    
+    paste0("Anaconda Not Found\n\n",
+           "This procedure requires an installation of Anaconda. However, ",
+           "the program was not found. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Otherwise, look for "activate.bat"
+  batPath <- paste0(anacondaInstallation, "/Scripts/activate.bat") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'batPath' exists
+  if (!file.exists(batPath)) {
+    
+    paste0("Anaconda Prompt Batch File Not Found\n\n",
+           "This procedure executes Python scripts using Anaconda Prompt. ",
+           "However, the required batch file was not found in \"", 
+           anacondaInstallation, "\". Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If no issues were encountered, return 'batPath'
+  return(batPath)
+  
+}
+
+
+
+detectRScriptExe <- function () {
+  
+  # Look for "Rscript.exe" in the active installation of R
+  # (It should be in the "bin" folder)
+  
+  # Return a path to that exe file
+  
+  
+  # Check the expected location of "Rscript.exe"
+  exePath <- paste0(R.home(), "/bin/Rscript.exe") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Confirm that 'exePath' exists
+  if (!file.exists(exePath)) {
+    
+    paste0("RScript.Exe Not Found\n\n",
+           "This procedure requires the executable version of R. However, \"",
+           exePath, "\" did not point to a valid file. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'exePath' if there are no issues
+  return(exePath)
   
 }
