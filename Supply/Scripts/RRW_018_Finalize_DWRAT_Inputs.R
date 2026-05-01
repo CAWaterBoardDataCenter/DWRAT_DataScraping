@@ -1558,16 +1558,142 @@ netCount <- function (string, pattern) {
   # exclude instances of 'pattern' that come after "#" or within quotes (" or ')
   
   
-  # If 'pattern' appears after a "#", use the modified count formula
-  if (grepl(paste0("#.*", pattern), string)) {
+  # If "#" appears in 'string' (and it's not part of a quoted string),
+  # remove that portion of 'string' for these checks
+  if (grepl("#", string)) {
     
-    # Count the number of instances of 'pattern' in 'string' and 
-    # exclude the number of instances of 'pattern' that follow a comment "#"
-    count <- str_count(string, pattern) - 
-      str_count(string |> str_extract("#.*$"), pattern)
+    # The intention is to remove comments only (which start with "#")
     
-  # Do the same for double quotes "
-  } else if (grepl(paste0("\".*", pattern, ".*\""), string)) {
+    # The main complicating factor is that "#" can also appear in strings
+    # (e.g., in filenames)
+    
+    # Check for several cases and apply different regular expressions 
+    
+    
+    # In the simplest case, there are no quotation marks to worry about
+    if (grepl("^[^'\"]*#", string)) {
+      
+      # In that case, just remove everything that comes after "#"
+      # (And then remove "#" as well)
+      string <- string |>
+        str_extract("^[^'\"]*#") |>
+        str_remove("#")
+      
+      
+    # Even if quotation marks are present, if none of them follow "#"
+    # Then the comment can be safely removed
+    } else if (grepl("^.*#[^'\"]*$", string)) {
+      
+      # Keep only the portion of 'string' that appears before the 
+      # comment "#"
+      string <- string |>
+        str_replace("^(.*)#[^'\"]*$", "\\1")
+      
+      # There can be other "#" in this string (matched by ".*"), 
+      # but only the "#" that seems to lead a comment is 
+      # matched by "#" in the regex
+      
+      # The limitation of this regex, though, is that no quotation marks
+      # can appear within the comment string
+      
+      # The next two checks will allow comments to have quotes in them
+      # However, they have to be either single quote only or double quote only
+      
+    # If a string contains single quotes (and no double quotes),
+    # check for "#" that do not appear between quotes
+    } else if (grepl("'", string) && !grepl("\"", string) &&
+               grepl("^[^']*([^']*'[^']*'[^']*)*[^']*#", string)) {
+      
+      # The regex looks complicated, but the main portion to focus on 
+      # is "([^']*'[^']*'[^']*)*"
+      
+      # This group pattern matches strings that are encased in single quotes
+      # (With optional non-single-quote characters able to appear before and 
+      #  after the opening and closing of the single quotes)
+      
+      # Any "#" that appears within quotes will count as 
+      # part of that group pattern
+      
+      # So the "#" at the end of the regex should belong to a comment
+      
+      string <- string |>
+        str_extract("^[^']*([^']*'[^']*'[^']*)*[^']*#") |>
+        str_remove("#")
+      
+      # Here's a more thorough breakdown of the regex:
+      
+      # "^[^']*([^']*'[^']*'[^']*)*[^']*#"
+      
+      #  (1) Start looking from the beginning of the string
+      
+      #  (2) Optionally starts with 0 or more non-single-quote characters
+      
+      #  (3) Optionally contains 0 or more instances of this group pattern:
+      #       (a) Optionally starts with 0 or more non-single-quote characters
+      #       (b) A single quote '
+      #       (c) Optionally contains 0 or more non-single-quote characters
+      #       (d) A single quote '
+      #       (e) Optionally followed by 0 or more non-single-quote characters
+      
+      #  (4) Optionally followed by 0 or more non-single-quote characters
+      
+      #  (5) A "#"
+      
+      
+    # Repeat the same procedure for instances where the string contains
+    # double quotes, but no single quotes
+    } else if (grepl("\"", string) && !grepl("'", string) &&
+               grepl("^[^\"]*([^\"]*\"[^\"]*\"[^\"]*)*[^\"]*#", string)) {
+      
+      string <- string |>
+        str_extract("^[^\"]*([^\"]*\"[^\"]*\"[^\"]*)*[^\"]*#") |>
+        str_remove("#")
+      
+      # This regex is essentially the same as the previously described one
+      # Just switch single quotes with double quotes
+      
+      
+      # The previous regular expressions cover most target scenarios:
+      
+      # No Quotes                                        [First Check]
+      
+      # Single Quotes Before # Only                      [Second Check] 
+      # Single Quotes After # Only                       [First Check] 
+      # Single Quotes Before & After # Only              [Third Check]
+      
+      # Double Quotes Before # Only                      [Second Check] 
+      # Double Quotes After # Only                       [First Check] 
+      # Double Quotes Before & After # Only              [Fourth Check]
+      
+      # Single &/OR Double Quotes Before # Only          [Second Check] 
+      # Single &/OR Double Quotes After # Only           [First Check] 
+      # Single &/OR Double Quotes Before & After # Only  [???]
+      
+      
+      # The next check is for strings that have both single and double quotes 
+      # In addition, to reach this point, the string should have single and/or 
+      # double quotes before AND after the "#"
+      # (To make sure this is the worth the effort, the function also confirms
+      #  whether 'pattern' may even be present after a "#")
+    } else if (grepl("'", string) && grepl("\"", string) &&
+               grepl(paste0("#.*", pattern), string)) {
+      
+      paste0("Rare Case Issue\n\n",
+             "The script was not designed to handle this unusual border case. ",
+             "Please investigate the procedure for excluding comments (denoted ",
+             "by \"#\") from pattern counts.\n\n",
+             "This error occurred when attempting to find instances of \"",
+             pattern, "\" within \"", string, "\".") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+  }
+  
+  
+  # If 'pattern' appears after double quotes, use the modified count formula
+  if (grepl(paste0("\".*", pattern, ".*\""), string)) {
     
     # Count the number of instances of 'pattern' in 'string' and 
     # exclude the number of instances of 'pattern' contained within double quotes
@@ -1586,7 +1712,7 @@ netCount <- function (string, pattern) {
     
   } else {
     
-    # If there are no comments or quotes in 'string', use `str_count` as normal
+    # If there are no quotes in 'string', use `str_count` as normal
     count <- str_count(string, pattern)
     
   }
