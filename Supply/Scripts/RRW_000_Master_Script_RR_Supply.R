@@ -25,11 +25,14 @@ source("Scripts/HLP_000_Load_Packages.R")
 "CTR_001_Set_Start_and_End_Dates.R"
 
 
-##### Repo Pre-Check #####
+##### Process Pre-Check #####
 
 # Check that the directory is correctly set
 source("Scripts/HLP_004_Check_Working_Directory.R")
 
+
+# Check if updates are required for the models' core DAT and Precipitation files
+source("Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R")
 
 ##### Web Scraping #####
 
