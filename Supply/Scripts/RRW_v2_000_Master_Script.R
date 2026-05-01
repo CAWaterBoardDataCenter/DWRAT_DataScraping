@@ -65,6 +65,7 @@ source("Scripts/RRW_004_CIMIS_API_Scraper.R")
 ##### SRP #####
 
 # Process PRISM data for SRP
+source("Scripts/RRW_v2_006_Process_SRP_Weather_Data.R")
 
 
 # Setup the output directory for the workflow model runs

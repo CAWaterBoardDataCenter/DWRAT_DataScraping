@@ -2224,7 +2224,27 @@ calcMKGE <- function (obs, sim, na.rm = FALSE) {
   
   
   # Calculate 'R' first
-  r <- cor(obs, sim, method = "pearson", na.rm = na.rm)
+  
+  # `cor` does not handle NA values, so that must be addressed first
+  if (na.rm) {
+    
+    # Find where 'obs' or 'sim' contains NA
+    naIndices <- which(is.na(obs) | is.na(sim)) |>
+      unique() |> sort()
+    
+    
+    # Remove entries from 'obs' and 'sim' wherever NA was detected
+    if (length(naIndices) > 0) {
+      
+      obs <- obs[-naIndices]
+      sim <- sim[-naIndices]
+      
+    }
+    
+  }
+  
+  
+  r <- cor(obs, sim, method = "pearson")
   
   
   # Next, calculate 'B' (beta)
@@ -2250,7 +2270,26 @@ calcRSqrd <- function (obs, sim, na.rm = FALSE) {
   # Given observed and simulated values, this coefficient is simply 
   # the square of the Pearson Correlation Coefficient (R)
   
-  return(cor(obs, sim, method = "pearson", na.rm = na.rm))
+  
+  # `cor` does not handle NA values, so that must be addressed first
+  if (na.rm) {
+    
+    # Find where 'obs' or 'sim' contains NA
+    naIndices <- which(is.na(obs) | is.na(sim)) |>
+      unique() |> sort()
+    
+    
+    # Remove entries from 'obs' and 'sim' wherever NA was detected
+    if (length(naIndices) > 0) {
+      
+      obs <- obs[-naIndices]
+      sim <- sim[-naIndices]
+      
+    }
+    
+  }
+  
+  
+  return(cor(obs, sim, method = "pearson"))
   
 }
-
