@@ -101,7 +101,8 @@ mainProcedure <- function () {
   # If an update is required, use another function to perform those operations
   if (checkDAT(endDate, endYears$PRMS_DAT[1]) || checkDAT(endDate, endYears$SRP_DAT)) {
     
-    message("New DAT files will now be generated!\n\n")
+    message("New DAT files will now be generated!")
+    cat("\n\n")
     
     
     # Create new PRMS and SRP DAT files
@@ -114,7 +115,8 @@ mainProcedure <- function () {
   # Generate new files if `checkPrecip` returns TRUE
   if (checkPrecip(endYears$PRMS_PRECIP[1]) || checkPrecip(endYears$SRP_PRECIP[1])) {
     
-    message("New historic precipitation files will now be generated!\n\n")
+    message("New historic precipitation files will now be generated!")
+    cat("\n\n")
     
     
     # Create new PRMS and SRP Historic Precipitation files
@@ -325,35 +327,19 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   
   # Request NOAA data
-  toggleRemoveFunctions("Scripts/RRW_002_NOAA_API_Scraper.R", commentOut = TRUE)
-  
-  source("Scripts/RRW_002_NOAA_API_Scraper.R")
-  
-  toggleRemoveFunctions("Scripts/RRW_002_NOAA_API_Scraper.R", commentOut = FALSE)
+  toggleAndRunScript("Scripts/RRW_002_NOAA_API_Scraper.R")
   
   
   # Run the RAWS script after that
-  toggleRemoveFunctions("Scripts/RRW_003_RAWS_HTTP_Scraper.R", commentOut = TRUE)
-  
-  source("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
-  
-  toggleRemoveFunctions("Scripts/RRW_003_RAWS_HTTP_Scraper.R", commentOut = FALSE)
+  toggleAndRunScript("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
   
   
   # Then, get CIMIS data
-  toggleRemoveFunctions("Scripts/RRW_004_CIMIS_API_Scraper.R", commentOut = TRUE)
-  
-  source("Scripts/RRW_004_CIMIS_API_Scraper.R")
-  
-  toggleRemoveFunctions("Scripts/RRW_004_CIMIS_API_Scraper.R", commentOut = FALSE)
+  toggleAndRunScript("Scripts/RRW_004_CIMIS_API_Scraper.R")
   
   
   # Combine the downloaded weather data after that
-  toggleRemoveFunctions("Scripts/RRW_005_Process_PRMS_Weather_Data.R", commentOut = TRUE)
-  
-  source("Scripts/RRW_005_Process_PRMS_Weather_Data.R")
-  
-  toggleRemoveFunctions("Scripts/RRW_005_Process_PRMS_Weather_Data.R", commentOut = FALSE)
+  toggleAndRunScript("Scripts/RRW_005_Process_PRMS_Weather_Data.R")
   
   
   # After running these scripts, revert the dates in the control script
@@ -375,7 +361,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
            SECOND = 0)
   
   
-  # Add 22 "RUNOFF" columns to 'newDAT' too
+  # Add 22 runoff columns to 'newDAT' too
   # (All values will be 1)
   newDAT[paste0("RUNOFF", 1:22)] <- 1
   
@@ -411,6 +397,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   # Notify the user that a new primary DAT file for PRMS has been generated
   message("Created a new DAT file for PRMS!")
+  cat("\n\n")
   
   
   # Return nothing
@@ -558,6 +545,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
   
   # Notify the user that a new DAT file for SRP has been generated
   message("Created a new DAT file for SRP!")
+  cat("\n\n")
   
   
   # Return nothing
@@ -593,88 +581,100 @@ updatePrecip <- function (actualStart, actualEnd, latestPathPRMS, latestPathSRP)
   updateControlScript(prismStart, fileEnd)
   
   
-  # Generate new precipitation files for each model in separate functions
-  # updatePrecip_PRMS(prismStart, fileEnd, 
-  #                latestPathPRMS, actualStart, actualEnd)
+  # Generate new precipitation files for each model in separate function calls
+  createPrecipFile(prismStart, fileEnd, model = "PRMS",
+                   latestPathPRMS, actualEnd)
   
   
-  # Start by downloading PRISM data for the PRMS domain grid cells
-  runModifiedPRISM("PRISM_PRMS_GRID_CELLS_CSV", prismStart, fileEnd,
-                   paste0("WebData/PRISM_PRMS_Domain_Data_", prismStart, "_", 
-                          fileEnd, ".csv"),
-                   useHighRes = TRUE, interpCells = FALSE,
-                   getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
-  
-  
-  # Read in this file
-  prmsDF <- getPRISM(paste0("WebData/PRISM_PRMS_Domain_Data_", prismStart, "_", 
-                            fileEnd, ".csv"))
-  
-  
-  # For each day in 'prmsDF', calculate the average precipitation across 
-  # all grid cells in the model domain
-  prmsDF <- prmsDF |>
-    group_by(Date) |>
-    summarize(`ppt (mm)` = mean(`ppt (mm)`), .groups = "drop")
-  
-  
-  # Write 'prmsDF' to a file next
-  # Use 'latestPathPRMS' as a base for this filename
-  
-  # However, the final WY portion will be updated
-  
-  # The new ending water year in the name will equal the year of 'fileEnd'
-  # (A water year is the same as the calendar year of its end bound)
-  newPathPRMS <- latestPathPRMS |>
-    str_replace("to_WY[0-9]{4}\\.csv",
-                paste0("to_WY", year(fileEnd), ".csv"))
-  
-  
-  # Write 'prmsDF' to a file
-  writeOutput(prmsDF, newPathPRMS)
-  
-  
-  # updatePrecip_SRP(as.Date("1981-01-01", format = "%Y-%m-%d"), fileEnd, 
-  #               latestPathSRP)
-  
-  
-  runModifiedPRISM("PRISM_SRP_GRID_CELLS_CSV", prismStart, fileEnd,
-                   paste0("WebData/PRISM_SRP_Domain_Data_", prismStart, "_", 
-                          fileEnd, ".csv"),
-                   useHighRes = TRUE, interpCells = FALSE,
-                   getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
-  
-  
-  # Read in this file
-  srpDF <- getPRISM(paste0("WebData/PRISM_SRP_Domain_Data_", prismStart, "_", 
-                           fileEnd, ".csv"))
-  
-  
-  # For each day in 'srpDF', calculate the average precipitation across 
-  # all grid cells in the model domain
-  srpDF <- srpDF |>
-    group_by(Date) |>
-    summarize(`ppt (mm)` = mean(`ppt (mm)`), .groups = "drop")
-  
-  
-  # Write 'srpDF' to a file next
-  # Use 'latestPathSRP' as a base for this filename
-  
-  # However, the final WY portion will be updated
-  
-  # The new ending water year in the name will equal the year of 'fileEnd'
-  # (A water year is the same as the calendar year of its end bound)
-  newPathSRP <- latestPathSRP |>
-    str_replace("to_WY[0-9]{4}\\.csv",
-                paste0("to_WY", year(fileEnd), ".csv"))
-  
-  
-  # Write 'srpDF' to a file
-  writeOutput(srpDF, newPathSRP)
+  createPrecipFile(prismStart, fileEnd, model = "SRP",
+                   latestPathSRP, actualEnd)
   
   
   # Restore the dates in "CTR_001_Set_Start_and_End_Dates.R" afterwards
   updateControlScript(actualStart, actualEnd)
+  
+  
+  # Notify the user about the status of the procedure
+  message("Created new historic precipitation files for PRMS and SRP!")
+  cat("\n\n")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+createPrecipFile <- function (precipStart, precipEnd, model = "PRMS",
+                              oldPrecipPath, actualEnd) {
+  
+  
+  # Download PRISM data from 'precipStart' to 'precipEnd'
+  
+  # Calculate averages across all grid cells for every day in the dataset
+  
+  # Use the filepath of the previous precipitation file to create a new path
+  # for this updated dataset
+  
+  # Based on the model ("PRMS" or "SRP"), the inputs and names are different
+  
+  
+  # Define the path that will contain the downloaded PRISM data
+  prismPath <- paste0("WebData/PRISM_", model, "_Domain_Data_", precipStart, 
+                      "_", precipEnd, ".csv")
+  
+  
+  # Then, download PRISM data for the model domain grid cells
+  runModifiedPRISM(paste0("PRISM_", model, "_GRID_CELLS_CSV"), 
+                   precipStart, precipEnd, prismPath,
+                   useHighRes = TRUE, interpCells = FALSE,
+                   getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
+  
+  
+  # Read in this file
+  precipDF <- prismPath |>
+    getPRISM()
+  
+  
+  # Validate the file
+  # The validation function expects both precipitation and temperature,
+  # so include dummy columns for "TMIN" and "TMAX" when checking the data
+  precipDF |>
+    mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
+    validateWebData(dataSource = "PRISM",
+                    inputPath = prismPath,
+                    stationVec = precipDF$Name |> unique(),
+                    siPRISM = TRUE)
+  
+  
+  # For each day in 'precipDF', calculate the average precipitation across 
+  # all grid cells in the model domain
+  precipDF <- precipDF |>
+    group_by(Date) |>
+    summarize(`ppt (mm)` = mean(`ppt (mm)`), .groups = "drop")
+  
+  
+  # Validate the result
+  precipDF |> 
+    validateHistoricPrecipFile(prismPath,
+                               getModeledWY(actualEnd)[1])
+  
+  
+  # Write 'precipDF' to a file next
+  # Use 'oldPrecipPath' as a base for this filename
+  
+  # However, the final WY portion will be updated
+  
+  # The new ending water year in the name will equal the year of 'precipEnd'
+  # (A water year is the same as the calendar year of its end bound)
+  newPrecipPath <- oldPrecipPath |>
+    str_replace("to_WY[0-9]{4}\\.csv",
+                paste0("to_WY", year(precipEnd), ".csv"))
+  
+  
+  # Write 'precipDF' to a file
+  writeOutput(precipDF, newPrecipPath)
   
   
   # Return nothing
@@ -803,6 +803,34 @@ findAndReplace <- function (vec, pattern, replacement) {
   
   # Return 'vec' after this change
   return(vec)
+  
+}
+
+
+
+toggleAndRunScript <- function (scriptPath) {
+  
+  # Temporarily disable the `remove` function calls
+  
+  # Then, run a different script
+  
+  # After that, enable the `remove` function calls again
+  
+  
+  # Disable `base::remove(list = ls())`
+  toggleRemoveFunctions(scriptPath, commentOut = TRUE)
+  
+  
+  # Run the script
+  source(scriptPath)
+  
+  
+  # Enable `base::remove(list = ls())`
+  toggleRemoveFunctions(scriptPath, commentOut = FALSE)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }
 
