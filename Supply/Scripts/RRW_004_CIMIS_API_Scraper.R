@@ -27,7 +27,7 @@
 #### Setup ####
 
 # Clear the environment
-# base::remove(list = ls())
+base::remove(list = ls())
 
 
 # Import packages
@@ -566,4 +566,4 @@ mainProcedure()
 
 
 # Clean up
-# base::remove(list = ls())
+base::remove(list = ls())
