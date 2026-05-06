@@ -27,7 +27,7 @@
 #### Setup ####
 
 # Clear the environment
-base::remove(list = ls())
+# base::remove(list = ls())
 
 
 # Import packages
@@ -95,7 +95,7 @@ mainProcedure <- function () {
   
   
   # Write the file to the "WebData" folder
-  writeOutput(cimisDF, outFile, "write_csv")
+  writeOutput(cimisDF, outFile)
   
   
   # Output a completion message
@@ -132,14 +132,30 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
   apiKey <- apiKey[1]
   
   
-  # Before continuing, verify that 'startDate' and 'endDate' are within 
-  # 400 days of each other
-  # If the gap is wider, the request will need to be split into chunks
-  if (difftime(endDate, startDate, units = "days") > 400) {
+  # Before continuing, check if 'startDate' and 'endDate' have a large date gap
+  # CIMIS has a request limit of 1,750 records, so an excessively large gap
+  # can cause issues
+  
+  # Calculate the maximum allowable request size
+  # Max Number of Days Per Request = (1750 / # of Stations / # of Parameters)
+  maxRequest <- floor(1750 / length(stationVec) / 3)
+  
+  
+  # And because we don't want to be using the actual maximum limit,
+  # Reduce 'maxRequest' by 15%
+  maxRequest <- floor(maxRequest * .85)
+  
+  
+  # Even then, make sure 'maxRequest' is not too large
+  # Arbitrarily limit it to 300 days per request
+  maxRequest <- min(maxRequest, 300)
+  
+  
+  # If the gap is wider than 'maxRequest', the request will need to be split
+  if (difftime(endDate, startDate, units = "days") > maxRequest) {
     
-    # (CIMIS has a request limit of 1,750 records)
-    # (Records, not days)
-    return(splitRequest(stationVec, startDate, endDate, maxGap = 400))
+    # (CIMIS's limit is 1,750 records, not days)
+    return(splitRequest(stationVec, startDate, endDate, maxGap = maxRequest))
     
   }
   
@@ -173,11 +189,14 @@ requestCIMIS <- function (stationVec, startDate, endDate) {
   # Check if an error was received
   if ("try-error" %in% class(req)) {
     
+    cat("\n\n")
+    print(req[[1]])
+    cat("\n\n")
+    
     stop(paste0("CIMIS API Call Failed\n\n",
                 "A request failed to reach CIMIS's server\n\n",
-                "The most likely cause is a network firewall issue, but please ",
-                "examine the error message to double-check this:\n\n",
-                req[[1]][1]) |>
+                "The most likely cause is a CIMIS network issue, but please ",
+                "examine the error message above to double-check this") |>
            errWrap())
     
   }
@@ -527,6 +546,10 @@ splitRequest <- function (stationVec, startDate, endDate, maxGap) {
     # Output another message to the user at the end of the loop
     cat("\n\t\tDone!\n")
     
+    
+    # Wait a bit before proceeding to the next request
+    Sys.sleep(runif(1, min = 1.3, max = 2.4))
+    
   }
   
   
@@ -543,4 +566,4 @@ mainProcedure()
 
 
 # Clean up
-base::remove(list = ls())
+# base::remove(list = ls())

@@ -7,13 +7,13 @@ from dwrat.modeling import dwrat
 
 outlet = None#'NC_001'
 # add your supply file name
-supply_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/GL_formatted_supply_35.csv'
+supply_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/NV_formatted_supply.csv'
 #os.path.join('examples','Mad_example','_inputs','formatted_supply.csv')
 # add the name of your demand file
-demand_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/GL_formatted_demand_35.csv'
+demand_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/NV_formatted_demand.csv'
 #os.path.join('examples','Mad_example','_inputs','formatted_demand.csv')
 # add the name of your basins file
-basin_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/GL_generated_basins_35.csv'
+basin_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/NV_generated_basins.csv'
 #os.path.join('examples','Mad_example','_inputs','generated_basins.csv')
 
 #%%###########################################################################

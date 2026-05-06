@@ -434,15 +434,12 @@ validateStationInputs <- function (inputDF, inputPath,
 
 
 
-validateWebData <- function (climateDF, inputPath, stationVec, siPRISM = TRUE) {
+validateWebData <- function (climateDF, dataSource, inputPath, stationVec, 
+                             siPRISM = TRUE) {
   
   # Check for errors in the downloaded web data
   
   # This function mainly checks for expected column names and "NA" values
-  
-  
-  # First, extract the data source name from the element name for 'inputPath'
-  dataSource <- names(inputPath) |> str_extract("^[A-Z]+")
   
   
   # Make sure that procedure was successful
@@ -451,10 +448,8 @@ validateWebData <- function (climateDF, inputPath, stationVec, siPRISM = TRUE) {
     paste0("Unexpected Data Source\n\n", 
            "The name \"", dataSource, "\" is not recognized; ",
            "please fix the script\n\n",
-           "The function `validateWebData()` uses the vector names ",
-           "in 'inputFiles' and extracts the data source name. It ",
-           "expects \"PRISM\", \"NOAA\", \"RAWS\", or \"CIMIS\" as ",
-           "acceptable values.") |>
+           "The function `validateWebData()` expects \"PRISM\", \"NOAA\", ",
+           "\"RAWS\", or \"CIMIS\" as acceptable values.") |>
       errWrap() |>
       stop()
     
@@ -630,7 +625,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
 
 
 
-validateInputDAT <- function (datFile, sourceField, model, modelCols,
+validateInputDAT <- function (datFile, sourcePath, model, modelCols,
                               startDate, endDate, datType) {
   
   # Verify the formatting of a DAT file for PRMS or SRP
@@ -677,7 +672,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
   if (datType == "Main") {
     
     finalMessage <- paste0("(This error occurred for '", 
-                           getFromControl_RR(sourceField), "')")
+                           sourcePath, "')")
     
   } else if (datType == "SPI") {
     
@@ -726,7 +721,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
     paste0("DAT File - Column Issue\n\n",
            "The ", datType, " input file for ", model, " does not have ",
            "all of the required ", model, " columns (",
-           vec2QuotedStr(prmsCols[missingCols]), ").\n\n",
+           vec2QuotedStr(modelCols[missingCols]), ").\n\n",
            "The number of precipitation and temperature columns (and their ",
            "names) must match exactly with the meteorological CSV ",
            "(\"", model, "_Meteorological_", startDate, "_", endDate, 
@@ -942,7 +937,7 @@ validateInputDAT <- function (datFile, sourceField, model, modelCols,
 
 
 
-validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
+validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   
   # For both PRMS and SRP DAT files, calculations are performed 
   # based on average precipitation data from PRISM
@@ -952,7 +947,8 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
   # (they correspond to the model domains of PRMS and SRP)
   
   # This function verifies that continuous precipitation data is present 
-  # from "1981-01-01" to the beginning of the modeled water year in 'precipDF'
+  # from "1981-01-01" to within two water years of the modeled water year
+  # (e.g., For WY2026, there should be data through at least WY2024)
   prismStart <- "1981-01-01" |>
     as.Date(format = "%Y-%m-%d")
   
@@ -976,7 +972,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            paste0("(*) ", expectedCols[missingFields], collapse = "\n\n"), 
            "\n\n",
            "Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -991,7 +987,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "One or more missing elements were noted in the historic ",
            "precipitation CSV file. All data columns should have a value. ",
            "Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -1000,7 +996,9 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
   
   
   # After that, check for missing dates in 'precipDF'
-  dateSeq <- seq(from = prismStart, to = wyStart - 1, by = "days")
+  dateSeq <- seq(from = prismStart, 
+                 to = max(precipDF$Date), 
+                 by = "days")
   
   
   # Every date in 'dateSeq' should appear in 'precipDF' 
@@ -1016,7 +1014,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            wyStart - 1, ". However, ", length(missingDates), " ",
            "date", if_else(length(missingDates) > 1, "s are", " is"), " ",
            "missing. Please revise this file accordingly.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
       errWrap() |>
       stop()
@@ -1032,8 +1030,32 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "one precipitation value per day (an average daily value for ",
            "the entire watershed domain). However, one or more dates in ",
            "this file are duplicated. Please revise this file.\n\n",
-           "(This error occurred for '", getFromControl_RR(sourceField),
+           "(This error occurred for '", sourcePath,
            "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # 'precipDF' should extend at least until within two water years 
+  # of the modeled water year
+  if (!any(c(paste0(year(wyStart), "-09-30"), 
+             paste0(year(wyStart) - 1, "-09-30")) %in% precipDF$Date)) {
+    
+    # Example
+    # For WY2026, 'wyStart' is "2025-10-01"
+    # The precipitation CSV should have data through "2025-09-30" or "2024-09-30"
+    # These correspond to the ends of WY2025 and WY2024, respectively
+    
+    
+    paste0("Historic Precipitation File - Insufficient Data Issue\n\n", 
+           "Because WY", year(wyStart) + 1, " is being modeled, the historic ",
+           "precipitation CSV file should extend until at least the end of WY",
+           year(wyStart) - 1, " or WY", year(wyStart), ". However, the file ",
+           "only extends until ", max(precipDF$Date), ". Please revise this ",
+           "file.\n\n",
+           "(This error occurred for '", sourcePath, "')") |>
       errWrap() |>
       stop()
     
@@ -1052,7 +1074,7 @@ validateHistoricPrecipFile <- function (precipDF, sourceField, wyStart) {
            "Please adjust this file and ensure that this column contains only ",
            "numeric values.\n\n",
            "(This error occurred for '", 
-           getFromControl_RR(sourceField), "')") |>
+           sourcePath, "')") |>
       errWrap() |>
       str_replace("(not)", col_red("\\1")) |>
       stop()
@@ -1410,8 +1432,7 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt", 
-                  "write_lines")
+      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt")
       
     }
     
@@ -1570,8 +1591,7 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt", 
-                  "write_lines")
+      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt")
       
     }
     

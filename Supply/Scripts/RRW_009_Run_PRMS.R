@@ -64,7 +64,7 @@ mainProcedure <- function () {
   # Save the model output to a file
   modelOutput |>
     writeOutput(paste0(prmsPath, "/PRMS/output/PRMS_Console_Output.txt"),
-                "write_lines", quietly = TRUE)
+                quietly = TRUE)
   
   
   # After that, tell the user how long the model run took

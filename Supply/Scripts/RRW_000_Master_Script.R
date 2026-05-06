@@ -25,6 +25,14 @@ source("Scripts/HLP_000_Load_Packages.R")
 "CTR_001_Set_Start_and_End_Dates.R"
 
 
+##### Process Pre-Check #####
+
+# Check that the directory is correctly set
+source("Scripts/HLP_004_Check_Working_Directory.R")
+
+
+# Check if updates are required for the models' core DAT and Precipitation files
+source("Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R")
 
 ##### Web Scraping #####
 
@@ -48,7 +56,7 @@ source("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
 source("Scripts/RRW_004_CIMIS_API_Scraper.R")
 
 
-##### PRMS ####
+##### PRMS #####
 
 # Process the downloaded weather files
 source("Scripts/RRW_005_Process_PRMS_Weather_Data.R")
@@ -105,35 +113,36 @@ source("Scripts/RRW_016_Generate_Raw_Flows.R")
 
 ##### DWRAT #####
 
+# Ensure that Anaconda and a "paradigm-dwrat" environment are present
+source("Scripts/RRW_017_DWRAT_Precheck.R")
 
 
-#### Hydro ####
+# Prepare the input files for DWRAT and setup the Paradigm DWRAT script
+source("Scripts/RRW_018_Finalize_DWRAT_Inputs.R")
 
-# Process PRMS output (copies model outputs to GitHub folder)
-
-# SRP Processor (PRMS output + aggregated/processed gag files --> Raw Flows + Datestamp in name)
-
-# Copy SRP inputs and outputs + Raw Flows to SharePoint
-
-# Prepare CSV to help with new rows for DWRAT Run Tracker
-
-# Copy Raw Flows into Paradigm DWRAT
-
-# Edit RR_Connected Paradigm DWRAT script
 
 # Run DWRAT
-
-# Model Post-processing and data analysis steps
-
+source("Scripts/RRW_019_Run_DWRAT.R")
 
 
+# Perform final post-processing steps
+source("Scripts/RRW_020_DWRAT_Cleanup.R")
+
+
+#### Extra Scripts ####
+
+# Generate a batch file for ease of future use
+source("Scripts/HLP_006_Generate_RR_Workflow_Bat.R")
+
+
+# Data analysis steps
 
 
 
-# Maintenance scripts
+#### Maintenance Scripts ####
 
-# Generating SPI dataset
 # Generating new long-running DAT file
 
-
+# Generating new historic precipitation averages 
+# for the PRMS and SRP model domains
 
