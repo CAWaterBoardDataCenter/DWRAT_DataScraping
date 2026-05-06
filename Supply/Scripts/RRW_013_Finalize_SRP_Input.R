@@ -23,8 +23,8 @@
 #  (1) "ProcessedData/SRP_Meteorological_[startDate]_[endDate].csv"
 #      The processed weather data
 
-#  (2) A long-running DAT file (whose filepath is input into "MAIN_SRP_DAT_FILE"
-#      of the control file)
+#  (2) A long-running DAT file (whose parent folder is input into 
+#      "MAIN_SRP_DAT_FOLDER" of the control file)
 
 #  (3) A DAT file containing predictions for the current water year (its 
 #      filepath should be given in "SRP_DAT_SPI_FILE" of the control file)
@@ -102,24 +102,32 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Read in two of the main input files
   # (The SRP Meteorological CSV and the primary DAT file)
-  filePaths <- c(paste0("ProcessedData/SRP_Meteorological_", startDate,
-                        "_", endDate, ".csv"),
-                 getFromControl_RR("MAIN_SRP_DAT_FILE"))
+  filePaths <- tibble("METEOROLOGICAL" = 
+                        paste0("ProcessedData/SRP_Meteorological_", startDate,
+                               "_", endDate, ".csv"),
+                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
+  
+  
+  # "MAIN_DAT" contains a folder path right now
+  # Extract the latest primary DAT file from there
+  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
+    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
+                  "SRP Main DAT File")
   
   
   # Read in the two files next (while also verifying that they exist)
-  meteorDF <- filePaths[1] |> 
+  meteorDF <- filePaths$METEOROLOGICAL[1] |> 
     checkForPreviousOutput() |>
     getDelim(",")
   
   
-  primaryDAT <- getFile(filePaths[2], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
   
   
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, "MAIN_SRP_DAT_FILE", "SRP", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRP", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -157,7 +165,7 @@ mainProcedure <- function (predictWY = TRUE) {
     mergedDAT <- predictCurrentWY(mergedDAT,
                                   startDate, endDate, 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
-                                  dirPath, filePaths[2])
+                                  dirPath, filePaths$MAIN_DAT[1])
     
     
     cat("\tDone!\n\n")
@@ -167,8 +175,9 @@ mainProcedure <- function (predictWY = TRUE) {
     # update metadata in the hydrology folder
   } else {
     
-    updateMetadata_DAT(dirPath, modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths[2])
+    updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
+                       modelEndDate = endDate, 
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
     
   }
   
@@ -215,7 +224,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
     
     
     # But still update the metadata file after that
-    updateMetadata_DAT(dirPath, modelEndDate = endDate, 
+    updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+                       modelEndDate = endDate, 
                        "Not Required", pathMainDAT)
     
   } else {
@@ -231,7 +241,10 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
     # the SRP model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_CSV")
+    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
+      getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
+                           "CY1981_to_WY[0-9]{4}\\.csv$"),
+                    "SRP Historic Precip File")
     
     
     # Read in the file and validate it
@@ -239,7 +252,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       getFile()
     
     pastPrecip |>
-      validateHistoricPrecipFile("PRISM_SRP_HISTORIC_PRECIP_CSV",
+      validateHistoricPrecipFile(pastPrecipPath,
                                  getModeledWY(endDate)[1])
     
     
@@ -254,7 +267,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       
       
       # Update the metadata file next
-      updateMetadata_DAT(dirPath, modelEndDate = getModeledWY(endDate)[2],
+      updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
+                         modelEndDate = getModeledWY(endDate)[2],
                          predictionMethod = "SPI", 
                          pathMainDAT = pathMainDAT, 
                          pathPastPrecip = pastPrecipPath)
@@ -274,11 +288,20 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
       
     }
     
+    
+    # For both the SPI and Similar Water Year methods, archive 'pastPrecipPath'
+    copyFile(pastPrecipPath, 
+             paste0(dirPath, "/SRP/Input/",
+                    pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
+               normalizePath(mustWork = FALSE), 
+             quietly = TRUE)
+    
+    
   }
   
   
   # Perform a few checks on 'finalDAT'
-  validateInputDAT(finalDAT, sourceField = NULL, "SRP", srpCols,
+  validateInputDAT(finalDAT, sourcePath = NULL, "SRP", srpCols,
                    startDate, endDate, datType = "Final")
   
   
@@ -304,10 +327,42 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
   wyBounds <- getModeledWY(endDate)
   
   
-  # Summarize 'pastPrecip' on a monthly timescale
-  # (But ignore records from the current water year)
+  # The next step is to summarize 'pastPrecip' on a monthly timescale
+  
+  # Before doing that, certain filters must be applied
+  # Ignore records from the current water year onwards
+  pastPrecip <- pastPrecip |>
+    filter(Date < wyBounds[1])
+  
+  
+  # Make sure the last day in 'pastPrecip' is September 30th
+  if (month(max(pastPrecip$Date)) != 9 || day(max(pastPrecip$Date)) != 30) {
+    
+    # If not, find the latest instance of September 30th and filter to that bound
+    
+    # Due to prior validation checks, 'pastPrecip' should be a continuous dataset
+    # If there is no September 30th in the latest year in 'pastPrecip',  
+    # there will definitely be one in the prior year
+    
+    # Use whichever one is available
+    
+    if (paste0(year(max(pastPrecip$Date)), "-09-30") %in% pastPrecip$Date) {
+      
+      pastPrecip <- pastPrecip |>
+        filter(Date <= paste0(year(max(pastPrecip$Date)), "-09-30"))
+      
+    } else {
+      
+      pastPrecip <- pastPrecip |>
+        filter(Date <= paste0(year(max(pastPrecip$Date)) - 1, "-09-30"))
+      
+    }
+    
+  }
+  
+  
+  # After that, summarize 'pastPrecip' into a monthly dataset
   monthDF <- pastPrecip |>
-    filter(Date < wyBounds[1]) |>
     mutate(YEAR = year(Date), MONTH = month(Date)) |>
     group_by(YEAR, MONTH) |>
     summarize(PRECIP = sum(`ppt (mm)`), .groups = "drop") |>
@@ -316,7 +371,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
   
   # Add dummy entries for the last three months of the year in 'monthDF'
   # (This data will round out 'monthDF' into 12 months of data per year)
-  # ("YEAR_MONTH" is an extra column that will be useful later)
+  # (Also, "YEAR_MONTH" is an extra column that will be useful later)
   dummyDF <- tibble(YEAR = max(monthDF$YEAR),
                     MONTH = 10:12,
                     PRECIP = 0) |>
@@ -425,7 +480,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
 
 
 
-updateMetadata_DAT <- function (dirPath, modelEndDate, 
+updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate, 
                                 predictionMethod, pathMainDAT, 
                                 pathPastPrecip = NA_character_, 
                                 pathCurrentPrecip = NA_character_,
@@ -448,6 +503,7 @@ updateMetadata_DAT <- function (dirPath, modelEndDate,
                                    "SRP_MOST_SIMILAR_WY" = similarWY,
                                    "SRP_REGRESSION_MODEL_SLOPE" = linModel$m,
                                    "SRP_REGRESSION_MODEL_INTERCEPT" = linModel$b,
+                                   "SRP_DAT_START_DATE" = datStartDate, 
                                    "SRP_MODEL_END_DATE" = modelEndDate))
   
   
@@ -522,7 +578,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   # so include dummy columns for "TMIN" and "TMAX" when checking the data
   currentPrecip |>
     mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
-    validateWebData(inputPath = c("PRISM" = prismPath),
+    validateWebData(dataSource = "PRISM", 
+                    inputPath = prismPath,
                     stationVec = currentPrecip$Name |> unique(),
                     siPRISM = TRUE)
   
@@ -552,7 +609,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   
   # After that, update the metadata file
-  updateMetadata_DAT(dirPath, modelEndDate = getModeledWY(endDate)[2],
+  updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
+                     modelEndDate = getModeledWY(endDate)[2],
                      predictionMethod = "WY", pathMainDAT = pathMainDAT,
                      pathPastPrecip = pathPastPrecip, 
                      pathCurrentPrecip = prismPath,
@@ -618,6 +676,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   
   # Adjust the formatting of 'pastPrecip'
   # Add water year and date columns
+  # (Additional edits will occur later)
   pastPrecip <- pastPrecip |>
     mutate(YEAR = year(Date), MONTH = month(Date)) |>
     mutate(WY = if_else(MONTH < 10, YEAR, YEAR + 1)) |>
@@ -748,8 +807,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   # Write 'precipDF' as a CSV file to 'dirPath' next
   precipDF |>
     writeOutput(paste0(dirPath, "/SRP/Input/SimilarWY_Analysis.csv") |>
-                  normalizePath(mustWork = FALSE),
-                "write_csv")
+                  normalizePath(mustWork = FALSE))
   
   
   # Finally, return 'similarWY'
@@ -946,11 +1004,16 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   # Update the SRP control file next
   # (Its presence was already confirmed at the beginning of the script in 
   #  `validateModelCopy_SRP`)
-  updateControlFileSRP(srpPath, genericName, endDate, predictWY)
+  updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
   
   
-  # Finally, update the SRP batch file
+  # Update the SRP batch file
   updateBatchFileSRP(srpPath)
+  
+  
+  # Finally, add metadata containing 'datName'
+  updateMetadataCSV(dirPath,
+                    list("SRP_FINAL_DAT_FILE_NAME" = datName))
   
   
   # Return nothing
@@ -960,10 +1023,13 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
 
 
 
-updateControlFileSRP <- function (srpPath, datName, endDate, predictWY) {
+updateControlFileSRP <- function (dirPath, srpPath, datName, endDate, 
+                                  predictWY) {
   
   # Update the fields in the "SRPHM_update.control" control file
   # This customizes the SRP model run
+  
+  # (Some metadata will be added at the end of the function too)
   
   
   # First, read in the file
@@ -1020,7 +1086,15 @@ updateControlFileSRP <- function (srpPath, datName, endDate, predictWY) {
   
   
   # Write 'srpControl' back to a file (overwriting the previous version)
-  writeOutput(srpControl, controlPath, "write_lines", quietly = TRUE)
+  writeOutput(srpControl, controlPath, quietly = TRUE)
+  
+  
+  # Finally, save metadata about the model start date
+  updateMetadataCSV(dirPath,
+                    list("SRP_MODEL_START_DATE" = 
+                           srpControl[grep("start_time", srpControl) + 3:5] |>
+                           paste0(collapse = "-") |>
+                           as.Date(format = "%Y-%m-%d")))
   
   
   # Return nothing
@@ -1053,7 +1127,7 @@ updateBatchFileSRP <- function (srpPath) {
   batchCommands |>
     writeOutput(paste0(srpPath, "/Run_updated_Model.bat") |> 
                   normalizePath(mustWork = FALSE),
-                "write_lines", quietly = TRUE)
+                quietly = TRUE)
   
   
   # Return nothing

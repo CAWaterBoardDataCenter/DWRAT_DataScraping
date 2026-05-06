@@ -2,7 +2,7 @@
 
 # It enables further automation by automatically choosing the start and end dates
 
-# The end date is four days prior to today
+# The end date is three days prior to today
 # The start date is the beginning of the previous water year
 
 
@@ -27,8 +27,8 @@ source("Scripts/HLP_001_Shared_Functions_Supply.R")
 #### Procedure ####
 
 # The end date for the model's data scraping procedure will be 
-# four days prior to today
-plannedEnd <- Sys.Date() - 4
+# three days prior to today
+plannedEnd <- Sys.Date() - 3
 
 
 # Get the current water year based on this end date
@@ -92,7 +92,8 @@ controlScript[indexLoc] <- paste0("endDate <- \"", plannedEnd, "\"")
 
 
 # Save these updates to the control file
-writeOutput(controlScript, controlPath, "write_lines", quietly = TRUE)
+writeOutput(controlScript, controlPath, 
+            writeFunction = "write_lines", quietly = TRUE)
 
 
 # Clear the environment
@@ -100,4 +101,4 @@ base::remove(list = ls())
 
 
 # Finally, run the master script and begin the RR Workflow process
-source("Scripts/RRW_000_Master_Script_RR_Supply.R")
+source("Scripts/RRW_000_Master_Script.R")

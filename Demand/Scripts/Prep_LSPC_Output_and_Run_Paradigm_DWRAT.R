@@ -1653,7 +1653,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   
   
   # Specify (as a variable) the location of the main DWRAT script
-  scriptPath <- "../Paradigm_DWRAT/DWRAT_Mad.py"
+  scriptPath <- "../Paradigm_DWRAT/LSPC_DWRAT.py"
   
   
   

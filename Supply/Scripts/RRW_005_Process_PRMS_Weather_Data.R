@@ -57,29 +57,33 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Start with a vector containing every single required input file
-  inputFiles <- c("PRISM INPUT" = getFromControl_RR("PRISM_PRMS_STATIONS_CSV"),
-                  
-                  "NOAA INPUT" = getFromControl_RR("NOAA_STATIONS_CSV"), 
-                  
-                  "RAWS INPUT" = getFromControl_RR("RAWS_STATIONS_CSV"), 
-                  
-                  "CIMIS INPUT" = getFromControl_RR("CIMIS_STATIONS_CSV"),
-                  
-                  "PRISM OUTPUT" = paste0("WebData/PRISM_PRMS_Data_",
-                                          startDate, "_", endDate, ".csv"),
-                  "NOAA OUTPUT" = paste0("WebData/NOAA_API_Data_",
-                                         startDate, "_", endDate, ".csv"),
-                  "RAWS OUTPUT" = paste0("WebData/RAWS_HTTP_Data_",
-                                         startDate, "_", endDate, ".csv"),
-                  "CIMIS OUTPUT" = paste0("WebData/CIMIS_API_Data_",
-                                          startDate, "_", endDate, ".csv"))
+  inputFiles <- tibble("PRISM_INPUT" = getFromControl_RR("PRISM_PRMS_STATIONS_CSV") |>
+                         sharepointPathCheck(isFolder = FALSE),
+                       
+                       "NOAA_INPUT" = getFromControl_RR("NOAA_STATIONS_CSV") |>
+                         sharepointPathCheck(isFolder = FALSE), 
+                       
+                       "RAWS_INPUT" = getFromControl_RR("RAWS_STATIONS_CSV") |>
+                         sharepointPathCheck(isFolder = FALSE), 
+                       
+                       "CIMIS_INPUT" = getFromControl_RR("CIMIS_STATIONS_CSV") |>
+                         sharepointPathCheck(isFolder = FALSE),
+                       
+                       "PRISM_OUTPUT" = paste0("WebData/PRISM_PRMS_Data_",
+                                               startDate, "_", endDate, ".csv"),
+                       "NOAA_OUTPUT" = paste0("WebData/NOAA_API_Data_",
+                                              startDate, "_", endDate, ".csv"),
+                       "RAWS_OUTPUT" = paste0("WebData/RAWS_HTTP_Data_",
+                                              startDate, "_", endDate, ".csv"),
+                       "CIMIS_OUTPUT" = paste0("WebData/CIMIS_API_Data_",
+                                               startDate, "_", endDate, ".csv"))
   
   
   # Check if any required input files are missing
-  if (anyFalse(file.exists(inputFiles))) {
+  if (anyFalse(map_lgl(inputFiles, file.exists))) {
     
     # Get the names of the missing files before sending a message
-    missingFiles <- inputFiles[!file.exists(inputFiles)]
+    missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
     
     
     # Output the error
@@ -103,15 +107,15 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Read in the files next
-  prismInput <- inputFiles[1] |> getFile() |> unique()
-  noaaInput <- inputFiles[2] |> getFile() |> unique()
-  rawsInput <- inputFiles[3] |> getFile() |> unique()
-  cimisInput <- inputFiles[4] |> getFile() |> unique()
+  prismInput <- inputFiles$PRISM_INPUT[1] |> getFile() |> unique()
+  noaaInput <- inputFiles$NOAA_INPUT[1] |> getFile() |> unique()
+  rawsInput <- inputFiles$RAWS_INPUT[1] |> getFile() |> unique()
+  cimisInput <- inputFiles$CIMIS_INPUT[1] |> getFile() |> unique()
   
-  prismDF <- getPRISM(inputFiles[5])
-  noaaDF <- getDelim(inputFiles[6], delim = ",")
-  rawsDF <- getDelim(inputFiles[7], delim = ",")
-  cimisDF <- getDelim(inputFiles[8], delim = ",")
+  prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
+  noaaDF <- getDelim(inputFiles$NOAA_OUTPUT[1], delim = ",")
+  rawsDF <- getDelim(inputFiles$RAWS_OUTPUT[1], delim = ",")
+  cimisDF <- getDelim(inputFiles$CIMIS_OUTPUT[1], delim = ",")
   
   
   # Validate all eight variables next
@@ -139,7 +143,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # For archival purposes, save 'meteorDF' without any PRISM data substitution
   meteorDF |>
     writeOutput(paste0("ProcessedData/PRMS_Pre-PRISM_Meteorological_", 
-                       startDate, "_", endDate, ".csv"), "write_csv",
+                       startDate, "_", endDate, ".csv"),
                 quietly = TRUE)
   
   
@@ -158,7 +162,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   meteorDF |>
-    writeOutput(outFile, "write_csv")
+    writeOutput(outFile)
   
   
   # Output a completion message
@@ -185,20 +189,20 @@ validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
   
   
   # First, check the four "INPUT" tibbles
-  validateStationInputs(prismInput, inputFiles[1], "PRMS", numPrecip, numTemp)
-  validateStationInputs(noaaInput, inputFiles[2], "PRMS", numPrecip, numTemp)
-  validateStationInputs(rawsInput, inputFiles[3], "PRMS", numPrecip, numTemp)
-  validateStationInputs(cimisInput, inputFiles[4], "PRMS", numPrecip, numTemp)
+  validateStationInputs(prismInput, inputFiles$PRISM_INPUT[1], "PRMS", numPrecip, numTemp)
+  validateStationInputs(noaaInput, inputFiles$NOAA_INPUT[1], "PRMS", numPrecip, numTemp)
+  validateStationInputs(rawsInput, inputFiles$RAWS_INPUT[1], "PRMS", numPrecip, numTemp)
+  validateStationInputs(cimisInput, inputFiles$CIMIS_INPUT[1], "PRMS", numPrecip, numTemp)
   
   
   # Validate the four weather output tibbles next
   
   # Each website returns data in a slightly different format
   # But the general expectations are similar in all cases
-  validateWebData(prismDF, inputFiles[5], prismInput$STATION_ID, siPRISM = TRUE)
-  validateWebData(noaaDF, inputFiles[6], noaaInput$STATION_ID)
-  validateWebData(rawsDF, inputFiles[7], rawsInput$STATION_ID)
-  validateWebData(cimisDF, inputFiles[8], cimisInput$STATION_ID)
+  validateWebData(prismDF, "PRISM", inputFiles$PRISM_OUTPUT[1], prismInput$STATION_ID, siPRISM = TRUE)
+  validateWebData(noaaDF, "NOAA", inputFiles$NOAA_OUTPUT[1], noaaInput$STATION_ID)
+  validateWebData(rawsDF, "RAWS", inputFiles$RAWS_OUTPUT[1], rawsInput$STATION_ID)
+  validateWebData(cimisDF, "CIMIS", inputFiles$CIMIS_OUTPUT[1], cimisInput$STATION_ID)
   
   
   # Return nothing

@@ -6,16 +6,13 @@
 # with a path in "RR_Workflow_Control_File.xlsx"
 
 # A new folder will be created there with sub-folders for the inputs and outputs 
-# of PRMS, SRP, and DWRAT
+# of SRP, RRIHM, and DWRAT
 
 # A CSV file will also be generated that contains information about the procedure
 
 # The meteorological CSV file from the previous script will be 
 # copied there as well
-# ("ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv")
-
-# Its pre-PRISM version will be included too
-# ("ProcessedData/PRMS_Pre-PRISM_Meteorological_[startDate]_[endDate].csv")
+# ("ProcessedData/SRP_Meteorological_[startDate]_[endDate].csv")
 
 # The weather station input files will be archived in this folder as well
 
@@ -26,7 +23,6 @@
 # the path to the newly generated directory
 
 # Its filename will be "Hydrology_Output_Folder_[startDate]_[endDate].txt"
-
 
 
 #### Setup ####
@@ -49,23 +45,17 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_006_Setup_Output_Directory.R'!\n")
+  cat("Starting 'RRW_v2_007_Setup_Output_Directory.R'!\n")
   
   
   # Import the start and end date
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  # Verify that the meteorological CSV file exists
+  # Verify that the SRP meteorological CSV file exists
   # (This is a sign that the previous script completed its procedure)
-  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_", startDate,
+  meteorPath <- paste0("ProcessedData/SRP_Meteorological_", startDate,
                        "_", endDate, ".csv") |>
-    checkForPreviousOutput()
-  
-  
-  # Check for the "Pre-PRISM" version of this file as well
-  prePrismMeteor <- paste0("ProcessedData/PRMS_Meteorological_", startDate,
-                           "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
   
@@ -111,7 +101,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_006_Setup_Output_Directory.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_007_Setup_Output_Directory.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -170,7 +160,7 @@ validateInput <- function (saveDirectory, sourceField) {
 generateFolders <- function (saveDirectory) {
   
   # In 'saveDirectory', a new folder will be created for the imminent 
-  # model runs of PRMS, SRP, and DWRAT
+  # model runs of SRP, RRIHM, and DWRAT
   
   # By default, the folder's name will be the current date
   
@@ -182,12 +172,12 @@ generateFolders <- function (saveDirectory) {
   
   # Create the directory 'mainName'
   
-  # In addition, create sub-folders for "PRMS", "SRP", and "DWRAT"
+  # In addition, create sub-folders for SRP", "RRIHM", and "DWRAT"
   # In each of these folders, create "Input" and "Output" folders
-  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/PRMS/Input"),
-                      paste0(saveDirectory, "/", mainName, "/PRMS/Output"),
-                      paste0(saveDirectory, "/", mainName, "/SRP/Input"),
+  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/SRP/Input"),
                       paste0(saveDirectory, "/", mainName, "/SRP/Output"),
+                      paste0(saveDirectory, "/", mainName, "/RRIHM/Input"),
+                      paste0(saveDirectory, "/", mainName, "/RRIHM/Output"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
@@ -198,7 +188,7 @@ generateFolders <- function (saveDirectory) {
   # Create the folders
   newDirectories |>
     map_lgl(~ dir.create(., recursive = TRUE))
-    
+  
   
   # Ensure that all folders were created successfully
   # If not, output an error
@@ -284,8 +274,8 @@ chooseFolderName <- function (saveDirectory) {
     index <- index + 1
     
     
-  # If this is the first folder with a suffix, append the number 2 to its name
-  # (not 1 because the folder that lacks this suffix is the first instance)
+    # If this is the first folder with a suffix, append the number 2 to its name
+    # (not 1 because the folder that lacks this suffix is the first instance)
   } else {
     
     index <- 2
@@ -309,12 +299,12 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
-                   WORKFLOW_VERSION = "RRW",
+                   WORKFLOW_VERSION = "RRW_v2",
                    MODELER_NAME = Sys.info()[["user"]],
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
                    METEOROLOGICAL_END = endDate,
-                   PRMS_METEOROLOGICAL_FILE_CREATED = 
+                   SRP_METEOROLOGICAL_FILE_CREATED = 
                      file.info(meteorPath)[["ctime"]],
                    METADATA_DF_FIRST_DEFINED = Sys.time(),
                    CURRENT_WATER_YEAR = if_else(month(Sys.Date()) < 10,
@@ -325,7 +315,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   # The initial version of 'metaDF' contains information about:
   #   (*) The person running the scripts
   #   (*) 'startDate' and 'endDate'
-  #   (*) The creation datetime of the meteorological CSV
+  #   (*) The creation datetime of the SRP meteorological CSV
   #   (*) The approximate creation datetime of the metadata dataframe
   #   (*) The current water year
   
@@ -336,8 +326,8 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   
   # After that, copy 'meteorDF' to 'outputDirectory'
-  # (Place it in the "Input" folder under "PRMS")
-  newMeteorPath <- paste0(outputDirectory, "/PRMS/Input/", 
+  # (Place it in the "Input" folder under "SRP")
+  newMeteorPath <- paste0(outputDirectory, "/SRP/Input/", 
                           meteorPath |> str_remove("^.+[/\\\\]")) |>
     normalizePath(mustWork = FALSE)
   
@@ -346,21 +336,13 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyFile(from = meteorPath, to = newMeteorPath)
   
   
-  # Attempt the same copy process with the "Pre-PRISM" version of 
-  # the meteorological CSV file
-  copyFile(from = prePrismMeteor, 
-           to = newMeteorPath |> 
-             str_replace("^(.+[/\\\\])PRMS_Meteorological_", 
-                         "\\1PRMS_Pre-PRISM_Meteorological_"), 
-           quietly = TRUE)
-  
-  
   # Each of the weather station input files will be archived as well
-  copyStationInputFile("PRISM_PRMS_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "PRMS")
+  copyStationInputFile("PRISM_PRMS_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "RRIHM")
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")

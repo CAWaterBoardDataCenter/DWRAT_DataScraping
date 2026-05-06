@@ -4,7 +4,7 @@
 
 # This script has two required input files:
 
-# The first one is the station input file for PRISM
+# The first one is the SRP station input file for PRISM
 
 # This time, in addition to the "STATION_ID" column, the script requires 
 # columns that link these stations to specific columns in the SRP DAT input file
@@ -47,14 +47,14 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_011_Process_SRP_Weather_Data.R'!\n")
+  cat("Starting 'RRW_v2_006_Process_SRP_Weather_Data.R'!\n")
   
   
   # Import the start and end date
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  # Start with a vector containing every single required input file
+  # Start with a tibble containing every required input file
   inputFiles <- tibble("PRISM_INPUT" = 
                          getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
                          sharepointPathCheck(isFolder = FALSE),
@@ -88,10 +88,6 @@ mainProcedure <- function () {
            errWrap())
     
   }
-  
-  
-  # Check that the model hydrology folder was setup correctly too
-  dirPath <- validateHydroFolder(startDate, endDate)
   
   
   # Read in the files next
@@ -130,20 +126,8 @@ mainProcedure <- function () {
     writeOutput(outFile)
   
   
-  # Save 'prismProcessed' to the hydrology folder as well
-  prismProcessed |>
-    writeOutput(paste0(dirPath, "/SRP/Input/SRP_Meteorological_", startDate, 
-                       "_", endDate, ".csv"), quietly = TRUE)
-  
-  
-  # Finally, update the metadata file as well
-  updateMetadataCSV(dirPath,
-                    list("SRP_METEOROLOGICAL_FILE_CREATED" =
-                           file.info(outFile)[["ctime"]]))
-  
-  
   # Output a completion message
-  cat(col_green("\n'RRW_011_Process_SRP_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_006_Process_SRP_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -250,3 +234,7 @@ mainProcedure()
 
 # Clean up
 base::remove(list = ls())
+
+
+
+
