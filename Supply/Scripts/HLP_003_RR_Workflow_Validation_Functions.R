@@ -26,14 +26,14 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
   
   
   # This function is intended to be used for the "PRISM", "NOAA", "CIMIS",
-  # and "RAWS" station input files
-  if (!(dataSource %in% c("PRISM", "NOAA", "CIMIS", "RAWS"))) {
+  # "RAWS", and "CDEC" station input files
+  if (!(dataSource %in% c("PRISM", "NOAA", "CIMIS", "RAWS", "CDEC"))) {
     
     paste0("Unexpected Data Source\n\n", 
            "The name \"", dataSource, "\" is not recognized; ",
            "please fix the script\n\n",
            "The function `validateStationInputFile()` expects \"PRISM\", ",
-           "\"NOAA\", \"RAWS\", or \"CIMIS\" as acceptable values.") |>
+           "\"NOAA\", \"RAWS\", \"CDEC\", or \"CIMIS\" as acceptable values.") |>
       errWrap() |>
       stop()
     
@@ -46,7 +46,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
     
     expectedCols <- c("LATITUDE", "LONGITUDE", "STATION_ID")
     
-  } else if (dataSource %in% c("NOAA", "RAWS", "CIMIS")) {
+  } else if (dataSource %in% c("NOAA", "RAWS", "CIMIS", "CDEC")) {
     
     expectedCols <- c("STATION_ID")
     
@@ -66,7 +66,8 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
            list("PRISM" = "PRISM target coordinates ",
                 "NOAA" = "GHCND stations ",
                 "RAWS" = "RAWS stations ",
-                "CIMIS" = "CIMIS stations ")[[dataSource]], 
+                "CIMIS" = "CIMIS stations ",
+                "CDEC" = "CDEC stations ")[[dataSource]], 
            "does not have ", 
            if_else(length(expectedCols) == 1, 
                    " the required column ", "all required columns "),
@@ -84,7 +85,11 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
                 "CIMIS" = paste0("The input file must contain the numeric ",
                                  "IDs that correspond to different CIMIS ",
                                  "stations (e.g., '103' for ",
-                                 "'Windsor')."))[[dataSource]], " ",  
+                                 "'Windsor')."),
+                "CDEC" = paste0("The input file must contain the IDs that ",
+                                 "correspond to different CDEC stations ",
+                                 "(e.g., 'COY' for 'COYOTE (LAKE MENDOCINO)'",
+                                 ")."))[[dataSource]], " ",  
            "Also, the names of these columns must match exactly.\n\n",
            "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
@@ -1577,6 +1582,156 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
   # Check if any files are missing
   missingFiles <- which(!file.exists(outFiles |>
                                        paste0(srpPath, "/", 
+                                              ... = _) |>
+                                       normalizePath(mustWork = FALSE)))
+  
+  
+  if (length(missingFiles) > 0) {
+    
+    # Include the model run outputs in the console if 'modelOutput' is not NULL
+    if (!is.null(modelOutput)) {
+      
+      cat("\n\nModel Output Message(s):\n\n")
+      print(modelOutput)
+      
+      
+      # Save 'modelOutput' to a file too
+      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt")
+      
+    }
+    
+    
+    paste0("Missing SRP Output File", 
+           if_else(length(missingFiles) > 1, "s", ""), "\n\n",
+           "The SRP model run did not generate all of the expected ",
+           "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
+           "). Please investigate ",
+           if_else(is.null(modelOutput),
+                   "the model's output messages (included above and in a file)",
+                   "this issue"),
+           ".\n\n", 
+           "(This error occurred for \"", srpPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
+  
+}
+
+
+
+validateModelCopy_SRP_2024 <- function () {
+  
+  # In a prior script, SRP model files were copied to the "ProcessedData" folder
+  # Verify that it exists
+  
+  # This function also returns the path to the model folder
+  
+  
+  # The expected path of the "SIR2024-5121_update" folder
+  srpPath <- "ProcessedData/SIR2024-5121_update" |> normalizePath(mustWork = FALSE)
+  
+  
+  # Make sure that that folder exists 
+  if (!dir.exists(srpPath)) {
+    
+    paste0("SRP Folder Not Found\n\n",
+           "A copy of the SRP model files should have been added ",
+           "to the \"ProcessedData\" folder in an earlier script. ",
+           "However, it was not found. ",
+           "Please run the previous scripts before running this one.\n\n",
+           "The expected directory was \"", srpPath, "\"") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Also confirm that the control file for SRP exists
+  controlPath <- paste0(srpPath, 
+                        "/model/model1/SRPHM_full/SRPHM_full.control") |> 
+    normalizePath(mustWork = FALSE)
+  
+  
+  if (!file.exists(controlPath)) {
+    
+    paste0("Missing SRP Control File\n\n",
+           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "folder, a control file was present in the root folder. ",
+           "However, it cannot be found now. Please investigate.\n\n",
+           "(This error occurred for \"", controlPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # A batch file should be present in the model files too
+  # Check for that as well
+  batPath <- paste0(srpPath, "/model/model1/SRPHM_full/run_SRPHM_full.bat") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  if (!file.exists(batPath)) {
+    
+    paste0("Missing SRP Batch File\n\n",
+           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "folder, a batch file was present among the model files. ", 
+           "However, it cannot be found now. Please investigate.\n\n",
+           "(This error occurred for \"", batPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Finally, check for the main executable file
+  exePath <- paste0(srpPath, "/bin/gsflow.exe") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  if (!file.exists(exePath)) {
+    
+    paste0("Missing SRP EXE File\n\n",
+           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "folder, \"bin/gsflow.exe\" was present among the model files. ", 
+           "However, it cannot be found now. Please investigate.\n\n",
+           "(This error occurred for \"", exePath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return 'srpPath' if there are no issues
+  return(srpPath)
+  
+}
+
+
+
+
+
+
+checkForModelOutputs_SRP_2024 <- function (srpPath, modelOutput = NULL) {
+  
+  # Double-check that the model ran successfully
+  
+  # There should be several key files in the "output" folder
+  
+  
+  # These files were all generated by SRP
+  outFiles <- c("")
+  
+  
+  # Check if any files are missing
+  missingFiles <- which(!file.exists(outFiles |>
+                                       paste0(srpPath, 
+                                              "/output/output.model1_full/", 
                                               ... = _) |>
                                        normalizePath(mustWork = FALSE)))
   

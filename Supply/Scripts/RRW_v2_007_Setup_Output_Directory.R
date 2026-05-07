@@ -133,7 +133,7 @@ validateInput <- function (saveDirectory, sourceField) {
   if (!dir.exists(saveDirectory)) {
     
     stop(paste0("Cannot Find the Specified Directory\n\n",
-                "In the RR Supply Control File, the desired location ",
+                "In the RR Workflow Control File, the desired location ",
                 "to store the model outputs was specified to be \"",
                 saveDirectory, "\"\n\n",
                 "However, this location does not appear to exist. ",

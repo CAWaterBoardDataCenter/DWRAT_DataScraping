@@ -3,9 +3,8 @@
 # The model files will be copied from another location
 # to the "ProcessedData" folder
 
-# The source location is specified in the field "RR_SRP_SOURCE_LOCATION" 
+# The source location is specified in the field "SRPHM_SIR2024_SOURCE_LOCATION" 
 # in "RR_Workflow_Control_File.xlsx"
-
 
 
 #### Setup ####
@@ -28,27 +27,31 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_012_Setup_SRP_Model.R'!\n\n")
+  cat("Starting 'RRW_v2_008_Setup_SRP_Model.R'!\n\n")
   
   
   # Get the location of the SRP model files
-  sourceDir <- getFromControl_RR("RR_SRP_SOURCE_LOCATION")
+  sourceDir <- getFromControl_RR("SRPHM_SIR2024_SOURCE_LOCATION")
   
   
   # Validate the user's input and ensure that this directory contains
   # all required components
   # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
   #  to reflect that)
-  sourceDir <- validateSourceModelDirectory(sourceDir, "RR_SRP_SOURCE_LOCATION",
+  sourceDir <- validateSourceModelDirectory(sourceDir, 
+                                            "SRPHM_SIR2024_SOURCE_LOCATION",
                                             "SRP", 
-                                            c("basin", "External Files", 
-                                              "input", "nsub", "output"),
-                                            c("SRPHM_update.control", 
-                                              "Run_updated_Model.bat",
-                                              "gsflow_ag.exe"))
+                                            c("bin", "model", "output", 
+                                              "model/external_files", 
+                                              "model/model1", "model/model2",
+                                              "output/output.model1_full",
+                                              "output/output.model1_spinup",
+                                              "output/output.model2_dpl"),
+                                            c("bin/gsflow.exe",
+                                              "model/model1/SRPHM_full/SRPHM_full.control"))
   
   
-  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM_update_ag\"...\n")
+  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SIR2024-5121_update\"...\n")
   
   
   # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
@@ -59,7 +62,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_012_Setup_SRP_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_008_Setup_SRP_Model.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -71,13 +74,13 @@ mainProcedure <- function () {
 
 copyModel <- function (sourceDir) {
   
-  # Copy the files from 'sourceDir' into a newly created "SRPHM_update_ag" folder
+  # Copy the files from 'sourceDir' into a newly created "SIR2024-5121_update" folder
   # in the "ProcessedData" folder
   
   
   # 'newDir' will contain the new folder location 
   # relative to the working directory
-  newDir <- "ProcessedData/SRPHM_update_ag"
+  newDir <- "ProcessedData/SIR2024-5121_update"
   
   
   # If the folder already exists, delete it and its contents
@@ -88,7 +91,7 @@ copyModel <- function (sourceDir) {
   }
   
   
-  # Next, create the "SRPHM_update_ag" folder
+  # Next, create the "SIR2024-5121_update" folder
   dir.create(newDir)
   
   
@@ -97,8 +100,8 @@ copyModel <- function (sourceDir) {
   
   
   # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "SRPHM_update_ag"
-  # In "ProcessedData", the folder will still be called "SRPHM_update_ag"
+  # different from "SIR2024-5121_update"
+  # In "ProcessedData", the folder will still be called "SIR2024-5121_update"
   
   
   # Return nothing

@@ -26,9 +26,9 @@
 #  (2) A long-running DAT file (whose parent folder is input into 
 #      "MAIN_SRP_DAT_FOLDER" of the control file)
 
-#  (3) From the SRP model files, the "SRPHM_update.control" file will be edited
+#  (3) From the SRP model files, the "SRPHM_full.control" file will be edited
 
-#  (4) Similarly, the model's "Run_updated_Model.bat" file will be updated
+#  (4) Similarly, the model's "run_SRPHM_full.bat" file will be updated
 
 
 # A single output will be generated in all cases, and additional outputs will 
@@ -36,13 +36,13 @@
 
 #  (1) "DAT_SRP_[startDate]_[endDate].dat"
 #      The final DAT file to use in the model run
-#      (This file is also copied to the "SRPHM_update_ag" folder 
+#      (This file is also copied to the "SIR2024-5121_update" folder 
 #       as "RR_SRP_Input.dat")
 
 #  (2) If the similar WY needs to be identified, a summary CSV from that 
 #      procedure will be generated as well
 
-# Technically, "SRPHM_update.control" and "Run_updated_Model.bat" are output by 
+# Technically, "SRPHM_update.control" and "run_SRPHM_full.bat" are output by 
 # this script as well
 # (Though, the copied "SRP" contents will be deleted at the end of the model
 #  run procedure, so they will not stick around for long)
@@ -68,7 +68,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function (predictWY = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRW_013_Finalize_SRP_Input.R'!\n")
+  cat("Starting 'RRW_v2_009_Finalize_SRP_Input.R'!\n")
   
   
   # Import the start and end date
@@ -87,7 +87,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Also confirm that the SRP model folder was copied to "ProcessedData"
-  srpPath <- validateModelCopy_SRP()
+  srpPath <- validateModelCopy_SRP_2024()
   
   
   cat("\tDone!\n\n")
@@ -194,7 +194,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_013_Finalize_SRP_Input.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_009_Finalize_SRP_Input.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -292,7 +292,6 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
                     pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
                normalizePath(mustWork = FALSE), 
              quietly = TRUE)
-    
     
   }
   
@@ -892,7 +891,8 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   # Write 'mergedDAT' to two folders:
   #  (1) In the hydrology directory, store the file under "SRP > Input"
-  #  (2) In the copied SRP model files, under "SRPHM_update_ag" 
+  #  (2) In the copied SRP model files, store it under the "external_files" 
+  #      folder within "SIR2024-5121_update" 
   
   
   # The final filename of 'mergedDAT' will contain 'startDate', 'endDate', and
@@ -993,7 +993,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   # Write 'finalDAT' to the SRP model folder next
   # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
   finalDAT$FINAL |>
-    writeOutput(paste0(srpPath, "/", genericName) |> 
+    writeOutput(paste0(srpPath, "/model/external_files/", genericName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_lines", quietly = quietly)
   
@@ -1030,7 +1030,8 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   
   # First, read in the file
-  controlPath <- paste0(srpPath, "/SRPHM_update.control") |>
+  controlPath <- paste0(srpPath, 
+                        "/model/model1/SRPHM_full/SRPHM_full.control") |>
     normalizePath(mustWork = TRUE)
   
   
@@ -1079,7 +1080,7 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   
   # Three lines after "data_file", the DAT filename is specified
-  srpControl[targetLoc + 3] <- paste0(datName)
+  srpControl[targetLoc + 3] <- paste0("..\\..\\external_files\\", datName)
   
   
   # Write 'srpControl' back to a file (overwriting the previous version)
@@ -1103,26 +1104,31 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
 
 updateBatchFileSRP <- function (srpPath) {
   
-  # Update the "Run_updated_Model.bat" file that initiates SRP
+  # Update the "run_SRPHM_full.bat" file that initiates SRP
   
   
   # This file contains two commands:
-  # cd [SRP ROOT PATH]
-  # call [PATH TO GSFLOW_AG.EXE] [PATH TO CONTROL FILE]
+  # cd [SRP FULL MODEL PATH]
+  # [PATH TO GSFLOW.EXE] [PATH TO CONTROL FILE]
   
   
-  batchCommands <- c(paste0("cd ", srpPath),
-                     "call gsflow_ag.exe SRPHM_update.control")
+  batDir <- paste0(srpPath, "/model/model1/SRPHM_full/") |>
+    normalizePath(mustWork = TRUE)
+  
+  
+  batchCommands <- c(paste0("cd ", shQuote(batDir)),
+                     "..\\..\\..\\bin\\gsflow.exe SRPHM_full.control")
   
   # The first command changes the working directory to the location of 
-  # the SRP model files (the root directory of "SRPHM_update_ag")
-  # The second command then executes gsflow_ag.exe using "SRPHM_update.control" 
-  # (which is also located in the same directory)
+  # the SRP bat file (the root directory of "SIR2024-5121_update")
+  # The second command then executes gsflow.exe using "SRPHM_full.control" 
+  # (which is also located in the same directory as the bat file)
   
   
   # Write these commands to "Run_updated_Model.bat"
   batchCommands |>
-    writeOutput(paste0(srpPath, "/Run_updated_Model.bat") |> 
+    writeOutput(paste0(srpPath, 
+                       "/model/model1/SRPHM_full/run_SRPHM_full.bat") |> 
                   normalizePath(mustWork = FALSE),
                 quietly = TRUE)
   
