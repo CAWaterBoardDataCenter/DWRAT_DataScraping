@@ -4,7 +4,7 @@
 # to the "ProcessedData" folder
 
 # The source location is specified in the field "RR_SRP_SOURCE_LOCATION" 
-# in "RR_Supply_Control_File.xlsx"
+# in "RR_Workflow_Control_File.xlsx"
 
 
 

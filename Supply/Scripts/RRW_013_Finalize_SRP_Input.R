@@ -26,12 +26,9 @@
 #  (2) A long-running DAT file (whose parent folder is input into 
 #      "MAIN_SRP_DAT_FOLDER" of the control file)
 
-#  (3) A DAT file containing predictions for the current water year (its 
-#      filepath should be given in "SRP_DAT_SPI_FILE" of the control file)
+#  (3) From the SRP model files, the "SRPHM_update.control" file will be edited
 
-#  (4) From the SRP model files, the "SRPHM_update.control" file will be edited
-
-#  (5) Similarly, the model's "Run_updated_Model.bat" file will be updated
+#  (4) Similarly, the model's "Run_updated_Model.bat" file will be updated
 
 
 # A single output will be generated in all cases, and additional outputs will 
