@@ -1521,12 +1521,12 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
   
   
   # Find the element
-  foundElement <- rd$findElement(using = searchType, value = val)
+  foundElement <- try(rd$findElement(using = searchType, value = val))
   
   
   # Error Check
   # Stop if no element is found or if more than one element is found
-  if (length(foundElement) != 1) {
+  if (length(foundElement) != 1 || "try-error" %in% class(foundElement)) {
     
     # Stop the remote driver and server
     try(rd$quit(), silent = TRUE)
@@ -1545,11 +1545,28 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
   
   
   # Click on the element
-  foundElement$clickElement()
+  tryRes <- try(foundElement$clickElement())
+  
+  
+  if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
+    
+    # Stop the remote driver and server
+    try(rd$quit(), silent = TRUE)
+    try(server$stop(), silent = TRUE)
+    
+    
+    # Then output an error message
+    paste0("Could Not Click the Element\n\n",
+           "The element whose ", searchType, " is \"", val, 
+           "\" could not be interacted with. It may be hidden.") |>
+      errWrap() |>
+      stop()
+    
+  }
   
   
   # Wait around a second before continuing
-  Sys.sleep(runif(1, min = 1, max = 1.5))
+  Sys.sleep(runif(1, min = 1.1, max = 1.6))
   
   
   # Return nothing
@@ -1568,12 +1585,12 @@ fillInput <- function (rd, server, val, input, searchType = "xpath") {
   
   
   # Find the element
-  foundElement <- rd$findElement(using = searchType, value = val)
+  foundElement <- try(rd$findElement(using = searchType, value = val))
   
   
   # Error Check
   # Stop if no element is found or if more than one element is found
-  if (length(foundElement) != 1) {
+  if (length(foundElement) != 1 || "try-error" %in% class(foundElement)) {
     
     # Stop the remote driver and server
     try(rd$quit(), silent = TRUE)
@@ -1628,7 +1645,7 @@ loopWait <- function (rd, server, breakStr, sleepTime = 3, maxCount = 15) {
     
     
     # If 'breakStr' is detected in the page's HTML, break the loop
-    if (any(grepl(breakStr, rd$getPageSource()))) {
+    if (grepl(breakStr, rd$getPageSource())) {
       break
     }
     
