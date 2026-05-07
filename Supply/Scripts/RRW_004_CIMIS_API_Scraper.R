@@ -7,15 +7,14 @@
 
 # These IDs should be numeric values that correspond to the IDs used on 
 # CIMIS's webpage to distinguish between different stations 
-# (https://cimis.water.ca.gov/Stations.aspx)
+# (https://cimis-uat.water.ca.gov/stations/station-list)
 
 
 # An API key is required as well--this should be specified in a text file and 
 # referenced in "RR_Supply_Control_File.xlsx"
 
 # Note 1: The first line of the text file should be just the API key
-# Note 2: To get a key, create an account on https://www.cimis.water.ca.gov/
-# Note 3: Don't use Microsoft Edge on this website (some buttons don't function properly)
+# Note 2: To get a key, create an account on https://cimis-uat.water.ca.gov/
 
 
 # The raw output will be stored in the "WebData" folder as 
@@ -164,15 +163,15 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   
   # If there are no issues, prepare the request URL
-  requestURL <- paste0("https://et.water.ca.gov/api/data?",
-                       # State the API Key (a CIMIS account is required to get this)
-                       "appKey=", apiKey,
+  requestURL <- paste0("https://et-uat.water.ca.gov/StationWeb/GetDataByStationNumber?",
                        # Station IDs (comma-separated)
-                       "&targets=", stationVec |> paste0(collapse = ","),
+                       "&stationNbrs=", stationVec |> paste0(collapse = ","),
                        # Dataset Start Date
-                       "&startDate=", startDate,
+                       "&startDate=", format(startDate, "%Y-%m-%d"),
                        # Dataset End Date
-                       "&endDate=", endDate,
+                       "&endDate=", format(endDate, "%Y-%m-%d"),
+                       # Daily, not Hourly data
+                       "&isHourly=false",
                        # Requesting Daily TMIN, TMAX, and PRECIP
                        "&dataItems=day-air-tmp-min,day-air-tmp-max,day-precip",
                        # Metric units (mm and Celsius)
@@ -181,7 +180,8 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   # Try to submit the GET request
   # (Also, ask for a JSON-formatted response)
-  req <- try(GET(requestURL, add_headers("Accept" = "application/json")), 
+  req <- try(GET(requestURL, add_headers("Ocp-Apim-Subscription-Key" = apiKey,
+                                         "Accept" = "application/json")), 
              silent = TRUE)
   
   
@@ -1195,9 +1195,9 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   # That final data frame will be returned by this function
   
   
-  # If the final intended output file "daily.csv" is already present in the 
+  # If the final intended output file "daily_report.csv" is already present in the 
   # "WebData" folder, remove it
-  outFile <- "WebData/daily.csv"
+  outFile <- "WebData/daily_report.csv"
   
   
   if (file.exists(outFile)) {
@@ -1257,10 +1257,10 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   seleniumFormFill(rd, server, startDate, endDate, stationVec)
   
   
-  # If "daily.csv" has not yet finished downloading, wait a little longer
-  while ("daily.csv.crdownload" %in% list.files("WebData")) {
+  # If "daily_report.csv" has not yet finished downloading, wait a little longer
+  while ("daily_report.csv.crdownload" %in% list.files("WebData")) {
     
-    message("Waiting for \"daily.csv\" to finish downloading!")
+    message("Waiting for \"daily_report.csv\" to finish downloading!")
     cat("\n\n")
     
     Sys.sleep(runif(1, min = 1.2, max = 3.6))
@@ -1269,7 +1269,12 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   
   
   # After that, log out of CIMIS 
-  rd$navigate("https://cimis.water.ca.gov/Auth/Logout.aspx")
+  clickButton(rd, server, '//*[@id="top-of-page"]/div/div/nav/div/div[2]/div/a[3]')
+  
+  loopWait(rd, server, "log out?")
+  
+  
+  clickButton(rd, server, '//*[@id="logoutModal"]/div/div/div[3]/button[2]')
   
   
   # Then, close the remote driver and turn off the server
@@ -1277,7 +1282,7 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   try(server$stop(), silent = TRUE)
   
   
-  # Read in "daily.csv"
+  # Read in "daily_report.csv"
   cimisDF <- getFile(outFile)
   
   
@@ -1295,26 +1300,48 @@ seleniumLogin <- function (rd, server, userLogin) {
   
   
   # First, navigate to the login page
-  rd$navigate("https://cimis.water.ca.gov/Auth/Login.aspx")
   
+  
+  # Visit the homepage of the new CIMIS website
+  rd$navigate("https://cimis-uat.water.ca.gov/")
+  
+  loopWait(rd, server, "((Login</a>)|(Go to New CIMIS))")
+  
+  
+  # The site may show an intermediate screen, noting that there is a new CIMIS page
+  # If so, click on the button to visit the new website
+  if (grepl("Go to New CIMIS", rd$getPageSource())) {
+    
+    clickButton(rd, server, '//*[@id="app"]/div/div[2]/div/div/div/div[1]/button/div[1]')
+    
+    loopWait(rd, server, "Login</a>")
+    
+  }
+  
+  
+  # Click on the button to access the login page
+  clickButton(rd, server, '//*[@id="top-of-page"]/div/div/nav/div/div[2]/div/a[2]')
+
   loopWait(rd, server, "Password")
   
   
   # Fill in the username field with the first element of 'userLogin'
   fillInput(rd, server, 
-            '//*[@id="MainContent_txtUserName"]',
+            '//*[@id="email"]',
             userLogin[1])
   
   
   # Add a password next
   # (This is the second element in 'userLogin')
   fillInput(rd, server, 
-            '//*[@id="MainContent_txtPassword"]',
+            '//*[@id="password"]',
             userLogin[2])
   
   
   # Click the "Login" button
-  clickButton(rd, server, '//*[@id="MainContent_btnLogin"]')
+  clickButton(rd, server, '//*[@id="next"]')
+  
+  loopWait(rd, server, "My Account")
   
   
   # Return nothing
@@ -1332,50 +1359,51 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
   
   
   # Navigate to CIMIS's data download webpage
-  rd$navigate("https://cimis.water.ca.gov/WSNReportCriteria.aspx")
+  rd$navigate("https://cimis-uat.water.ca.gov/data/station-reports")
   
   loopWait(rd, server, "Station Reports")
+  loopWait(rd, server, "Report Type:")
   
   
   # Set the Report Style to "Daily"
-  clickButton(rd, server, 
-              '//*[@id="ctl00_MainContent_cbBasicReportType_Arrow"]')
-  
-  clickButton(rd, server, 
-              '//*[@id="ctl00_MainContent_cbBasicReportType_DropDown"]/div/ul/li[2]')
+  fillInput(rd, server,
+            '//*[@id="reportTypeId"]',
+            "d")
   
   
   # The output format will be "CSV Report"
-  clickButton(rd, server, 
-              '//*[@id="ctl00_MainContent_cbOutputMethod_Arrow"]')
-  
-  clickButton(rd, server, 
-              '//*[@id="ctl00_MainContent_cbOutputMethod_DropDown"]/div/ul/li[3]')
+  fillInput(rd, server,
+            '//*[@id="reportFormatId"]',
+            "c")
   
   
   # Set the unit of measure to "Metric Units"
-  clickButton(rd, server, 
-              '//*[@id="ctl00_MainContent_cbUnitOfMeasure_Input"]')
-  
-  clickButton(rd, server, 
-              '//*[@id="ctl00_MainContent_cbUnitOfMeasure_DropDown"]/div/ul/li[2]')
+  fillInput(rd, server, 
+            '//*[@id="unitId"]',
+            "m")
   
   
-  # Set the "from" date to 'startDate'
-  clickButton(rd, server,
-              '//*[@id="ctl00_MainContent_dpDailyStart_dateInput"]')
+  # Set the "From Date" to 'startDate'
   
+  # Clear out pre-filled text first
+  clearText(rd, server, '//*[@id="pv_id_1"]')
+  
+  
+  # Fill in the desired start date
   fillInput(rd, server,
-            '//*[@id="ctl00_MainContent_dpDailyStart_dateInput"]',
+            '//*[@id="pv_id_1"]',
             startDate |> format("%m/%d/%Y"))
   
   
-  # Set the "to" date to 'endDate'
-  clickButton(rd, server,
-              '//*[@id="ctl00_MainContent_dpDailyEnd_dateInput"]')
+  # Set the "To Date" to 'endDate'
   
+  # Clear out pre-filled text first
+  clearText(rd, server, '//*[@id="pv_id_4"]')
+  
+  
+  # Fill in the desired end date
   fillInput(rd, server,
-            '//*[@id="ctl00_MainContent_dpDailyEnd_dateInput"]',
+            '//*[@id="pv_id_4"]',
             endDate |> format("%m/%d/%Y"))
   
   
@@ -1383,114 +1411,46 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
   
   # In case some of the stations are now inactive, check the box to show
   # inactive stations in the list
-  clickButton(rd, station, '//*[@id="MainContent_cbxInactiveStations"]')
+  stationButton <- rd$findElement(using = "id", "showAllStations")
+  
+  
+  # Scroll to that element (and simultaneously click it)
+  stationButton$sendKeysToElement(list(key = "space"))
+  
+  Sys.sleep(0.2)
+  
+  
+  # Scroll down further slightly
+  rd$executeScript("window.scrollBy(0, 50);")
+  
+  Sys.sleep(0.5)
   
   
   # The CIMIS stations are contained within rows of a table
   # The IDs of these elements do not match the station IDs, unfortunately
   
-  # Still, there are table cells that contain these station IDs, and those
-  # can be used to locate the table row IDs
   
-  # To select multiple rows, the "Ctrl" key must be held down
-  rd$sendKeysToActiveElement(list(key = "control"))
-  
-  
-  # Iterate through the stations
+  # Still, there is a search bar that can help search for and click on stations
   for (i in 1:length(stationVec)) {
     
-    # Station IDs are contained alone as three-digit values 
-    # within "<td>" elements
-    stationStr <- paste0(">",
-                         stationVec[i] |>
-                           str_pad(width = 3, side = "left", pad = "0"),
-                         "</td>")
+    # Clear out the search bar
+    clearText(rd, server,
+              '//*[@id="main-content"]/div/div/div/div/section/div/form/div[5]/div/div[1]/div/input',
+              useDelete = TRUE)
     
     
-    # Locate 'stationStr' in the HTML of the webpage
-    matchIndex <- rd$getPageSource() |>
-      str_split("\n") |> unlist() |>
-      str_which(stationStr)
+    # Input the station ID into the search bar
+    fillInput(rd, server,
+              '//*[@id="main-content"]/div/div/div/div/section/div/form/div[5]/div/div[1]/div/input',
+              stationVec[i] |> as.character())
     
     
-    # Output an error message if exactly one match is not found
-    if (length(matchIndex) != 1) {
-      
-      # Stop the remote driver and server
-      try(rd$quit(), silent = TRUE)
-      try(server$stop(), silent = TRUE)
-      
-      
-      # Then output an error message
-      paste0("Could Not Find CIMIS Station\n\n",
-             "While filling out the \"Station Reports\" form on CIMIS's ",
-             "webpage to obtain station data, Station ", stationVec[i], " ",
-             "could not be isolated in the list.\n\n",
-             "The regular expression used to find the station's row was \"",
-             stationStr, "\". Please investigate \"",
-             "https://cimis.water.ca.gov/WSNReportCriteria.aspx\".") |>
-        errWrap() |>
-        stop()
-      
-    }
-    
-    
-    # Examine the HTML of the webpage again
-    # Look at only the rows up until the location of 'matchIndex'
-    # The LAST <tr> element in this HTML should be the one that contains
-    # this CIMIS station ID
-    rowID <- rd$getPageSource() |>
-      str_split("\n") |> unlist() |>
-      head(matchIndex) |>
-      str_subset("<tr.+ id\\s?=") |>
-      tail(1)
-    
-    
-    # Extract the element ID within 'rowID'
-    rowID <- rowID |>
-      str_extract("(?<=id\\s?=\\s?\").+(?=\"\\s?)") |>
-      str_remove("\".*$")
-    
-    # The `str_extract` regex contains both a lookahead and a lookbehind pattern
-    #   (*) The lookbehind pattern checks for 'id="', with optional spaces before
-    #       and after the "="
-    #   (*) The lookahead pattern is intended to match everything from the 
-    #       closing quotation mark (") onwards
-    # However, sometimes there are multiple quotes that appear on that line,
-    # so a `str_remove` call is used to ensure that everything from a quote
-    # mark onwards is excluded from the string
-    
-    # Output an error message if the extraction process failed
-    if (length(rowID) != 1 || is.na(rowID[1])) {
-      
-      # Stop the remote driver and server
-      try(rd$quit(), silent = TRUE)
-      try(server$stop(), silent = TRUE)
-      
-      
-      # Then output an error message
-      paste0("Could Not Find CIMIS Station\n\n",
-             "While filling out the \"Station Reports\" form on CIMIS's ",
-             "webpage to obtain station data, Station ", stationVec[i], " ",
-             "could not be located in the list.\n\n",
-             "The regular expression used to find the station's row was \"",
-             stationStr, "\". The corresponding table row element (<tr>) ",
-             "could not be extracted. Please investigate \"",
-             "https://cimis.water.ca.gov/WSNReportCriteria.aspx\".") |>
-        errWrap() |>
-        stop()
-      
-    }
-    
-    
-    # Click the station's row to add it to the report output
-    clickButton(rd, server, rowID, "id")
+    # Click on the checkbox for the station
+    # (It should always be the first result in the table after filling in the search bar)
+    clickButton(rd, server,
+                '//*[@id="main-content"]/div/div/div/div/section/div/form/div[5]/div/div[2]/div/table/tbody[1]/tr/td[1]/div/input')
     
   }
-  
-  
-  # Release the "Ctrl" key once all stations have been selected
-  rd$sendKeysToActiveElement(list(key = "control"))
   
   
   # Wait a little bit before proceeding
@@ -1498,7 +1458,7 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
   
   
   # Finally, click the "Run Report" button to generate the CSV file
-  clickButton(rd, server, '//*[@id="MainContent_btnSubmit"]')
+  clickButton(rd, server, '//*[@id="main-content"]/div/div/div/div/section/div/form/div[4]/button')
   
   
   # Wait a bit so that the file can be downloaded
@@ -1536,8 +1496,11 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
     # Then output an error message
     paste0("Could Not Find Specified Element\n\n",
            "The element whose ", searchType, " is \"", val, 
-           "\" was not found. The input returned ", length(foundElement),
-           "matches.") |>
+           "\" was not found.",
+           if_else(length(foundElement) != 1,
+                   paste0(" The input returned ", length(foundElement), " ",
+                          "matches."),
+                   "")) |>
       errWrap() |>
       stop()
     
@@ -1566,7 +1529,7 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
   
   
   # Wait around a second before continuing
-  Sys.sleep(runif(1, min = 1.1, max = 1.6))
+  Sys.sleep(runif(1, min = 1.4, max = 1.9))
   
   
   # Return nothing
@@ -1613,7 +1576,7 @@ fillInput <- function (rd, server, val, input, searchType = "xpath") {
   
   
   # Wait up to a second before continuing
-  Sys.sleep(runif(1, min = 0.75, max = 1.2))
+  Sys.sleep(runif(1, min = 1.0, max = 1.8))
   
   
   # Return nothing
@@ -1683,6 +1646,46 @@ loopWait <- function (rd, server, breakStr, sleepTime = 3, maxCount = 15) {
 
 
 
+clearText <- function (rd, server, val, searchType = "xpath", 
+                       useBackspace = TRUE, useDelete = FALSE, numIter = 15) {
+  
+  # Clear out typed input using the "Backspace" and/or "Delete" keys
+  
+  
+  # Find an element and click it
+  clickButton(rd, server, val, searchType = searchType)
+  
+  
+  # Input "Backspace" and/or "Delete" to clear text in this element
+  for (i in 1:numIter) {
+    
+    if (useBackspace) {
+      
+      rd$sendKeysToActiveElement(list(key = "backspace"))
+      
+    }
+    
+    
+    if (useDelete) {
+      
+      rd$sendKeysToActiveElement(list(key = "delete"))
+      
+    }
+    
+    
+    # Wait a bit before proceeding
+    Sys.sleep(0.1)
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
 processSeleniumCIMIS <- function (cimisDF) {
   
   # Given the Selenium-based output for CIMIS data, 
@@ -1692,99 +1695,18 @@ processSeleniumCIMIS <- function (cimisDF) {
   # Identify the locations of several key columns:
   # "Date", "Precip (mm)", "Max Air Temp (C)", "Min Air Temp (C)"
   
-  # There are "QC" columns for the three weather fields, but they are 
-  # not easily identifiable
-  # However their relative locations can help identify them
-  # (Each "QC" column is immediately after its corresponding variable)
+  # The weather data fields' "QC" columns will be gathered as well
   
   
   # Define a vector that contains the target columns and their planned renames
-  # (The "QC" fields will be added later)
   renameVec <- c("DATE" = "Date",
-                 "STATION_ID" = "Stn Id",
+                 "STATION_ID" = "Station Number",
                  "TMIN" = "Min Air Temp (C)",
                  "TMAX" = "Max Air Temp (C)",
-                 "PRECIP" = "Precip (mm)")
-  
-  
-  # Aside from the "QC" columns, make sure the other columns in 'renameVec' 
-  # all appear in 'cimisDF'
-  if (anyFalse(renameVec %in% names(cimisDF))) {
-    
-    # Identify the missing fields
-    missingFields <- renameVec[!(renameVec %in% names(cimisDF))]
-    
-    
-    # Output an error message
-    paste0("Could Not Parse Data from CIMIS\n\n",
-           "The data downloaded through CIMIS's website did not have all ",
-           "of the expected columns (missing ",
-           vec2QuotedStr(missingFields), "). Please investigate and revise ",
-           "the script, if needed.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Locate the precipitation and air temperature columns in 'cimisDF'
-  
-  # First, identify which columns in 'renameVec' contain the weather fields
-  weatherCols <- which(names(renameVec) %in% c("PRECIP", "TMIN", "TMAX"))
-  
-  
-  # Look for these columns in 'cimisDF'
-  weatherLoc <- which(names(cimisDF) %in% renameVec[weatherCols])
-  
-  
-  # The "QC" fields are immediately after each weather field
-  qcLoc <- weatherLoc + 1
-  
-  
-  # Add these fields to 'renameVec'
-  renameVec <- c(renameVec,
-                 names(cimisDF)[qcLoc])
-  
-  
-  # Make sure the additions to 'renameVec' all contain "qc"
-  if (anyFalse(grepl("^qc", renameVec[names(renameVec) == ""]))) {
-    
-    paste0("Could Not Locate \"qc\" Columns\n\n",
-           "The data downloaded through CIMIS's website has \"qc\" columns ",
-           "for every parameter. They all share the same name, so the script ",
-           "attempted to locate the corresponding columns for each key weather ",
-           "field.\n\n",
-           "However, the script failed to extract \"qc\" columns ",
-           "using its procedure. The source dataset may have changed. ",
-           "Please investigate and revise the script, if needed.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # The planned renames of these new fields will be based on
-  # their origin fields' planned renames
-  names(renameVec)[names(renameVec) == ""] <- 
-    map_chr(weatherLoc,
-            ~ paste0(names(renameVec)[renameVec == names(cimisDF)[.]], "_QC"))
-  
-  # The anonymous function has several parts to it:
-  
-  #  (*) The input in each iteration is the location in 'cimisDF' for the weather
-  #      column (such as "8" for "Precip (mm)")
-  
-  #  (*) The corresponding entry in 'renameVec' is found using
-  #      "renameVec == names(cimisDF)[.]
-  
-  #  (*) The name of that entry in 'renameVec' is extracted
-  #      (e.g., "PRECIP" for "Precip (mm)")
-  
-  #  (*) "_QC" is appended to the end of that rename
-  #      (e.g., "PRECIP_QC")
-  
-  # This ensures that the correct weather column is located for each "QC" column
-  # The planned "QC" rename, then, is derived from the correct rename too
+                 "PRECIP" = "Precip (mm)",
+                 "TMIN_QC" = "Min Air Temp QC",
+                 "TMAX_QC" = "Max Air Temp QC",
+                 "PRECIP_QC" = "Precip QC")
   
   
   # The next step is to extract the desired columns from 'cimisDF' 
