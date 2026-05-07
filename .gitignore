@@ -30,6 +30,7 @@ Paradigm_DWRAT/**/__pycache__
 
 #IGNORE LSPC FILES
 LSPC/*.log
+LSPC/**/__pycache__
 LSPC/**/*.csv
 LSPC/**/*.out
 
