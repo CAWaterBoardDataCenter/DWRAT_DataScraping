@@ -1078,7 +1078,7 @@ adjustNegativeFlows <- function (flowDF) {
             
             
             # After "borrowing" flow from each of the immediately upstream
-            # sub-basins, set the negative flow to zero in the flagged basin
+            # sub-basins, set the negative flow in the flagged basin to zero 
             flowDF[i, colIndex[j]] <- 0
             
           } 
