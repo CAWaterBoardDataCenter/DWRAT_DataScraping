@@ -230,6 +230,10 @@ class StageNldas(DataStager):
                         pt = pt.set_index(["nldas_id","local_time"])
                         pt = pt[vars].round(5)
 
+                        # Remove existing file corresponding to nldas id if it exists in staged storage
+                        for file in nldas_request.output_dir.glob(f'nldas_{nldas_id}_*.csv'):
+                            file.unlink() # Remove existing file for this nldas_id if it exists before writing new file
+
                         outfilename = f'nldas_{nldas_id}_{start_datetime}_{end_datetime}.csv'
                         outfilepath = nldas_request.output_dir / outfilename
                         pt.to_csv(outfilepath, date_format=infile_date_format)

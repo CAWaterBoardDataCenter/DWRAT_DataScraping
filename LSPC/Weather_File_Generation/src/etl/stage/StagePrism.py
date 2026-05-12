@@ -62,30 +62,40 @@ class StagePrism(DataStager):
         nldas_data_merged = read_nldas_pre(nldas_file,start_date,end_date)
         prism_filled = read_prism(prism_file,start_date,end_date)
         merged_prism_and_nldas_data = StagePrism.merge_prism_nldas(nldas_data_merged, prism_filled)
+        merged_prism_and_nldas_data['hourly_prism_data'] = merged_prism_and_nldas_data['fraction'] * merged_prism_and_nldas_data['monthly_value_PRISM']
+        
         # 1. If PRISM is non-zero and nldas is non-zero too or (PRISM = NLDAS = 0) OR (PRISM = 0 and NLDAS > 0) 
-        other_data = merged_prism_and_nldas_data.loc[~((merged_prism_and_nldas_data['monthly_value_NLDAS'] <= 0) & (merged_prism_and_nldas_data['monthly_value_PRISM'] > 0))].copy()
-        other_data['hourly_prism_data'] = other_data['fraction'] * other_data['monthly_value_PRISM']
+        positive_nldas_data = merged_prism_and_nldas_data.loc[(merged_prism_and_nldas_data['monthly_value_NLDAS'] > 0)].copy()
+        
         # 2. If PRISM is non-zero and NLDAS is zero. 
         zero_nldas_val_prism = merged_prism_and_nldas_data.loc[(merged_prism_and_nldas_data['monthly_value_NLDAS'] <= 0) & (merged_prism_and_nldas_data['monthly_value_PRISM'] > 0)].copy()
         
-        if zero_nldas_val_prism.empty:
-            combined_df = other_data.copy()
-            modified_months_information_each_grid = pd.DataFrame() # no information
-        else:
-            zero_nldas_val_prism_new, modified_months_information_each_grid = StagePrism.find_closest_fraction(zero_nldas_val_prism,other_data, PRISM_ID)
+        # Remaining data
+        remaining_data = merged_prism_and_nldas_data.loc[~merged_prism_and_nldas_data.index.isin(positive_nldas_data.index) & ~merged_prism_and_nldas_data.index.isin(zero_nldas_val_prism.index)].copy()
+
+        # What implications does this have for modificaiton
+        combined_df = pd.concat([positive_nldas_data, remaining_data])
+        modified_months_information_each_grid = pd.DataFrame() # no information
+            
+        if not zero_nldas_val_prism.empty:
+            zero_nldas_val_prism_new, modified_months_information_each_grid = StagePrism.find_closest_fraction(zero_nldas_val_prism,positive_nldas_data, PRISM_ID)
 
             #check to make sure that the modified and original zero_nldas_val_prism has the same number of rows and columns
             if zero_nldas_val_prism.shape != zero_nldas_val_prism_new.shape:
                 raise ValueError(f"The modified and orignial zero_nldas_val_prism do not have the same shape for prism file: {prism_file}")
             
-            combined_df = pd.concat([other_data, zero_nldas_val_prism_new])                                                                 # Appending data to the previously created empty folder
-            combined_df = combined_df.sort_values('datetime')
+            combined_df = pd.concat([combined_df, zero_nldas_val_prism_new])                                                                 # Appending data to the previously created empty folder
         
+        combined_df = combined_df.sort_values('datetime')
+
         # QA/QC : Confirming derived hourly values - Are they sum up to the Monthly PRISM value?
+        if combined_df['datetime'].duplicated().any():
+            raise ValueError(f'There are duplicate datetimes in the combined dataframe for file: {prism_file}')
+        
         combined_df = combined_df.set_index('datetime')
         PRISM_hourly_precip_aggregated_monthly = combined_df['hourly_prism_data'].resample('M',level=0).sum()
         PRISM_monthly_precip_data_raw = combined_df['monthly_value_PRISM'].resample('M',level=0).mean()
-        if (round(PRISM_hourly_precip_aggregated_monthly.sum() - PRISM_monthly_precip_data_raw.sum(),5))  != 0:
+        if (round(PRISM_hourly_precip_aggregated_monthly.sum() - PRISM_monthly_precip_data_raw.sum(),5))  != 0: # TODO: Check if precision errros cause this
             raise ValueError(f'The PRISM monthly raw precip data and disaggreaged hourly data do not sum up to the same value for file: {prism_file}')
                 
         # Extracting required columns only and sorting the data datetime wise
@@ -136,13 +146,14 @@ class StagePrism(DataStager):
                 month_lengths = month_df.groupby('dateMonth')['datetime'].apply(lambda x: x.dt.date.nunique())
                 valid_feb_months = month_lengths[month_lengths == data_point_in_target_month].index
                 # Only keep rows for Februarys with matching number of days
-                month_df = month_df[month_df['dateMonth'].isin(valid_feb_months)]
+                month_df = month_df[month_df['dateMonth'].isin(valid_feb_months)] # NOTE: Alternatively, we could recalculate fraction for all days except leap day
                 
             #Finding the month that closely matches the NLDAS monthy precip to the PRISM monthly precip
             month_df_subset = month_df[['dateMonth', 'monthly_value_NLDAS']].drop_duplicates()
             month_df_subset['diff'] = (month_df_subset['monthly_value_NLDAS'] - Target_month_PRISM_Precip).abs()
             min_diff = month_df_subset['diff'].min()
                 
+            # TODO: Handle cases where there are no months in the month_df_subset!
             closest_months = month_df_subset[month_df_subset['diff'] == min_diff].sort_values('dateMonth')
             #if there are more than 1 closest months, chose the first month to get the associated rainfall fraction:
             selected_month = closest_months.iloc[0]['dateMonth']

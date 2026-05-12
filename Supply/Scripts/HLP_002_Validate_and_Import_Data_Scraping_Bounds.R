@@ -140,4 +140,4 @@ cat(paste0("\n\nDate Range: ", startDate, " to ", endDate, "\n\n"))
 
 # Remove 'controlPath' from the environment
 # (It does not need to be passed to later procedures)
-remove(controlPath)
+base::remove(controlPath)

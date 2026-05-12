@@ -10,6 +10,7 @@ library(tidyverse)
 library(readxl)
 library(writexl)
 library(sf)
+library(polylabelr)
 
 
 cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
@@ -237,9 +238,10 @@ checkOverlap <- function (POD, subWS) {
         }
         
         
-        # Set the location of the POD to the centroid of the nearest sub-basin
+        # Set the location of the POD to the Pole of Inaccessibility (POI) 
+        # of the nearest sub-basin
         POD[issuePODs[i], ]$geometry <- subWS[nearestCatch, ] |> 
-          select(geometry) |> st_centroid() |> st_geometry()
+          st_poi() |> st_geometry()
         
       }
       
