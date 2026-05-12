@@ -117,6 +117,11 @@ mainProcedure <- function () {
   }
   
   
+  # Finally, save metadata about the completed run
+  updateMetadataCSV(dirPath,
+                    newCols = list("APPROXIMATE_COMPLETION_TIME" = Sys.time()))
+  
+  
   # Output a completion message
   cat(col_green("\n'RRW_020_DWRAT_Cleanup.R' is complete!\n\n"))
   

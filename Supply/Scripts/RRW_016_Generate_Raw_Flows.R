@@ -1013,8 +1013,9 @@ adjustNegativeFlows <- function (flowDF) {
           
           # If the total available upstream flow is zero, just set the 
           # negative flow entry in 'flowDF' to zero
-          if (sum(totalAvailability) == 0) {
+          if (all(totalAvailability == 0)) {
             
+            # (This applies only if every upstream sub-basin has zero flow available)
             flowDF[i, colIndex[j]] <- 0
             
           } else {
