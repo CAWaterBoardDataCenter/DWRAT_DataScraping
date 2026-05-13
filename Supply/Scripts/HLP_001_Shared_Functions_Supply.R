@@ -571,8 +571,10 @@ getFromControl_RR <- function (fieldName) {
   # If the control file has a blank entry for this field, notify the user
   if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
     
+    # Exceptions:
     if (fieldName %in% c("ADDITIONAL_ARCHIVE_LOCATION", 
-                         "CIMIS_LOGIN_CREDENTIALS")) {
+                         "CIMIS_LOGIN_CREDENTIALS",
+                         "LONG-RUNNING_METADATA_FILE_LOCATION")) {
       
       # These fields are optional, so it is okay if they are "NA"
       
