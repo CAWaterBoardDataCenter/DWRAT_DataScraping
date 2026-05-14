@@ -82,7 +82,7 @@ mainProcedure <- function () {
 
 copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
-  # Copy several files from the PRMS "output" folder
+  # Copy several files from the SRP "output" folder (plus the control file)
   # into the hydrology folder 
   
   
@@ -119,6 +119,16 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
     paste0(dirPath, "/SRP/Output/", 
            ... = _) |>
     normalizePath(mustWork = FALSE)
+  
+  
+  # Add rows to 'sourcePaths' and 'writePaths' for "SRPHM_update.control"
+  sourcePaths <- c(sourcePaths,
+                   paste0(srpPath, "/SRPHM_update.control") |>
+                     checkForPreviousOutput())
+  
+  
+  writePaths <- c(writePaths,
+                  paste0(dirPath, "/SRP/Input/SRPHM_update.control"))
   
   
   # Copy the files
