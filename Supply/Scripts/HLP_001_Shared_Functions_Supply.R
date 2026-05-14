@@ -4,7 +4,7 @@
 #### Dependencies ####
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+#source("Scripts/HLP_000_Load_Packages.R")
 
 
 #### Functions ####
@@ -571,8 +571,11 @@ getFromControl_RR <- function (fieldName) {
   # If the control file has a blank entry for this field, notify the user
   if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
     
+    # Exceptions:
     if (fieldName %in% c("ADDITIONAL_ARCHIVE_LOCATION", 
-                         "CIMIS_LOGIN_CREDENTIALS")) {
+                         "CIMIS_LOGIN_CREDENTIALS",
+                         "LONG-RUNNING_METADATA_FILE_LOCATION",
+                         "USGS_API_KEY")) {
       
       # These fields are optional, so it is okay if they are "NA"
       
@@ -2177,6 +2180,19 @@ calcPBias <- function (obs, sim, na.rm = FALSE, asPercent = TRUE) {
   # If 'asPercent' is TRUE, return the coefficient as a percent
   if (asPercent) {
     pbias <- 100 * pbias
+  }
+  
+  
+  # Add an attribute to 'pbias' to indicate whether overestimation or 
+  # underestimation has occurred
+  if (pbias > 0) {
+    
+    attr(pbias, "simulation") <- "overestimation"
+    
+  } else if (pbias < 0) {
+    
+    attr(pbias, "simulation") <- "underestimation"
+    
   }
   
   

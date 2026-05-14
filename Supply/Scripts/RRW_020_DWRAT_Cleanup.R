@@ -53,7 +53,7 @@ mainProcedure <- function () {
   
   # Output a message about exporting the Anaconda environment to a file
   cat(paste0("[1/", 
-             if_else(is.na(extraDir), 1, 2), 
+             if_else(is.na(extraDir), 2, 3), 
              "]\tExporting Anaconda Environment to YAML File...\n"))
   
   
@@ -93,7 +93,7 @@ mainProcedure <- function () {
   # The files in 'dirPath' will be stored in this secondary folder location too
   if (!is.na(extraDir)) {
     
-    cat("[2/2]\tCopying archived files to another folder...\n")
+    cat("[2/3]\tCopying archived files to another folder...\n")
     
     
     # The model hydrology folder will be stored under "RR_Workflow" in 'extraDir'
@@ -118,8 +118,25 @@ mainProcedure <- function () {
   
   
   # Finally, save metadata about the completed run
+  cat(paste0("[", if_else(is.na(extraDir), "2/2", "3/3"), 
+             "]\tAdding final metadata...\n"))
+  
+  
+  # Add one more column of metadata
   updateMetadataCSV(dirPath,
                     newCols = list("APPROXIMATE_COMPLETION_TIME" = Sys.time()))
+  
+  
+  # Then, if "LONG-RUNNING_METADATA_FILE_LOCATION" is not empty, 
+  # update or create "RR_Workflow_Tracker.csv" with this run's metadata
+  if (!is.na(getFromControl_RR("LONG-RUNNING_METADATA_FILE_LOCATION"))) {
+    
+    updateMetadataCompilation(dirPath)
+    
+  }
+  
+  
+  cat("\tDone!\n\n")
   
   
   # Output a completion message
@@ -187,6 +204,113 @@ checkForAdditionalArchive <- function () {
   
   # Otherwise, return 'extraDir' (as a normalized path)
   return(extraDir |> normalizePath())
+  
+}
+
+
+
+updateMetadataCompilation <- function (dirPath) {
+  
+  # Add data from the current workflow run's "metadata.csv" file to
+  # "RR_Workflow_Tracker.csv", which is stored in the folder
+  # identified by "LONG-RUNNING_METADATA_FILE_LOCATION"
+  
+  
+  # First, locate the folder that contains "RR_Workflow_Tracker.csv"
+  trackerDir <- getFromControl_RR("LONG-RUNNING_METADATA_FILE_LOCATION") |>
+    sharepointPathCheck(isFolder = TRUE)
+  
+  
+  # If the directory does not exist, notify the user and then end the procedure
+  if (!dir.exists(trackerDir)) {
+    
+    paste0("Long-Running Metadata CSV Location Does Not Exist\n\n",
+           "The folder \"", trackerDir, "\" does not appear to exist. ",
+           "Therefore, metadata from this workflow run will remain in ",
+           "\"metadata.csv\" in \"", dirPath, "\". That information will ",
+           "NOT be copied into any long-running file.\n\n",
+           "Please correct the path in \"LONG-RUNNING_METADATA_FILE_LOCATION\" ",
+           "of the control file to enable this part of the procedure.") |>
+      errWrap() |>
+      message()
+    
+    cat("\n\n")
+    
+    
+    # Return nothing
+    return(invisible(NULL))
+    
+  }
+  
+  
+  # Otherwise, read in "metadata.csv"
+  metaDF <- paste0(dirPath, "/metadata.csv") |>
+    normalizePath(mustWork = TRUE) |>
+    getFile()
+  
+  
+  # Then, check if "RR_Workflow_Tracker.csv" already exists in 'trackerDir'
+  compiledPath <- paste0(trackerDir, "/RR_Workflow_Tracker.csv") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # If the file already exists, read it in and append 'metaDF' to its rows
+  if (file.exists(compiledPath)) {
+    
+    # Read in 'compiledDF'
+    compiledDF <- compiledPath |>
+      getFile()
+    
+    
+    # Before performing the append operation,
+    # check the columns shared between 'compiledDF' and 'metaDF'
+    # Make sure they are the same type (otherwise `bind_rows` may fail)
+    sharedCols <- base::intersect(names(compiledDF), names(metaDF))
+    
+    
+    # Iterate through all shared columns, if there are any
+    if (length(sharedCols) > 0) {
+      
+      for (i in 1:length(sharedCols)) {
+        
+        # If the types of the shared column match, skip to the next iteration
+        if (typeof(compiledDF[[sharedCols[i]]]) == 
+            typeof(metaDF[[sharedCols[i]]])) {
+          next
+        }
+        
+        
+        # Otherwise, convert the column to "character" in both variables
+        compiledDF[[sharedCols[i]]] <- compiledDF[[sharedCols[i]]] |>
+          as.character()
+        
+        metaDF[[sharedCols[i]]] <- metaDF[[sharedCols[i]]] |>
+          as.character()
+        
+      }
+      
+    }
+    
+    
+    # Bind 'metaDF' to 'compiledDF'
+    compiledDF <- compiledDF |>
+      bind_rows(metaDF)
+    
+    
+  # If the file does NOT exist yet, use 'metaDF' to establish it
+  } else {
+    
+    compiledDF <- metaDF
+    
+  }
+  
+  
+  # Write 'compiledDF' back to 'compiledPath'
+  writeOutput(compiledDF, compiledPath)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }
 

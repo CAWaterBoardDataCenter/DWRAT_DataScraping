@@ -382,7 +382,7 @@ validateGag <- function (gagDF, gagPath, dirPath) {
   
   
   # Check for the exact column names too
-  if (anyFalse(requiredCols%in% names(gagDF))) {
+  if (anyFalse(requiredCols %in% names(gagDF))) {
     
     missingColumns <- which(!(requiredCols %in% names(gagDF)))
     
