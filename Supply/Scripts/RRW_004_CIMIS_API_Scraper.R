@@ -238,7 +238,7 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
 
 
 
-validateAPI <- function (apiKey, sourceField) {
+validateAPI <- function (apiKey, sourceField, provider = "CIMIS") {
   
   # Confirm that the API key was provided correctly by the user 
   
@@ -247,8 +247,8 @@ validateAPI <- function (apiKey, sourceField) {
   if (length(apiKey) == 0 || is.null(apiKey)) {
     
     stop(paste0("API Key Input File Issue\n\n",
-                "The input file containing the CIMIS API key does not have ",
-                "a value. There may be an issue with this file. ",
+                "The input file containing the ", provider, " API key does ",
+                "not have a value. There may be an issue with this file. ",
                 "Please correct it and try again.\n\n",
                 "If the input file is a .txt file, it must contain the API key ",
                 "on the first line (with nothing else on that line)\n\n",
@@ -321,7 +321,7 @@ validateAPI <- function (apiKey, sourceField) {
   # It seems that CIMIS API keys are just numbers and letters separated by hyphens
   # If the API key is read in as something different, output a warning
   # (Not an error message)
-  if (grepl("[^a-zA-Z0-9\\-]", apiKey[1])) {
+  if (provider == "CIMIS" && grepl("[^a-zA-Z0-9\\-]", apiKey[1])) {
     
     message(paste0("API Key Input File - Potential Key Issue\n\n",
                    "CIMIS API keys are typically a mix of letters and digits, ",
