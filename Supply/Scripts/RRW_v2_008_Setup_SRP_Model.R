@@ -38,17 +38,19 @@ mainProcedure <- function () {
   # all required components
   # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
   #  to reflect that)
-  sourceDir <- validateSourceModelDirectory(sourceDir, 
-                                            "SRPHM_SIR2024_SOURCE_LOCATION",
-                                            "SRP", 
-                                            c("bin", "model", "output", 
-                                              "model/external_files", 
-                                              "model/model1", "model/model2",
-                                              "output/output.model1_full",
-                                              "output/output.model1_spinup",
-                                              "output/output.model2_dpl"),
-                                            c("bin/gsflow.exe",
-                                              "model/model1/SRPHM_full/SRPHM_full.control"))
+  sourceDir <- validateSourceModelDirectory(
+    sourceDir, 
+    "SRPHM_SIR2024_SOURCE_LOCATION",
+    "SRP", 
+    c("bin", "model", "output", 
+      "model/external_files", 
+      "model/model1", "model/model2",
+      "model/model1/SRPHM_2000_2026", 
+      "output/output.model1_full",
+      "output/output.model1_2000_2026",
+      "output/output.model2_dpl"),
+    c("bin/gsflow.exe",
+      "model/model1/SRPHM_2000_2026/SRPHM_spinup.control"))
   
   
   cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SIR2024-5121_update\"...\n")
@@ -74,7 +76,8 @@ mainProcedure <- function () {
 
 copyModel <- function (sourceDir) {
   
-  # Copy the files from 'sourceDir' into a newly created "SIR2024-5121_update" folder
+  # Copy the files from 'sourceDir' 
+  # into a newly created "SIR2024-5121_update" folder
   # in the "ProcessedData" folder
   
   
