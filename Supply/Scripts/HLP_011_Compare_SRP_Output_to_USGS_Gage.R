@@ -843,7 +843,7 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   gagDF |>
     writeOutput(paste0(newDir, "/", 
                        gagPath |> str_remove("^.+[/\\\\]") |> 
-                         str_replace("\\.gag$", "_Processed.gag")),
+                         str_replace("\\.gag$", "_Processed.csv")),
                 quietly = TRUE)
   
   
