@@ -178,7 +178,7 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
   
   
   # Checking the entire data range, 
-  # if the monthly streamflow NSE value is below 0.5, 
+  # if the monthly precipitation R^2 value is below 0.5, 
   # stop the script and flag it as an error
   if (statDF$MONTHLY_RESULT[grepl("R Sq", statDF$METRIC) & 
                             statDF$TIMESCALE == "All"] < 0.50) {
