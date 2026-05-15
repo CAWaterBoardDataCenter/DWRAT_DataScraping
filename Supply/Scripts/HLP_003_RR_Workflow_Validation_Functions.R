@@ -1653,7 +1653,7 @@ validateModelCopy_SRP_2024 <- function () {
   
   # Also confirm that the control file for SRP exists
   controlPath <- paste0(srpPath, 
-                        "/model/model1/SRPHM_full/SRPHM_full.control") |> 
+                        "/model/model1/SRPHM_2000_2026/SRPHM_spinup.control") |> 
     normalizePath(mustWork = FALSE)
   
   
@@ -1672,7 +1672,7 @@ validateModelCopy_SRP_2024 <- function () {
   
   # A batch file should be present in the model files too
   # Check for that as well
-  batPath <- paste0(srpPath, "/model/model1/SRPHM_full/run_SRPHM_full.bat") |>
+  batPath <- paste0(srpPath, "/model/model1/SRPHM_2000_2026/run_SRPHM_spinup.bat") |>
     normalizePath(mustWork = FALSE)
   
   

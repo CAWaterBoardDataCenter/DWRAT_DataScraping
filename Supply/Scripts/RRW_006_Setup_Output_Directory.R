@@ -355,6 +355,28 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
            quietly = TRUE)
   
   
+  # Save the PRISM grid-cell-averaged precipitation data too
+  # There is one file each for the PRMS and SRP model domains
+  prmsGridPath <- paste0("WebData/PRISM_PRMS_Domain_Data_", 
+                         getModeledWY(endDate)[1], "_", 
+                         endDate, ".csv")
+  
+  
+  srpGridPath <- paste0("WebData/PRISM_SRP_Domain_Data_", 
+                        getModeledWY(endDate)[1], "_", 
+                        endDate, ".csv")
+  
+  
+  copyFile(prmsGridPath, paste0(outputDirectory, "/PRMS/Input/",
+                                prmsGridPath |> str_remove("^.+/")), 
+           quietly = TRUE)
+  
+  
+  copyFile(srpGridPath, paste0(outputDirectory, "/SRP/Input/",
+                               srpGridPath |> str_remove("^.+/")), 
+           quietly = TRUE)
+  
+  
   # Each of the weather station input files will be archived as well
   copyStationInputFile("PRISM_PRMS_STATIONS_CSV", outputDirectory, "PRMS")
   copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "PRMS")

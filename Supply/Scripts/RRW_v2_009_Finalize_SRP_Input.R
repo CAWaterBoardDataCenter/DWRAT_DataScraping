@@ -26,9 +26,9 @@
 #  (2) A long-running DAT file (whose parent folder is input into 
 #      "MAIN_SRP_DAT_FOLDER" of the control file)
 
-#  (3) From the SRP model files, the "SRPHM_full.control" file will be edited
+#  (3) From the SRP model files, the "SRPHM_spinup.control" file will be edited
 
-#  (4) Similarly, the model's "run_SRPHM_full.bat" file will be updated
+#  (4) Similarly, the model's "run_SRPHM_spinup.bat" file will be updated
 
 
 # A single output will be generated in all cases, and additional outputs will 
@@ -42,7 +42,7 @@
 #  (2) If the similar WY needs to be identified, a summary CSV from that 
 #      procedure will be generated as well
 
-# Technically, "SRPHM_update.control" and "run_SRPHM_full.bat" are output by 
+# Technically, "SRPHM_spinup.control" and "run_SRPHM_spinup.bat" are output by 
 # this script as well
 # (Though, the copied "SRP" contents will be deleted at the end of the model
 #  run procedure, so they will not stick around for long)
@@ -1031,7 +1031,7 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   # First, read in the file
   controlPath <- paste0(srpPath, 
-                        "/model/model1/SRPHM_full/SRPHM_full.control") |>
+                        "/model/model1/SRPHM_2000_2026/SRPHM_spinup.control") |>
     normalizePath(mustWork = TRUE)
   
   
@@ -1104,7 +1104,7 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
 
 updateBatchFileSRP <- function (srpPath) {
   
-  # Update the "run_SRPHM_full.bat" file that initiates SRP
+  # Update the "run_SRPHM_spinup.bat" file that initiates SRP
   
   
   # This file contains two commands:
@@ -1112,23 +1112,23 @@ updateBatchFileSRP <- function (srpPath) {
   # [PATH TO GSFLOW.EXE] [PATH TO CONTROL FILE]
   
   
-  batDir <- paste0(srpPath, "/model/model1/SRPHM_full/") |>
+  batDir <- paste0(srpPath, "/model/model1/SRPHM_2000_2026/") |>
     normalizePath(mustWork = TRUE)
   
   
   batchCommands <- c(paste0("cd ", shQuote(batDir)),
-                     "..\\..\\..\\bin\\gsflow.exe SRPHM_full.control")
+                     "..\\..\\..\\bin\\gsflow.exe SRPHM_spinup.control")
   
   # The first command changes the working directory to the location of 
-  # the SRP bat file (the root directory of "SIR2024-5121_update")
-  # The second command then executes gsflow.exe using "SRPHM_full.control" 
-  # (which is also located in the same directory as the bat file)
+  # the SRP bat file (the "SRPHM_2000_2026" directory in "SIR2024-5121_update")
+  # The second command then executes gsflow.exe using "SRPHM_spinup.control" 
+  # (the latter is also located in the same directory as the bat file)
   
   
-  # Write these commands to "Run_updated_Model.bat"
+  # Write these commands to "run_SRPHM_spinup.bat"
   batchCommands |>
     writeOutput(paste0(srpPath, 
-                       "/model/model1/SRPHM_full/run_SRPHM_full.bat") |> 
+                       "/model/model1/SRPHM_2000_2026/run_SRPHM_spinup.bat") |> 
                   normalizePath(mustWork = FALSE),
                 quietly = TRUE)
   

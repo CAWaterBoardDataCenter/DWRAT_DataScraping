@@ -23,7 +23,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'HLP_009_Compare_PRMS_Output_to_PRISM_Averages.R'!\n")
+  cat("Starting 'HLP_009_Compare_PRMS_Precip_to_PRISM_Averages.R'!\n")
   
   
   # Import the start and end date
@@ -32,7 +32,7 @@ mainProcedure <- function () {
   
   # Confirm that a proper directory exists for model input and output files
   # The PRMS model outputs are stored there
-  cat("\n[1/3]\tChecking directories and files...\n")
+  cat("\n[1/2]\tChecking directories and files...\n")
   
   
   # Get the path to that directory
@@ -52,30 +52,27 @@ mainProcedure <- function () {
   
   
   # Get the PRISM average precipitation dataset as well
-  # For all of the 800m grid cells that fall completely within the PRMS model
-  # domain, their precipitation data was averaged and compiled into a CSV file
-  pastPrecipPath <- getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_FOLDER") |>
-    getLatestFile(paste0("^RR_Workflow_PRISM_PRMS_Avg_Historic_Precip_",
-                         "CY1981_to_WY[0-9]{4}\\.csv$"),
-                  "PRMS Historic Precip File")
+  # This data may be split across multiple files
+  
+  # The historic dataset contains values from 1981 to a recent WY
+  # The domain data downloaded in this workflow run covers much of the current WY
+  # There may be a gap between them too, meaning that more data could be required
+  
+  # This procedure was completed in "HLP_011_Compare_SRP_Output_to_USGS_Gage.R"
+  # Its functions can be reused here for PRMS
+  c("gatherPrecipPRISM", "validateAndSummarizePRISM") |>
+    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
-  # Read in the latest historic precipitation file for PRMS
-  pastPrecip <- pastPrecipPath |>
-    getFile()
-  
-  
-  # Then, validate this file
-  pastPrecip |>
-    validateHistoricPrecipFile(pastPrecipPath,
-                               getModeledWY(endDate)[1])
+  # Gather precipitation data
+  pastPrecip <- gatherPrecipPRISM(dirPath, endDate, "PRMS")
   
   
   cat("\tDone!\n\n")
   
   
   # The next step is to compare the precipitation data in the two datasets
-  cat("[2/3]\tComparing precipitation data...\n")
+  cat("[2/2]\tComparing precipitation data...\n")
   
   
   # Generate plots and a table of statistical metrics for this data
@@ -83,7 +80,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'HLP_009_Compare_PRMS_Output_to_PRISM_Averages.R' is complete!\n\n"))
+  cat(col_green("\n'HLP_009_Compare_PRMS_Precip_to_PRISM_Averages.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -178,7 +175,7 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
   
   
   # Checking the entire data range, 
-  # if the monthly streamflow NSE value is below 0.5, 
+  # if the monthly precipitation R^2 value is below 0.5, 
   # stop the script and flag it as an error
   if (statDF$MONTHLY_RESULT[grepl("R Sq", statDF$METRIC) & 
                             statDF$TIMESCALE == "All"] < 0.50) {

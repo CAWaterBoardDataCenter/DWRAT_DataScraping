@@ -614,11 +614,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # Copy 'currentPrecip' to the hydrology folder as well
-  copyFile(prismPath,
-           paste0(dirPath, "/SRP/Input/",
-                  prismPath |> str_remove("^.+[/\\\\]")) |>
-             normalizePath(mustWork = FALSE))
+  # 'currentPrecip' shoul be archived too, but that was already accomplished
+  # in a prior script
   
   
   # Return 'finalDAT'
@@ -972,7 +969,9 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
                                          str_subset("TMIN") |> length()),
                                 
                                 c(str_dup("#", 19), names(mergedDAT)) |> 
-                                  tolower() |> str_replace("second", "sec") |>
+                                  tolower() |> 
+                                  str_subset("^date$", negate = TRUE) |>
+                                  str_replace("second", "sec") |>
                                   str_replace("([a-z])([0-9])$", "\\10\\2") |>
                                   paste0(collapse = str_dup(" ", 10))))
   
