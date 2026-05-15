@@ -1,6 +1,12 @@
 # Compare data in a SRP gag file to USGS gage data at the same location
 # This script is specifically designed for comparing SRP gag files' values to 
-# USGS gage 11446680 
+# USGS gage 11446680 and other Russian River gages
+
+
+# Precipitation data is included in some versions of thes comparison plots too
+
+# There are two sources of precipitation data: PRISM grid cell averages and
+# the average precipitation among gages in the SRP DAT file
 
 
 #### Setup ####
@@ -23,7 +29,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function (gageID = "11466800") {
   
   cat("\n\n")
-  cat("Starting 'HLP_010_Compare_SRP_Output_to_USGS_Gage.R'!\n")
+  cat("Starting 'HLP_011_Compare_SRP_Output_to_USGS_Gage.R'!\n")
   
   
   # Notify the user which USGS gage is being assessed
@@ -34,7 +40,7 @@ mainProcedure <- function (gageID = "11466800") {
   source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  cat("\n[1/3]\tGetting gag file...\n")
+  cat("\n[1/3]\tGetting gag file and precipitation data...\n")
   
   
   # Confirm that the model hydrology folder exists and get its directory path
@@ -52,14 +58,41 @@ mainProcedure <- function (gageID = "11466800") {
   
   # Validate the contents of 'gagDF'
   # To do this, borrow the "validateGag" function from the Raw Flows script
-  functionStealer("Scripts/RRW_016_Generate_Raw_Flows.R", "validateGag")
-  functionStealer("Scripts/RRW_016_Generate_Raw_Flows.R", "getColsFromMetadata")
+  c("validateGag", "getColsFromMetadata") |>
+    map(~ functionStealer("Scripts/RRW_016_Generate_Raw_Flows.R", .))
   
   
   gagDF <- gagDF |>
     validateGag(gagPath, dirPath)
   
   # NOTE: `validateGag` will also add a "DATE" column to the file
+  
+  
+  # Gather precipitation data next
+  
+  
+  # Use the average precipitation among PRISM grid cells in the SRP model domain
+  # However, this may be split between one to three files
+  
+  # Because of its complexity, use a separate function to gather (and archive)
+  # this dataset
+  prismDF <- gatherPrecipPRISM(dirPath, endDate)
+  
+  
+  # Read in precipitation data from the SRP DAT file too
+  datDF <- gatherPrecipDAT(dirPath, startDate, endDate)
+  
+  
+  # For consistency, have both 'prismDF' and 'datDF' use "PRECIP" as the
+  # name for their precipitation columns (and "Date" for dates)
+  
+  # Also, their units should be inches
+  
+  # 'datDF' is already setup to meet these requirements
+  # 'prismDF' must be adjusted though
+  # (mm = 1/25.4 in)
+  prismDF <- prismDF |>
+    mutate(PRECIP = `ppt (mm)` / 25.4)
   
   
   cat("\tDone!\n\n")
@@ -93,21 +126,317 @@ mainProcedure <- function (gageID = "11466800") {
   cat("\n[3/3]\tComparing gage data and model results...\n")
   
   
-  compareGageAndModel(usgsDF, gagDF, dirPath, gageID, gagPath)
+  compareGageAndModel(usgsDF, gagDF, dirPath, gageID, gagPath, prismDF, datDF)
   
   
   cat("\tDone!\n\n")
   
   
-  
   # Output a completion message
-  "'HLP_010_Compare_SRP_Output_to_USGS_Gage.R' is complete!\n\n" |>
+  "'HLP_011_Compare_SRP_Output_to_USGS_Gage.R' is complete!\n\n" |>
     col_green() |>
     cat()
   
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+gatherPrecipPRISM <- function (dirPath, endDate) {
+  
+  # This function produces a tibble containing precipitation data for the 
+  # entire modeled timeframe
+  
+  # This can come from:
+  #   (*) The historic PRISM precipitation dataset, which covers 
+  #       CY1981 to a recent WY
+  #   (*) The downloaded precipitation dataset from the current run, which 
+  #       covers the start of the water year to 'endDate'
+  
+  # Additional data may be required if there is a gap between the historic 
+  # dataset and the recent precipitation dataset
+  
+  # (Similarly, if more PRISM data is available today compared to on the model
+  #  run date, that should be downloaded too)
+  
+  
+  # For subsequent runs of this function, generate and archive a compiled version
+  # of these datasets to avoid having to redownload or redo this procedure
+  
+  # (In that case, there would be only one source for precipitation data)
+  
+ 
+  # First check if the "Input" SRP folder contains a single CSV for these 
+  # PRISM precipitation averages
+  compiledPath <- paste0(dirPath, "/SRP/Input/",
+                         "PRISM_Precip_SRP_Domain_QAQC_",
+                         Sys.Date() - 1, ".csv") |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # If the compiled file already exists from a previous run, use that
+  if (file.exists(compiledPath)) {
+    
+    # Read in that file 
+    compiledDF <- compiledPath |>
+      getFile()
+    
+    
+    # Validate 'compiledDF'
+    compiledDF |>
+      validateHistoricPrecipFile(compiledPath, getModeledWY(endDate)[1])
+    
+    
+    # Then, return it
+    return(compiledPath |>
+             getFile())
+    
+  }
+  
+  
+  # Otherwise, get both the historic precipitation data and the current WY
+  # precipitation files
+  historicPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
+    getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
+                         "CY1981_to_WY[0-9]{4}\\.csv$"),
+                  "PRMS Historic Precip File")
+  
+  
+  currentPath <- paste0(dirPath, "/SRP/Input/PRISM_SRP_Domain_Data_", 
+                        getModeledWY(endDate)[1], "_", endDate, ".csv")
+  
+  
+  # Read in both files
+  historicDF <- historicPath |>
+    getFile()
+  
+  
+  currentDF <- currentPath |>
+    getPRISM()
+  
+  
+  # Validate these variables
+  validateHistoricPrecipFile(historicDF, historicPath, getModeledWY(endDate)[1])
+  
+  
+  # This function will also convert 'currentDF'
+  # into the same format as 'historicDF'
+  # (An average precipitation value for each day)
+  currentDF <- currentDF |>
+    validateAndSummarizePRISM(currentPath)
+  
+  
+  # After that, combine both files
+  compiledDF <- bind_rows(historicDF,
+                          currentDF |> select(Date, `ppt (mm)`)) |>
+    arrange(Date)
+  
+  
+  # Check for missing data
+  missingDF <- tibble(Date = seq(from = min(compiledDF$Date),
+                                 to = max(c(compiledDF$Date, Sys.Date() - 1)),
+                                 by = "days")) |>
+    filter(!(Date %in% compiledDF$Date))
+  
+  
+  # If 'missingDF' is empty, there are no missing dates
+  if (nrow(missingDF) == 0) {
+    
+    # Save 'compiledDF' to the archive hydrology folder
+    compiledDF |>
+      writeOutput(compiledPath, quietly = TRUE)
+    
+    
+    # Then, return 'compiledDF'
+    return(compiledDF)
+    
+  }
+  
+  
+  # If there are missing dates in 'missingDF', they must be downloaded from PRISM
+  cat("\n\n")
+  message("Additional PRISM data is required for this analysis!")
+  cat("\n\n")
+  
+  
+  # Setup the filepath for the new dataset
+  extraPath <- paste0("WebData/PRISM_Precip_SRP_Domain_Extra_QAQC_Data_",
+                      Sys.Date() - 1, ".csv")
+  
+  
+  # Then, import `runModifiedPRISM` from a prior script 
+  # ('HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R')
+  # This function can download PRISM data 
+  functionStealer("Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R",
+                  "runModifiedPRISM")
+  
+  
+  runModifiedPRISM("PRISM_SRP_GRID_CELLS_CSV", 
+                   startDate = min(missingDF$Date), 
+                   endDate = max(missingDF$Date), 
+                   outFile = extraPath,
+                   useHighRes = TRUE, interpCells = FALSE,
+                   getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
+  
+  
+  # After that, read in the dataset
+  extraDF <- getPRISM(extraPath)
+  
+  
+  # Validate it and convert the dataset into the same format as 'compiledDF'
+  extraDF <- extraDF |>
+    validateAndSummarizePRISM(extraPath)
+  
+  
+  # Merge it with 'compiledDF'
+  compiledDF <- bind_rows(compiledDF,
+                          extraDF) |>
+    arrange(Date)
+  
+  
+  # Validate the dataset one extra time
+  validateHistoricPrecipFile(compiledDF, NA_character_, getModeledWY(endDate)[1])
+  
+  
+  # Archive 'extraDF' and 'compiledDF' in the hydrology folder
+  copyFile(extraPath,
+           paste0(dirPath, "/SRP/Input/",
+                  extraPath |> str_remove("^.+[/\\\\]")), 
+           quietly = TRUE)
+  
+  
+  compiledDF |>
+    writeOutput(compiledPath, quietly = TRUE)
+  
+  
+  # Finally, return 'compiledDF'
+  return(compiledDF)
+  
+}
+
+
+
+gatherPrecipDAT <- function (dirPath, startDate, endDate) {
+  
+  # Use the DAT file that is input into SRP
+  
+  # It contains precipitation data for different gages
+  
+  # Take the averages of these values to get an estimate of basin precipitation 
+  
+  
+  # Get the path to the DAT file and confirm that it exists
+  datPath <- paste0(dirPath, "/SRP/Input/DAT_SRP_", Sys.info()[["user"]], "_",
+                    startDate, "_", endDate, ".dat") |>
+    checkForPreviousOutput()
+  
+  
+  # Read in 'datPath'
+  datDF <- getFile(datPath)
+  
+  
+  # Check for the location of the header row
+  headerIndex <- grep("^#+\\s*[a-zA-Z]", datDF)
+  
+  
+  # Output an error message if it cannot be found
+  if (length(headerIndex) != 1) {
+    
+    paste0("Could Not Locate Column Header\n\n", 
+           "This script attempted to find the header row in the SRP DAT ",
+           "file. However, the regular expression that identifies this ",
+           "line returned ", length(headerIndex), " matches.\n\n", 
+           "Please investigate '", datPath, "'") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Extract the headers from this row
+  # Split the values at the spaces and exclude the "#####" string
+  # (and "date" if it appears in the vector)
+  headers <- datDF[headerIndex] |>
+    str_split("\\s+") |> unlist() |>
+    tolower() |>
+    str_subset("^#+$", negate = TRUE) |>
+    str_subset("^date$", negate = TRUE)
+  
+  
+  # Consider only the rows after 'headerIndex'
+  # Then, split the values at the spaces and reformat the data
+  # Shape it into a matrix and then a tibble
+  # Finally, apply the column headers to it
+  datDF <- datDF[(headerIndex + 1):length(datDF)] |>
+    str_split("\\s+") |> unlist() |>
+    matrix(ncol = length(headers), byrow = TRUE) |>
+    as_tibble() |>
+    set_names(headers)
+  
+  
+  # Use 'year', 'month', and 'day' to define a "Date" variable
+  # After that, select the new "Date" column and any precipitation columns
+  datDF <- datDF |>
+    mutate(Date = paste0(year, "-", month, "-", day) |>
+             as.Date("%Y-%m-%d")) |>
+    select(Date, contains("precip"))
+  
+  
+  # Then, calculate a new "PRECIP" column 
+  # Take the average of the precipitation values
+  # Make sure the precipitation values are numeric and then reshape the tibble
+  # so that all precipitation columns appear in the same column
+  # After that, group by "Date" and average precipitation values 
+  # that occurred on the same day
+  datDF <- datDF |>
+    mutate(across(contains("precip"), as.numeric)) |>
+    pivot_longer(contains("precip"), 
+                 names_to = "STATION", values_to = "PRECIP") |>
+    group_by(Date) |>
+    summarize(PRECIP = mean(PRECIP), .groups = "drop")
+
+  
+  # Return 'datDF' afterwards
+  return(datDF)
+  
+}
+
+
+
+validateAndSummarizePRISM <- function (prismDF, prismPath) {
+  
+  # Given a dataset containing PRISM data, 
+  # Validate it using `validateWebData`
+  
+  # Then, summarize its values into a daily average precipitation
+  
+  # The final tibble will just have "Date" and "ppt (mm)" columns
+  
+  
+  # 'prismDF' may not contain temperature columns
+  # Therefore, add dummy rows before applying the validation function
+  # (Since 'prismDF' will be wrapped up into daily average precipitation,
+  #  the temperature columns are unimportant anyways)
+  prismDF |>
+    mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
+    validateWebData(dataSource = "PRISM",
+                    inputPath = prismPath,
+                    stationVec = prismDF$Name |> unique(),
+                    siPRISM = TRUE)
+  
+  
+  # Group 'prismDF' by Date and average the precipitation values
+  # of all stations in its dataset
+  prismDF <- prismDF |>
+    group_by(Date) |>
+    summarize(`ppt (mm)` = mean(`ppt (mm)`), .groups = "drop")
+  
+  
+  # Return 'prismDF'
+  return(prismDF)
   
 }
 
@@ -382,7 +711,8 @@ validateUSGS <- function (usgsDF) {
 
 
 
-compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath) {
+compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
+                                 prismDF, datDF) {
   
   # Compare the streamflow data in 'usgsDF' and 'gagDF' 
   
@@ -462,7 +792,7 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath) {
   
   
   # First generate plots and a table for the full datasets
-  statDF <- generatePlotsAndTable(dailyDF, newDir, "All")
+  statDF <- generatePlotsAndTable(dailyDF, newDir, "All", prismDF, datDF)
   
   
   # If the dataset contains at least one year of data, 
@@ -470,7 +800,8 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath) {
   if (nrow(dailyDF) > 365) {
     
     statDF <- bind_rows(statDF,
-                        generatePlotsAndTable(dailyDF, newDir, "1_yr"))
+                        generatePlotsAndTable(dailyDF, newDir, "1_yr",
+                                              prismDF, datDF))
     
   }
   
@@ -480,7 +811,8 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath) {
   if (nrow(dailyDF) > 365 * 5) {
     
     statDF <- bind_rows(statDF,
-                        generatePlotsAndTable(dailyDF, newDir, "5_yr"))
+                        generatePlotsAndTable(dailyDF, newDir, "5_yr",
+                                              prismDF, datDF))
     
   }
   
@@ -490,7 +822,8 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath) {
   if (nrow(dailyDF) > 365 * 10) {
     
     statDF <- bind_rows(statDF,
-                        generatePlotsAndTable(dailyDF, newDir, "10_yr"))
+                        generatePlotsAndTable(dailyDF, newDir, "10_yr",
+                                              prismDF, datDF))
     
   }
   
@@ -598,13 +931,16 @@ prepNewDirectory <- function (dirPath, gageID) {
 
 
 
-generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
+generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   
   # For the input timescale, produce plots and a table
   
   # Save the plots to 'newDir' and return the table as a tibble
   
   # These actions will be performed for both daily and monthly streamflow datasets
+  
+  # Precipitation data is included in some versions of these plots
+  # (It can come from two different sources: Either PRISM or the SRP DAT file)
   
   
   # Based on the value in 'timescale', apply a different filter to 'dailyDF'
@@ -655,6 +991,9 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
   
   # Start by generating plots
   # Use a separate function for that
+  
+  
+  # Generate plots without any precipitation data
   dailyDF |>
     generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, ".png"),
@@ -665,6 +1004,32 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
     generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, ".png"),
                            isDaily = FALSE)
+  
+  
+  # Then, use PRISM grid cell precipitation data
+  dailyDF |>
+    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+                                  timescale, "_PRISM_Precip.png"),
+                           prismDF, isDaily = TRUE, precipType = "PRISM Avg")
+  
+  
+  monthlyDF |>
+    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+                                  timescale, "_PRISM_Precip.png"),
+                           prismDF, isDaily = FALSE, precipType = "PRISM Avg")
+  
+  
+  # Try, precipitation data from the SRP DAT file next
+  dailyDF |>
+    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+                                  timescale, "_DAT_Precip.png"),
+                           datDF, isDaily = TRUE, precipType = "DAT Avg")
+  
+  
+  monthlyDF |>
+    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+                                  timescale, "_DAT_Precip.png"),
+                           datDF, isDaily = FALSE, precipType = "DAT Avg")
   
   
   # After that, create a tibble that contains different statistical metrics
@@ -720,11 +1085,44 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
 
 
 
-generateComparisonPlot <- function (streamDF, writePath, isDaily = TRUE,
-                                    volUnit = "AF") {
+generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
+                                    isDaily = TRUE, volUnit = "AF", 
+                                    precipType = "PRISM Avg") {
   
   # Generate a plot for 'streamDF' 
   # It can contain either daily or monthly streamflow data
+  
+  # 'precipDF', which generally contains precipitation data for the same period,
+  # will be included as bars in the graph (if it isn't NULL)
+  
+  
+  # If 'precipDF' was provided as input, adjust it to the bounds of 'streamDF'
+  if (!is.null(precipDF)) {
+    
+    # For daily streamflow, filter 'precipDF' to the same range as 'streamDF'
+    if (isDaily) {
+      
+      # Rename "Date" to "DATE" in order to match 'streamDF'
+      precipDF <- precipDF |>
+        filter(Date >= min(streamDF$DATE) & Date <= max(streamDF$DATE)) |>
+        rename(DATE = Date)
+      
+      # Otherwise, for monthly streamflow, 
+      # the procedure is a little more complicated
+    } else {
+      
+      # Convert 'precipDF' into a monthly timescale using a "YEAR_MONTH" column
+      precipDF <- precipDF |>
+        mutate(YEAR_MONTH = paste0(year(Date), "-", month(Date)) |>
+                 as_date(format = "%Y-%m")) |>
+        filter(YEAR_MONTH >= min(streamDF$YEAR_MONTH) & 
+                 YEAR_MONTH <= max(streamDF$YEAR_MONTH)) |>
+        group_by(YEAR_MONTH) |>
+        summarize(PRECIP = sum(PRECIP), .groups = "drop")
+      
+    }
+    
+  }
   
   
   # If daily streamflow will be plotted, the x-axis will be the "DATE" column
@@ -770,7 +1168,17 @@ generateComparisonPlot <- function (streamDF, writePath, isDaily = TRUE,
                  if_else(isDaily, "Day", "Month"), ")")
   
   
-  # The graph will contain vertical bars at missing dates
+  # If 'precipDF' was provided, a label will be needed for a secondary y-axis too
+  if (!is.null(precipDF)) {
+    
+    yLabel2 <- paste0(if_else(isDaily, "Daily ", "Monthly "),
+                      "Precipitation (in/",
+                      if_else(isDaily, "Day", "Month"), ")")
+    
+  }
+  
+  
+  # The graph can contain vertical bars at missing dates
   # Identify them using a new variable
   if (isDaily) {
     
@@ -795,34 +1203,239 @@ generateComparisonPlot <- function (streamDF, writePath, isDaily = TRUE,
   
   # Either way, 'missingDF' will be a single-column tibble containing a 
   # "Date" type variable ("DATE" or "YEAR_MONTH")
-
   
-  # Prepare the chart next
-  streamPlot <- streamDF |>
-    ggplot() +
-    geom_line(mapping = aes(x = get(xCol), y = GAGE, color = "Gage"), 
-              lwd = 0.8) +
-    geom_line(mapping = aes(x = get(xCol), y = MODEL, color = "Model"),
-              lwd = 0.8, linetype = 2, alpha = 0.6) + 
+  
+  # The next step is to design the plots
+  
+  # The setup differs depending on whether 'precipDF' is present
+  
+  
+  # For 'precipDF', to have vertical bars coming down from the top, 
+  # both y-axes must be reversed
+  
+  # That means that transformations are necessary to get the streamflow data
+  # back into the correct position (i.e., back to having zero at the bottom)
+  
+  
+  # Start by initializing 'streamPlot' with all customizations that are SHARED
+  # between the two options
+  streamPlot <- ggplot(streamDF) +
+    
     xlab("Date") + ylab(yLabel) +
+    # Axis labels
+    
     guides(color = guide_legend(title = "Flow Type")) +
     scale_color_manual(values = c("Gage" = "blue", "Model" = "red")) + 
-    scale_x_date(date_labels = if_else(nrow(streamDF) < 365 * 5, "%Y-%m", "%Y")) + 
+    # Set the colors of the streamflow lines (plus the name of their legend)
+    
+    scale_x_date(date_labels = if_else(nrow(streamDF) < 365 * 5, "%Y-%m", "%Y")) +
+    # Set the appearance of the x-axis date labels (see more details below)
+    
     coord_cartesian(ylim = yBounds) +
+    # Limit the chart's y-axis to the values in 'yBounds'
+    
     theme_gray(base_size = 20)
+    # Set the default font size to "20" units instead of "11"
+  
   
   # The x-axis labels use either "Year-Month" or "Year" depending on the size
-  # of 'streamDF'
+  # of 'streamDF' 
+  
+  # For daily data, plots with at least 5 years worth of data use just
+  # years in their labels; smaller plots use "Year-Month"
+  
+  # For monthly data, essentially all cases use "Year-Month" ('streamDF' 
+  # would need at least 365 * 5 = 1825 months of data to switch its labels)
   
   
-  # Add columns to the chart for missing data if 'missingDF' contains values
+  # All of these settings are shared in both versions of 'streamPlot'
+  
+  # The next set of edits are dependent on 'precipDF' 
+  
+  
+  # First handle the (simpler) case when 'precipDF' is NOT present
+  if (is.null(precipDF)) {
+    
+    # In this case, the only components missing from 'streamPlot' 
+    # are the actual streamflow lines themselves
+    
+    # Add lines for "GAGE" and "MODEL"
+    streamPlot <- streamPlot +
+      
+      geom_line(mapping = aes(x = get(xCol), y = GAGE, color = "Gage"), 
+                lwd = 0.8) +
+      # Linewidth = 0.8 units
+      
+      geom_line(mapping = aes(x = get(xCol), y = MODEL, color = "Model"),
+                lwd = 0.8, linetype = 2, alpha = 0.6)
+      # Linewidth = 0.8 units, dashed linetype, partially transparent
+      
+    
+    # Note: The colors assigned to each of these lines are strings
+    #       ("Gage" and "Model")
+    #       
+    #       In the initial definition of 'streamPlot', both `guides` and 
+    #       `scale_color_manual` were setup to use the streamflow lines' 
+    #       colors as a legend (so the actual color assignments are in 
+    #       `scale_color_manual`)
+    
+    
+    # The alternative scenario occurs if 'precipDF' is present
+  } else {
+    
+    # Prepare 'streamPlot' with a more complicated approach
+    
+    # We have to reverse the y-axes to make the precipitation columns come down
+    # from the top
+    
+    # We can't just do this to one axis, and if we try to flip the precipitation
+    # data from a regular set of axes, the columns will not draw correctly
+    
+    # So we have to reverse all the y-axes first, and it will be easier to 
+    # reverse the streamflow lines back to a normal appearance
+    
+    
+    # A requirement of this approach is that the primary y-axis breaks 
+    # will have to be set manually
+    
+    # We want nice roundish numbers as the axis breaks
+    # However, `ggplot` will default to nice breaks for the reversed primary axis
+    
+    # When we transform the primary y-axis back into a normal ordering (i.e.,
+    # with zero at the bottom), the corresponding values at the axis breaks 
+    # will not be nice numbers
+    
+    # This function will get us nice numbers on the post-transformation axis
+    breakVals <- getNiceAxisBreaks(yBounds[2], yBounds[1])
+    
+    
+    # After that, get the extreme values in 'precipDF'
+    precipRange <- range(precipDF$PRECIP)
+    
+    
+    # Prepare the chart next
+    
+    streamPlot <- streamPlot + 
+      
+      geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - GAGE, 
+                              color = "Gage"), 
+                lwd = 0.8) +
+      # The gage data will be coming from the top down, and this transformation
+      # to the "y" variable will correct it to appear as if it came from the 
+      # bottom up instead
+      
+      geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - MODEL, 
+                              color = "Model"), 
+                lwd = 0.8, linetype = 2, alpha = 0.6) + 
+      # The same transformation as above is applied to the modeled streamflow data
+      
+      geom_col(data = precipDF, 
+               mapping = aes(x = get(xCol), 
+                             y = PRECIP * diff(yBounds) / diff(precipRange), 
+                             fill = precipType), 
+               width = setPrecipColumnWidths(isDaily, nrow(precipDF)), 
+               alpha = 0.35) +
+      # Set precipitation values next--a transformation maps the precipitation
+      # data to the same scale as the streamflow data (see more details below)
+      # Its color is setup to appear in a legend, the width of each column is 
+      # determined in a separate function, and the columns are set to be mostly
+      # transparent
+      
+      guides(fill = guide_legend(title = "Precipitation")) + 
+      scale_fill_manual(values = c("#0081FF") |> set_names(precipType)) + 
+      # Set the colors of the precipitation columns (and the name of their legend)
+      
+      scale_y_reverse(breaks = breakVals, 
+                      labels = ~ yBounds[2] + yBounds[1] - .,
+                      sec.axis = 
+                        sec_axis(~ . * diff(precipRange) / diff(yBounds), 
+                                 name = yLabel2))
+      # This is what actually flips the y-axis to come down from the top
+      # 
+      # The breaks are set using 'breakVals' (described earlier)
+      # 
+      # The labels have a transformation applied so that they reflect the
+      # bottom-up streamflow data correctly (and their numbers are actually 
+      # nice thanks to the efforts in creating 'breakVals')
+      # 
+      # The secondary y-axis for precipitation is also setup here
+      # 
+      # Its values *should* come from the top down, so the default axis values
+      # will already be nice numbers
+      # 
+      # The only requirement is specifying the transformation correctly 
+      # (since all secondary y-axes are purely decorative, and the data is 
+      #  actually still plotted relative to the streamflow axis)
+      # 
+      # This is why a transformation was applied to the precipitation data in
+      # the `geom_col` call
+      # 
+      # The data was rescaled to follow the reversed streamflow axis properly
+      # 
+      # The secondary axis has the opposite of this transformation so that 
+      # the streamflow y-axis values can be rescaled in the secondary y-axis and 
+      # properly reflect the original precipitation values
+      # 
+      
+     
+      # ...Who knew the plotting would get so complicated? (>.<)
+      
+      # To summarize, the streamflow and precipitation values are a lie
+      # As are both y-axes' labels
+    
+      # The streamflow lines and precipitation columns get their values 
+      # by assuming that y = 0 is at the top of the graph
+    
+      # This is still true
+    
+      # However, their values have been rescaled to create the illusion that: 
+      # (1) the streamflow data is coming from the bottom
+      # (2) the precipitation data is relative to the secondary axis
+    
+    
+      # The formula applied to the streamflow data made it so that the values we 
+      # want to show are indeed scaled correctly (and relative to the bottom of 
+      # the graph--as if y = 0 was at the bottom of the plot!)
+    
+      # Meanwhile, the main y-axis labels are also reversing the y-axis reverse, 
+      # with breaks in the graph set at "nice numbers" when considered from the 
+      # bottom-up (i.e., y = 0 at the bottom of the plot)
+    
+      # These breaks are likely ugly if we consider their "true" top-down values
+    
+      # And the precipitation data is intended to be top-down, but it is plotted
+      # against the streamflow data's y-axis, which has a different scaling
+      
+      # So the precipitation data is transformed (mapping its extremes to the 
+      # extremes of the streamflow data)
+    
+      # Then, to support this illusion, the labels have the reverse of that 
+      # transformation applied (scaling the streamflow y-axis values to the  
+      # precipitation values' actual range)
+    
+      # In this case, since we are maintaining the top-down axis labeling, the
+      # breaks set by `ggplot` end up being nice numbers for the precipitation
+      # values
+    
+  }
+  
+  
+  # Regardless of whether 'precipDF' is present, consider incorporating 
+  # missing data into the plot (if there are any)
   if (nrow(missingDF) > 0) {
     
     streamPlot <- streamPlot +
+      
       geom_col(data = missingDF, 
                mapping = aes(x = get(xCol), y = yBounds[2], alpha = "")) +
+      # Use the dates in 'missingDF' and set the "y" values to the maximum 
+      # possible streamflow values for the dataset 
+      # (Regardless of whether the y-axis is reversed, these columns will 
+      #  extend across the entirety of the graph)
+      
       scale_alpha_manual(values = 0.2) + 
       guides(alpha = guide_legend(title = "Missing Data"))
+      # Use the transparency "alpha" parameter and create a legend for missing data
     
   }
   
@@ -877,6 +1490,210 @@ generateComparisonPlot <- function (streamDF, writePath, isDaily = TRUE,
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+getNiceAxisBreaks <- function (yMax, yMin = 0) {
+  
+  # Get a couple of nice numbers to use as breakpoints in the primary y-axis
+  # (This is for the streamflow data)
+  
+  # Since the y-axis will start out reversed, the data will be transformed
+  # to restore its appearance
+  
+  # We want nice values for the axis after that transformation is applied
+  
+  
+  # The first step is to find a couple of nice breaks for the normal y-axis
+  
+  
+  # Get the number of digits in the maximum possible y-axis value
+  numDigits <- yMax |> round() |> nchar()
+  
+  
+  # Get a nice number divisible by 10 that bounds 'yMax'
+  maxNiceBound <- ceiling(yMax / 10^(numDigits - 1)) * 10^(numDigits - 1)
+  
+  # This formula rounds up to a nice round number
+  
+  # For example, "2100" and "2900" become "3000"
+  # Or "156" and "104" become "200"
+  
+  # In the case of "2100" and "104", though, 'maxNiceBound' would be too high
+  # of a value to use
+  
+  # Consider how "far along" 'yMax' is between 'maxNiceBound' and one increment
+  # down (e.g., "1000" vs "2000" or "80" vs "90")
+  
+  # If 'yMax' is closer to a nearby nice breakpoint, set 'maxNiceBound' to
+  # that other value instead
+  
+  # For example, "104" is closer to "100" than "200", so use that instead
+  # Or, for "140", use "150" instead of "200"
+  
+  
+  # If 'yMax' is less than 25% of the way to 'maxNiceBound', 
+  if (yMax < maxNiceBound - 7.5 * 10^(numDigits - 2)) {
+    
+    # Use one increment lower for 'maxNiceBound'
+    maxNiceBound <- maxNiceBound - 10^(numDigits - 1)
+    
+  # If 'yMax' is closer to the halfway point to 'maxNiceBound'
+  } else if (yMax < maxNiceBound - 4 * 10^(numDigits - 2)) {
+    
+    # Use half an increment lower for 'maxNiceBound'
+    maxNiceBound <- maxNiceBound - 5 * 10^(numDigits - 2)
+    
+  }
+  
+  
+  # Look at 'yMin' next
+  
+  
+  # Look at the difference between 'yMax' and 'yMin' 
+  # Find a nearby "nice" starting point for the axis that respects the difference
+  # in scale between these two values
+  numDigits <- (yMax - yMin) |> round() |> nchar()
+  
+  
+  # Find a number divisible by 10 that is close to (but less than) 'yMin'
+  minNiceBound <- floor(yMin / 10^(numDigits - 1)) * 10^(numDigits - 1)
+  
+  
+  # Based on the value of 'minNiceBound' and 'maxNiceBound', 
+  # find a preferable number of breaks to include in the y-axis
+  numBreaks <- 1:5 |>
+    map_lgl(~ (maxNiceBound - minNiceBound) %% . == 0) |>
+    which() |> max()
+  
+  # Considering the numbers 1 through 5, find which numbers divide cleanly with 
+  # the chosen values for 'maxNiceBound' and 'minNiceBound'
+  
+  # After that, the maximum number among those options
+  # That will be the number of axis breaks to include in the dataset
+  
+  
+  # The actual final break values are determined here
+  breakVals <- seq(from = minNiceBound, 
+                   to = maxNiceBound, 
+                   length.out = numBreaks)
+  
+  
+  # The numbers in 'breakVals' should be nice round numbers
+  
+  # However, if these values were input directly into the chart,
+  # the labels would not be clean still once the data is rescaled back into
+  # a regular primary y-axis
+  
+  
+  # Instead, pretend that 'breakVals' contains the post-transformation 
+  # y-axis break values
+  
+  # To get the actual values to input into the chart, apply the reverse of 
+  # normal transformation rescale (though its formulation is the same in both 
+  # directions)
+  revBreaks <- yMax + yMin - breakVals
+  
+  
+  # Now, 'revBreaks' contains the "pre-transformation" breakpoints
+  
+  # If we applied these breaks without transforming the streamflow data back
+  # from the reversed y-axis, the axis would have some not-so-pretty numbers
+  
+  # But, post-transformation, we would get the nice round numbers in 'breakVals'
+  
+  
+  # Example: 
+  
+  # If 'breakVals' had nice numbers like "0", "50", and "100", these would be
+  # the numbers we would see after flipping the reversed streamflow data back
+  # to normal
+  
+  # But 'revBreaks' is what would go into the plot 
+  
+  # If the maximum and minimum streamflow values were "88" and "0", then
+  # 'breakVals' would contain "88", "38", and "-12"
+  
+  # These values will be input into the plot, and after reversing the streamflow
+  # data back to normal, we would also have to transform the axis  
+  
+  # The result of applying the transformation ('yMax' + 'yMin' - 'val') would
+  # be "0", "50", and "100"--the nice numbers we wanted in the first place
+  
+  
+  # Return these reversed breaks
+  return(revBreaks)
+  
+}
+
+
+
+setPrecipColumnWidths <- function (isDaily, numRecords) {
+  
+  # Depending on the size and type of the precipitation dataset,
+  # use a different column width in the plots
+  
+  # It would be best to keep column widths at "1.0" (their true size),
+  # but they become really hard to see in larger plots
+  
+  # For monthly data, the columns are more spaced out too
+  # (since they are technically plotted on the first of each month)
+  # Larger columns help with that
+  
+  
+  # If daily precipitation data is plotted
+  if (isDaily) {
+    
+    # 1 year or less of data
+    if (numRecords <= 365) {
+      
+      return(1)
+      
+    # 5 years or less of data
+    } else if (numRecords <= 365 * 5) {
+      
+      return(1.5)
+      
+    # 10 years or less of data
+    } else if (numRecords <= 365 * 10) {
+      
+      return(2.8)
+      
+    # More than 10 years of data
+    } else {
+      
+      return(3.8)
+      
+    }
+    
+  # Otherwise, for monthly precipitation,
+  } else {
+    
+    # 2 years of data or less
+    if (numRecords <= 12 * 2) {
+      
+      return(1.5)
+      
+    # 5 years of data or less
+    } else if (numRecords <= 12 * 5) {
+      
+      return(3)
+      
+    # 10 years of data or less
+    } else if (numRecords <= 12 * 10) {
+      
+      return(4.5)
+      
+    # More than 10 years of data
+    } else {
+      
+      return(5)
+      
+    }
+    
+  }
   
 }
 
