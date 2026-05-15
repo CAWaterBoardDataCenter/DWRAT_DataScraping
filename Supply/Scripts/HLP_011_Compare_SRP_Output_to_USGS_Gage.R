@@ -145,7 +145,7 @@ mainProcedure <- function (gageID = "11466800") {
 
 
 
-gatherPrecipPRISM <- function (dirPath, endDate) {
+gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # This function produces a tibble containing precipitation data for the 
   # entire modeled timeframe
@@ -171,8 +171,8 @@ gatherPrecipPRISM <- function (dirPath, endDate) {
  
   # First check if the "Input" SRP folder contains a single CSV for these 
   # PRISM precipitation averages
-  compiledPath <- paste0(dirPath, "/SRP/Input/",
-                         "PRISM_Precip_SRP_Domain_QAQC_",
+  compiledPath <- paste0(dirPath, "/", model, "/Input/",
+                         "PRISM_Precip_", model, "_Domain_QAQC_",
                          Sys.Date() - 1, ".csv") |>
     normalizePath(mustWork = FALSE)
   
@@ -199,13 +199,15 @@ gatherPrecipPRISM <- function (dirPath, endDate) {
   
   # Otherwise, get both the historic precipitation data and the current WY
   # precipitation files
-  historicPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
-    getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
+  historicPath <- getFromControl_RR(paste0("PRISM_", model, 
+                                           "_HISTORIC_PRECIP_FOLDER")) |>
+    getLatestFile(paste0("^RR_Workflow_PRISM_", model, "_Avg_Historic_Precip_",
                          "CY1981_to_WY[0-9]{4}\\.csv$"),
-                  "PRMS Historic Precip File")
+                  paste0(model, " Historic Precip File"))
   
   
-  currentPath <- paste0(dirPath, "/SRP/Input/PRISM_SRP_Domain_Data_", 
+  currentPath <- paste0(dirPath, "/", model, "/Input/PRISM_", model, 
+                        "_Domain_Data_", 
                         getModeledWY(endDate)[1], "_", endDate, ".csv")
   
   
@@ -263,7 +265,7 @@ gatherPrecipPRISM <- function (dirPath, endDate) {
   
   
   # Setup the filepath for the new dataset
-  extraPath <- paste0("WebData/PRISM_Precip_SRP_Domain_Extra_QAQC_Data_",
+  extraPath <- paste0("WebData/PRISM_Precip_", model, "_Domain_Extra_QAQC_Data_",
                       Sys.Date() - 1, ".csv")
   
   
@@ -274,7 +276,7 @@ gatherPrecipPRISM <- function (dirPath, endDate) {
                   "runModifiedPRISM")
   
   
-  runModifiedPRISM("PRISM_SRP_GRID_CELLS_CSV", 
+  runModifiedPRISM(paste0("PRISM_", model, "_GRID_CELLS_CSV"), 
                    startDate = min(missingDF$Date), 
                    endDate = max(missingDF$Date), 
                    outFile = extraPath,
@@ -303,7 +305,7 @@ gatherPrecipPRISM <- function (dirPath, endDate) {
   
   # Archive 'extraDF' and 'compiledDF' in the hydrology folder
   copyFile(extraPath,
-           paste0(dirPath, "/SRP/Input/",
+           paste0(dirPath, "/", model, "/Input/",
                   extraPath |> str_remove("^.+[/\\\\]")), 
            quietly = TRUE)
   
@@ -1689,7 +1691,7 @@ setPrecipColumnWidths <- function (isDaily, numRecords) {
     # More than 10 years of data
     } else {
       
-      return(5)
+      return(5.5)
       
     }
     

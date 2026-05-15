@@ -87,6 +87,10 @@ source("Scripts/RRW_010_PRMS_Cleanup.R")
 source("Scripts/HLP_009_Compare_PRMS_Output_to_PRISM_Averages.R")
 
 
+# Check streamflow data in PRMS's output too
+source("Scripts/HLP_010_Plot_PRMS_Streamflow.R")
+
+
 ##### SRP #####
 
 # Process the downloaded weather file for SRP
@@ -110,7 +114,7 @@ source("Scripts/RRW_015_SRP_Cleanup.R")
 
 
 # Before proceeding, compare SRP's streamflow output to USGS gages' datasets
-source("Scripts/HLP_010_Compare_SRP_Output_to_USGS_Gage.R")
+source("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R")
 
 
 ##### Raw Flows #####
