@@ -42,18 +42,14 @@ mainProcedure <- function () {
     sourceDir, 
     "SRPHM_SIR2024_SOURCE_LOCATION",
     "SRP", 
-    c("bin", "model", "output", 
-      "model/external_files", 
-      "model/model1", "model/model2",
-      "model/model1/SRPHM_2000_2026", 
-      "output/output.model1_full",
-      "output/output.model1_2000_2026",
-      "output/output.model2_dpl"),
-    c("bin/gsflow.exe",
-      "model/model1/SRPHM_2000_2026/SRPHM_spinup.control"))
+    c("external_files", "model1", "model1/SRPHM_post_spinup_WY2021",
+      "model1/SRPHM_post_spinup_WY2021/bin", 
+      "model1/SRPHM_post_spinup_WY2021/output"),
+    c("model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe",
+      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control"))
   
   
-  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SIR2024-5121_update\"...\n")
+  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM\"...\n")
   
   
   # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
@@ -77,13 +73,13 @@ mainProcedure <- function () {
 copyModel <- function (sourceDir) {
   
   # Copy the files from 'sourceDir' 
-  # into a newly created "SIR2024-5121_update" folder
+  # into a newly created "SRPHM" folder
   # in the "ProcessedData" folder
   
   
   # 'newDir' will contain the new folder location 
   # relative to the working directory
-  newDir <- "ProcessedData/SIR2024-5121_update"
+  newDir <- "ProcessedData/SRPHM"
   
   
   # If the folder already exists, delete it and its contents
@@ -94,7 +90,7 @@ copyModel <- function (sourceDir) {
   }
   
   
-  # Next, create the "SIR2024-5121_update" folder
+  # Next, create the "SRPHM" folder
   dir.create(newDir)
   
   
@@ -103,8 +99,8 @@ copyModel <- function (sourceDir) {
   
   
   # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "SIR2024-5121_update"
-  # In "ProcessedData", the folder will still be called "SIR2024-5121_update"
+  # different from "SRPHM"
+  # In "ProcessedData", the folder will still be called "SRPHM"
   
   
   # Return nothing
