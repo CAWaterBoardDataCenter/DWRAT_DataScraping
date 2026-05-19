@@ -468,6 +468,12 @@ makeStreamflowPlot <- function (streamDF, writePath, precipDF,
       filter(Date >= min(streamDF$DATE) & Date <= max(streamDF$DATE)) |>
       rename(DATE = Date)
     
+    
+    # Then, filter 'streamDF' to match the date range in 'precipDF'
+    streamDF <- streamDF |>
+      filter(DATE >= min(precipDF$DATE) & DATE <= max(precipDF$DATE))
+    
+    
     # Otherwise, for monthly streamflow, 
     # the procedure is a little more complicated
   } else {
@@ -480,6 +486,12 @@ makeStreamflowPlot <- function (streamDF, writePath, precipDF,
                YEAR_MONTH <= max(streamDF$YEAR_MONTH)) |>
       group_by(YEAR_MONTH) |>
       summarize(PRECIP = sum(PRECIP), .groups = "drop")
+    
+    
+    # Then, filter 'streamDF' to match the date range in 'precipDF'
+    streamDF <- streamDF |>
+      filter(YEAR_MONTH >= min(precipDF$YEAR_MONTH) & 
+               YEAR_MONTH <= max(precipDF$YEAR_MONTH))
     
   }
   
