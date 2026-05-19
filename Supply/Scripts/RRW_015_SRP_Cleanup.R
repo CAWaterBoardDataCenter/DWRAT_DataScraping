@@ -82,34 +82,20 @@ mainProcedure <- function () {
 
 copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
-  # Copy several files from the SRP "output" folder (plus the control file)
+  # Copy several files from the SRP folder (including the control file)
   # into the hydrology folder 
   
   
-  # This vector contains the names of the desired output files
-  copyFiles <- c("gsflow.log",
-                 paste0("SRP_inflow_", 1:6, ".gag"),
-                 "SRP_inflow_11465500.gag",
-                 "SRP_inflow_11465660.gag",
-                 "SRP_inflow_11465680.gag",
-                 "SRP_inflow_11465690.gag",
-                 "SRP_inflow_11465700.gag",
-                 "SRP_inflow_11465750.gag",
-                 "SRP_inflow_11466170.gag",
-                 "SRP_inflow_11466200.gag",
-                 "SRP_inflow_11466320.gag",
-                 "SRP_inflow_11466800.gag",
-                 "model_output_summary.txt",
-                 "basin/basin_.csv",
-                 "basin/basin__monthly.csv")
-  
-  
-  # Confirm that they exist in the "output" folder first
+  # Confirm that they exist in the model folder first
   checkForModelOutputs_SRP(srpPath, modelOutput = NULL)
   
   
+  # Get a vector of paths to all important outputs
+  copyFiles <- getModelOutputs_SRP(srpPath)
+  
+  
   # Prepare vectors that contain the proper filepaths and the planned filepaths
-  sourcePaths <- paste0(srpPath, "/", copyFiles) |>
+  sourcePaths <- copyFiles |>
     normalizePath(mustWork = TRUE)
   
   
@@ -131,30 +117,9 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
                   paste0(dirPath, "/SRP/Input/SRPHM_update.control"))
   
   
-  # Copy the files
-  # If any of these actions fail, 'copyRes' will contain FALSE in its vector
-  copyRes <- file.copy(sourcePaths, writePaths, overwrite = TRUE)
-  
-  
-  # Verify that the files copied successfully
-  # If not, output an error message
-  if (anyFalse(copyRes) || anyFalse(file.exists(writePaths))) {
-    
-    missingFiles <- which(!copyRes)
-    
-    
-    stop(paste0("Could Not Copy File", 
-                if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-                "The script attempted to copy SRP output files to the ",
-                "hydrology folder. However, the process was not successful ",
-                "for ", vec2QuotedStr(copyFiles[missingFiles]), ".\n\n",
-                "Perhaps there was a permission issue? Please investigate.\n\n",
-                "The intended new file", 
-                if_else(length(missingFiles) > 1, "s were", " was"), ": ",
-                vec2QuotedStr(writePaths[missingFiles])) |>
-           errWrap())
-    
-  } 
+  # Copy the files using the `copyFile` function
+  # If any of these actions fail, the function will trigger an error 
+  map2(sourcePaths, writePaths, copyFile) 
   
   
   # Return nothing if there were no issues

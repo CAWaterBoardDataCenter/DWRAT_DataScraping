@@ -86,37 +86,43 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
   # into the hydrology folder 
   
   
-  # This vector contains the names of the desired output files
-  copyFiles <- c("rr_budget.out2", 
-                 "gsflow.csv",
-                 "RR_PRMS_Output_sub_cfs.csv",
-                 "RR_PRMS_Output_sub_inq.csv",
-                 "PRMS_Console_Output.txt")
-  
-  
   # Confirm that they exist in the "output" folder first
   checkForModelOutputs_PRMS(prmsPath, modelOutput = NULL,
                             includeScriptGeneratedOutput = TRUE)
   
   
+  # This vector contains the paths of the key output files 
+  # (and the script-generated log)
+  copyFiles <- getModelOutputs_PRMS(prmsPath, 
+                                    includeScriptGeneratedOutput = TRUE)
+  
+  
   # Prepare vectors that contain the proper filepaths and the planned filepaths
   sourcePaths <- copyFiles |>
-    paste0(prmsPath, "/PRMS/output/", 
-           ... = _) |>
-    normalizePath(mustWork = FALSE)
+    normalizePath(mustWork = TRUE)
   
   
   # For the "sub_cfs" and "sub_inq" files, include today's date and the 
-  # modeler's name in these filenames
+  # modeler's name in their archive filenames
   writePaths <- copyFiles |>
-    str_replace("RR_PRMS_Output",
+    str_replace("RR_PRMS_Output(?=_sub_((cfs)|(inq))\\.csv$)",
                 paste0("RR_PRMS_Output_",
                        Sys.Date(),
                        "_", Sys.info()[["user"]],
                        "_", startDate,
-                       "_", endDate)) |>
-    paste0(dirPath, "/PRMS/Output/", 
-           ... = _) |>
+                       "_", endDate))
+  
+  # The regular expression checks for "RR_PRMS_Output" in the file paths,
+  # with a lookahead regex specifically matching "sub_cfs.csv" and "sub_inq.csv" 
+  
+  # (This is needed in case "RR_PRMS_Output_" would match with a portion of the
+  #  path rather than the actual filename)
+  
+  
+  # After that, replace the paths in 'writePaths' using 'dirPath'
+  # The files will be written to the PRMS "Output" folder
+  writePaths <- writePaths |>
+    str_replace("^.+[/\\\\]", paste0(dirPath, "/PRMS/Output/")) |>
     normalizePath(mustWork = FALSE)
   
   
@@ -130,30 +136,9 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
                   paste0(dirPath, "/PRMS/Input/prms_rr.control"))
   
   
-  # Copy the files
-  # If any of these actions fail, 'copyRes' will contain FALSE in its vector
-  copyRes <- file.copy(sourcePaths, writePaths, overwrite = TRUE)
-  
-  
-  # Verify that the files copied successfully
-  # If not, output an error message
-  if (anyFalse(copyRes) || anyFalse(file.exists(writePaths))) {
-    
-    missingFiles <- which(!copyRes)
-    
-    
-    stop(paste0("Could Not Copy File", 
-                if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-                "The script attempted to copy PRMS output files to the ",
-                "hydrology folder. However, the process was not successful ",
-                "for ", vec2QuotedStr(copyFiles[missingFiles]), ".\n\n",
-                "Perhaps there was a permission issue? Please investigate.\n\n",
-                "The intended new file", 
-                if_else(length(missingFiles) > 1, "s were", " was"), ": ",
-                vec2QuotedStr(writePaths[missingFiles])) |>
-           errWrap())
-    
-  } 
+  # Copy the files using the `copyFile` function
+  # If any of these actions fail, the function will trigger an error 
+  map2(sourcePaths, writePaths, copyFile)
   
   
   # Return nothing if there were no issues
