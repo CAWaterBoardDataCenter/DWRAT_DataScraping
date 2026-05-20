@@ -57,8 +57,12 @@ mainProcedure <- function () {
   cat("[1/1]\tCopying the RRIHM folder to \"ProcessedData/RRIHM\"...\n")
   
   
+  # Import a function from the v1 workflow's PRMS model setup script
+  functionStealer("Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  
+  
   # Copy the contents from 'sourceDir' to a new folder in "ProcessedData"
-  copyModel(sourceDir)
+  copyModel(sourceDir, "ProcessedData/RRIHM")
   
   
   cat("\tDone!\n\n")
@@ -66,45 +70,6 @@ mainProcedure <- function () {
   
   # Output a completion message
   cat(col_green("\n'RRW_v2_012_Setup_RRIHM_Model.R' is complete!\n\n"))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyModel <- function (sourceDir) {
-  
-  # Copy the files from 'sourceDir' into a newly created "RRIHM" folder
-  # in the "ProcessedData" folder
-  
-  
-  # 'newDir' will contain the new folder location 
-  # relative to the working directory
-  newDir <- "ProcessedData/RRIHM"
-  
-  
-  # If the folder already exists, delete it and its contents
-  if (dir.exists(newDir)) {
-    
-    unlink(newDir, recursive = TRUE)
-    
-  }
-  
-  
-  # Next, create the "RRIHM" folder
-  dir.create(newDir)
-  
-  
-  # Copy the entire contents of 'sourceDir' into this new folder
-  dir_copy(sourceDir, newDir, overwrite = TRUE)
-  
-  
-  # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "RRIHM"
-  # In "ProcessedData", the folder will still be called "RRIHM"
   
   
   # Return nothing
