@@ -1,9 +1,9 @@
-# Prepare the SRP files for a model run
+# Prepare the RRIHM files for a model run
 
 # The model files will be copied from another location
 # to the "ProcessedData" folder
 
-# The source location is specified in the field "SRPHM_SOURCE_LOCATION" 
+# The source location is specified in the field "RRIHM_SOURCE_LOCATION" 
 # in "RR_Workflow_Control_File.xlsx"
 
 
@@ -27,11 +27,11 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_v2_008_Setup_SRP_Model.R'!\n\n")
+  cat("Starting 'RRW_v2_012_Setup_RRIHM_Model.R'!\n\n")
   
   
-  # Get the location of the SRP model files
-  sourceDir <- getFromControl_RR("SRPHM_SOURCE_LOCATION")
+  # Get the location of the RRIHM model files
+  sourceDir <- getFromControl_RR("RRIHM_SOURCE_LOCATION")
   
   
   # Validate the user's input and ensure that this directory contains
@@ -40,21 +40,24 @@ mainProcedure <- function () {
   #  to reflect that)
   sourceDir <- validateSourceModelDirectory(
     sourceDir, 
-    "SRPHM_SOURCE_LOCATION",
-    "SRP", 
-    c("external_files", "model1", "model1/SRPHM_post_spinup_WY2021",
-      "model1/SRPHM_post_spinup_WY2021/bin", 
-      "model1/SRPHM_post_spinup_WY2021/output"),
-    c("model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe",
-      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
-      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
-      "external_files/restartdata_2020.out"))
+    "RRIHM_SOURCE_LOCATION",
+    "RRIHM", 
+    c("RRIHM_post_spinup_WY2021", "RRIHM_post_spinup_WY2021/modflow",
+      "RRIHM_post_spinup_WY2021/prms", "RRIHM_post_spinup_WY2021/windows",
+      "RRIHM_post_spinup_WY2021/modflow/input", 
+      "RRIHM_post_spinup_WY2021/modflow/output",
+      "RRIHM_post_spinup_WY2021/prms/input", 
+      "RRIHM_post_spinup_WY2021/prms/output",
+      "RRIHM_post_spinup_WY2021/windows/bin"),
+    c("RRIHM_post_spinup_WY2021/modflow/input/Mark_West_inflow.dat",
+      "RRIHM_post_spinup_WY2021/modflow/input/restartdata_2020.out",
+      "RRIHM_post_spinup_WY2021/windows/bin/gsflow.exe"))
   
   
-  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM\"...\n")
+  cat("[1/1]\tCopying the RRIHM folder to \"ProcessedData/RRIHM\"...\n")
   
   
-  # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
+  # Copy the contents from 'sourceDir' to a new folder in "ProcessedData"
   copyModel(sourceDir)
   
   
@@ -62,7 +65,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_v2_008_Setup_SRP_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_012_Setup_RRIHM_Model.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -74,14 +77,13 @@ mainProcedure <- function () {
 
 copyModel <- function (sourceDir) {
   
-  # Copy the files from 'sourceDir' 
-  # into a newly created "SRPHM" folder
+  # Copy the files from 'sourceDir' into a newly created "RRIHM" folder
   # in the "ProcessedData" folder
   
   
   # 'newDir' will contain the new folder location 
   # relative to the working directory
-  newDir <- "ProcessedData/SRPHM"
+  newDir <- "ProcessedData/RRIHM"
   
   
   # If the folder already exists, delete it and its contents
@@ -92,7 +94,7 @@ copyModel <- function (sourceDir) {
   }
   
   
-  # Next, create the "SRPHM" folder
+  # Next, create the "RRIHM" folder
   dir.create(newDir)
   
   
@@ -101,8 +103,8 @@ copyModel <- function (sourceDir) {
   
   
   # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "SRPHM"
-  # In "ProcessedData", the folder will still be called "SRPHM"
+  # different from "RRIHM"
+  # In "ProcessedData", the folder will still be called "RRIHM"
   
   
   # Return nothing

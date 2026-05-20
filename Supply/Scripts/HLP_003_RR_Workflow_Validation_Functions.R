@@ -1141,14 +1141,15 @@ validateSourceModelDirectory <- function (sourceDir, sourceField, model,
   # the model directory at the end
   
   
-  # Make sure the script was given "PRMS" or "SRP" as input for 'model'
-  if (!(model %in% c("PRMS", "SRP"))) {
+  # Make sure the script was given "PRMS", "SRP", or "RRIHM" as input for 'model'
+  if (!(model %in% c("PRMS", "SRP", "RRIHM"))) {
     
     paste0("Script Error - Unrecognized Value for 'model'\n\n", 
            "The function `validateSourceModelDirectory` checks a source model ",
            "directory that contains files for running a specified model. ",
-           "Therefore, the input variable 'model' should be either \"PRMS\" ",
-           "or \"SRP\". However, it was input as \"", model, "\" instead.\n\n", 
+           "Therefore, the input variable 'model' should be either \"PRMS\", ",
+           "\"SRP\", or \"RRIHM\". However, it was input as \"", model, "\" ",
+           "instead.\n\n", 
            "Please correct the script and try again.") |>
       errWrap() |>
       stop()
