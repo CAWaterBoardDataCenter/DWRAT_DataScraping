@@ -83,8 +83,9 @@ source("Scripts/RRW_010_PRMS_Cleanup.R")
 
 
 # Before proceeding, compare the precipitation in PRMS's model output 
-# to the basin-averaged precipitation data from PRISM
-source("Scripts/HLP_009_Compare_PRMS_Output_to_PRISM_Averages.R")
+# to the basin-averaged precipitation data from PRISM (as well as to the 
+# average precipitation data in the PRMS input DAT file)
+source("Scripts/HLP_009_Compare_PRMS_Precip.R")
 
 
 # Check streamflow data in PRMS's output too
