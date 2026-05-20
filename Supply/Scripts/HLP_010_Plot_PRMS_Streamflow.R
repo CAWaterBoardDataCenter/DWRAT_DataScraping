@@ -78,7 +78,7 @@ mainProcedure <- function () {
   # name for their precipitation columns (and "Date" for dates)
   
   # Also, their units should be inches, not millimeters
-  # (1 mm = 25.4 in)
+  # (1 in = 25.4 mm)
   prismDF <- prismDF |>
     mutate(PRECIP = `ppt (mm)` / 25.4)
   
@@ -181,7 +181,7 @@ gatherPrecipDAT <- function (dirPath, startDate, endDate) {
   datDF <- datDF[(headerIndex + 1):length(datDF)] |>
     str_split("\t") |> unlist() |>
     matrix(ncol = length(headerNames), byrow = TRUE) |>
-    as_tibble() |>
+    as_tibble(.name_repair = "minimal") |>
     set_names(headerNames)
   
   
@@ -248,6 +248,11 @@ plotModelResults <- function (dirPath, outDF, prismDF, datDF) {
   
   # Once 'newDir' has been established, 
   # create plots for different timescales
+  
+  
+  # Borrow function that can help generate plots
+  c("generateStreamflowPlot", "getNiceAxisBreaks", "setPrecipColumnWidths") |>
+    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
   # First generate plots for the full dataset
@@ -410,349 +415,38 @@ generatePlots <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   
   # Make streamflow plots using PRISM data for precipitation
   dailyDF |>
-    makeStreamflowPlot(paste0(newDir, "/Daily_Streamflow_PRISM_Precip_", 
-                              timescale, ".png"),
-                       isDaily = TRUE, prismDF,
-                       precipType = "PRISM Avg")
+    generateStreamflowPlot(paste0(newDir, "/Daily_Streamflow_PRISM_Precip_", 
+                                  timescale, ".png"),
+                           yCol = "FLOW", isDaily = TRUE, 
+                           precipDF = prismDF, 
+                           precipType = "PRISM Avg")
   
   
   monthlyDF |>
-    makeStreamflowPlot(paste0(newDir, "/Monthly_Streamflow_PRISM_Precip_", 
-                              timescale, ".png"),
-                       isDaily = FALSE, prismDF,
-                       precipType = "PRISM Avg")
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Streamflow_PRISM_Precip_", 
+                                  timescale, ".png"),
+                           yCol = "FLOW", isDaily = FALSE, 
+                           precipDF = prismDF,
+                           precipType = "PRISM Avg")
   
   
   dailyDF |>
-    makeStreamflowPlot(paste0(newDir, "/Daily_Streamflow_DAT_Precip_", 
-                              timescale, ".png"),
-                       isDaily = TRUE, datDF,
-                       precipType = "DAT Avg")
+    generateStreamflowPlot(paste0(newDir, "/Daily_Streamflow_DAT_Precip_", 
+                                  timescale, ".png"),
+                           yCol = "FLOW", isDaily = TRUE, 
+                           precipDF = datDF,
+                           precipType = "DAT Avg")
   
   
   monthlyDF |>
-    makeStreamflowPlot(paste0(newDir, "/Monthly_Streamflow_DAT_Precip_", 
-                              timescale, ".png"),
-                       isDaily = FALSE, datDF,
-                       precipType = "DAT Avg")
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Streamflow_DAT_Precip_", 
+                                  timescale, ".png"),
+                           yCol = "FLOW", isDaily = FALSE, 
+                           precipDF = datDF,
+                           precipType = "DAT Avg")
   
   
   # After that, use 'datDF' for precipitation data
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-makeStreamflowPlot <- function (streamDF, writePath, precipDF,
-                                    isDaily = TRUE, volUnit = "AF", 
-                                    precipType = "PRISM Avg") {
-  
-  # Generate a plot for 'streamDF' 
-  # It can contain either daily or monthly streamflow data
-  
-  # 'precipDF' contains precipitation data for the same period, and it
-  # will be included as bars in the graph
-  
-  
-  # Adjust 'precipDF' to the bounds of 'streamDF'
-  
-  # For daily streamflow, filter 'precipDF' to the same range as 'streamDF'
-  if (isDaily) {
-    
-    # Rename "Date" to "DATE" in order to match 'streamDF'
-    precipDF <- precipDF |>
-      filter(Date >= min(streamDF$DATE) & Date <= max(streamDF$DATE)) |>
-      rename(DATE = Date)
-    
-    
-    # Then, filter 'streamDF' to match the date range in 'precipDF'
-    streamDF <- streamDF |>
-      filter(DATE >= min(precipDF$DATE) & DATE <= max(precipDF$DATE))
-    
-    
-    # Otherwise, for monthly streamflow, 
-    # the procedure is a little more complicated
-  } else {
-    
-    # Convert 'precipDF' into a monthly timescale using a "YEAR_MONTH" column
-    precipDF <- precipDF |>
-      mutate(YEAR_MONTH = paste0(year(Date), "-", month(Date)) |>
-               as_date(format = "%Y-%m")) |>
-      filter(YEAR_MONTH >= min(streamDF$YEAR_MONTH) & 
-               YEAR_MONTH <= max(streamDF$YEAR_MONTH)) |>
-      group_by(YEAR_MONTH) |>
-      summarize(PRECIP = sum(PRECIP), .groups = "drop")
-    
-    
-    # Then, filter 'streamDF' to match the date range in 'precipDF'
-    streamDF <- streamDF |>
-      filter(YEAR_MONTH >= min(precipDF$YEAR_MONTH) & 
-               YEAR_MONTH <= max(precipDF$YEAR_MONTH))
-    
-  }
-  
-  
-  # If daily streamflow will be plotted, the x-axis will be the "DATE" column
-  # Otherwise, for monthly streamflow, it is the "YEAR_MONTH" column
-  xCol <- if_else(isDaily, "DATE", "YEAR_MONTH")
-  
-  
-  # Make sure this column exists in 'streamDF' too
-  if (!(xCol %in% names(streamDF))) {
-    
-    paste0("Streamflow Dataset Missing Expected Column\n\n",
-           "Because ", if_else(isDaily, "daily", "monthly"), " streamflow ",
-           "will be plotted, this function expected the input data frame ",
-           "to contain the column \"", xCol, "\". However, it was not found. ",
-           "Please investigate.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # The selected 'xCol' column in 'streamDF' should be a "Date" type variable
-  if (is.null(class(streamDF[[xCol]])) || class(streamDF[[xCol]]) != "Date") {
-    
-    paste0("Streamflow Dataset Column Type Issue\n\n",
-           "To plot ", if_else(isDaily, "daily", "monthly"), " streamflow, ",
-           "this function uses the column \"", xCol, "\". However, it is not ",
-           "a \"Date\" type variable. Please investigate.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Get the limits for the y-axis (streamflow)
-  yBounds <- c(streamDF$FLOW) |>
-    range()
-  
-  
-  # Prepare the label for the y-axis too
-  yLabel <- paste0(if_else(isDaily, "Daily ", "Monthly "),
-                   "Model Streamflow (", volUnit, "/",
-                   if_else(isDaily, "Day", "Month"), ")")
-  
-  
-  # If 'precipDF' was provided, a label will be needed for a secondary y-axis too
-  yLabel2 <- paste0(if_else(isDaily, "Daily ", "Monthly "),
-                    "Precipitation (in/",
-                    if_else(isDaily, "Day", "Month"), ")")
-  
-  
-  # The next step is to design the plots
-  
-  # For 'precipDF', to have vertical bars coming down from the top, 
-  # both y-axes must be reversed
-  
-  # We can't just do this to one axis, and if we try to flip the precipitation
-  # data from a regular set of axes, the columns will not draw correctly
-  
-  # So we have to reverse all the y-axes first, and it will be easier to 
-  # reverse the streamflow lines back to a normal appearance
-  
-  
-  # A requirement of this approach is that the primary y-axis breaks 
-  # will have to be set manually
-  
-  # We want nice roundish numbers as the axis breaks
-  # However, `ggplot` will default to nice breaks for the reversed primary axis
-  
-  # When we transform the primary y-axis back into a normal ordering (i.e.,
-  # with zero at the bottom), the corresponding values at the axis breaks 
-  # will not be nice numbers
-  
-  
-  # Borrow a function that can help get us nice numbers 
-  # on the post-transformation axis
-  # (There is another function needed later too that will be imported now)
-  c("getNiceAxisBreaks", "setPrecipColumnWidths") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
-
-  
-  # Get nice breaks in the axis for the primary y-axis
-  breakVals <- getNiceAxisBreaks(yBounds[2], yBounds[1])
-  
-  
-  # After that, get the extreme values in 'precipDF'
-  precipRange <- range(precipDF$PRECIP)
-  
-  
-  # Start by initializing 'streamPlot' with basic customizations 
-  streamPlot <- ggplot(streamDF) +
-    
-    xlab("Date") + ylab(yLabel) +
-    # Axis labels
-    
-    scale_x_date(date_labels = if_else(nrow(streamDF) < 365 * 5, "%Y-%m", "%Y")) +
-    # Set the appearance of the x-axis date labels (see more details below)
-    
-    coord_cartesian(ylim = yBounds) +
-    # Limit the chart's y-axis to the values in 'yBounds'
-    
-    theme_gray(base_size = 20)
-    # Set the default font size to "20" units instead of "11"
-  
-  
-  # The x-axis labels use either "Year-Month" or "Year" depending on the size
-  # of 'streamDF' 
-  
-  # For daily data, plots with at least 5 years worth of data use just
-  # years in their labels; smaller plots use "Year-Month"
-  
-  # For monthly data, essentially all cases use "Year-Month" ('streamDF' 
-  # would need at least 365 * 5 = 1825 months of data to switch its labels)
-  
-  
-  # The next set of edits are more complicated due to 'precipDF'
-  streamPlot <- streamPlot + 
-    
-    geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - FLOW), 
-              lwd = 0.8, color = "blue") +
-    # The flow data will be coming from the top down, and this transformation
-    # to the "y" variable will correct it to appear as if it came from the 
-    # bottom up instead
-    
-    geom_col(data = precipDF, 
-             mapping = aes(x = get(xCol), 
-                           y = PRECIP * diff(yBounds) / diff(precipRange), 
-                           fill = precipType), 
-             width = setPrecipColumnWidths(isDaily, nrow(precipDF)), 
-             alpha = 0.35) +
-    # Set precipitation values next--a transformation maps the precipitation
-    # data to the same scale as the streamflow data (see more details below)
-    # Its color is setup to appear in a legend, the width of each column is 
-    # determined in a separate function, and the columns are set to be mostly
-    # transparent
-    
-    guides(fill = guide_legend(title = "Precipitation")) + 
-    scale_fill_manual(values = c("#0081FF") |> set_names(precipType)) + 
-    # Set the colors of the precipitation columns (and the name of their legend)
-    
-    scale_y_reverse(breaks = breakVals, 
-                    labels = ~ yBounds[2] + yBounds[1] - .,
-                    sec.axis = 
-                      sec_axis(~ . * diff(precipRange) / diff(yBounds), 
-                               name = yLabel2))
-  # This is what actually flips the y-axis to come down from the top
-  # 
-  # The breaks are set using 'breakVals' (described earlier)
-  # 
-  # The labels have a transformation applied so that they reflect the
-  # bottom-up streamflow data correctly (and their numbers are actually 
-  # nice thanks to the efforts in creating 'breakVals')
-  # 
-  # The secondary y-axis for precipitation is also setup here
-  # 
-  # Its values *should* come from the top down, so the default axis values
-  # will already be nice numbers
-  # 
-  # The only requirement is specifying the transformation correctly 
-  # (since all secondary y-axes are purely decorative, and the data is 
-  #  actually still plotted relative to the streamflow axis)
-  # 
-  # This is why a transformation was applied to the precipitation data in
-  # the `geom_col` call
-  # 
-  # The data was rescaled to follow the reversed streamflow axis properly
-  # 
-  # The secondary axis has the opposite of this transformation so that 
-  # the streamflow y-axis values can be rescaled in the secondary y-axis and 
-  # properly reflect the original precipitation values
-  # 
-  
-  
-  # ...Who knew the plotting would get so complicated? (>.<)
-  
-  # To summarize, the streamflow and precipitation values are a lie
-  # As are both y-axes' labels
-  
-  # The streamflow lines and precipitation columns get their values 
-  # by assuming that y = 0 is at the top of the graph
-  
-  # This is still true
-  
-  # However, their values have been rescaled to create the illusion that: 
-  # (1) the streamflow data is coming from the bottom
-  # (2) the precipitation data is relative to the secondary axis
-  
-  
-  # The formula applied to the streamflow data made it so that the values we 
-  # want to show are indeed scaled correctly (and relative to the bottom of 
-  # the graph--as if y = 0 was at the bottom of the plot!)
-  
-  # Meanwhile, the main y-axis labels are also reversing the y-axis reverse, 
-  # with breaks in the graph set at "nice numbers" when considered from the 
-  # bottom-up (i.e., y = 0 at the bottom of the plot)
-  
-  # These breaks are likely ugly if we consider their "true" top-down values
-  
-  # And the precipitation data is intended to be top-down, but it is plotted
-  # against the streamflow data's y-axis, which has a different scaling
-  
-  # So the precipitation data is transformed (mapping its extremes to the 
-  # extremes of the streamflow data)
-  
-  # Then, to support this illusion, the labels have the reverse of that 
-  # transformation applied (scaling the streamflow y-axis values to the  
-  # precipitation values' actual range)
-  
-  # In this case, since we are maintaining the top-down axis labeling, the
-  # breaks set by `ggplot` end up being nice numbers for the precipitation
-  # values
-  
-  
-  # Next, save 'streamPlot' to a file
-  
-  # The size of the chart should partially depend on the number of records
-  
-  
-  # If the dates in 'streamDF' cover a period of more than 5,000 days, 
-  # a larger chart is needed
-  if (difftime(max(streamDF[[xCol]]), min(streamDF[[xCol]]), 
-               units = "days") > 5000) {
-    
-    widthFactor <- 10
-    heightFactor <- 8
-    
-    # Otherwise, a smaller dataset can use a smaller chart area
-  } else {
-    
-    widthFactor <- 8
-    heightFactor <- 6
-    
-  }
-  
-  
-  # Save 'streamPlot' to 'writePath'
-  ggsave(writePath, streamPlot, units = "px", dpi = 600,
-         width = 1080 * widthFactor, height = 720 * heightFactor)
-  
-  
-  # If the file was written successfully, output a message
-  if (file.exists(writePath)) {
-    
-    cat("\n\n")
-    
-    paste0("Saved plot to \"", writePath, "\" successfully!") |>
-      errWrap() |> col_blue() |> cat()
-    
-    cat("\n\n")
-    
-  } else {
-    
-    paste0("Could Not Save Chart\n\n",
-           "The script failed to save a plot to \"", writePath, "\" for an ",
-           "unknown reason. Please investigate.") |>
-      errWrap() |>
-      stop()
-    
-  }
   
   
   # Return nothing

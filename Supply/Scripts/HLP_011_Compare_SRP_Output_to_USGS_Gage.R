@@ -997,40 +997,51 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   
   # Generate plots without any precipitation data
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, ".png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            isDaily = TRUE)
   
-  
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, ".png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            isDaily = FALSE)
   
   
   # Then, use PRISM grid cell precipitation data
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, "_PRISM_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            prismDF, isDaily = TRUE, precipType = "PRISM Avg")
   
   
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, "_PRISM_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            prismDF, isDaily = FALSE, precipType = "PRISM Avg")
   
   
   # Try, precipitation data from the SRP DAT file next
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, "_DAT_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            datDF, isDaily = TRUE, precipType = "DAT Avg")
   
   
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, "_DAT_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            datDF, isDaily = FALSE, precipType = "DAT Avg")
   
   
@@ -1087,15 +1098,87 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
 
 
 
-generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
-                                    isDaily = TRUE, volUnit = "AF", 
+generateStreamflowPlot <- function (streamDF, writePath, yCol, 
+                                    yColLegendName = "", 
+                                    precipDF = NULL, isDaily = TRUE, 
+                                    volUnit = "AF", precipUnit = "in", 
                                     precipType = "PRISM Avg") {
   
   # Generate a plot for 'streamDF' 
   # It can contain either daily or monthly streamflow data
   
+  # 'yCol' should contain the name of the streamflow column
+  # If there are multiple streamflow lines being plotted, 'yCol' should have
+  # multiple names
+  
+  # 'yColLegendName' should contain the labels for the streamflow column(s)
+  # (This is used in a legend if multiple streamflow lines are plotted)
+  
   # 'precipDF', which generally contains precipitation data for the same period,
   # will be included as bars in the graph (if it isn't NULL)
+  
+  
+  # Make sure 'yCol' and 'yLabel' have matching lengths
+  if (length(yCol) != length(yColLegendName)) {
+    
+    paste0("Streamflow Dataset Label Mismatch\n\n",
+           "For each streamflow line being plotted, there must be a ",
+           "corresponding entry in 'yColLegendName'. However, the lengths of ",
+           "'yCol' and 'yColLegendName' do not match up (", length(yCol), " vs ", 
+           length(yColLegendName), "). Please correct this issue.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # This function is currently setup for at most three streamflow lines at a time
+  if (length(yCol) > 3 || length(yColLegendName) > 3) {
+    
+    paste0("Function Update Required\n\n",
+           "`generateStreamflowPlot` was only designed for at most three ",
+           "simultaneous streamflow lines in a plot. Please adjust it if ",
+           "more lines are desired.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Make sure 'yCol' matches names in 'streamDF'
+  if (anyFalse(yCol %in% names(streamDF))) {
+    
+    cat("\n\n")
+    cat("Missing Column(s):\n")
+    print(yCol[which(!(yCol %in% names(streamDF)))])
+    cat("\n\n")
+    
+    paste0("Streamflow Dataset Missing Column(s)\n\n",
+           "The column names specified in 'yCol' (", vec2QuotedStr(yCol), ") ",
+           "must exist in 'streamDF'. However, this was not the case. Please ",
+           "correct this issue.") |>
+      errWrap() |>
+      stop()
+    
+  # The streamflow columns in 'yCol' must be numeric or integer variables
+  } else if (anyFalse(streamDF[yCol] |> 
+                      map_lgl(~ class(.) %in% c("numeric", "integer")))) {
+    
+    cat("\n\n")
+    cat("Is a Numeric Column?\n")
+    print(streamDF[yCol] |> 
+            map_lgl(~ class(.) %in% c("numeric", "integer")))
+    cat("\n\n")
+    
+    
+    paste0("Non-Numeric Streamflow Column(s)\n\n",
+           "The column names specified in 'yCol' (", vec2QuotedStr(yCol), ") ",
+           "must be numeric- or integer-type columns in 'streamDF'. However, ",
+           "this was not the case. Please correct this issue.") |>
+      errWrap() |>
+      stop()
+    
+  }
   
   
   # If 'precipDF' was provided as input, adjust it to the bounds of 'streamDF'
@@ -1172,7 +1255,7 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   
   
   # Get the limits for the y-axis (streamflow)
-  yBounds <- c(streamDF$GAGE, streamDF$MODEL) |>
+  yBounds <- streamDF[yCol] |>
     range()
   
   
@@ -1186,7 +1269,7 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   if (!is.null(precipDF)) {
     
     yLabel2 <- paste0(if_else(isDaily, "Daily ", "Monthly "),
-                      "Precipitation (in/",
+                      "Precipitation (", precipUnit, "/",
                       if_else(isDaily, "Day", "Month"), ")")
     
   }
@@ -1232,15 +1315,11 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   
   
   # Start by initializing 'streamPlot' with all customizations that are SHARED
-  # between the two options
+  # between the two options (i.e., with and without 'precipDF')
   streamPlot <- ggplot(streamDF) +
     
     xlab("Date") + ylab(yLabel) +
     # Axis labels
-    
-    guides(color = guide_legend(title = "Flow Type")) +
-    scale_color_manual(values = c("Gage" = "blue", "Model" = "red")) + 
-    # Set the colors of the streamflow lines (plus the name of their legend)
     
     scale_x_date(date_labels = if_else(nrow(streamDF) < 365 * 5, "%Y-%m", "%Y")) +
     # Set the appearance of the x-axis date labels (see more details below)
@@ -1262,6 +1341,33 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   # would need at least 365 * 5 = 1825 months of data to switch its labels)
   
   
+  # There is one more setting that can be added right now, but it is dependent
+  # on the number of streamflow lines being plotted
+  
+  # These are the planned colors of the streamflow lines
+  colOptions <- c("blue", "red", "green")[1:length(yCol)]
+  
+  # If there's only one line, the first entry of 'colOptions' will be used only
+  
+  # `generateStreamflowPot` is currently setup to handle at most three 
+  # simultaneous streamflow lines
+  
+  # That's because 'colOptions' has only three colors in it!
+  # To support more streamflow lines, more colors need to be added
+  
+  
+  # If there are multiple streamflow lines in the plot, add a legend too 
+  # Use the "color" attribute and 'colOptions' to set that up
+  if (length(yCol) > 1) {
+    
+    # Set the colors of the streamflow lines (plus the name of their legend)
+     streamPlot <- streamPlot +
+      guides(color = guide_legend(title = "Flow Type")) +
+      scale_color_manual(values = colOptions |> set_names(yColLegendName))
+      
+  }
+  
+  
   # All of these settings are shared in both versions of 'streamPlot'
   
   # The next set of edits are dependent on 'precipDF' 
@@ -1273,25 +1379,70 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
     # In this case, the only components missing from 'streamPlot' 
     # are the actual streamflow lines themselves
     
-    # Add lines for "GAGE" and "MODEL"
-    streamPlot <- streamPlot +
+    # Iterate through the streamflow lines
+    for (i in 1:length(yCol)) {
       
-      geom_line(mapping = aes(x = get(xCol), y = GAGE, color = "Gage"), 
-                lwd = 0.8) +
-      # Linewidth = 0.8 units
+      # Update 'streamPlot' by generating a string containing R code
+      exeStr <- paste0("streamPlot <- streamPlot + ",
+                       "geom_line(mapping = aes(x = ", xCol, ", ",
+                       "y = ", yCol[i], 
+                       if_else(length(yCol) > 1,
+                               paste0(", color = \"", yColLegendName[i],
+                                      "\")"),
+                               paste0("), color = \"", colOptions[1], "\"")),
+                       ", lwd = 0.8",
+                       if_else(i > 1, ", linetype = 2, alpha = 0.6", ""), 
+                       ")")
       
-      geom_line(mapping = aes(x = get(xCol), y = MODEL, color = "Model"),
-                lwd = 0.8, linetype = 2, alpha = 0.6)
-      # Linewidth = 0.8 units, dashed linetype, partially transparent
+      # Note: For "color", if there is only one streamflow line being plotted,
+      #       that color is specified directly (through 'colOptions')
+      #
+      #       Otherwise, if there are multiple streamflow lines, the legend 
+      #       entry is referenced
+      #       (The legend was setup in the earlier conditional statement)
+      #
+      #       In that conditional statement, both `guides` and 
+      #       `scale_color_manual` were setup to use the streamflow lines' 
+      #       colors as a legend (so the actual color assignments are in 
+      #       `scale_color_manual`)
       
-    
-    # Note: The colors assigned to each of these lines are strings
-    #       ("Gage" and "Model")
-    #       
-    #       In the initial definition of 'streamPlot', both `guides` and 
-    #       `scale_color_manual` were setup to use the streamflow lines' 
-    #       colors as a legend (so the actual color assignments are in 
-    #       `scale_color_manual`)
+      
+      # Next, execute the string to update 'streamPlot'
+      eval(parse(text=exeStr))  
+      
+      # The string that was executed as R code is mostly equivalent to this: 
+      
+      # streamPlot <- streamPlot +
+      #   
+      #   geom_line(mapping = aes(x = get(xCol), y = get(yCol[i]), 
+      #                           color = if_else(length(yCol) > 1,
+      #                                           yColLegendName[i],
+      #                                           colOptions[1])), 
+      #             lwd = 0.8)
+      
+      # Why is it done through a string? It's because `ggplot` is lazy.
+      
+      # The value 'i' is changing in each iteration, but `ggplot` is not 
+      # keeping track of what 'i' is in each step
+      
+      # At the very end, it finally checks 'i', and now 'i' is equal to
+      # the last value in the loop (i.e., whatever the length of 'yCol' is). 
+      # For every line. 
+      
+      # With this executed string, the values that are picked in iteration 'i'
+      # are correctly applied 
+      
+      # The actual recommended method of handling this is reshaping the data
+      # to be longer and using a grouping column to distinguish between 
+      # streamflow values from different sources
+      
+      # However, since linetypes and alpha will differ between the lines,
+      # they would appear as part of the legends for those parameters by 
+      # default. Other components of the chart will use those same parameters
+      # in creating their own legends, so it would create a mess to handle
+      # all of that. While not ideal, this approach avoids that pitfall. 
+      
+    }
     
     
     # The alternative scenario occurs if 'precipDF' is present
@@ -1329,19 +1480,52 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
     
     # Prepare the chart next
     
-    streamPlot <- streamPlot + 
+    
+    # Start with the streamflow data
+    # Again, a loop will be used in case there are multiple streamflow lines
+    for (i in 1:length(yCol)) {
       
-      geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - GAGE, 
-                              color = "Gage"), 
-                lwd = 0.8) +
+      # Update 'streamPlot' by generating a string containing R code
+      exeStr <- paste0("streamPlot <- streamPlot + ",
+                       "geom_line(mapping = aes(x = ", xCol, ", ",
+                       "y = yBounds[2] + yBounds[1] - ", yCol[i], 
+                       if_else(length(yCol) > 1,
+                               paste0(", color = \"", yColLegendName[i],
+                                      "\")"),
+                               paste0("), color = \"", colOptions[1], "\"")),
+                       ", lwd = 0.8",
+                       if_else(i > 1, ", linetype = 2, alpha = 0.6", ""), 
+                       ")")
+      
       # The gage data will be coming from the top down, and this transformation
-      # to the "y" variable will correct it to appear as if it came from the 
-      # bottom up instead
+      # to the "y" variable using 'yBounds' will correct it to appear as if 
+      # it came from the bottom up instead
       
-      geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - MODEL, 
-                              color = "Model"), 
-                lwd = 0.8, linetype = 2, alpha = 0.6) + 
-      # The same transformation as above is applied to the modeled streamflow data
+      # If subsequent lines will be included in 'streamPlot', they will be
+      # slightly different
+      
+      
+      # Next, execute the string to update 'streamPlot'
+      eval(parse(text=exeStr))  
+      
+      
+      # 'exeStr' is mostly equivalent to this:
+      # 
+      # streamPlot <- streamPlot +
+      #   
+      #   geom_line(mapping = aes(x = get(xCol), 
+      #                           y = yBounds[2] + yBounds[1] - get(yCol[i]), 
+      #                           color = if_else(length(yCol) > 1, 
+      #                                           yColLegendName[i],
+      #                                           colOptions[1])), 
+      #             lwd = 0.8)
+      
+    }
+    
+    
+    # Add the precipitation data next
+    # (This is unaffected by the number of streamflow lines)
+    streamPlot <- streamPlot + 
       
       geom_col(data = precipDF, 
                mapping = aes(x = get(xCol), 
