@@ -119,7 +119,7 @@ mainProcedure <- function (predictWY = TRUE) {
     checkForPreviousOutput() |> 
     getDelim(",")
   
-  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], delim = ",")
   
   
   # Validate the primary DAT file next

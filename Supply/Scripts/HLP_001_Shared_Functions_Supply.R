@@ -28,21 +28,24 @@ makeSharePointPath <- function (filePathFragment) {
 
 
 
-getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile = FALSE) {
+getFile <- function (filePath, fileType = NULL, largeFile = FALSE, delim = NULL,
+                     select = NULL, trim_ws = FALSE, 
+                     worksheet = NULL, range = NULL, col_names = TRUE,
+                     col_types = NULL, skip = 0, n_max = Inf) {
   
   # Given the path to a file, read it into a tibble
   
   # There are several optional arguments as well:
-  #   (*) 'parameterVec' is a vector of additional information for reading in the file
-  #       (such as the worksheet of a spreadsheet)
-  
   #   (*) 'fileType' is the type of the file
-  #       It can have these values: "XLSX", "CSV", "DELIM", or "OTHER"
+  #       It can have these values: "XLSX", "CSV", "TSV", "DELIM", or "OTHER"
   #       If 'fileType' is NULL, this function will guess the type
   
   #   (*) 'largeFile' is a boolean that applies to "CSV" and "DELIM" files only
   #       If this value is TRUE, fread() from the 'data.table' package will 
   #       be used instead of read_delim() from the 'readr' package
+  
+  #   (*) The remaining arguments can be supplied to the different file-reading
+  #       functions (like `read_xlsx`, `fread`, `read_delim`, and `read_lines`)
   
   
   # First make sure that 'filePath' is not NA
@@ -64,7 +67,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   # If so, guess the type
   if (is.null(fileType)) {
     
-    fileType <- guessFileType(filePath, parameterVec)
+    fileType <- guessFileType(filePath, delim)
     
   }
   
@@ -101,45 +104,30 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   }
   
   
-  # Set default arguments for the functions
-  n_max <- Inf
-  skip <- 0
-  
-  
-  # Check the inputs in 'parameterVec' 
-  # If it is a named vector or list, try to incorporate its values 
-  # into the function arguments instead of the above defaults
-  if (!is.null(parameterVec) && !is.null(names(parameterVec))) {
-    
-    if ("n_max" %in% names(parameterVec)) {
-      
-      n_max <- parameterVec[[which(names(parameterVec) == "n_max")[1]]]
-      
-    }
-    
-    
-    if ("skip" %in% names(parameterVec)) {
-      
-      skip <- parameterVec[[which(names(parameterVec) == "skip")[1]]]
-      
-    }
-    
-  }
-  
-  
   # Finally, call different functions to read in the file
   if (fileType == "XLSX") {
     
-    return(getXLSX(filePath, parameterVec, n_max = n_max, skip = skip))
+    return(getXLSX(filePath, worksheet = worksheet, range = range, 
+                   col_names = col_names, col_types = col_types, skip = skip,
+                   n_max = n_max, guess_max = guess_max))
     
   } else if (fileType == "CSV") {
     
-    return(getDelim(filePath, ",", largeFile, n_max = n_max, skip = skip))
+    return(getDelim(filePath, delim = ",", largeFile, select = select,
+                    col_types = col_types, skip = skip, trim_ws = trim_ws,
+                    n_max = n_max, col_names = col_names))
     
-  } else if (fileType %in% c("TSV", "DELIM")) {
+  } else if (fileType == "TSV") {
     
-    return(getDelim(filePath, parameterVec[1], largeFile, n_max = n_max, 
-                    skip = skip))
+    return(getDelim(filePath, delim = "\t", largeFile, select = select,
+                    col_types = col_types, skip = skip, trim_ws = trim_ws,
+                    n_max = n_max, col_names = col_names))
+    
+  } else if (fileType == "DELIM") {
+    
+    return(getDelim(filePath, delim = delim, largeFile, select = select,
+                    col_types = col_types, skip = skip, trim_ws = trim_ws,
+                    n_max = n_max, col_names = col_names))
     
   } else {
     
@@ -152,7 +140,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
 
 
 
-guessFileType <- function (filePath, parameterVec = NULL) {
+guessFileType <- function (filePath, delim = NULL) {
   
   # Guess the type of file input by the user
   
@@ -175,11 +163,8 @@ guessFileType <- function (filePath, parameterVec = NULL) {
     
     return("TSV")
     
-  # If the filepath has a parameter specified in 'parameterVec',
-  # and 'parameterVec' contains a single character, assume it is a delimited file
-  } else if (!is.null(parameterVec) && length(parameterVec) == 1 &&
-             !is.na(parameterVec[1]) && is.character(parameterVec[1]) && 
-             nchar(parameterVec[1]) == 1) {
+  # If the filepath has a value for 'delim' specified, assume it is delimited
+  } else if (!is.null(delim)) {
     
     return("DELIM")
     
@@ -274,7 +259,9 @@ getXLSX <- function (filePath, worksheet = NULL,
   if ("try-error" %in% class(sheetDF)) {
     
     # In every case, output the actual error message first
+    cat("\n\n")
     message(sheetDF)
+    cat("\n\n")
     
     
     # Next, address different errors with custom messages
@@ -345,9 +332,9 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
                       select = NULL, col_types = NULL, skip = 0,
-                      trim_ws = FALSE, n_max = Inf) {
+                      trim_ws = FALSE, n_max = Inf, col_names = TRUE) {
   
-  # Use read_delim() or fread() to import a file as a data frame
+  # Use `read_delim` or `fread` to import a file as a data frame
   
   
   # First, make sure 'filePath' is a character variable
@@ -368,13 +355,35 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   if (largeFile) {
     
     fileDF <- try(fread(filePath, sep = delim, select = select,
-                        strip.white = trim_ws, nrows = n_max), silent = TRUE)
+                        strip.white = trim_ws, nrows = n_max,
+                        header = col_names), silent = TRUE)
     
   } else {
     
-    fileDF <- try(read_delim(filePath, delim = delim, 
-                             col_types = col_types, show_col_types = FALSE,
-                             skip = skip, trim_ws = trim_ws, n_max = n_max))
+    # Both options use `read_delim` here
+    
+    # However, the "col_select" argument can interpret arguments using 
+    # the tidyverse mini-language, and that causes an error when it tries 
+    # to interpret the input value "select", even if it's NULL
+    
+    # For that reason, a value is specified for "col_select" only when it's
+    # actually intended to be used
+    if (is.null(select)) {
+      
+      fileDF <- try(read_delim(filePath, delim = delim, 
+                               col_types = col_types, show_col_types = FALSE,
+                               skip = skip, trim_ws = trim_ws, n_max = n_max,
+                               col_names = col_names), silent = TRUE)
+      
+    } else {
+      
+      fileDF <- try(read_delim(filePath, delim = delim, 
+                               col_types = col_types, show_col_types = FALSE,
+                               skip = skip, trim_ws = trim_ws, n_max = n_max,
+                               col_names = col_names, col_select = select), 
+                    silent = TRUE)
+      
+    }
     
   }
   
@@ -384,7 +393,7 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
     
     # In every case, output the actual error message first
     cat("\n\n")
-    print(fileDF)
+    message(fileDF)
     cat("\n\n")
     
     
@@ -618,7 +627,7 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
   if (is.null(writeFunction)) {
     
     # Guess the type of file using 'outPath'
-    fileType <- guessFileType(outPath, parameterVec = delim)
+    fileType <- guessFileType(outPath, delim = delim)
     
     
     # For spreadsheets, use `write_xlsx`
@@ -1254,7 +1263,7 @@ getPRISM <- function (prismPath) {
   
   
   prismVec <- getFile(prismPath, fileType = "OTHER", 
-                      parameterVec = c("n_max" = 50))
+                      "n_max" = 50)
   
   
   # Get the line where the headers start
