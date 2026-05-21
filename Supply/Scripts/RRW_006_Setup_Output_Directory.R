@@ -102,9 +102,23 @@ mainProcedure <- function () {
   
   # Save 'outputDirectory' to a text file in the "ProcessedData" folder
   # This will make it easier to reference in later scripts
+  outPath <- paste0("ProcessedData/Hydrology_Output_Location_", startDate,
+                    "_", endDate, ".txt")
+  
   outputDirectory |>
-    writeOutput(paste0("ProcessedData/Hydrology_Output_Location_", startDate,
-                       "_", endDate, ".txt"))
+    writeOutput(outPath)
+  
+  
+  # Save that file to 'outputDirectory' too
+  
+  # Edit 'outPath' to point to 'outputDirectory' instead of "ProcessedData"
+  outPath <- outPath |>
+    str_replace("^.+[/\\\\]", paste0(outputDirectory, "/"))
+  
+  
+  # Then save the txt file there too
+  outputDirectory |>
+    writeOutput(outPath, quietly = TRUE)
   
   
   cat("\tDone!\n\n")
