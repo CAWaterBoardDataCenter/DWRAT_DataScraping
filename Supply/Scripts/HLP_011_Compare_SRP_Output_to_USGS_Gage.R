@@ -368,8 +368,7 @@ gatherPrecipDAT <- function (dirPath, startDate, endDate, model = "SRP") {
   
   # Get the path to the DAT file and confirm that it exists
   datPath <- paste0(dirPath, "/", model, "/Input/DAT_", model, 
-                    "_", Sys.info()[["user"]], "_",
-                    startDate, "_", endDate, ".dat") |>
+                    "_", startDate, "_", endDate, ".dat") |>
     checkForPreviousOutput()
   
   

@@ -1268,6 +1268,64 @@ validateHydroFolder <- function (startDate, endDate) {
   dirPath <- read_lines(folderFilePath)[1]
   
   
+  # Make sure the username matches (if "C:/Users/..." is detected)
+  if (grepl("^C:[/\\\\]Users[/\\\\].+", dirPath)) {
+    
+    # Substitute the username to ensure that it matches the current user
+    # This ensures that different users can try to access the same path
+    # in case it's shared (e.g., on SharePoint)
+    dirPath <- dirPath |>
+      str_replace("^C:[/\\\\]Users[/\\\\].+?[/\\\\]",
+                  paste0("C:/Users/", Sys.info()[["user"]], "/")) |>
+      normalizePath(mustWork = FALSE)
+    
+    # The two regular expressions look complicated, but here's what they mean:
+    
+    #   (*) The path starts with "C:"
+    #   (*) Followed by either a single "/" or a single "\"
+    #   (*) Followed by "Users"
+    #   (*) Followed by either a single "/" or a single "\"
+    
+    # The second regex has two additional components:
+    #   (*) Followed by one or more characters (lazy evaluation)
+    #   (*) Followed by either a single "/" or a single "\"
+    
+    # There are two things worth noting here:
+    #
+    #   (1) The regular expression for a forward slash is just "/", but for 
+    #       a backslash it's "\\\\"
+    #
+    #       This is because "\" is a special character for escaping other
+    #       special characters (including itself)
+    # 
+    #       We have to escape the backslash (using another backslash "\\") 
+    #       to disable its special properties, but then both of the backslashes 
+    #       must be escaped too for this (to signify that they are being escaped,
+    #       and that they are not escaping another character). This ends up 
+    #       leading to "\\\\".
+    #
+    #   (2) Lazy evaluation of "+"
+    #       Since "+" means one or more, the pattern could match with the bare
+    #       minimum, or go as far as possible
+    #       The former is a "lazy" approach, while the latter is a "greedy" one
+    #
+    #       If I place a "?" right after the "+", it chooses the lazy approach
+    #  
+    #       This is necessary because ".+/" could go all the way to the last 
+    #       folder "/" in the path. 
+    #
+    #       Consider this path for example: "C:/Users/me/one/two/three"
+    #
+    #       If I use "^C:[/\\\\]Users[/\\\\].+[/\\\\]" as the regex instead,
+    #       it will match with "C:/Users/me/one/two/" because the greedy matching
+    #       style is the default
+    #
+    #       By adding a "?" after the "+" ("^C:[/\\\\]Users[/\\\\].+?[/\\\\]"),
+    #       the pattern will instead match with just "C:/Users/me/"
+    
+  }
+  
+  
   # Make sure that folder exists 
   if (!dir.exists(dirPath)) {
     
