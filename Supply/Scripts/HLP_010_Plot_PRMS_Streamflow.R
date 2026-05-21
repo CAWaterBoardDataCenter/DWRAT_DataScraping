@@ -71,7 +71,12 @@ mainProcedure <- function () {
   
   
   # Import more precipitation data from the DAT file that was used to run PRMS
-  datDF <- gatherPrecipDAT(dirPath, startDate, endDate)
+  # "HLP_011_Compare_SRP_Output_to_USGS_Gage.R" has a function for that too
+  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+                  "gatherPrecipDAT")
+  
+  
+  datDF <- gatherPrecipDAT(dirPath, startDate, endDate, model = "PRMS")
   
   
   # For consistency, have both 'prismDF' and 'datDF' use "PRECIP" as the
@@ -109,111 +114,6 @@ mainProcedure <- function () {
 
 
 
-gatherPrecipDAT <- function (dirPath, startDate, endDate) {
-  
-  # Use the DAT file that is input into PRMS
-  
-  # It contains precipitation data from different gages
-  
-  # Take the average of these values to get an estimate of basin precipitation 
-  
-  
-  # Get the path to the DAT file and confirm that it exists
-  datPath <- paste0(dirPath, "/PRMS/Input/DAT_PRMS_", Sys.info()[["user"]], "_",
-                    startDate, "_", endDate, ".dat") |>
-    checkForPreviousOutput()
-  
-  
-  # Read in 'datPath'
-  datDF <- getFile(datPath)
-  
-  
-  # Check for the location of the header row
-  headerIndex <- grep("^\\s*#+", datDF)
-  
-  
-  # Output an error message if it cannot be found
-  if (length(headerIndex) != 1) {
-    
-    paste0("Could Not Locate Column Header\n\n", 
-           "This script attempted to find the header row in the PRMS DAT ",
-           "file. However, the regular expression that identifies this ",
-           "line returned ", length(headerIndex), " matches.\n\n", 
-           "Please investigate '", datPath, "'") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Extract the header rows from 'datDF'
-  # They don't have column names specifically
-  # Instead, each category of variable has the number of instances of those 
-  # types of columns
-  headerRows <- datDF[1:headerIndex] |>
-    str_split("\t") |> unlist() |>
-    str_subset("[0-9]")
-  
-  
-  # Extract the categories in 'headerRows' as well as the number of each type
-  headerDF <- tibble(TYPE = headerRows |>
-                       str_extract("^[a-zA-Z]+"),
-                     N = headerRows |>
-                       str_extract("[0-9]+$") |>
-                       as.numeric())
-  
-  
-  # Create names for each category of variable
-  # Use the "N" column to create multiple instances of each type
-  headerNames <- map2(headerDF$TYPE, headerDF$N, ~ paste0(.x, "_", 1:.y)) |>
-    unlist() |> tolower()
-  
-  
-  # Add datetime column names to 'headerNames'
-  headerNames <- c("year", "month", "day", "h", "m", "s",
-                   headerNames)
-  
-  
-  # Consider only the rows after 'headerIndex'
-  # Then, split the values at each tab space and reformat the data
-  # Shape it into a matrix and then a tibble
-  # Finally, apply the column headers to it
-  datDF <- datDF[(headerIndex + 1):length(datDF)] |>
-    str_split("\t") |> unlist() |>
-    matrix(ncol = length(headerNames), byrow = TRUE) |>
-    as_tibble(.name_repair = "minimal") |>
-    set_names(headerNames)
-  
-  
-  # Use 'year', 'month', and 'day' to define a "Date" variable
-  # After that, select the new "Date" column and any precipitation columns
-  datDF <- datDF |>
-    mutate(Date = paste0(year, "-", month, "-", day) |>
-             as.Date("%Y-%m-%d")) |>
-    select(Date, contains("precip"))
-  
-  
-  # Then, calculate a new "PRECIP" column 
-  # Take the average of the precipitation values
-  # Make sure the precipitation values are numeric and then reshape the tibble
-  # so that all precipitation columns appear in the same column
-  # After that, group by "Date" and average precipitation values 
-  # that occurred on the same day
-  datDF <- datDF |>
-    mutate(across(contains("precip"), as.numeric)) |>
-    pivot_longer(contains("precip"), 
-                 names_to = "STATION", values_to = "PRECIP") |>
-    group_by(Date) |>
-    summarize(PRECIP = mean(PRECIP), .groups = "drop")
-  
-  
-  # Return 'datDF' afterwards
-  return(datDF)
-  
-}
-
-
-
 plotModelResults <- function (dirPath, outDF, prismDF, datDF) {
   
   # Create plots to inspect the streamflow data in 'outDF'
@@ -243,7 +143,13 @@ plotModelResults <- function (dirPath, outDF, prismDF, datDF) {
   
   # After that, create a new folder in the PRMS "output" directory 
   # This will hold the data output by this function
-  newDir <- prepNewDirectory(dirPath)
+  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+                  "prepNewDirectory")
+  
+  
+  # By default, the folder name will be "Streamflow_QAQC"
+  newDir <- prepNewDirectory(dirPath,
+                             paste0(dirPath, "/PRMS/output/Streamflow_QAQC"))
   
   
   # Once 'newDir' has been established, 
@@ -298,61 +204,6 @@ plotModelResults <- function (dirPath, outDF, prismDF, datDF) {
   
   # Return nothing
   return(invisible(NULL))
-  
-}
-
-
-
-prepNewDirectory <- function (dirPath) {
-  
-  # Generate a new folder in the PRMS "output" folder
-  # It will contain data from this precipitation comparison
-  
-  
-  # By default, the folder name will be "Streamflow_QAQC"
-  newDir <- paste0(dirPath, "/PRMS/output/Streamflow_QAQC")
-  
-  
-  # If the directory already exists, adjust the name to have a number at the end
-  while (dir.exists(newDir)) {
-    
-    # If 'newDir' doesn't have any incrementing number in its name (e.g., "(#2)"),
-    # add "_(#2)" to the directory name now
-    if (!grepl("_\\(#[0-9]+\\)$", newDir)) {
-      
-      newDir <- paste0(newDir, "_(#2)")
-      
-      # (This situation happens only in the first iteration of this loop)
-      
-    } else {
-      
-      # If there's already an incrementing number in the folder name, 
-      # extract it into 'dirNum'
-      dirNum <- newDir |>
-        str_extract("[0-9]+(?=\\)$)") |>
-        as.numeric()
-      
-      
-      # Increment the number
-      dirNum <- dirNum + 1
-      
-      
-      # Update the name in 'newDir' to have the new 'dirNum' instead
-      newDir <- newDir |>
-        str_replace("_\\(#[0-9]+\\)$",
-                    paste0("_(#", dirNum, ")"))
-      
-    }
-    
-  } # End of loop to pick a name for the new streamflow folder
-  
-  
-  # Create the new folder for the streamflow data plots
-  dir.create(newDir)
-  
-  
-  # Return the path 'newDir'
-  return(newDir)
   
 }
 
@@ -419,7 +270,8 @@ generatePlots <- function (dailyDF, newDir, timescale, prismDF, datDF) {
                                   timescale, ".png"),
                            yCol = "FLOW", isDaily = TRUE, 
                            precipDF = prismDF, 
-                           precipType = "PRISM Avg")
+                           precipType = "PRISM Avg",
+                           extraYLabelFragment = "Model ")
   
   
   monthlyDF |>
@@ -427,15 +279,18 @@ generatePlots <- function (dailyDF, newDir, timescale, prismDF, datDF) {
                                   timescale, ".png"),
                            yCol = "FLOW", isDaily = FALSE, 
                            precipDF = prismDF,
-                           precipType = "PRISM Avg")
+                           precipType = "PRISM Avg",
+                           extraYLabelFragment = "Model ")
   
   
+  # After that, use 'datDF' for precipitation data
   dailyDF |>
     generateStreamflowPlot(paste0(newDir, "/Daily_Streamflow_DAT_Precip_", 
                                   timescale, ".png"),
                            yCol = "FLOW", isDaily = TRUE, 
                            precipDF = datDF,
-                           precipType = "DAT Avg")
+                           precipType = "DAT Avg",
+                           extraYLabelFragment = "Model ")
   
   
   monthlyDF |>
@@ -443,10 +298,8 @@ generatePlots <- function (dailyDF, newDir, timescale, prismDF, datDF) {
                                   timescale, ".png"),
                            yCol = "FLOW", isDaily = FALSE, 
                            precipDF = datDF,
-                           precipType = "DAT Avg")
-  
-  
-  # After that, use 'datDF' for precipitation data
+                           precipType = "DAT Avg",
+                           extraYLabelFragment = "Model ")
   
   
   # Return nothing

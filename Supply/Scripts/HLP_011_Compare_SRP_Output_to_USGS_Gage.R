@@ -191,8 +191,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
     
     
     # Then, return it
-    return(compiledPath |>
-             getFile())
+    return(compiledDF)
     
   }
   
@@ -321,93 +320,6 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
 
 
 
-gatherPrecipDAT <- function (dirPath, startDate, endDate) {
-  
-  # Use the DAT file that is input into SRP
-  
-  # It contains precipitation data for different gages
-  
-  # Take the averages of these values to get an estimate of basin precipitation 
-  
-  
-  # Get the path to the DAT file and confirm that it exists
-  datPath <- paste0(dirPath, "/SRP/Input/DAT_SRP_", Sys.info()[["user"]], "_",
-                    startDate, "_", endDate, ".dat") |>
-    checkForPreviousOutput()
-  
-  
-  # Read in 'datPath'
-  datDF <- getFile(datPath)
-  
-  
-  # Check for the location of the header row
-  headerIndex <- grep("^#+\\s*[a-zA-Z]", datDF)
-  
-  
-  # Output an error message if it cannot be found
-  if (length(headerIndex) != 1) {
-    
-    paste0("Could Not Locate Column Header\n\n", 
-           "This script attempted to find the header row in the SRP DAT ",
-           "file. However, the regular expression that identifies this ",
-           "line returned ", length(headerIndex), " matches.\n\n", 
-           "Please investigate '", datPath, "'") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Extract the headers from this row
-  # Split the values at the spaces and exclude the "#####" string
-  # (and "date" if it appears in the vector)
-  headers <- datDF[headerIndex] |>
-    str_split("\\s+") |> unlist() |>
-    tolower() |>
-    str_subset("^#+$", negate = TRUE) |>
-    str_subset("^date$", negate = TRUE)
-  
-  
-  # Consider only the rows after 'headerIndex'
-  # Then, split the values at the spaces and reformat the data
-  # Shape it into a matrix and then a tibble
-  # Finally, apply the column headers to it
-  datDF <- datDF[(headerIndex + 1):length(datDF)] |>
-    str_split("\\s+") |> unlist() |>
-    matrix(ncol = length(headers), byrow = TRUE) |>
-    as_tibble() |>
-    set_names(headers)
-  
-  
-  # Use 'year', 'month', and 'day' to define a "Date" variable
-  # After that, select the new "Date" column and any precipitation columns
-  datDF <- datDF |>
-    mutate(Date = paste0(year, "-", month, "-", day) |>
-             as.Date("%Y-%m-%d")) |>
-    select(Date, contains("precip"))
-  
-  
-  # Then, calculate a new "PRECIP" column 
-  # Take the average of the precipitation values
-  # Make sure the precipitation values are numeric and then reshape the tibble
-  # so that all precipitation columns appear in the same column
-  # After that, group by "Date" and average precipitation values 
-  # that occurred on the same day
-  datDF <- datDF |>
-    mutate(across(contains("precip"), as.numeric)) |>
-    pivot_longer(contains("precip"), 
-                 names_to = "STATION", values_to = "PRECIP") |>
-    group_by(Date) |>
-    summarize(PRECIP = mean(PRECIP), .groups = "drop")
-
-  
-  # Return 'datDF' afterwards
-  return(datDF)
-  
-}
-
-
-
 validateAndSummarizePRISM <- function (prismDF, prismPath) {
   
   # Given a dataset containing PRISM data, 
@@ -439,6 +351,72 @@ validateAndSummarizePRISM <- function (prismDF, prismPath) {
   
   # Return 'prismDF'
   return(prismDF)
+  
+}
+
+
+
+gatherPrecipDAT <- function (dirPath, startDate, endDate, model = "SRP") {
+  
+  # Use the DAT file that is input into SRP
+  
+  # It contains precipitation data for different gages
+  
+  # Take the averages of these values to get an estimate of basin precipitation 
+  
+  
+  # Get the path to the DAT file and confirm that it exists
+  datPath <- paste0(dirPath, "/", model, "/Input/DAT_", model, 
+                    "_", Sys.info()[["user"]], "_",
+                    startDate, "_", endDate, ".dat") |>
+    checkForPreviousOutput()
+  
+  
+  # Read in 'datPath'
+  datDF <- read_dat(datPath)
+  
+  
+  # Validate the file
+  # (Some adjustments are needed to match the function's expectations)
+  # (The column names must be temporarily capitalized 
+  #  and "sec" must be renamed to "SECOND")
+  datDF |>
+    set_names(toupper(names(datDF))) |>
+    rename(SECOND = SEC) |>
+    validateInputDAT(sourcePath = datPath,
+                     model = model,
+                     modelCols = names(datDF) |> 
+                       str_subset("^((precip)|(tm))") |>
+                       toupper(),
+                     startDate, endDate,
+                     datType = "Final")
+  
+  
+  # After that, proceed with the adjustments to 'datDF'
+  # Use 'year', 'month', and 'day' to define a "Date" variable
+  # After that, select the new "Date" column and any precipitation columns
+  datDF <- datDF |>
+    mutate(Date = paste0(year, "-", month, "-", day) |>
+             as.Date("%Y-%m-%d")) |>
+    select(Date, contains("precip"))
+  
+  
+  # Then, calculate a new "PRECIP" column 
+  # Take the average of the precipitation values
+  # Make sure the precipitation values are numeric and then reshape the tibble
+  # so that all precipitation columns appear in the same column
+  # After that, group by "Date" and average precipitation values 
+  # that occurred on the same day
+  datDF <- datDF |>
+    mutate(across(contains("precip"), as.numeric)) |>
+    pivot_longer(contains("precip"), 
+                 names_to = "STATION", values_to = "PRECIP") |>
+    group_by(Date) |>
+    summarize(PRECIP = mean(PRECIP), .groups = "drop")
+  
+  
+  # Return 'datDF' afterwards
+  return(datDF)
   
 }
 
@@ -786,7 +764,9 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   
   # First, create a new folder in the SRP "output" directory 
   # This will hold the data output by this function
-  newDir <- prepNewDirectory(dirPath, gageID)
+  newDir <- prepNewDirectory(dirPath, 
+                             paste0(dirPath, "/SRP/output/", 
+                                    gageID, "_Comparison"))
   
   
   # Once 'newDir' has been established, 
@@ -878,14 +858,16 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
 
 
 
-prepNewDirectory <- function (dirPath, gageID) {
+prepNewDirectory <- function (dirPath, newDir) {
   
   # Generate a new folder in the SRP "output" folder
   # It will contain data from this gage comparison
   
+  # This function will be written generically for use in other scripts
   
-  # By default, the folder name will be "[GAGE_ID]_Comparison"
-  newDir <- paste0(dirPath, "/SRP/output/", gageID, "_Comparison")
+  # Given a base folder path, 'newDir', check if that path already exists
+  # If so, incrementally adjust the path name until a previously unused 
+  # path is obtained
   
   
   # If the directory already exists, adjust the name to have a number at the end
@@ -1102,7 +1084,8 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
                                     yColLegendName = "", 
                                     precipDF = NULL, isDaily = TRUE, 
                                     volUnit = "AF", precipUnit = "in", 
-                                    precipType = "PRISM Avg") {
+                                    precipType = "PRISM Avg",
+                                    extraYLabelFragment = "") {
   
   # Generate a plot for 'streamDF' 
   # It can contain either daily or monthly streamflow data
@@ -1116,6 +1099,9 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   
   # 'precipDF', which generally contains precipitation data for the same period,
   # will be included as bars in the graph (if it isn't NULL)
+  
+  # 'extraYLabelFragment' can be used to add text to the primary y-axis
+  # (after "Daily" or "Monthly" in the label)
   
   
   # Make sure 'yCol' and 'yLabel' have matching lengths
@@ -1261,8 +1247,9 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   
   # Prepare the label for the y-axis too
   yLabel <- paste0(if_else(isDaily, "Daily ", "Monthly "),
-                 "Streamflow (", volUnit, "/",
-                 if_else(isDaily, "Day", "Month"), ")")
+                   extraYLabelFragment, 
+                   "Streamflow (", volUnit, "/",
+                   if_else(isDaily, "Day", "Month"), ")")
   
   
   # If 'precipDF' was provided, a label will be needed for a secondary y-axis too
