@@ -102,15 +102,11 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
     normalizePath(mustWork = TRUE)
   
   
-  # For the "sub_cfs" and "sub_inq" files, include today's date and the 
-  # modeler's name in their archive filenames
+  # For the "sub_cfs" and "sub_inq" files, include the model scraping bounds 
+  # in their archive filenames
   writePaths <- copyFiles |>
     str_replace("RR_PRMS_Output(?=_sub_((cfs)|(inq))\\.csv$)",
-                paste0("RR_PRMS_Output_",
-                       Sys.Date(),
-                       "_", Sys.info()[["user"]],
-                       "_", startDate,
-                       "_", endDate))
+                paste0("RR_PRMS_Output_", startDate, "_", endDate))
   
   # The regular expression checks for "RR_PRMS_Output" in the file paths,
   # with a lookahead regex specifically matching "sub_cfs.csv" and "sub_inq.csv" 

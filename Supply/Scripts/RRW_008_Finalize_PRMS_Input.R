@@ -902,10 +902,8 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   #      under "PRMS > input > climate_scenarios" 
   
   
-  # The final filename of 'mergedDAT' will contain 'startDate', 'endDate', and
-  # the name of the user running this script
-  datName <- paste0("DAT_PRMS_", Sys.info()[["user"]], "_", startDate, 
-                    "_", endDate, ".dat")
+  # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
+  datName <- paste0("DAT_PRMS_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only

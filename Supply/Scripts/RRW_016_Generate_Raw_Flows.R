@@ -158,8 +158,7 @@ mainProcedure <- function () {
   
   # Store both 'adjustedDF' and 'flowDF' in the "DWRAT" "Input" folder
   flowName <- paste0(dirPath, "/DWRAT/Input/",
-                     "Raw_Flows_", Sys.info()[["user"]],
-                     "_", Sys.Date(), ".csv") |>
+                     "Raw_Flows_", Sys.Date(), ".csv") |>
     normalizePath(mustWork = FALSE)
   
   
