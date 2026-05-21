@@ -1332,6 +1332,408 @@ getPRISM <- function (prismPath) {
 
 
 
+read_dat <- function (datPath, datType = NULL) {
+  
+  # Read in a DAT file
+  
+  # It will have one of several formats depending on the model
+  
+  # This will affect the method of reading in the file
+  
+  
+  # First, read in a portion of the DAT file
+  # This can help determine the type of DAT file (as well as the headers)
+  datPartial <- getFile(datPath, n_max = 50, fileType = "OTHER")
+  
+  
+  # If 'datType' is NULL, try to guess the type of DAT file
+  if (is.null(datType)) {
+    
+    datType <- guessDAT(datPartial)
+    
+  }
+  
+  
+  # Make sure 'datType' is one of the expected values
+  datOptions <- c("PRMS", "SRP", "RRIHM")
+  
+  
+  # If 'datType' is something else, output an error message
+  if (!(datType %in% datOptions)) {
+    
+    paste0("Unrecognized DAT Type\n\n", 
+           "The function parameter 'datType' is expected to be 1 of ",
+           length(datOptions), " different options (", vec2QuotedStr(datOptions),
+           "). However, `read_dat` received \"", datType, "\" as input ",
+           "instead. Please investigate the cause.\n\n", 
+           "(This error occurred while reading \"", datPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The next step is to determine the column headers
+  # The method will differ depending on the type of DAT file
+  # The end result should be a tibble with separate columns and headers applied
+  if (datType == "SRP") {
+    
+    # In the row containing multiple "#", 'datPartial' will have the names of
+    # its columns
+    
+    # Locate that row first
+    headerRegex <- "^\\s*#+\\s*"
+    
+    # This regex says that the line should begin with:
+    #   (*) 0 or more spaces
+    #   (*) 1 or more "#"
+    #   (*) Followed by 0 or more spaces
+    
+    
+    # Locate the header
+    headerRow <- grep(headerRegex, datPartial)
+    
+    
+    # If 'headerRow' was not found, output an error message
+    if (length(headerRow) != 1) {
+      
+      paste0("Header Row Not Found\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to locate the header. The regular expression \"", 
+             headerRegex, "\" returned ", length(headerRow), " matches instead ",
+             "of a single location, as expected. Please investigate the ",
+             "cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Extract the column headers from 'headerRow' 
+    # Note: If "date" appears in that list, exclude it
+    #       That should never have been there in the first place! ^_^'
+    headers <- datPartial[headerRow] |>
+      str_split("\\s") |> unlist() |>
+      str_subset("^$", negate = TRUE) |>
+      str_subset("^#+$", negate = TRUE) |>
+      str_subset("^date$", negate = TRUE)
+    
+    
+    # Make sure 'headers' is not empty or NA
+    if (length(headers) == 0 || anyNA(headers)) {
+      
+      paste0("Failed to Extract Headers\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to extract the headers from Line ", headerRow, ". ",
+             "Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Extract the first row after 'headerRow' and confirm that the number 
+    # of headers matches the number of elements in the row
+    
+    # (Though, if 'headerRow' is at the end of 'datPartial', another row
+    #  must be read in for this check)
+    if (headerRow == length(datPartial)) {
+      
+      datPartial <- getFile(datPath, fileType = "OTHER", n_max = headerRow + 1)
+      
+    }
+    
+    
+    # Take the row after 'headerRow' and get the number of elements
+    numCols <- datPartial[headerRow + 1] |>
+      str_split("\\s") |> unlist() |>
+      str_subset("^$", negate = TRUE) |> length()
+    
+    
+    # Raise an exception if 'numCols' does not equal the length of 'headers'
+    if (length(headers) != numCols) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from Line ", headerRow, ". ",
+             "However, ", length(headers), " header(s) were extracted, while ",
+             numCols, " unique column(s) were identified in the subsequent ",
+             "line. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Next, read in the entirety of the DAT file
+    # (Skip the lines up until the header row)
+    datDF <- getFile(datPath, fileType = "OTHER", skip = headerRow)
+    
+    
+    # Split 'datDF' wherever spaces occur (and remove empty strings)
+    datDF <- datDF |>
+      str_split("\\s") |> unlist() |>
+      str_subset("^$", negate = TRUE)
+    
+    
+    # Make sure the length of 'datDF' is divisible by 'numCols'
+    if (length(datDF) %% numCols != 0) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from Line ", headerRow, ". ",
+             "However, ", numCols, " header(s) were extracted, while ",
+             length(datDF), " values were identified in the subsequent ",
+             "rows. This number is not divisible by ", numCols, ", so the ",
+             "data cannot be formatted into a tibble. Please investigate ",
+             "the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Reformat 'datDF' as a matrix and then a tibble
+    # After that, apply 'headers' as the column names
+    datDF <- datDF |>
+      matrix(ncol = numCols, byrow = TRUE) |>
+      as_tibble(.name_repair = "minimal") |>
+      set_names(headers)
+    
+  } else if (datType == "PRMS") {
+    
+    # Before the row containing multiple "#", 'datPartial' will have the names 
+    # of different types of columns (and the number of those columns)
+    
+    
+    # Locate that row first
+    headerRegex <- "^\\s*#+\\s*"
+    
+    # This regex says that the line should begin with:
+    #   (*) 0 or more spaces
+    #   (*) 1 or more "#"
+    #   (*) Followed by 0 or more spaces
+    
+    
+    # Locate the header
+    headerCutoff <- grep(headerRegex, datPartial)
+    
+    
+    # If 'headerCutoff' was not found, output an error message
+    if (length(headerCutoff) != 1) {
+      
+      paste0("Header Cutoff Row Not Found\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to locate the header cutoff. The regular expression \"", 
+             headerRegex, "\" returned ", length(headerCutoff), " matches instead ",
+             "of a single location, as expected. Please investigate the ",
+             "cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Get the rows before 'headerCutoff'
+    # Extract the strings that contain numbers
+    # (These entries tell the number of columns of that type)
+    headerInfo <- datPartial[1:headerCutoff] |>
+      str_split("\t") |> unlist() |>
+      str_subset("[A-Za-z]+\\s*[0-9]+")
+    
+    
+    # Check to make sure 'headerInfo' is not empty
+    if (length(headerInfo) == 0 || anyNA(headerInfo)) {
+      
+      paste0("Failed to Extract Header Metadata\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to locate the header strings that indicate the number of ",
+             "each column type within the file. These strings were expected ",
+             "to appear within the first ", headerCutoff, " lines(s) of the ",
+             "file. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Create a tibble that separates out the column label and the number
+    headerTypes <- tibble(TYPE = headerInfo |> str_extract("[A-Za-z]+"),
+                          NUM = headerInfo |> str_extract("[0-9]+") |>
+                            as.numeric())
+    
+    
+    # Make sure there are no missing entries in 'headerTypes'
+    if (nrow(headerTypes) == 0 || anyNA(headerTypes)) {
+      
+      paste0("Failed to Extract Header Metadata\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "attempted to extract metadata that indicates the number of ",
+             "each column type located within the file. However, it failed ",
+             "to extract the column types and their frequencies properly. ",
+             "These strings appear within the first ", headerCutoff, 
+             " lines(s) of the file. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Create headers based on the types of headers and the number of them
+    # that appear in the DAT file
+    typeHeaders <- map2(headerTypes$TYPE, headerTypes$NUM, 
+                        ~ paste0(.x, 1:.y)) |>
+      unlist()
+    
+    
+    # Additional headers related to the date and time are still missing
+    headers <- c("year", "month", "day", "hour", "minute", "sec",
+                 typeHeaders)
+    
+    
+    # Extract the first row after 'headerCutoff' and confirm that the number 
+    # of headers matches the number of elements in the row
+    
+    # (Though, if 'headerCutoff' is at the end of 'datPartial', another row
+    #  must be read in for this check)
+    if (headerCutoff == length(datPartial)) {
+      
+      datPartial <- getFile(datPath, fileType = "OTHER", 
+                            n_max = headerCutoff + 1)
+      
+    }
+    
+    
+    # Take the row after 'headerCutoff' and get the number of elements
+    numCols <- datPartial[headerCutoff + 1] |>
+      str_split("\t") |> unlist() |>
+      str_subset("^$", negate = TRUE) |> length()
+    
+    
+    # Raise an exception if 'numCols' does not equal the length of 'headers'
+    if (length(headers) != numCols) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from before Line ", headerCutoff, ". ",
+             "However, ", length(headers), " header(s) were extracted, while ",
+             numCols, " unique column(s) were identified in the subsequent ",
+             "line. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Next, read in the entirety of the DAT file
+    # (Skip the lines through the header cutoff)
+    datDF <- getFile(datPath, fileType = "OTHER", skip = headerCutoff)
+    
+    
+    # Split 'datDF' wherever tab spaces occur (and remove empty strings)
+    datDF <- datDF |>
+      str_split("\t") |> unlist() |>
+      str_subset("^$", negate = TRUE)
+    
+    
+    # Make sure the length of 'datDF' is divisible by 'numCols'
+    if (length(datDF) %% numCols != 0) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from before Line ", headerCutoff, ". ",
+             "However, ", numCols, " header(s) were extracted, while ",
+             length(datDF), " values were identified in the subsequent ",
+             "rows. This number is not divisible by ", numCols, ", so the ",
+             "data cannot be formatted into a tibble. Please investigate ",
+             "the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Reformat 'datDF' as a matrix and then a tibble
+    # After that, apply 'headers' as the column names
+    datDF <- datDF |>
+      matrix(ncol = numCols, byrow = TRUE) |>
+      as_tibble(.name_repair = "minimal") |>
+      set_names(headers)
+    
+    
+  } else {
+    
+    stop("Not implemented yet!")
+    
+  }
+  
+  
+  # Once 'datDF' is formatted into a tibble, try to convert numeric columns
+  # into numbers
+  
+  # Iterate through the columns in 'datDF'
+  for (j in 1:ncol(datDF)) {
+    
+    # Check if at least 90% of a column appear to be numeric
+    # If yes, convert the column type
+    if (sum(numDetector(datDF[[j]])) > 0.90 * nrow(datDF)) {
+      
+      datDF[[j]] <- datDF[[j]] |> as.numeric()
+      
+    }
+    
+  }
+  
+  
+  # Return 'datDF'
+  return(datDF)
+  
+}
+
+
+
+guessDAT <- function (datPartial) {
+  
+  # Try to guess the type of DAT file based on the first couple of lines
+  # contained within 'datPartial'
+  
+  # DAT files can be for PRMS, SRP, and RRIHM
+  
+  
+  # If no tab spaces are detected, it is likely a DAT file for SRP
+  if (!any(grepl("\t", datPartial))) {
+    
+    return("SRP")
+    
+  }
+  
+  
+  # If there is a line with many hashtags "#" in a row, it is probably 
+  # a DAT file for PRMS
+  if (any(grepl("#{2,}", datPartial))) {
+    
+    return("PRMS")
+    
+  # In all other cases, assume it is a DAT file for RRIHM
+  } else {
+    
+    return("RRIHM")
+    
+  }
+  
+}
+
+
+
 read_gag <- function (gagPath) {
   
   # Read in a ".gag" file as a tibble
@@ -1432,21 +1834,11 @@ read_gag <- function (gagPath) {
     
     # Check if at least 90% of a column match this regular expression
     # If yes, convert the column into numeric
-    if (sum(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", gagDF[[j]])) > 
-        0.90 * nrow(gagDF)) {
+    if (sum(numDetector(gagDF[[j]])) > 0.90 * nrow(gagDF)) {
       
       gagDF[[j]] <- gagDF[[j]] |> as.numeric()
       
     }
-    
-    # Explanation of the regex: 
-    # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
-    
-    #  (*) The string may start with a minus sign ("-")
-    #  (*) The string contains some number of digits (1 or more)
-    #  (*) The string may contain a decimal point, followed by more digits
-    #  (*) The string may end with scientific notation 
-    #      ("e" followed by a plus or minus, and then one or more digits)
     
   }
   
@@ -1456,6 +1848,27 @@ read_gag <- function (gagPath) {
   
 }
 
+
+
+numDetector <- function (str) {
+  
+  # Check a string (or vector of strings)
+  # Use a regular expression to assess whether the data is numeric
+  
+  
+  return(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", str))
+  
+  
+  # Explanation of the regex: 
+  # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
+  
+  #  (*) The string may start with a minus sign ("-")
+  #  (*) The string contains some number of digits (1 or more)
+  #  (*) The string may contain a decimal point, followed by more digits
+  #  (*) The string may end with scientific notation 
+  #      ("e" followed by a plus or minus, and then one or more digits)
+  
+}
 
 
 updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
