@@ -161,6 +161,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # (Similarly, if more PRISM data is available today compared to on the model
   #  run date, that should be downloaded too)
+  # (PRISM data through 2 days ago should be used)
   
   
   # For subsequent runs of this function, generate and archive a compiled version
@@ -173,7 +174,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   # PRISM precipitation averages
   compiledPath <- paste0(dirPath, "/", model, "/Input/",
                          "PRISM_Precip_", model, "_Domain_QAQC_",
-                         Sys.Date() - 1, ".csv") |>
+                         Sys.Date() - 2, ".csv") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -238,7 +239,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # Check for missing data
   missingDF <- tibble(Date = seq(from = min(compiledDF$Date),
-                                 to = max(c(compiledDF$Date, Sys.Date() - 1)),
+                                 to = max(c(compiledDF$Date, Sys.Date() - 2)),
                                  by = "days")) |>
     filter(!(Date %in% compiledDF$Date))
   
@@ -265,7 +266,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # Setup the filepath for the new dataset
   extraPath <- paste0("WebData/PRISM_Precip_", model, "_Domain_Extra_QAQC_Data_",
-                      Sys.Date() - 1, ".csv")
+                      Sys.Date() - 2, ".csv")
   
   
   # Then, import `runModifiedPRISM` from a prior script 
@@ -926,6 +927,9 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   # Precipitation data is included in some versions of these plots
   # (It can come from two different sources: Either PRISM or the SRP DAT file)
   
+  # An additional plot is created at the end that plots just gage data 
+  # vs model data in a scatterplot
+  
   
   # Based on the value in 'timescale', apply a different filter to 'dailyDF'
   if (timescale == "1_yr") {
@@ -1025,6 +1029,15 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
                            yCol = c("GAGE", "MODEL"),
                            yColLegendName = c("Gage", "Model"),
                            datDF, isDaily = FALSE, precipType = "DAT Avg")
+  
+  
+  # For 'monthlyDF' only, plot "GAGE" and "MODEL" in a scatterplot
+  monthlyDF |>
+    generateComparisonScatterplot(paste0(newDir, "/Monthly_Scatterplot_", 
+                                         timescale, ".png"),
+                                  xCol = "GAGE", yCol = "MODEL",
+                                  xLab = "Gage Streamflow (AF/Month)",
+                                  yLab = "Model Streamflow (AF/Month)")
   
   
   # After that, create a tibble that contains different statistical metrics
@@ -1879,6 +1892,96 @@ setPrecipColumnWidths <- function (isDaily, numRecords) {
     }
     
   }
+  
+}
+
+
+
+generateComparisonScatterplot <- function (monthlyDF, writePath, xCol, yCol,
+                                           xLab = "", yLab = "") {
+  
+  
+  # Generate a scatterplot that compares streamflow data for the same month
+  # The x-axis will contain one flow source, and the y-axis will plot the other 
+  
+  # A dashed line will be added in the middle to differentiate between
+  # model under-predictions and over-predictions
+  
+  
+  # Before making the plot, check which of the two datasources ('xCol' or 'yCol') 
+  # has the largest value
+  # This will determine which column is used to create the dashed line
+  if (max(monthlyDF[xCol]) > max(monthlyDF[yCol])) {
+    
+    lineSource <- xCol
+    
+  } else {
+    
+    lineSource <- yCol
+    
+  }
+  
+  
+  # Also get the extreme values among 'xCol' and 'yCol'
+  # The limits for the x-axis and y-axis must be the same for the dashed line
+  # to produce the proper effect (i.e., dividing the chart into sections for
+  # over-predictions and under-predictions)
+  chartLim <- c(monthlyDF[xCol], monthlyDF[yCol]) |>
+    range()
+  
+  
+  # Prepare the scatterplot with bisecting dashed line
+  comparisonPlot <- monthlyDF |>
+    
+    ggplot() +
+    
+    geom_point(mapping = aes(x = get(xCol), y = get(yCol)), color = "blue") +
+    # Plot 'xCol' and 'yCol' as a scatterplot with blue dots
+    
+    geom_line(mapping = aes(x = get(lineSource), y = get(lineSource)),
+              linetype = 2, color = "black", lwd = 1) + 
+    # Plot the dividing line as a black dashed line with a slightly increased
+    # linewidth 
+    
+    coord_cartesian(xlim = chartLim, ylim = chartLim) + 
+    # Make the x-axis and y-axis have the same bounds
+    
+    labs(x = xLab, y = yLab) +
+    # Apply 'xLab' and 'yLab' as the axis labels
+    
+    theme_gray(base_size = 20)
+    # Set the base font size to 20 units
+  
+  
+  # 'comparisonPlot' now contains the desired chart specifications
+  # The last step is to save it to 'writePath'
+  ggsave(writePath, comparisonPlot, units = "px", dpi = 600,
+         width = 1080 * 8, height = 720 * 6)
+  
+  
+  # If the file was written successfully, output a message
+  if (file.exists(writePath)) {
+    
+    cat("\n\n")
+    
+    paste0("Saved plot to \"", writePath, "\" successfully!") |>
+      errWrap() |> col_blue() |> cat()
+    
+    cat("\n\n")
+    
+  } else {
+    
+    paste0("Could Not Save Chart\n\n",
+           "The script failed to save a plot to \"", writePath, "\" for an ",
+           "unknown reason. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }
 
