@@ -103,6 +103,9 @@ mainProcedure <- function () {
   plotModelResults(dirPath, outDF, prismDF, datDF)
   
   
+  cat("\tDone!\n\n")
+  
+  
   # Output a completion message
   cat(col_green("\n'HLP_010_Plot_PRMS_Streamflow.R' is complete!\n\n"))
   

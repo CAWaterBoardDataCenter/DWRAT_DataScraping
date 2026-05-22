@@ -137,6 +137,9 @@ mainProcedure <- function () {
   # that's already in the archive folder
   
   
+  cat("\tDone!\n\n")
+  
+  
   # Output a completion message
   cat(col_green("\n'HLP_009_Compare_PRMS_Precip.R' is complete!\n\n"))
   
