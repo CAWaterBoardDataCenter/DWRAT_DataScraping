@@ -224,7 +224,7 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
                   "Alternatively, there may be a problem with CIMIS's server, ",
                   "so please consider contacting them for assistance") |>
              errWrap() |>
-             considerSelenium(stationVec, startDate, endDate))
+             considerSelenium(stationVec, startDate, endDate, isSplit))
     
   }
   
