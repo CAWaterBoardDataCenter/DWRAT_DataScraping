@@ -85,7 +85,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_EX2_Gage_Correlation.R'!\n")
+  cat("Starting 'RRW_EX3_Gage_Correlation.R'!\n")
   
   
   # In this script, 'startDate' and 'endDate' are hard-coded
@@ -205,7 +205,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_EX2_Gage_Correlation.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_EX3_Gage_Correlation.R' is complete!\n\n"))
   
   
   # Return nothing
