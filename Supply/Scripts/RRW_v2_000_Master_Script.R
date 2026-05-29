@@ -80,17 +80,18 @@ source("Scripts/RRW_v2_008_Setup_SRP_Model.R")
 source("Scripts/RRW_v2_009_Finalize_SRP_Input.R")
 
 
-
 # Run SRP
+source("Scripts/RRW_v2_010_Run_SRP.R")
 
 
 # Store key outputs and clear out the copied model files
+source("Scripts/RRW_v2_011_SRP_Cleanup.R")
 
 
+#### RRIHM ####
 
-
-
-
+# Setup the temporary RRIHM model location
+source("Scripts/RRW_v2_012_Setup_RRIHM_Model.R")
 
 
 

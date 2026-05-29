@@ -161,6 +161,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # (Similarly, if more PRISM data is available today compared to on the model
   #  run date, that should be downloaded too)
+  # (PRISM data through 2 days ago should be used)
   
   
   # For subsequent runs of this function, generate and archive a compiled version
@@ -173,7 +174,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   # PRISM precipitation averages
   compiledPath <- paste0(dirPath, "/", model, "/Input/",
                          "PRISM_Precip_", model, "_Domain_QAQC_",
-                         Sys.Date() - 1, ".csv") |>
+                         Sys.Date() - 2, ".csv") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -191,8 +192,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
     
     
     # Then, return it
-    return(compiledPath |>
-             getFile())
+    return(compiledDF)
     
   }
   
@@ -239,7 +239,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # Check for missing data
   missingDF <- tibble(Date = seq(from = min(compiledDF$Date),
-                                 to = max(c(compiledDF$Date, Sys.Date() - 1)),
+                                 to = max(c(compiledDF$Date, Sys.Date() - 2)),
                                  by = "days")) |>
     filter(!(Date %in% compiledDF$Date))
   
@@ -266,7 +266,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # Setup the filepath for the new dataset
   extraPath <- paste0("WebData/PRISM_Precip_", model, "_Domain_Extra_QAQC_Data_",
-                      Sys.Date() - 1, ".csv")
+                      Sys.Date() - 2, ".csv")
   
   
   # Then, import `runModifiedPRISM` from a prior script 
@@ -321,93 +321,6 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
 
 
 
-gatherPrecipDAT <- function (dirPath, startDate, endDate) {
-  
-  # Use the DAT file that is input into SRP
-  
-  # It contains precipitation data for different gages
-  
-  # Take the averages of these values to get an estimate of basin precipitation 
-  
-  
-  # Get the path to the DAT file and confirm that it exists
-  datPath <- paste0(dirPath, "/SRP/Input/DAT_SRP_", Sys.info()[["user"]], "_",
-                    startDate, "_", endDate, ".dat") |>
-    checkForPreviousOutput()
-  
-  
-  # Read in 'datPath'
-  datDF <- getFile(datPath)
-  
-  
-  # Check for the location of the header row
-  headerIndex <- grep("^#+\\s*[a-zA-Z]", datDF)
-  
-  
-  # Output an error message if it cannot be found
-  if (length(headerIndex) != 1) {
-    
-    paste0("Could Not Locate Column Header\n\n", 
-           "This script attempted to find the header row in the SRP DAT ",
-           "file. However, the regular expression that identifies this ",
-           "line returned ", length(headerIndex), " matches.\n\n", 
-           "Please investigate '", datPath, "'") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Extract the headers from this row
-  # Split the values at the spaces and exclude the "#####" string
-  # (and "date" if it appears in the vector)
-  headers <- datDF[headerIndex] |>
-    str_split("\\s+") |> unlist() |>
-    tolower() |>
-    str_subset("^#+$", negate = TRUE) |>
-    str_subset("^date$", negate = TRUE)
-  
-  
-  # Consider only the rows after 'headerIndex'
-  # Then, split the values at the spaces and reformat the data
-  # Shape it into a matrix and then a tibble
-  # Finally, apply the column headers to it
-  datDF <- datDF[(headerIndex + 1):length(datDF)] |>
-    str_split("\\s+") |> unlist() |>
-    matrix(ncol = length(headers), byrow = TRUE) |>
-    as_tibble() |>
-    set_names(headers)
-  
-  
-  # Use 'year', 'month', and 'day' to define a "Date" variable
-  # After that, select the new "Date" column and any precipitation columns
-  datDF <- datDF |>
-    mutate(Date = paste0(year, "-", month, "-", day) |>
-             as.Date("%Y-%m-%d")) |>
-    select(Date, contains("precip"))
-  
-  
-  # Then, calculate a new "PRECIP" column 
-  # Take the average of the precipitation values
-  # Make sure the precipitation values are numeric and then reshape the tibble
-  # so that all precipitation columns appear in the same column
-  # After that, group by "Date" and average precipitation values 
-  # that occurred on the same day
-  datDF <- datDF |>
-    mutate(across(contains("precip"), as.numeric)) |>
-    pivot_longer(contains("precip"), 
-                 names_to = "STATION", values_to = "PRECIP") |>
-    group_by(Date) |>
-    summarize(PRECIP = mean(PRECIP), .groups = "drop")
-
-  
-  # Return 'datDF' afterwards
-  return(datDF)
-  
-}
-
-
-
 validateAndSummarizePRISM <- function (prismDF, prismPath) {
   
   # Given a dataset containing PRISM data, 
@@ -439,6 +352,71 @@ validateAndSummarizePRISM <- function (prismDF, prismPath) {
   
   # Return 'prismDF'
   return(prismDF)
+  
+}
+
+
+
+gatherPrecipDAT <- function (dirPath, startDate, endDate, model = "SRP") {
+  
+  # Use the DAT file that is input into SRP
+  
+  # It contains precipitation data for different gages
+  
+  # Take the averages of these values to get an estimate of basin precipitation 
+  
+  
+  # Get the path to the DAT file and confirm that it exists
+  datPath <- paste0(dirPath, "/", model, "/Input/DAT_", model, 
+                    "_", startDate, "_", endDate, ".dat") |>
+    checkForPreviousOutput()
+  
+  
+  # Read in 'datPath'
+  datDF <- read_dat(datPath)
+  
+  
+  # Validate the file
+  # (Some adjustments are needed to match the function's expectations)
+  # (The column names must be temporarily capitalized 
+  #  and "sec" must be renamed to "SECOND")
+  datDF |>
+    set_names(toupper(names(datDF))) |>
+    rename(SECOND = SEC) |>
+    validateInputDAT(sourcePath = datPath,
+                     model = model,
+                     modelCols = names(datDF) |> 
+                       str_subset("^((precip)|(tm))") |>
+                       toupper(),
+                     startDate, endDate,
+                     datType = "Final")
+  
+  
+  # After that, proceed with the adjustments to 'datDF'
+  # Use 'year', 'month', and 'day' to define a "Date" variable
+  # After that, select the new "Date" column and any precipitation columns
+  datDF <- datDF |>
+    mutate(Date = paste0(year, "-", month, "-", day) |>
+             as.Date("%Y-%m-%d")) |>
+    select(Date, contains("precip"))
+  
+  
+  # Then, calculate a new "PRECIP" column 
+  # Take the average of the precipitation values
+  # Make sure the precipitation values are numeric and then reshape the tibble
+  # so that all precipitation columns appear in the same column
+  # After that, group by "Date" and average precipitation values 
+  # that occurred on the same day
+  datDF <- datDF |>
+    mutate(across(contains("precip"), as.numeric)) |>
+    pivot_longer(contains("precip"), 
+                 names_to = "STATION", values_to = "PRECIP") |>
+    group_by(Date) |>
+    summarize(PRECIP = mean(PRECIP), .groups = "drop")
+  
+  
+  # Return 'datDF' afterwards
+  return(datDF)
   
 }
 
@@ -786,7 +764,9 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   
   # First, create a new folder in the SRP "output" directory 
   # This will hold the data output by this function
-  newDir <- prepNewDirectory(dirPath, gageID)
+  newDir <- prepNewDirectory(dirPath, 
+                             paste0(dirPath, "/SRP/output/", 
+                                    gageID, "_Comparison"))
   
   
   # Once 'newDir' has been established, 
@@ -878,14 +858,16 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
 
 
 
-prepNewDirectory <- function (dirPath, gageID) {
+prepNewDirectory <- function (dirPath, newDir) {
   
   # Generate a new folder in the SRP "output" folder
   # It will contain data from this gage comparison
   
+  # This function will be written generically for use in other scripts
   
-  # By default, the folder name will be "[GAGE_ID]_Comparison"
-  newDir <- paste0(dirPath, "/SRP/output/", gageID, "_Comparison")
+  # Given a base folder path, 'newDir', check if that path already exists
+  # If so, incrementally adjust the path name until a previously unused 
+  # path is obtained
   
   
   # If the directory already exists, adjust the name to have a number at the end
@@ -944,6 +926,9 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   # Precipitation data is included in some versions of these plots
   # (It can come from two different sources: Either PRISM or the SRP DAT file)
   
+  # An additional plot is created at the end that plots just gage data 
+  # vs model data in a scatterplot
+  
   
   # Based on the value in 'timescale', apply a different filter to 'dailyDF'
   if (timescale == "1_yr") {
@@ -997,41 +982,61 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   
   # Generate plots without any precipitation data
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, ".png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            isDaily = TRUE)
   
-  
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, ".png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            isDaily = FALSE)
   
   
   # Then, use PRISM grid cell precipitation data
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, "_PRISM_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            prismDF, isDaily = TRUE, precipType = "PRISM Avg")
   
   
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, "_PRISM_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            prismDF, isDaily = FALSE, precipType = "PRISM Avg")
   
   
   # Try, precipitation data from the SRP DAT file next
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, "_DAT_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            datDF, isDaily = TRUE, precipType = "DAT Avg")
   
   
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateStreamflowPlot(paste0(newDir, "/Monthly_Comparison_", 
                                   timescale, "_DAT_Precip.png"),
+                           yCol = c("GAGE", "MODEL"),
+                           yColLegendName = c("Gage", "Model"),
                            datDF, isDaily = FALSE, precipType = "DAT Avg")
+  
+  
+  # For 'monthlyDF' only, plot "GAGE" and "MODEL" in a scatterplot
+  monthlyDF |>
+    generateComparisonScatterplot(paste0(newDir, "/Monthly_Scatterplot_", 
+                                         timescale, ".png"),
+                                  xCol = "GAGE", yCol = "MODEL",
+                                  xLab = "Gage Streamflow (AF/Month)",
+                                  yLab = "Model Streamflow (AF/Month)")
   
   
   # After that, create a tibble that contains different statistical metrics
@@ -1087,15 +1092,91 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
 
 
 
-generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
-                                    isDaily = TRUE, volUnit = "AF", 
-                                    precipType = "PRISM Avg") {
+generateStreamflowPlot <- function (streamDF, writePath, yCol, 
+                                    yColLegendName = "", 
+                                    precipDF = NULL, isDaily = TRUE, 
+                                    volUnit = "AF", precipUnit = "in", 
+                                    precipType = "PRISM Avg",
+                                    extraYLabelFragment = "") {
   
   # Generate a plot for 'streamDF' 
   # It can contain either daily or monthly streamflow data
   
+  # 'yCol' should contain the name of the streamflow column
+  # If there are multiple streamflow lines being plotted, 'yCol' should have
+  # multiple names
+  
+  # 'yColLegendName' should contain the labels for the streamflow column(s)
+  # (This is used in a legend if multiple streamflow lines are plotted)
+  
   # 'precipDF', which generally contains precipitation data for the same period,
   # will be included as bars in the graph (if it isn't NULL)
+  
+  # 'extraYLabelFragment' can be used to add text to the primary y-axis
+  # (after "Daily" or "Monthly" in the label)
+  
+  
+  # Make sure 'yCol' and 'yLabel' have matching lengths
+  if (length(yCol) != length(yColLegendName)) {
+    
+    paste0("Streamflow Dataset Label Mismatch\n\n",
+           "For each streamflow line being plotted, there must be a ",
+           "corresponding entry in 'yColLegendName'. However, the lengths of ",
+           "'yCol' and 'yColLegendName' do not match up (", length(yCol), " vs ", 
+           length(yColLegendName), "). Please correct this issue.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # This function is currently setup for at most three streamflow lines at a time
+  if (length(yCol) > 3 || length(yColLegendName) > 3) {
+    
+    paste0("Function Update Required\n\n",
+           "`generateStreamflowPlot` was only designed for at most three ",
+           "simultaneous streamflow lines in a plot. Please adjust it if ",
+           "more lines are desired.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Make sure 'yCol' matches names in 'streamDF'
+  if (anyFalse(yCol %in% names(streamDF))) {
+    
+    cat("\n\n")
+    cat("Missing Column(s):\n")
+    print(yCol[which(!(yCol %in% names(streamDF)))])
+    cat("\n\n")
+    
+    paste0("Streamflow Dataset Missing Column(s)\n\n",
+           "The column names specified in 'yCol' (", vec2QuotedStr(yCol), ") ",
+           "must exist in 'streamDF'. However, this was not the case. Please ",
+           "correct this issue.") |>
+      errWrap() |>
+      stop()
+    
+  # The streamflow columns in 'yCol' must be numeric or integer variables
+  } else if (anyFalse(streamDF[yCol] |> 
+                      map_lgl(~ class(.) %in% c("numeric", "integer")))) {
+    
+    cat("\n\n")
+    cat("Is a Numeric Column?\n")
+    print(streamDF[yCol] |> 
+            map_lgl(~ class(.) %in% c("numeric", "integer")))
+    cat("\n\n")
+    
+    
+    paste0("Non-Numeric Streamflow Column(s)\n\n",
+           "The column names specified in 'yCol' (", vec2QuotedStr(yCol), ") ",
+           "must be numeric- or integer-type columns in 'streamDF'. However, ",
+           "this was not the case. Please correct this issue.") |>
+      errWrap() |>
+      stop()
+    
+  }
   
   
   # If 'precipDF' was provided as input, adjust it to the bounds of 'streamDF'
@@ -1109,6 +1190,12 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
         filter(Date >= min(streamDF$DATE) & Date <= max(streamDF$DATE)) |>
         rename(DATE = Date)
       
+      
+      # Then, filter 'streamDF' to match the date range in 'precipDF'
+      streamDF <- streamDF |>
+        filter(DATE >= min(precipDF$DATE) & DATE <= max(precipDF$DATE))
+      
+      
       # Otherwise, for monthly streamflow, 
       # the procedure is a little more complicated
     } else {
@@ -1121,6 +1208,12 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
                  YEAR_MONTH <= max(streamDF$YEAR_MONTH)) |>
         group_by(YEAR_MONTH) |>
         summarize(PRECIP = sum(PRECIP), .groups = "drop")
+      
+      
+      # Then, filter 'streamDF' to match the date range in 'precipDF'
+      streamDF <- streamDF |>
+        filter(YEAR_MONTH >= min(precipDF$YEAR_MONTH) & 
+                 YEAR_MONTH <= max(precipDF$YEAR_MONTH))
       
     }
     
@@ -1160,21 +1253,22 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   
   
   # Get the limits for the y-axis (streamflow)
-  yBounds <- c(streamDF$GAGE, streamDF$MODEL) |>
+  yBounds <- streamDF[yCol] |>
     range()
   
   
   # Prepare the label for the y-axis too
   yLabel <- paste0(if_else(isDaily, "Daily ", "Monthly "),
-                 "Streamflow (", volUnit, "/",
-                 if_else(isDaily, "Day", "Month"), ")")
+                   extraYLabelFragment, 
+                   "Streamflow (", volUnit, "/",
+                   if_else(isDaily, "Day", "Month"), ")")
   
   
   # If 'precipDF' was provided, a label will be needed for a secondary y-axis too
   if (!is.null(precipDF)) {
     
     yLabel2 <- paste0(if_else(isDaily, "Daily ", "Monthly "),
-                      "Precipitation (in/",
+                      "Precipitation (", precipUnit, "/",
                       if_else(isDaily, "Day", "Month"), ")")
     
   }
@@ -1220,15 +1314,11 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   
   
   # Start by initializing 'streamPlot' with all customizations that are SHARED
-  # between the two options
+  # between the two options (i.e., with and without 'precipDF')
   streamPlot <- ggplot(streamDF) +
     
     xlab("Date") + ylab(yLabel) +
     # Axis labels
-    
-    guides(color = guide_legend(title = "Flow Type")) +
-    scale_color_manual(values = c("Gage" = "blue", "Model" = "red")) + 
-    # Set the colors of the streamflow lines (plus the name of their legend)
     
     scale_x_date(date_labels = if_else(nrow(streamDF) < 365 * 5, "%Y-%m", "%Y")) +
     # Set the appearance of the x-axis date labels (see more details below)
@@ -1250,6 +1340,33 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
   # would need at least 365 * 5 = 1825 months of data to switch its labels)
   
   
+  # There is one more setting that can be added right now, but it is dependent
+  # on the number of streamflow lines being plotted
+  
+  # These are the planned colors of the streamflow lines
+  colOptions <- c("blue", "red", "green")[1:length(yCol)]
+  
+  # If there's only one line, the first entry of 'colOptions' will be used only
+  
+  # `generateStreamflowPot` is currently setup to handle at most three 
+  # simultaneous streamflow lines
+  
+  # That's because 'colOptions' has only three colors in it!
+  # To support more streamflow lines, more colors need to be added
+  
+  
+  # If there are multiple streamflow lines in the plot, add a legend too 
+  # Use the "color" attribute and 'colOptions' to set that up
+  if (length(yCol) > 1) {
+    
+    # Set the colors of the streamflow lines (plus the name of their legend)
+     streamPlot <- streamPlot +
+      guides(color = guide_legend(title = "Flow Type")) +
+      scale_color_manual(values = colOptions |> set_names(yColLegendName))
+      
+  }
+  
+  
   # All of these settings are shared in both versions of 'streamPlot'
   
   # The next set of edits are dependent on 'precipDF' 
@@ -1261,25 +1378,70 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
     # In this case, the only components missing from 'streamPlot' 
     # are the actual streamflow lines themselves
     
-    # Add lines for "GAGE" and "MODEL"
-    streamPlot <- streamPlot +
+    # Iterate through the streamflow lines
+    for (i in 1:length(yCol)) {
       
-      geom_line(mapping = aes(x = get(xCol), y = GAGE, color = "Gage"), 
-                lwd = 0.8) +
-      # Linewidth = 0.8 units
+      # Update 'streamPlot' by generating a string containing R code
+      exeStr <- paste0("streamPlot <- streamPlot + ",
+                       "geom_line(mapping = aes(x = ", xCol, ", ",
+                       "y = ", yCol[i], 
+                       if_else(length(yCol) > 1,
+                               paste0(", color = \"", yColLegendName[i],
+                                      "\")"),
+                               paste0("), color = \"", colOptions[1], "\"")),
+                       ", lwd = 0.8",
+                       if_else(i > 1, ", linetype = 2, alpha = 0.6", ""), 
+                       ")")
       
-      geom_line(mapping = aes(x = get(xCol), y = MODEL, color = "Model"),
-                lwd = 0.8, linetype = 2, alpha = 0.6)
-      # Linewidth = 0.8 units, dashed linetype, partially transparent
+      # Note: For "color", if there is only one streamflow line being plotted,
+      #       that color is specified directly (through 'colOptions')
+      #
+      #       Otherwise, if there are multiple streamflow lines, the legend 
+      #       entry is referenced
+      #       (The legend was setup in the earlier conditional statement)
+      #
+      #       In that conditional statement, both `guides` and 
+      #       `scale_color_manual` were setup to use the streamflow lines' 
+      #       colors as a legend (so the actual color assignments are in 
+      #       `scale_color_manual`)
       
-    
-    # Note: The colors assigned to each of these lines are strings
-    #       ("Gage" and "Model")
-    #       
-    #       In the initial definition of 'streamPlot', both `guides` and 
-    #       `scale_color_manual` were setup to use the streamflow lines' 
-    #       colors as a legend (so the actual color assignments are in 
-    #       `scale_color_manual`)
+      
+      # Next, execute the string to update 'streamPlot'
+      eval(parse(text=exeStr))  
+      
+      # The string that was executed as R code is mostly equivalent to this: 
+      
+      # streamPlot <- streamPlot +
+      #   
+      #   geom_line(mapping = aes(x = get(xCol), y = get(yCol[i]), 
+      #                           color = if_else(length(yCol) > 1,
+      #                                           yColLegendName[i],
+      #                                           colOptions[1])), 
+      #             lwd = 0.8)
+      
+      # Why is it done through a string? It's because `ggplot` is lazy.
+      
+      # The value 'i' is changing in each iteration, but `ggplot` is not 
+      # keeping track of what 'i' is in each step
+      
+      # At the very end, it finally checks 'i', and now 'i' is equal to
+      # the last value in the loop (i.e., whatever the length of 'yCol' is). 
+      # For every line. 
+      
+      # With this executed string, the values that are picked in iteration 'i'
+      # are correctly applied 
+      
+      # The actual recommended method of handling this is reshaping the data
+      # to be longer and using a grouping column to distinguish between 
+      # streamflow values from different sources
+      
+      # However, since linetypes and alpha will differ between the lines,
+      # they would appear as part of the legends for those parameters by 
+      # default. Other components of the chart will use those same parameters
+      # in creating their own legends, so it would create a mess to handle
+      # all of that. While not ideal, this approach avoids that pitfall. 
+      
+    }
     
     
     # The alternative scenario occurs if 'precipDF' is present
@@ -1317,19 +1479,52 @@ generateComparisonPlot <- function (streamDF, writePath, precipDF = NULL,
     
     # Prepare the chart next
     
-    streamPlot <- streamPlot + 
+    
+    # Start with the streamflow data
+    # Again, a loop will be used in case there are multiple streamflow lines
+    for (i in 1:length(yCol)) {
       
-      geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - GAGE, 
-                              color = "Gage"), 
-                lwd = 0.8) +
+      # Update 'streamPlot' by generating a string containing R code
+      exeStr <- paste0("streamPlot <- streamPlot + ",
+                       "geom_line(mapping = aes(x = ", xCol, ", ",
+                       "y = yBounds[2] + yBounds[1] - ", yCol[i], 
+                       if_else(length(yCol) > 1,
+                               paste0(", color = \"", yColLegendName[i],
+                                      "\")"),
+                               paste0("), color = \"", colOptions[1], "\"")),
+                       ", lwd = 0.8",
+                       if_else(i > 1, ", linetype = 2, alpha = 0.6", ""), 
+                       ")")
+      
       # The gage data will be coming from the top down, and this transformation
-      # to the "y" variable will correct it to appear as if it came from the 
-      # bottom up instead
+      # to the "y" variable using 'yBounds' will correct it to appear as if 
+      # it came from the bottom up instead
       
-      geom_line(mapping = aes(x = get(xCol), y = yBounds[2] + yBounds[1] - MODEL, 
-                              color = "Model"), 
-                lwd = 0.8, linetype = 2, alpha = 0.6) + 
-      # The same transformation as above is applied to the modeled streamflow data
+      # If subsequent lines will be included in 'streamPlot', they will be
+      # slightly different
+      
+      
+      # Next, execute the string to update 'streamPlot'
+      eval(parse(text=exeStr))  
+      
+      
+      # 'exeStr' is mostly equivalent to this:
+      # 
+      # streamPlot <- streamPlot +
+      #   
+      #   geom_line(mapping = aes(x = get(xCol), 
+      #                           y = yBounds[2] + yBounds[1] - get(yCol[i]), 
+      #                           color = if_else(length(yCol) > 1, 
+      #                                           yColLegendName[i],
+      #                                           colOptions[1])), 
+      #             lwd = 0.8)
+      
+    }
+    
+    
+    # Add the precipitation data next
+    # (This is unaffected by the number of streamflow lines)
+    streamPlot <- streamPlot + 
       
       geom_col(data = precipDF, 
                mapping = aes(x = get(xCol), 
@@ -1696,6 +1891,96 @@ setPrecipColumnWidths <- function (isDaily, numRecords) {
     }
     
   }
+  
+}
+
+
+
+generateComparisonScatterplot <- function (monthlyDF, writePath, xCol, yCol,
+                                           xLab = "", yLab = "") {
+  
+  
+  # Generate a scatterplot that compares streamflow data for the same month
+  # The x-axis will contain one flow source, and the y-axis will plot the other 
+  
+  # A dashed line will be added in the middle to differentiate between
+  # model under-predictions and over-predictions
+  
+  
+  # Before making the plot, check which of the two datasources ('xCol' or 'yCol') 
+  # has the largest value
+  # This will determine which column is used to create the dashed line
+  if (max(monthlyDF[xCol]) > max(monthlyDF[yCol])) {
+    
+    lineSource <- xCol
+    
+  } else {
+    
+    lineSource <- yCol
+    
+  }
+  
+  
+  # Also get the extreme values among 'xCol' and 'yCol'
+  # The limits for the x-axis and y-axis must be the same for the dashed line
+  # to produce the proper effect (i.e., dividing the chart into sections for
+  # over-predictions and under-predictions)
+  chartLim <- c(monthlyDF[xCol], monthlyDF[yCol]) |>
+    range()
+  
+  
+  # Prepare the scatterplot with bisecting dashed line
+  comparisonPlot <- monthlyDF |>
+    
+    ggplot() +
+    
+    geom_point(mapping = aes(x = get(xCol), y = get(yCol)), color = "blue") +
+    # Plot 'xCol' and 'yCol' as a scatterplot with blue dots
+    
+    geom_line(mapping = aes(x = get(lineSource), y = get(lineSource)),
+              linetype = 2, color = "black", lwd = 1) + 
+    # Plot the dividing line as a black dashed line with a slightly increased
+    # linewidth 
+    
+    coord_cartesian(xlim = chartLim, ylim = chartLim) + 
+    # Make the x-axis and y-axis have the same bounds
+    
+    labs(x = xLab, y = yLab) +
+    # Apply 'xLab' and 'yLab' as the axis labels
+    
+    theme_gray(base_size = 20)
+    # Set the base font size to 20 units
+  
+  
+  # 'comparisonPlot' now contains the desired chart specifications
+  # The last step is to save it to 'writePath'
+  ggsave(writePath, comparisonPlot, units = "px", dpi = 600,
+         width = 1080 * 8, height = 720 * 6)
+  
+  
+  # If the file was written successfully, output a message
+  if (file.exists(writePath)) {
+    
+    cat("\n\n")
+    
+    paste0("Saved plot to \"", writePath, "\" successfully!") |>
+      errWrap() |> col_blue() |> cat()
+    
+    cat("\n\n")
+    
+  } else {
+    
+    paste0("Could Not Save Chart\n\n",
+           "The script failed to save a plot to \"", writePath, "\" for an ",
+           "unknown reason. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
   
 }
 

@@ -2,6 +2,8 @@
 # ("rr_budget.out2") to another source of basin-averaged precipitation data
 # (the historic PRISM precipitation data for PRMS's model domain)
 
+# As a secondary check, try to use the average of the precipitation values in
+# the input DAT file for PRMS
 
 #### Setup ####
 
@@ -23,7 +25,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'HLP_009_Compare_PRMS_Precip_to_PRISM_Averages.R'!\n")
+  cat("Starting 'HLP_009_Compare_PRMS_Precip.R'!\n")
   
   
   # Import the start and end date
@@ -68,6 +70,32 @@ mainProcedure <- function () {
   pastPrecip <- gatherPrecipPRISM(dirPath, endDate, "PRMS")
   
   
+  # Get data from the DAT file as well
+  
+  # Another function in "HLP_011_Compare_SRP_Output_to_USGS_Gage.R" 
+  # can help with that
+  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+                  "gatherPrecipDAT")
+  
+  
+  datDF <- gatherPrecipDAT(dirPath, startDate, endDate, model = "PRMS")
+  
+  
+  # For consistency, have both 'pastPrecip' and 'datDF' use "PRECIP" as the
+  # name for their precipitation columns and "DATE" for their date columns
+  
+  # Also, their units should be inches, not millimeters
+  # (1 in = 25.4 mm)
+  pastPrecip <- pastPrecip |>
+    mutate(PRECIP = `ppt (mm)` / 25.4) |>
+    rename(DATE = Date)
+  
+  
+  datDF <- datDF |>
+    mutate(PRECIP = PRECIP / 25.4) |>
+    rename(DATE = Date)
+  
+  
   cat("\tDone!\n\n")
   
   
@@ -75,12 +103,45 @@ mainProcedure <- function () {
   cat("[2/2]\tComparing precipitation data...\n")
   
   
+  # Create a new folder in the PRMS "output" directory 
+  # This will hold the data output from this analysis
+  # (The required function appears in another script)
+  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+                  "prepNewDirectory")
+  
+  
+  # By default, the folder name will be "Precip_Comparison"
+  newDir <- prepNewDirectory(dirPath,
+                             paste0(dirPath, "/PRMS/output/Precip_Comparison"))
+  
+  
   # Generate plots and a table of statistical metrics for this data
-  compareModelResults(dirPath, outDF, pastPrecip)
+  compareModelResults(dirPath, outDF, newDir, pastPrecip, "PRISM")
+  
+  
+  # Do the same with DAT precipitation data instead 
+  compareModelResults(dirPath, outDF, newDir, datDF, "DAT")
+  
+  
+  # As a final step, archive 'outDF' and 'pastPrecip'
+  outDF |>
+    writeOutput(paste0(newDir, "/PRMS_Reformatted_Out2.csv"),
+                quietly = TRUE)
+  
+  pastPrecip |>
+    writeOutput(paste0(newDir, "/PRISM_Precip_PRMS_Model_Domain.csv"),
+                quietly = TRUE)
+  
+  
+  # Leave 'datDF' unarchived since it is easy to derive from the DAT file
+  # that's already in the archive folder
+  
+  
+  cat("\tDone!\n\n")
   
   
   # Output a completion message
-  cat(col_green("\n'HLP_009_Compare_PRMS_Precip_to_PRISM_Averages.R' is complete!\n\n"))
+  cat(col_green("\n'HLP_009_Compare_PRMS_Precip.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -90,9 +151,11 @@ mainProcedure <- function () {
 
 
 
-compareModelResults <- function (dirPath, outDF, pastPrecip) {
+compareModelResults <- function (dirPath, outDF, newDir, precipDF, 
+                                 precipSource = "PRISM") {
   
   # Compare the precipitation data from PRMS and PRISM 
+  # (or from PRMS and the input DAT file)
   
   # On both daily and monthly timescales, perform comparisons:
   #   (*) 1-year comparisons
@@ -104,24 +167,19 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
   # (Nash-Sutcliffe efficiency, P-Bias, etc.)
   
   
-  # First, combine 'outDF' and 'pastPrecip' to have both 
-  # modeled and PRISM precipitation values in the same units over the same dates
-  dailyDF <- combineDatasets(outDF, pastPrecip)
+  # First, combine 'outDF' and 'precipDF' to have both 
+  # modeled and PRISM/DAT precipitation values 
+  # in the same units over the same dates
+  dailyDF <- combineDatasets(outDF, precipDF)
   
   # 'dailyDF' now has units of inches for both datasets
   
   
-  # Then, create a new folder in the PRMS "output" directory 
-  # This will hold the data output by this function
-  newDir <- prepNewDirectory(dirPath)
-  
-  
-  # Once 'newDir' has been established, 
-  # create plots and summary statistics for different timescales
+  # Create plots and summary statistics for different timescales
   
   
   # First generate plots and a table for the full datasets
-  statDF <- generatePlotsAndTable(dailyDF, newDir, "All")
+  statDF <- generatePlotsAndTable(dailyDF, newDir, "All", precipSource)
   
   
   # If the dataset contains at least one year of data, 
@@ -129,7 +187,8 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
   if (nrow(dailyDF) > 365) {
     
     statDF <- bind_rows(statDF,
-                        generatePlotsAndTable(dailyDF, newDir, "1_yr"))
+                        generatePlotsAndTable(dailyDF, newDir, 
+                                              "1_yr", precipSource))
     
   }
   
@@ -139,7 +198,8 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
   if (nrow(dailyDF) > 365 * 5) {
     
     statDF <- bind_rows(statDF,
-                        generatePlotsAndTable(dailyDF, newDir, "5_yr"))
+                        generatePlotsAndTable(dailyDF, newDir, 
+                                              "5_yr", precipSource))
     
   }
   
@@ -149,24 +209,15 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
   if (nrow(dailyDF) > 365 * 10) {
     
     statDF <- bind_rows(statDF,
-                        generatePlotsAndTable(dailyDF, newDir, "10_yr"))
+                        generatePlotsAndTable(dailyDF, newDir, 
+                                              "10_yr", precipSource))
     
   }
   
   
   # Write 'statDF' to 'newDir'
   statDF |>
-    writeOutput(paste0(newDir, "/Stat_Metrics.csv"))
-  
-  
-  # Save 'outDF' and 'pastPrecip' to 'newDir' as well
-  outDF |>
-    writeOutput(paste0(newDir, "/PRMS_Reformatted_Out2.csv"),
-                quietly = TRUE)
-  
-  pastPrecip |>
-    writeOutput(paste0(newDir, "/PRISM_Precip_PRMS_Model_Domain.csv"),
-                quietly = TRUE)
+    writeOutput(paste0(newDir, "/Stat_Metrics_", precipSource, ".csv"))
   
   
   # Finally, make a decision based on the values in 'statDF'
@@ -181,8 +232,8 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
                             statDF$TIMESCALE == "All"] < 0.50) {
     
     paste0("Unexpectedly Low R^2 Result for Monthly Precipitation\n\n",
-           "In a comparison between the PRMS output and PRISM data, the ",
-           "precipitation values appear to be excessively different. ",
+           "In a comparison between the PRMS output and ", precipSource,
+           " data, the precipitation values appear to be excessively different. ",
            "On a monthly timescale, the calculated R Squared value is ",
            statDF$MONTHLY_RESULT[grepl("R Sq", statDF$METRIC) & 
                                    statDF$TIMESCALE == "All"] |> 
@@ -200,14 +251,16 @@ compareModelResults <- function (dirPath, outDF, pastPrecip) {
 
 
 
-combineDatasets <- function (outDF, pastPrecip) {
+combineDatasets <- function (outDF, precipDF) {
   
   # 'outDF' contains precipitation for the model domain from PRMS (in inches)
   
-  # Meanwhile, 'pastPrecip' contains precipitation for the model domain from
-  # PRISM (in mm)
+  # 'precipDF' contains precipitation estimates (in inches)
+  #
+  # It contains either precipitation for the model domain from PRISM, or
+  # data from the gages in the watershed (in inches either way)
   
-  # Modify the two datasets and combine them into one tibble
+  # Modify the datasets and combine them into one tibble
   # It will have a "DATE" column and precipitation values from both datasets
   # (in units of inches)
   
@@ -222,26 +275,18 @@ combineDatasets <- function (outDF, pastPrecip) {
     rename(PRMS_PRECIP = `ppt (in)`)
   
   
-  # For 'pastPrecip', calculate precipitation in inches instead of millimeters
-  # mm * 1/25.4 in/mm = in
-  pastPrecip <- pastPrecip |>
-    mutate(PRISM_PRECIP = `ppt (mm)` / 25.4) |>
-    rename(DATE = Date) |>
-    select(DATE, PRISM_PRECIP)
-  
-  
-  # Filter 'outDF' and 'pastPrecip' to have the same dates
-  pastPrecip <- pastPrecip |>
+  # Filter 'outDF' and 'precipDF' to have the same dates
+  precipDF <- precipDF |>
     filter(DATE %in% outDF$DATE)
   
   
   outDF <- outDF |>
-    filter(DATE %in% pastPrecip$DATE)
+    filter(DATE %in% precipDF$DATE)
   
   
   # Join the two datasets together using "DATE"
   dailyDF <- outDF |>
-    left_join(pastPrecip, by = "DATE")
+    left_join(precipDF, by = "DATE")
   
   
   # There should be no missing values in 'dailyDF'
@@ -249,9 +294,9 @@ combineDatasets <- function (outDF, pastPrecip) {
     
     paste0("Missing Values in Daily Precipitation Averages\n\n",
            "This script combined precipitation values for the PRMS model ",
-           "domain using a file with PRISM grid cell data as well as the ",
-           "output from a PRMS model run. However, one or more missing value ",
-           "was detected in the result. Please investigate.") |>
+           "domain to QA/QC the output from a PRMS model run. However, one ",
+           "or more missing values were detected in the result. Please ",
+           "investigate.") |>
       errWrap() |>
       stop()
     
@@ -265,62 +310,7 @@ combineDatasets <- function (outDF, pastPrecip) {
 
 
 
-prepNewDirectory <- function (dirPath) {
-  
-  # Generate a new folder in the PRMS "output" folder
-  # It will contain data from this precipitation comparison
-  
-  
-  # By default, the folder name will be "Precip_Comparison"
-  newDir <- paste0(dirPath, "/PRMS/output/Precip_Comparison")
-  
-  
-  # If the directory already exists, adjust the name to have a number at the end
-  while (dir.exists(newDir)) {
-    
-    # If 'newDir' doesn't have any incrementing number in its name (e.g., "(#2)"),
-    # add "_(#2)" to the directory name now
-    if (!grepl("_\\(#[0-9]+\\)$", newDir)) {
-      
-      newDir <- paste0(newDir, "_(#2)")
-      
-      # (This situation happens only in the first iteration of this loop)
-      
-    } else {
-      
-      # If there's already an incrementing number in the folder name, 
-      # extract it into 'dirNum'
-      dirNum <- newDir |>
-        str_extract("[0-9]+(?=\\)$)") |>
-        as.numeric()
-      
-      
-      # Increment the number
-      dirNum <- dirNum + 1
-      
-      
-      # Update the name in 'newDir' to have the new 'dirNum' instead
-      newDir <- newDir |>
-        str_replace("_\\(#[0-9]+\\)$",
-                    paste0("_(#", dirNum, ")"))
-      
-    }
-    
-  } # End of loop to pick a name for the new precipitation folder
-  
-  
-  # Create the new folder for the precipitation data comparisons
-  dir.create(newDir)
-  
-  
-  # Return the path 'newDir'
-  return(newDir)
-  
-}
-
-
-
-generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
+generatePlotsAndTable <- function (dailyDF, newDir, timescale, precipType) {
   
   # For the input timescale, produce plots and a table
   
@@ -369,7 +359,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
     mutate(YEAR_MONTH = paste0(year(DATE), "-", month(DATE))) |>
     group_by(YEAR_MONTH) |>
     summarize(PRMS_PRECIP = sum(PRMS_PRECIP),
-              PRISM_PRECIP = sum(PRISM_PRECIP)) |>
+              PRECIP = sum(PRECIP)) |>
     mutate(YEAR_MONTH = as_date(YEAR_MONTH, format = "%Y-%m"))
   
   
@@ -378,15 +368,15 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
   # Start by generating plots
   # Use a separate function for that
   dailyDF |>
-    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", 
+    generateComparisonPlot(paste0(newDir, "/Daily_Comparison_", precipType, "_",
                                   timescale, ".png"),
-                           isDaily = TRUE)
+                           precipType, isDaily = TRUE)
   
   
   monthlyDF |>
-    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", 
+    generateComparisonPlot(paste0(newDir, "/Monthly_Comparison_", precipType, "_",
                                   timescale, ".png"),
-                           isDaily = FALSE)
+                           precipType, isDaily = FALSE)
   
   
   # After that, create a tibble that contains different statistical metrics
@@ -400,8 +390,8 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale) {
 
 
 
-generateComparisonPlot <- function (precipDF, writePath, isDaily = TRUE,
-                                    volUnit = "in") {
+generateComparisonPlot <- function (precipDF, writePath, precipType, 
+                                    isDaily = TRUE, volUnit = "in") {
   
   # Generate a plot for 'precipDF' 
   # It can contain either daily or monthly precipitation data
@@ -440,7 +430,7 @@ generateComparisonPlot <- function (precipDF, writePath, isDaily = TRUE,
   
   
   # Get the limits for the y-axis (streamflow)
-  yBounds <- c(precipDF$PRISM_PRECIP, precipDF$PRMS_PRECIP) |>
+  yBounds <- c(precipDF$PRECIP, precipDF$PRMS_PRECIP) |>
     range()
   
   
@@ -453,13 +443,15 @@ generateComparisonPlot <- function (precipDF, writePath, isDaily = TRUE,
   # Prepare the chart next
   precipPlot <- precipDF |>
     ggplot() +
-    geom_line(mapping = aes(x = get(xCol), y = PRISM_PRECIP, color = "PRISM Grid"), 
+    geom_line(mapping = aes(x = get(xCol), y = PRECIP, 
+                            color = paste0("Avg ", precipType)), 
               lwd = 0.8) +
     geom_line(mapping = aes(x = get(xCol), y = PRMS_PRECIP, color = "PRMS Model"),
               lwd = 0.8, linetype = 2, alpha = 0.9) + 
     xlab("Date") + ylab(yLabel) +
     guides(color = guide_legend(title = "Data Source")) +
-    scale_color_manual(values = c("PRISM Grid" = "blue", "PRMS Model" = "red")) + 
+    scale_color_manual(values = c("blue", "red") |> 
+                         set_names(c(paste0("Avg ", precipType), "PRMS Model"))) + 
     scale_x_date(date_labels = if_else(nrow(precipDF) < 365 * 5, "%Y-%m", "%Y")) + 
     coord_cartesian(ylim = yBounds) +
     theme_gray(base_size = 20)
@@ -546,19 +538,19 @@ calculateStats <- function (timescale, dailyDF, monthlyDF) {
   statDF <- statDF |>
     mutate(DAILY_RESULT = 
              case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(dailyDF$PRISM_PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("Bias$", METRIC) ~ calcPBias(dailyDF$PRISM_PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("^Root", METRIC) ~ calcRSR(dailyDF$PRISM_PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$PRISM_PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$PRISM_PRECIP, dailyDF$PRMS_PRECIP)
+               grepl("^Nash", METRIC) ~ calcNSE(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("Bias$", METRIC) ~ calcPBias(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("^Root", METRIC) ~ calcRSR(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$PRECIP, dailyDF$PRMS_PRECIP)
              )) |>
     mutate(MONTHLY_RESULT = 
              case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$PRISM_PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("Bias$", METRIC) ~ calcPBias(monthlyDF$PRISM_PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("^Root", METRIC) ~ calcRSR(monthlyDF$PRISM_PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$PRISM_PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$PRISM_PRECIP, monthlyDF$PRMS_PRECIP)
+               grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("Bias$", METRIC) ~ calcPBias(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("^Root", METRIC) ~ calcRSR(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP)
              ))
   
   
@@ -566,12 +558,12 @@ calculateStats <- function (timescale, dailyDF, monthlyDF) {
   # overprediction or underprediction (this interpretation varies depending 
   # on the exact formula used)
   statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
-    calcPBias(dailyDF$PRISM_PRECIP, dailyDF$PRMS_PRECIP) |> 
+    calcPBias(dailyDF$PRECIP, dailyDF$PRMS_PRECIP) |> 
     attributes() |> pluck(1)
   
   
   statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
-    calcPBias(monthlyDF$PRISM_PRECIP, monthlyDF$PRMS_PRECIP) |> 
+    calcPBias(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP) |> 
     attributes() |> pluck(1)
   
   

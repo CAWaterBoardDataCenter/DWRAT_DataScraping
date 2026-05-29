@@ -158,8 +158,7 @@ mainProcedure <- function () {
   
   # Store both 'adjustedDF' and 'flowDF' in the "DWRAT" "Input" folder
   flowName <- paste0(dirPath, "/DWRAT/Input/",
-                     "Raw_Flows_", Sys.info()[["user"]],
-                     "_", Sys.Date(), ".csv") |>
+                     "Raw_Flows_", Sys.Date(), ".csv") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -338,7 +337,7 @@ getColsFromMetadata <- function (dirPath, colNames) {
   # First, read in the metadata CSV file
   metaDF <- paste0(dirPath, "/metadata.csv") |>
     normalizePath(mustWork = FALSE) |>
-    getFile(",")
+    getFile(delim = ",")
   
   
   # Confirm that the desired columns are in 'metaDF'

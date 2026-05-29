@@ -36,7 +36,7 @@
 
 #  (1) "DAT_SRP_[startDate]_[endDate].dat"
 #      The final DAT file to use in the model run
-#      (This file is also copied to the "SIR2024-5121_update" folder 
+#      (This file is also copied to the "SRPHM" folder 
 #       as "RR_SRP_Input.dat")
 
 #  (2) If the similar WY needs to be identified, a summary CSV from that 
@@ -118,7 +118,7 @@ mainProcedure <- function (predictWY = TRUE) {
     getDelim(",")
   
   
-  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], delim = ",")
   
   
   # Validate the primary DAT file next
@@ -613,11 +613,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # Copy 'currentPrecip' to the hydrology folder as well
-  copyFile(prismPath,
-           paste0(dirPath, "/SRP/Input/",
-                  prismPath |> str_remove("^.+[/\\\\]")) |>
-             normalizePath(mustWork = FALSE))
+  # 'currentPrecip' should be archived in the hydrology folder as well
+  # (This was already done in "RRW_v2_007_Setup_Output_Directory.R")
   
   
   # Return 'finalDAT'
@@ -892,13 +889,11 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   # Write 'mergedDAT' to two folders:
   #  (1) In the hydrology directory, store the file under "SRP > Input"
   #  (2) In the copied SRP model files, store it under the "external_files" 
-  #      folder within "SIR2024-5121_update" 
+  #      folder within "SRPHM" 
   
   
-  # The final filename of 'mergedDAT' will contain 'startDate', 'endDate', and
-  # the name of the user running this script
-  datName <- paste0("DAT_SRP_", Sys.info()[["user"]], "_", startDate, 
-                    "_", endDate, ".dat")
+  # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
+  datName <- paste0("DAT_SRP_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
@@ -952,8 +947,6 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
           sep = str_dup(" ", 5), remove = TRUE)
   
   
-  
-  
   # Add a header to the DAT file next
   # It mainly describes the number of columns 
   headerDAT <- tibble(FINAL = c(paste0("generated in Excel/R : ",
@@ -993,7 +986,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   # Write 'finalDAT' to the SRP model folder next
   # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
   finalDAT$FINAL |>
-    writeOutput(paste0(srpPath, "/model/external_files/", genericName) |> 
+    writeOutput(paste0(srpPath, "/external_files/", genericName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_lines", quietly = quietly)
   
@@ -1031,7 +1024,7 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   # First, read in the file
   controlPath <- paste0(srpPath, 
-                        "/model/model1/SRPHM_2000_2026/SRPHM_spinup.control") |>
+                        "/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control") |>
     normalizePath(mustWork = TRUE)
   
   
@@ -1112,15 +1105,15 @@ updateBatchFileSRP <- function (srpPath) {
   # [PATH TO GSFLOW.EXE] [PATH TO CONTROL FILE]
   
   
-  batDir <- paste0(srpPath, "/model/model1/SRPHM_2000_2026/") |>
+  batDir <- paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/") |>
     normalizePath(mustWork = TRUE)
   
   
   batchCommands <- c(paste0("cd ", shQuote(batDir)),
-                     "..\\..\\..\\bin\\gsflow.exe SRPHM_spinup.control")
+                     "bin\\gsflow.exe SRPHM_spinup.control")
   
   # The first command changes the working directory to the location of 
-  # the SRP bat file (the "SRPHM_2000_2026" directory in "SIR2024-5121_update")
+  # the SRP bat file (the "SRPHM_post_spinup_WY2021" directory in "SRPHM")
   # The second command then executes gsflow.exe using "SRPHM_spinup.control" 
   # (the latter is also located in the same directory as the bat file)
   
@@ -1128,7 +1121,7 @@ updateBatchFileSRP <- function (srpPath) {
   # Write these commands to "run_SRPHM_spinup.bat"
   batchCommands |>
     writeOutput(paste0(srpPath, 
-                       "/model/model1/SRPHM_2000_2026/run_SRPHM_spinup.bat") |> 
+                       "/model1/SRPHM_post_spinup_WY2021/run_SRPHM_spinup.bat") |> 
                   normalizePath(mustWork = FALSE),
                 quietly = TRUE)
   

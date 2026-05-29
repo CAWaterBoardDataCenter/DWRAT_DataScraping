@@ -3,7 +3,7 @@
 # The model files will be copied from another location
 # to the "ProcessedData" folder
 
-# The source location is specified in the field "SRPHM_SIR2024_SOURCE_LOCATION" 
+# The source location is specified in the field "SRPHM_SOURCE_LOCATION" 
 # in "RR_Workflow_Control_File.xlsx"
 
 
@@ -31,7 +31,7 @@ mainProcedure <- function () {
   
   
   # Get the location of the SRP model files
-  sourceDir <- getFromControl_RR("SRPHM_SIR2024_SOURCE_LOCATION")
+  sourceDir <- getFromControl_RR("SRPHM_SOURCE_LOCATION")
   
   
   # Validate the user's input and ensure that this directory contains
@@ -40,24 +40,26 @@ mainProcedure <- function () {
   #  to reflect that)
   sourceDir <- validateSourceModelDirectory(
     sourceDir, 
-    "SRPHM_SIR2024_SOURCE_LOCATION",
+    "SRPHM_SOURCE_LOCATION",
     "SRP", 
-    c("bin", "model", "output", 
-      "model/external_files", 
-      "model/model1", "model/model2",
-      "model/model1/SRPHM_2000_2026", 
-      "output/output.model1_full",
-      "output/output.model1_2000_2026",
-      "output/output.model2_dpl"),
-    c("bin/gsflow.exe",
-      "model/model1/SRPHM_2000_2026/SRPHM_spinup.control"))
+    c("external_files", "model1", "model1/SRPHM_post_spinup_WY2021",
+      "model1/SRPHM_post_spinup_WY2021/bin", 
+      "model1/SRPHM_post_spinup_WY2021/output"),
+    c("model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe",
+      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
+      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
+      "external_files/restartdata_2020.out"))
   
   
-  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SIR2024-5121_update\"...\n")
+  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM\"...\n")
+  
+  
+  # Borrow a function from the PRMS model setup script
+  functionStealer("Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
   
   
   # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
-  copyModel(sourceDir)
+  copyModel(sourceDir, "ProcessedData/SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -65,46 +67,6 @@ mainProcedure <- function () {
   
   # Output a completion message
   cat(col_green("\n'RRW_v2_008_Setup_SRP_Model.R' is complete!\n\n"))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyModel <- function (sourceDir) {
-  
-  # Copy the files from 'sourceDir' 
-  # into a newly created "SIR2024-5121_update" folder
-  # in the "ProcessedData" folder
-  
-  
-  # 'newDir' will contain the new folder location 
-  # relative to the working directory
-  newDir <- "ProcessedData/SIR2024-5121_update"
-  
-  
-  # If the folder already exists, delete it and its contents
-  if (dir.exists(newDir)) {
-    
-    unlink(newDir, recursive = TRUE)
-    
-  }
-  
-  
-  # Next, create the "SIR2024-5121_update" folder
-  dir.create(newDir)
-  
-  
-  # Copy the entire contents of 'sourceDir' into this new folder
-  dir_copy(sourceDir, newDir, overwrite = TRUE)
-  
-  
-  # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "SIR2024-5121_update"
-  # In "ProcessedData", the folder will still be called "SIR2024-5121_update"
   
   
   # Return nothing
