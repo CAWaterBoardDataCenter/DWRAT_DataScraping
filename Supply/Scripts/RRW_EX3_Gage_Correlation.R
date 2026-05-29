@@ -13,6 +13,8 @@
 # gages in the watershed, we can use linear regression models with well-correlated 
 # gages to replace missing and extreme values in a gage's dataset
 
+# Or, we could take the average of values from well-correlated gages and use that
+
 # PRISM would be the fallback option if no well-correlated gages are available
 
 # Even in that situation, rather than directly substituting in PRISM values,
