@@ -349,6 +349,178 @@ generateModels <- function (meteorDF, prismDF) {
   }
   
   
+  # stationDF <- stationDF |>
+  #   filter(!is.na(PRMS_PRECIP_NAME)) |>
+  #   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "WGS84") |>
+  #   st_transform("epsg:3488")
+  # 
+  # distMatrix <- st_distance(stationDF, stationDF)
+  # 
+  # 
+  # for (i in 1:length(precipNames)) {
+  #   
+  #   if (!(i %in% c(2, 5))) {
+  #     next
+  #   }
+  #   
+  #   
+  #   matchingStation <- which(stationDF$PRMS_PRECIP_NAME == precipNames[i])
+  #   
+  #   distRanking <- distMatrix[matchingStation, ] |>
+  #     min_rank()
+  #   
+  #   
+  #   nearestStations <- stationDF$PRMS_PRECIP_NAME[distRanking] |>
+  #     base::setdiff(precipNames[i]) |>
+  #     base::setdiff(c("PRECIP1", "PRECIP4", "PRECIP7", "PRECIP6", "PRECIP12")) |>
+  #     head(3)
+  #   
+  #   nearestStations <- c("PRECIP14", "PRECIP2", "PRECIP8")
+  #   
+  #   
+  #   nearbyDF <- meteorDF |>
+  #     select(DATE, all_of(nearestStations))
+  #   
+  #   
+  #   nearbyDF <- nearbyDF |>
+  #     mutate(AVG_PRECIP = nearbyDF[nearestStations] |>
+  #              rowMeans()) |>
+  #     filter(!is.na(AVG_PRECIP) & AVG_PRECIP > 0)
+  #   
+  #   
+  #   
+  #   tempDF <- meteorDF |>
+  #     select(DATE, all_of(precipNames[i])) |>
+  #     left_join(nearbyDF |> select(DATE, AVG_PRECIP),
+  #               by = "DATE", relationship = "one-to-one") |>
+  #     filter(!is.na(AVG_PRECIP))
+  #   
+  #   
+  #   resDF <- modelPrecip(tempDF[[precipNames[i]]], tempDF$AVG_PRECIP,
+  #                        precipNames[i], paste0("AVG OF ",
+  #                                               paste0(nearestStations, collapse = ", ")))
+  #   
+  #   
+  #   
+  # }
+  # 
+  
+  for (i in 1:length(precipNames)) {
+    
+    if (!(i %in% c(2, 5))) {
+      next
+    }
+    
+    
+    excludeVec <- c("PRECIP1", "PRECIP4", "PRECIP7", 
+                    "PRECIP6", "PRECIP12") |>
+      base::setdiff(paste0("PRECIP", i))
+    
+    
+    # Find which gages correlated well with this iteration's gage
+    # Take the three gages with the highest R^2 values
+    # (Ignore PRISM and certain problematic gages)
+    similarGages <- compiledDF |>
+      filter(PREDICTOR == precipNames[i] | RESPONSE == precipNames[i]) |>
+      filter(PREDICTOR != "PRISM") |>
+      filter(!(PREDICTOR %in% excludeVec)) |>
+      filter(!(RESPONSE %in% excludeVec)) |>
+      arrange(desc(R_SQUARED)) |>
+      #head(3) |>
+      select(PREDICTOR, RESPONSE) |>
+      unlist(use.names = FALSE) |> unique() |>
+      base::setdiff(precipNames[i])
+    
+    
+    # Calculate the average values among the three selected gages
+    avgDF <- meteorDF |>
+      select(DATE, all_of(similarGages)) |>
+      mutate(AVG_PRECIP = NA_real_)
+    
+    
+    # avgDF <- avgDF |>
+    #   mutate(NA_COUNT = is.na(avgDF[similarGages]) |> rowSums()) |>
+    #   mutate(AVG_PRECIP = if_else(NA_COUNT < 2, 
+    #                               avgDF[similarGages] |> rowMeans(na.rm = TRUE),
+    #                               avgDF[similarGages] |> rowMeans(na.rm = FALSE)))
+    
+    for (j in 1:nrow(avgDF)) {
+      
+      rowVals <- avgDF[j, similarGages] |>
+        unlist(use.names = FALSE)
+      
+      
+      rowVals <- rowVals[!is.na(rowVals)]
+      
+      rowVals <- rowVals[rowVals >= 0]
+      
+      
+      if (!anyNA(rowVals[1:3])) {
+        
+        avgDF$AVG_PRECIP[j] <- mean(rowVals[1:3])
+        
+      } else {
+        
+        avgDF$AVG_PRECIP[j] <- mean(rowVals[1:2])
+        
+      }
+      
+    }
+    
+    
+    
+    # Plot 'avgDF' and 'meteorDF'
+    ggplot() +
+      geom_line(data = meteorDF |> filter(!is.na(get(precipNames[i]))), 
+                mapping = aes(x = DATE, y = get(precipNames[i]),
+                              color = precipNames[i])) +
+      geom_line(data = avgDF |> filter(!is.na(AVG_PRECIP)),
+                mapping = aes(x = DATE, y = AVG_PRECIP,
+                              color = "AVG")) +
+      scale_color_manual(values = c("blue", "red") |> set_names(c(precipNames[i], "AVG")))
+    
+    
+    # Define 'tempDF' using the iteration's precipitation column and 'avgDF'
+    tempDF <- meteorDF |>
+      select(DATE, all_of(precipNames[i])) |>
+      left_join(avgDF |> select(DATE, AVG_PRECIP),
+                by = "DATE", relationship = "one-to-one") |>
+      filter(!is.na(AVG_PRECIP)) |>
+      filter(!is.na(get(precipNames[i])))
+    
+    
+    # 
+    resDF <- modelPrecip(tempDF$AVG_PRECIP, tempDF[[precipNames[i]]], 
+                         paste0("AVG of ", paste0(similarGages, collapse = ", ")), 
+                         precipNames[i])
+    
+    
+    tempDF <- tempDF |>
+      mutate(PREDICTED_PRECIP = AVG_PRECIP * resDF$SLOPE[1] + resDF$INTERCEPT[1])
+    
+    
+    maxBound <- range(c(tempDF[precipNames[i]], tempDF$PREDICTED_PRECIP))
+    
+    
+    ggplot() +
+      geom_point(data = tempDF, 
+                mapping = aes(x = get(precipNames[i]), y = PREDICTED_PRECIP)) +
+      coord_cartesian(xlim = maxBound, ylim = maxBound) +
+      geom_line(data = tempDF,
+                mapping = aes(x = get(precipNames[i]), y = get(precipNames[i])), linetype = 2) +
+      xlab(precipNames[i]) +
+      annotate("text", label = paste0("R Squared: ", resDF$R_SQUARED |> round(digits = 3)),
+               x = 0.10 * maxBound[2], y = 0.85 * maxBound[2])
+    
+    
+    meteorDF |>
+      select(DATE, all_of(precipNames[i])) |>
+      full_join(avgDF, by = "DATE", relationship = "one-to-one") |>
+      mutate(!! paste0("PREDICTED_PRECIP_", i) := if_else(is.na(AVG_PRECIP), NA_real_, AVG_PRECIP * resDF$SLOPE + resDF$INTERCEPT)) |>
+      write_xlsx(paste0("PRECIP_", i, "_Analysis.xlsx"))
+    
+    
+  }
   
   
   

@@ -74,6 +74,10 @@ source("Scripts/RRW_007_Setup_PRMS_Model.R")
 source("Scripts/RRW_008_Finalize_PRMS_Input.R")
 
 
+# Check the gage data for issues before proceeding
+#source("Scripts/HLP_012_Check_for_Precipitation_Outliers.R")
+
+
 # Run PRMS
 source("Scripts/RRW_009_Run_PRMS.R")
 
