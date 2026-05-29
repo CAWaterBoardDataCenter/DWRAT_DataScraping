@@ -200,7 +200,7 @@ mainProcedure <- function () {
   
   
   modelDF |>
-    writeOutput("ProcessedData/PRMS_Gage_Regression.csv")
+    writeOutput("ProcessedData/RR_Workflow_PRMS_Gage_Regression.csv")
   
   
   cat("\tDone!\n\n")
@@ -409,9 +409,9 @@ generateModels <- function (meteorDF, prismDF) {
   
   for (i in 1:length(precipNames)) {
     
-    if (!(i %in% c(2, 5))) {
-      next
-    }
+    # if (!(i %in% c(2, 5))) {
+    #   next
+    # }
     
     
     excludeVec <- c("PRECIP1", "PRECIP4", "PRECIP7", 
@@ -430,7 +430,7 @@ generateModels <- function (meteorDF, prismDF) {
       arrange(desc(R_SQUARED)) |>
       #head(3) |>
       select(PREDICTOR, RESPONSE) |>
-      unlist(use.names = FALSE) |> unique() |>
+      t() |> as.vector()|> unique() |>
       base::setdiff(precipNames[i])
     
     
@@ -488,7 +488,8 @@ generateModels <- function (meteorDF, prismDF) {
       left_join(avgDF |> select(DATE, AVG_PRECIP),
                 by = "DATE", relationship = "one-to-one") |>
       filter(!is.na(AVG_PRECIP)) |>
-      filter(!is.na(get(precipNames[i])))
+      filter(!is.na(get(precipNames[i]))) |>
+      filter(get(precipNames[i]) >= 0)
     
     
     # 
@@ -514,13 +515,17 @@ generateModels <- function (meteorDF, prismDF) {
       annotate("text", label = paste0("R Squared: ", resDF$R_SQUARED |> round(digits = 3)),
                x = 0.10 * maxBound[2], y = 0.85 * maxBound[2])
     
+
+    if (i %in% c(13)) {
+      meteorDF |>
+        select(DATE, all_of(precipNames[i])) |>
+        full_join(avgDF, by = "DATE", relationship = "one-to-one") |>
+        mutate(!! paste0("PREDICTED_PRECIP_", i) := if_else(is.na(AVG_PRECIP), NA_real_, AVG_PRECIP * resDF$SLOPE + resDF$INTERCEPT)) |>
+        write_xlsx(paste0("PRECIP_", i, "_Analysis.xlsx"))
+    }
+
     
-    meteorDF |>
-      select(DATE, all_of(precipNames[i])) |>
-      full_join(avgDF, by = "DATE", relationship = "one-to-one") |>
-      mutate(!! paste0("PREDICTED_PRECIP_", i) := if_else(is.na(AVG_PRECIP), NA_real_, AVG_PRECIP * resDF$SLOPE + resDF$INTERCEPT)) |>
-      write_xlsx(paste0("PRECIP_", i, "_Analysis.xlsx"))
-    
+    print(resDF)
     
   }
   
