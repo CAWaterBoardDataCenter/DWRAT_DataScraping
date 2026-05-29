@@ -31,7 +31,7 @@ makeSharePointPath <- function (filePathFragment) {
 getFile <- function (filePath, fileType = NULL, largeFile = FALSE, delim = NULL,
                      select = NULL, trim_ws = FALSE, 
                      worksheet = NULL, range = NULL, col_names = TRUE,
-                     col_types = NULL, skip = 0, n_max = Inf) {
+                     col_types = NULL, skip = 0, n_max = Inf, guess_max = min(1000, n_max)) {
   
   # Given the path to a file, read it into a tibble
   
@@ -164,7 +164,7 @@ guessFileType <- function (filePath, delim = NULL) {
     return("TSV")
     
   # If the filepath has a value for 'delim' specified, assume it is delimited
-  } else if (!is.null(delim)) {
+  } else if (!is.na(delim)) {
     
     return("DELIM")
     
@@ -1504,6 +1504,8 @@ read_dat <- function (datPath, datType = NULL) {
       as_tibble(.name_repair = "minimal") |>
       set_names(headers)
     
+    
+  # This procedure is for PRMS DAT files instead
   } else if (datType == "PRMS") {
     
     # Before the row containing multiple "#", 'datPartial' will have the names 
@@ -1670,9 +1672,102 @@ read_dat <- function (datPath, datType = NULL) {
       set_names(headers)
     
     
+  # This code runs for RRIHM DAT files
   } else {
     
-    stop("Not implemented yet!")
+    # Not all RRIHM DAT files share the exact same format
+    
+    # The procedure will vary slightly based on observed patterns in 'datPartial'
+    
+    
+    # One type of DAT file has no headers at all (e.g., the "Mark West" one)
+    # Its first line starts with values right away
+    if (grepl("^[0-9]+\t[0-9]+", datPartial[1])) {
+      
+      # If there are no headers, generic ones will be created (e.g., "X1")
+      
+      
+      # Get the number of headers by counting the number of tab spaces in 
+      # the first line of 'datPartial'
+      numHeaders <- str_count(datPartial[1], "\t") + 1
+      
+      
+      # Create headers for the DAT file
+      headers <- paste0("X", 1:numHeaders)
+      
+      
+    } else {
+      
+      paste0("Unknown Type of ", datType, " DAT File\n\n", 
+             "While parsing an RRIHM DAT file, the function tried to ",
+             "determine its sub-type (e.g., \"Mark West\" DAT style). ",
+             "However, it did not match any of the sub-types in this function. ",
+             "Please investigate the cause.\n\n",
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Read in the full DAT file next
+    datDF <- getFile(datPath, fileType = "OTHER")
+    
+    
+    # Split 'datDF' at the tab spaces
+    datDF <- datDF |>
+      strsplit("\t")
+    
+    
+    # Double-check that every line in 'datDF' has a matching number of columns
+    if (any(lengths(datDF) != numHeaders)) {
+      
+      cat("\n\n")
+      cat("Line(s) with a Different Number of Columns:\n")
+      print(which(lengths(datDF) != numHeaders))
+      cat("\n\n")
+      
+      paste0("Inconsistent Number of Colums\n\n", 
+             "While parsing a ", datType, " DAT file, the function tried to ",
+             "split the data rows into ", numHeaders, " columns each. However, ",
+             "one or more rows had a different number of columns (see the ",
+             "indices printed above). Please investigate the cause.\n\n",
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Reformat 'datDF' into a matrix and then a tibble
+    datDF <- datDF |> unlist() |> 
+      matrix(ncol = numHeaders, byrow = TRUE) |>
+      as_tibble(.name_repair = "minimal") |>
+      set_names(headers)
+    
+    
+    # Check if a column contains a "#" followed by a date 
+    # (i.e., a commented datestamp)
+    commentedDateRegex <- "^#[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    
+    
+    # Use that to add a "DATE" column to 'datDF'
+    if (any(map_lgl(datDF[1, ], ~ grepl(commentedDateRegex, .)))) {
+      
+      # Locate the column that contains a commented-out date
+      # Get the index, and if there are multiple matches, take the first one
+      dateCol <- datDF[1, ] |>
+        map_lgl(~ grepl(commentedDateRegex, .)) |>
+        which() |> head(1)
+      
+      
+      # Define a "DATE" column using the values in that column
+      datDF <- datDF |>
+        mutate(DATE = get(names(datDF)[dateCol]) |>
+                 str_remove("^#") |>
+                 as.Date(format = "%Y-%m-%d"))
+      
+    }
     
   }
   
@@ -1717,9 +1812,9 @@ guessDAT <- function (datPartial) {
   }
   
   
-  # If there is a line with many hashtags "#" in a row, it is probably 
-  # a DAT file for PRMS
-  if (any(grepl("#{2,}", datPartial))) {
+  # If there is a line with many hashtags "#" in a row as well as "runoff" columns, 
+  # it is probably a DAT file for PRMS
+  if (any(grepl("#{2,}", datPartial)) && any(grepl("runoff\\s", datPartial))) {
     
     return("PRMS")
     
