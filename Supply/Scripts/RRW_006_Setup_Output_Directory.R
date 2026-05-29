@@ -113,7 +113,9 @@ mainProcedure <- function () {
   
   # Edit 'outPath' to point to 'outputDirectory' instead of "ProcessedData"
   outPath <- outPath |>
-    str_replace("^.+[/\\\\]", paste0(outputDirectory, "/"))
+    str_remove("^.+[/\\\\]") |>
+    paste0(outputDirectory, "/", ... = _) |> 
+    normalizePath(mustWork = FALSE)
   
   
   # Then save the txt file there too
