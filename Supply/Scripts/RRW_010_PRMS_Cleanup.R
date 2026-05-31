@@ -118,7 +118,8 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
   # After that, replace the paths in 'writePaths' using 'dirPath'
   # The files will be written to the PRMS "Output" folder
   writePaths <- writePaths |>
-    str_replace("^.+[/\\\\]", paste0(dirPath, "/PRMS/Output/")) |>
+    str_remove("^.+[/\\\\]") |>
+    paste0(dirPath, "/PRMS/Output/", ... = _) |>
     normalizePath(mustWork = FALSE)
   
   
