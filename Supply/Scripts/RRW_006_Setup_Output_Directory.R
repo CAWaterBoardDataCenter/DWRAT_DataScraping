@@ -393,6 +393,22 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
            quietly = TRUE)
   
   
+  # After that, save the outlier bounds and regression data for precipitation gages
+  outlierPath <- getFromControl_RR("PRMS_PRECIP_GAGE_OUTLIER_BOUNDS") |>
+    sharepointPathCheck(isFolder = FALSE)
+  
+  regressionPath <- getFromControl_RR("PRMS_PRECIP_GAGE_CORRELATION_TABLE") |>
+    sharepointPathCheck(isFolder = FALSE)
+  
+  
+  # Copy both files to the "PRMS" folder
+  copyFile(outlierPath, paste0(outputDirectory, "/PRMS/Input/",
+                               outlierPath |> str_remove("^.+[/\\\\]")))
+  
+  copyFile(regressionPath, paste0(outputDirectory, "/PRMS/Input/",
+                                  regressionPath |> str_remove("^.+[/\\\\]")))
+  
+  
   # Each of the weather station input files will be archived as well
   copyStationInputFile("PRISM_PRMS_STATIONS_CSV", outputDirectory, "PRMS")
   copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "PRMS")

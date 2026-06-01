@@ -3,7 +3,7 @@
 # USGS gage 11446680 and other Russian River gages
 
 
-# Precipitation data is included in some versions of thes comparison plots too
+# Precipitation data is included in some versions of these comparison plots too
 
 # There are two sources of precipitation data: PRISM grid cell averages and
 # the average precipitation among gages in the SRP DAT file
@@ -47,8 +47,8 @@ mainProcedure <- function (gageID = "11466800") {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Confirm that "SRP_inflow_6.gag" is present in the SRP "output" folder
-  gagPath <- paste0(dirPath, "/SRP/output/SRP_inflow_", gageID, ".gag") |>
+  # Confirm that the gage's corresponding gag file is present in the SRP "output" folder
+  gagPath <- paste0(dirPath, "/SRP/Output/SRP_inflow_", gageID, ".gag") |>
     checkForPreviousOutput()
   
   
@@ -663,6 +663,11 @@ validateUSGS <- function (usgsDF) {
   # Note which "YEAR-MONTH" pairs in the dataset are incomplete
   
   
+  # There may be "NA" records in the dataset, so remove those first
+  usgsDF <- usgsDF |>
+    filter(!is.na(value))
+  
+  
   # Get a tibble of all dates between the first and last dates in 'usgsDF'
   # This will be used to identify gaps in 'usgsDF'
   dateDF <- tibble(DATE = seq(from = min(usgsDF$time),
@@ -692,7 +697,7 @@ validateUSGS <- function (usgsDF) {
 
 
 compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
-                                 prismDF, datDF) {
+                                 prismDF, datDF, model = "SRP") {
   
   # Compare the streamflow data in 'usgsDF' and 'gagDF' 
   
@@ -743,13 +748,27 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   }
   
   
-  # Currently, the modeled streamflow has units of cubic feet per day (cfd)
-  # Meanwhile, the gage data is using cubic feet per second (cfs)
+  # Adjust the units to match next 
+  
+  
+  # If 'model' is "SRP", the streamflow data has units of cubic feet per day (cfd)
+  # If 'model' is "PRMS", the streamflow data is using cubic feet per second (cfs)
+  
+  # Either way, the gage data is using cubic feet per second (cfs)
   
   # Adjust the units in "GAGE" and convert it to cfd
   # cfs * 60 s/min * 60 min/hr * 24 hr/day = cfd
   dailyDF <- dailyDF |>
     mutate(GAGE = GAGE * 60 * 60 * 24)
+  
+  
+  # If 'model' is "PRMS", apply the same for the "MODEL" column
+  if (model == "PRMS") {
+    
+    dailyDF <- dailyDF |>
+      mutate(MODEL = MODEL * 60 * 60 * 24)
+    
+  }
   
   
   # After that, convert both "GAGE" and "MODEL" flows into acre-feet per day (AFD)
@@ -762,10 +781,10 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   # Prepare to generate plots and tables
   
   
-  # First, create a new folder in the SRP "output" directory 
+  # First, create a new folder in the model "output" directory 
   # This will hold the data output by this function
   newDir <- prepNewDirectory(dirPath, 
-                             paste0(dirPath, "/SRP/output/", 
+                             paste0(dirPath, "/", model, "/output/", 
                                     gageID, "_Comparison"))
   
   
@@ -835,8 +854,10 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   # Checking the entire data range, 
   # if the monthly streamflow NSE value is below 0.5, 
   # stop the script and flag it as an error
+  # (Exceptions are made for PRMS streamflow gages)
   if (statDF$MONTHLY_RESULT[grepl("Nash", statDF$METRIC) & 
-                            statDF$TIMESCALE == "All"] < 0.50) {
+                            statDF$TIMESCALE == "All"] < 0.50 &&
+      !(gageID %in% c("11461500", "11464000"))) {
     
     paste0("Unexpectedly Low Nash-Sutcliffe Result for Monthly Streamflow\n\n",
            "In a comparison with USGS gage data (ID \"", gageID, "\"), the ",
@@ -860,7 +881,7 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
 
 prepNewDirectory <- function (dirPath, newDir) {
   
-  # Generate a new folder in the SRP "output" folder
+  # Generate a new folder in the model "output" folder
   # It will contain data from this gage comparison
   
   # This function will be written generically for use in other scripts
@@ -924,7 +945,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   # These actions will be performed for both daily and monthly streamflow datasets
   
   # Precipitation data is included in some versions of these plots
-  # (It can come from two different sources: Either PRISM or the SRP DAT file)
+  # (It can come from two different sources: Either PRISM or the input DAT file)
   
   # An additional plot is created at the end that plots just gage data 
   # vs model data in a scatterplot
@@ -1013,7 +1034,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
                            prismDF, isDaily = FALSE, precipType = "PRISM Avg")
   
   
-  # Try, precipitation data from the SRP DAT file next
+  # Try, precipitation data from the model's input DAT file next
   dailyDF |>
     generateStreamflowPlot(paste0(newDir, "/Daily_Comparison_", 
                                   timescale, "_DAT_Precip.png"),
