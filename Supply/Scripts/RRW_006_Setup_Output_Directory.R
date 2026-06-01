@@ -14,8 +14,8 @@
 # copied there as well
 # ("ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv")
 
-# Its pre-PRISM version will be included too
-# ("ProcessedData/PRMS_Pre-PRISM_Meteorological_[startDate]_[endDate].csv")
+# Its pre-QAQC version will be included too
+# ("ProcessedData/PRMS_No-QAQC_Meteorological_[startDate]_[endDate].csv")
 
 # The weather station input files will be archived in this folder as well
 
@@ -63,8 +63,8 @@ mainProcedure <- function () {
     checkForPreviousOutput()
   
   
-  # Check for the "Pre-PRISM" version of this file as well
-  prePrismMeteor <- paste0("ProcessedData/PRMS_Meteorological_", startDate,
+  # Check for the "Pre-QAQC" version of this file as well
+  prePrismMeteor <- paste0("ProcessedData/PRMS_No-QAQC_Meteorological_", startDate,
                            "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
@@ -362,12 +362,12 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyFile(from = meteorPath, to = newMeteorPath)
   
   
-  # Attempt the same copy process with the "Pre-PRISM" version of 
+  # Attempt the same copy process with the "Pre-QAQC" version of 
   # the meteorological CSV file
   copyFile(from = prePrismMeteor, 
            to = newMeteorPath |> 
              str_replace("^(.+[/\\\\])PRMS_Meteorological_", 
-                         "\\1PRMS_Pre-PRISM_Meteorological_"), 
+                         "\\1PRMS_No-QAQC_Meteorological_"), 
            quietly = TRUE)
   
   
@@ -418,6 +418,15 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
+  
+  
+  # Save the raw downloaded CIMIS data too
+  # Its quality control flags are not applied by default, so a record of what
+  # data was flagged is worth preserving
+  copyFile(paste0("WebData/CIMIS_API_Data_", startDate, "_",
+                  endDate, ".csv"),
+           paste0(outputDirectory, "/PRMS/Input/CIMIS_API_Data_", startDate, "_",
+                  endDate, ".csv"), quietly = TRUE)
   
   
   # Finally, copy the "renv.lock" file located in the root "Supply" directory

@@ -172,6 +172,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # After that, check for and remove outliers from the dataset
   # Then, fill in empty entries using other gages' data or PRISM values
   meteorDF <- datQAQC(meteorDF, outlierDF, corrDF, 
+                      cimisInput, cimisDF, 
                       prismDF, prismInput, allTempColumnsFromPRISM,
                       fullQAQC = TRUE)
   
@@ -607,7 +608,7 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
 
 
 
-datQAQC <- function (meteorDF, outlierDF, corrDF, 
+datQAQC <- function (meteorDF, outlierDF, corrDF, cimisInput, cimisDF, 
                      prismDF, prismInput, allTempSub,
                      fullQAQC = TRUE) {
   
