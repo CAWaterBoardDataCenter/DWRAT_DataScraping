@@ -68,7 +68,7 @@ mainProcedure <- function () {
                        "&dataTypes=PRCP,TMAX,TMIN", "&format=csv",
                        "&options=includeAttributes:true,includeStationName:true",
                        ",includeStationLocation:false",
-                       "&units=metric")
+                       "&units=standard")
   
   
   # Define the output file name as well

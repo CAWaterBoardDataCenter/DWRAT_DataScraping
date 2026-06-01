@@ -533,9 +533,28 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
   # The 'climateDF' data frames need to be widened 
   # (so that each station's data is in its own separate column)
   
+  
   # The "PRMS" column names in 'climateInput' will then be used to switch 
   # from the station IDs to the PRMS field names
   fieldNameVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = TRUE)
+
+  
+  # Before performing that step, check if the input data is from NOAA
+  # That data has US customary units rather than metric units
+  if (dataSource == "NOAA") {
+    
+    # Convert precipitation data from units of inches into millimeters
+    # in * 25.4 mm / in
+    
+    # Convert the temperature data from Fahrenheit into Celsius as well
+    # (deg-F - 32) * 5/9 = deg-C
+    
+    climateDF <- climateDF |>
+      mutate(PRCP = PRCP * 25.4,
+             TMAX = 5/9 * (TMAX - 32),
+             TMIN = 5/9 * (TMIN - 32))
+    
+  }
   
   
   # Start by renaming the columns in 'climateDF' to be consistent 
