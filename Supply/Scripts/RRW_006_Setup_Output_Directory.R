@@ -15,7 +15,7 @@
 # ("ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv")
 
 # Its pre-QAQC version will be included too
-# ("ProcessedData/PRMS_No-QAQC_Meteorological_[startDate]_[endDate].csv")
+# ("ProcessedData/PRMS_Meteorological_No_QC_[startDate]_[endDate].csv")
 
 # The weather station input files will be archived in this folder as well
 
@@ -64,8 +64,14 @@ mainProcedure <- function () {
   
   
   # Check for the "Pre-QAQC" version of this file as well
-  prePrismMeteor <- paste0("ProcessedData/PRMS_No-QAQC_Meteorological_", startDate,
+  prePrismMeteor <- paste0("ProcessedData/PRMS_Meteorological_No_QC_", startDate,
                            "_", endDate, ".csv") |>
+    checkForPreviousOutput()
+  
+  
+  # Include the intermediate QA/QC file too (after CIMIS flags have been applied)
+  postCimisMeteor <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_",
+                            "Intermediate_", startDate, "_", endDate, ".csv") |> 
     checkForPreviousOutput()
   
   
@@ -91,7 +97,8 @@ mainProcedure <- function () {
   
   
   # Add metadata and the meteorological CSV to this new location
-  addFiles(outputDirectory, meteorPath, prePrismMeteor, startDate, endDate)
+  addFiles(outputDirectory, meteorPath, prePrismMeteor, postCimisMeteor,
+           startDate, endDate)
   
   
   cat("\tDone!\n\n")
@@ -316,11 +323,11 @@ chooseFolderName <- function (saveDirectory) {
 
 
 
-addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, 
+addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, postCimisMeteor,
                       startDate, endDate) {
   
   # Create metadata about the process in 'outputDirectory'
-  # Also, copy meteorological files and the "renv" lock file there
+  # Also, copy meteorological files, input files, and the "renv" lock file there
   
   
   # Gather various information about the process into one data frame
@@ -366,8 +373,16 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   # the meteorological CSV file
   copyFile(from = prePrismMeteor, 
            to = newMeteorPath |> 
-             str_replace("^(.+[/\\\\])PRMS_Meteorological_", 
-                         "\\1PRMS_No-QAQC_Meteorological_"), 
+             str_replace("^(.+[/\\\\]PRMS_Meteorological)_", 
+                         "\\1_No_QC_"), 
+           quietly = TRUE)
+  
+  
+  # Save the intermediate QC file too (post-CIMIS adjustment)
+  copyFile(from = postCimisMeteor, 
+           to = newMeteorPath |> 
+             str_replace("^(.+[/\\\\]PRMS_Meteorological)_", 
+                         "\\1_QC_CIMIS_Intermediate_"), 
            quietly = TRUE)
   
   

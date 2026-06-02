@@ -34,8 +34,8 @@
 # Gage data was downloaded on May 21, 2026 for the period between 
 # January 1, 1990 and December 31, 2025
 
-# The Pre-QAQC meteorological CSV will be required for this script
-# ("PRMS_No-QAQC_Meteorological_1990-01-01_2025-12-31.csv")
+# The intermediate QAQC meteorological CSV will be required for this script
+# ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
 # "ProcessedData" folder 
@@ -78,7 +78,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-QAQC" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_No-QAQC_Meteorological_",
+  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -86,7 +86,7 @@ mainProcedure <- function () {
   if (!file.exists(meteorPath)) {
     
     paste0("Missing Required Meteorological File\n\n",
-           "Please obtain the \"No-QAQC\" meteorological file that ",
+           "Please obtain the \"Intermediate QA/QC\" meteorological file that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
            "it in the \"ProcessedData\" folder.\n\n",
            "(\"", normalizePath(meteorPath, mustWork = FALSE), "\" does ",
