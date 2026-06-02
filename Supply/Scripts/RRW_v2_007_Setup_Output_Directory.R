@@ -133,7 +133,7 @@ validateInput <- function (saveDirectory, sourceField) {
   if (!dir.exists(saveDirectory)) {
     
     stop(paste0("Cannot Find the Specified Directory\n\n",
-                "In the RR Supply Control File, the desired location ",
+                "In the RR Workflow Control File, the desired location ",
                 "to store the model outputs was specified to be \"",
                 saveDirectory, "\"\n\n",
                 "However, this location does not appear to exist. ",
@@ -334,6 +334,28 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   # Copy the file
   copyFile(from = meteorPath, to = newMeteorPath)
+  
+  
+  # Save the PRISM grid-cell-averaged precipitation data too
+  # There is one file each for the RRIHM and SRP model domains
+  prmsGridPath <- paste0("WebData/PRISM_PRMS_Domain_Data_", 
+                         getModeledWY(endDate)[1], "_", 
+                         endDate, ".csv")
+  
+  
+  srpGridPath <- paste0("WebData/PRISM_SRP_Domain_Data_", 
+                        getModeledWY(endDate)[1], "_", 
+                        endDate, ".csv")
+  
+  
+  copyFile(prmsGridPath, paste0(outputDirectory, "/RRIHM/Input/",
+                                prmsGridPath |> str_remove("^.+/")), 
+           quietly = TRUE)
+  
+  
+  copyFile(srpGridPath, paste0(outputDirectory, "/SRP/Input/",
+                               srpGridPath |> str_remove("^.+/")), 
+           quietly = TRUE)
   
   
   # Each of the weather station input files will be archived as well

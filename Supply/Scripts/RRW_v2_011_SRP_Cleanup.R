@@ -1,7 +1,7 @@
 # After the SRP run has completed successfully, 
 # copy key output files into the hydrology model input/output folder
 
-# Then, delete the "SRPHM_update_ag" folder from the "ProcessedData" folder
+# Then, delete the "SRPHM" folder from the "ProcessedData" folder
 
 
 #### Setup ####
@@ -24,7 +24,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_015_SRP_Cleanup.R'!\n")
+  cat("Starting 'RRW_v2_011_SRP_Cleanup.R'!\n")
   
   
   # Import the start and end date
@@ -41,8 +41,8 @@ mainProcedure <- function () {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Also confirm that the "SRPHM_update_ag" folder was copied to "ProcessedData"
-  srpPath <- validateModelCopy_SRP()
+  # Also confirm that the "SRPHM" folder was copied to "ProcessedData"
+  srpPath <- validateModelCopy_SRP_2024()
   
   
   cat("\tDone!\n\n")
@@ -58,7 +58,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  # The final step is to delete the "SRPHM_update_ag" folder that was copied to 
+  # The final step is to delete the "SRPHM" folder that was copied to 
   # the "ProcessedData" folder
   cat("[3/3]\tDeleting the model files...\n")
   
@@ -70,7 +70,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_015_SRP_Cleanup.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_011_SRP_Cleanup.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -82,16 +82,18 @@ mainProcedure <- function () {
 
 copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
-  # Copy several files from the SRP folder (including the control file)
-  # into the hydrology folder 
+  # Copy several files from the SRP "output" folder into the hydrology folder 
+  
+  # Include "gsflow.log" and several input files too (like the control file)
   
   
-  # Confirm that they exist in the model folder first
-  checkForModelOutputs_SRP(srpPath, modelOutput = NULL)
+  # Confirm that they exist in the "output" folder first
+  checkForModelOutputs_SRP_2024(srpPath, modelOutput = NULL)
   
   
-  # Get a vector of paths to all important outputs
-  copyFiles <- getModelOutputs_SRP(srpPath)
+  # This vector contains the names of the desired output files
+  # ("gsflow.log" is included here too)
+  copyFiles <- getModelOutputs_SRP_2024(srpPath)
   
   
   # Prepare vectors that contain the proper filepaths and the planned filepaths
@@ -107,14 +109,21 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
     normalizePath(mustWork = FALSE)
   
   
-  # Add rows to 'sourcePaths' and 'writePaths' for "SRPHM_update.control"
+  # Add rows to 'sourcePaths' and 'writePaths' for other important files, 
+  # like "SRPHM_spinup.control", "SRPHM_spinup.nam", and "restartdata_2020.out"
+  otherFiles <- c("/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
+                  "/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
+                  "/external_files/restartdata_2020.out")
+  
+  
   sourcePaths <- c(sourcePaths,
-                   paste0(srpPath, "/SRPHM_update.control") |>
+                   paste0(srpPath, otherFiles) |>
                      checkForPreviousOutput())
   
   
   writePaths <- c(writePaths,
-                  paste0(dirPath, "/SRP/Input/SRPHM_update.control"))
+                  paste0(dirPath, "/SRP/Input/",
+                         otherFiles |> str_remove("^.+[/\\\\]")))
   
   
   # Copy the files using the `copyFile` function
@@ -131,7 +140,7 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
 
 deleteFiles <- function (srpPath) {
   
-  # Delete the "SRPHM_update_ag" directory in the "ProcessedData" folder
+  # Delete the "SRPHM" directory in the "ProcessedData" folder
   
   # Start by deleting that folder
   dir_delete(srpPath)

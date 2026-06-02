@@ -14,8 +14,8 @@
 # copied there as well
 # ("ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv")
 
-# Its pre-PRISM version will be included too
-# ("ProcessedData/PRMS_Pre-PRISM_Meteorological_[startDate]_[endDate].csv")
+# Its pre-QAQC version will be included too
+# ("ProcessedData/PRMS_Meteorological_No_QC_[startDate]_[endDate].csv")
 
 # The weather station input files will be archived in this folder as well
 
@@ -63,9 +63,15 @@ mainProcedure <- function () {
     checkForPreviousOutput()
   
   
-  # Check for the "Pre-PRISM" version of this file as well
-  prePrismMeteor <- paste0("ProcessedData/PRMS_Meteorological_", startDate,
+  # Check for the "Pre-QAQC" version of this file as well
+  prePrismMeteor <- paste0("ProcessedData/PRMS_Meteorological_No_QC_", startDate,
                            "_", endDate, ".csv") |>
+    checkForPreviousOutput()
+  
+  
+  # Include the intermediate QA/QC file too (after CIMIS flags have been applied)
+  postCimisMeteor <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_",
+                            "Intermediate_", startDate, "_", endDate, ".csv") |> 
     checkForPreviousOutput()
   
   
@@ -91,7 +97,8 @@ mainProcedure <- function () {
   
   
   # Add metadata and the meteorological CSV to this new location
-  addFiles(outputDirectory, meteorPath, prePrismMeteor, startDate, endDate)
+  addFiles(outputDirectory, meteorPath, prePrismMeteor, postCimisMeteor,
+           startDate, endDate)
   
   
   cat("\tDone!\n\n")
@@ -102,9 +109,25 @@ mainProcedure <- function () {
   
   # Save 'outputDirectory' to a text file in the "ProcessedData" folder
   # This will make it easier to reference in later scripts
+  outPath <- paste0("ProcessedData/Hydrology_Output_Location_", startDate,
+                    "_", endDate, ".txt")
+  
   outputDirectory |>
-    writeOutput(paste0("ProcessedData/Hydrology_Output_Location_", startDate,
-                       "_", endDate, ".txt"))
+    writeOutput(outPath)
+  
+  
+  # Save that file to 'outputDirectory' too
+  
+  # Edit 'outPath' to point to 'outputDirectory' instead of "ProcessedData"
+  outPath <- outPath |>
+    str_remove("^.+[/\\\\]") |>
+    paste0(outputDirectory, "/", ... = _) |> 
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Then save the txt file there too
+  outputDirectory |>
+    writeOutput(outPath, quietly = TRUE)
   
   
   cat("\tDone!\n\n")
@@ -143,7 +166,7 @@ validateInput <- function (saveDirectory, sourceField) {
   if (!dir.exists(saveDirectory)) {
     
     stop(paste0("Cannot Find the Specified Directory\n\n",
-                "In the RR Supply Control File, the desired location ",
+                "In the RR Workflow Control File, the desired location ",
                 "to store the model outputs was specified to be \"",
                 saveDirectory, "\"\n\n",
                 "However, this location does not appear to exist. ",
@@ -300,11 +323,11 @@ chooseFolderName <- function (saveDirectory) {
 
 
 
-addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, 
+addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, postCimisMeteor,
                       startDate, endDate) {
   
   # Create metadata about the process in 'outputDirectory'
-  # Also, copy meteorological files and the "renv" lock file there
+  # Also, copy meteorological files, input files, and the "renv" lock file there
   
   
   # Gather various information about the process into one data frame
@@ -346,13 +369,59 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyFile(from = meteorPath, to = newMeteorPath)
   
   
-  # Attempt the same copy process with the "Pre-PRISM" version of 
+  # Attempt the same copy process with the "Pre-QAQC" version of 
   # the meteorological CSV file
   copyFile(from = prePrismMeteor, 
            to = newMeteorPath |> 
-             str_replace("^(.+[/\\\\])PRMS_Meteorological_", 
-                         "\\1PRMS_Pre-PRISM_Meteorological_"), 
+             str_replace("^(.+[/\\\\]PRMS_Meteorological)_", 
+                         "\\1_No_QC_"), 
            quietly = TRUE)
+  
+  
+  # Save the intermediate QC file too (post-CIMIS adjustment)
+  copyFile(from = postCimisMeteor, 
+           to = newMeteorPath |> 
+             str_replace("^(.+[/\\\\]PRMS_Meteorological)_", 
+                         "\\1_QC_CIMIS_Intermediate_"), 
+           quietly = TRUE)
+  
+  
+  # Save the PRISM grid-cell-averaged precipitation data too
+  # There is one file each for the PRMS and SRP model domains
+  prmsGridPath <- paste0("WebData/PRISM_PRMS_Domain_Data_", 
+                         getModeledWY(endDate)[1], "_", 
+                         endDate, ".csv")
+  
+  
+  srpGridPath <- paste0("WebData/PRISM_SRP_Domain_Data_", 
+                        getModeledWY(endDate)[1], "_", 
+                        endDate, ".csv")
+  
+  
+  copyFile(prmsGridPath, paste0(outputDirectory, "/PRMS/Input/",
+                                prmsGridPath |> str_remove("^.+/")), 
+           quietly = TRUE)
+  
+  
+  copyFile(srpGridPath, paste0(outputDirectory, "/SRP/Input/",
+                               srpGridPath |> str_remove("^.+/")), 
+           quietly = TRUE)
+  
+  
+  # After that, save the outlier bounds and regression data for precipitation gages
+  outlierPath <- getFromControl_RR("PRMS_PRECIP_GAGE_OUTLIER_BOUNDS") |>
+    sharepointPathCheck(isFolder = FALSE)
+  
+  regressionPath <- getFromControl_RR("PRMS_PRECIP_GAGE_CORRELATION_TABLE") |>
+    sharepointPathCheck(isFolder = FALSE)
+  
+  
+  # Copy both files to the "PRMS" folder
+  copyFile(outlierPath, paste0(outputDirectory, "/PRMS/Input/",
+                               outlierPath |> str_remove("^.+[/\\\\]")))
+  
+  copyFile(regressionPath, paste0(outputDirectory, "/PRMS/Input/",
+                                  regressionPath |> str_remove("^.+[/\\\\]")))
   
   
   # Each of the weather station input files will be archived as well
@@ -364,6 +433,15 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
+  
+  
+  # Save the raw downloaded CIMIS data too
+  # Its quality control flags are not applied by default, so a record of what
+  # data was flagged is worth preserving
+  copyFile(paste0("WebData/CIMIS_API_Data_", startDate, "_",
+                  endDate, ".csv"),
+           paste0(outputDirectory, "/PRMS/Input/CIMIS_API_Data_", startDate, "_",
+                  endDate, ".csv"), quietly = TRUE)
   
   
   # Finally, copy the "renv.lock" file located in the root "Supply" directory

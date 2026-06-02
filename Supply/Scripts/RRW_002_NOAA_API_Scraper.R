@@ -66,7 +66,7 @@ mainProcedure <- function () {
                        "&startDate=", startDate, "T00:00:00",
                        "&endDate=", endDate, "T23:59:59", 
                        "&dataTypes=PRCP,TMAX,TMIN", "&format=csv",
-                       "&options=includeAttributes:false,includeStationName:true",
+                       "&options=includeAttributes:true,includeStationName:true",
                        ",includeStationLocation:false",
                        "&units=standard")
   

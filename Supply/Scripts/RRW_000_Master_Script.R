@@ -82,6 +82,20 @@ source("Scripts/RRW_009_Run_PRMS.R")
 source("Scripts/RRW_010_PRMS_Cleanup.R")
 
 
+# Before proceeding, compare the precipitation in PRMS's model output 
+# to the basin-averaged precipitation data from PRISM (as well as to the 
+# average precipitation data in the PRMS input DAT file)
+source("Scripts/HLP_009_Compare_PRMS_Precip.R")
+
+
+# Check streamflow data in PRMS's output too
+source("Scripts/HLP_010_Plot_PRMS_Streamflow.R")
+
+
+# Before proceeding, compare PRMS's streamflow output to USGS gages' datasets
+source("Scripts/HLP_012_Compare_PRMS_Output_to_USGS_Gage.R")
+
+
 ##### SRP #####
 
 # Process the downloaded weather file for SRP
@@ -102,6 +116,10 @@ source("Scripts/RRW_014_Run_SRP.R")
 
 # Store key outputs and clear out the copied model files
 source("Scripts/RRW_015_SRP_Cleanup.R")
+
+
+# Before proceeding, compare SRP's streamflow output to USGS gages' datasets
+source("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R")
 
 
 ##### Raw Flows #####

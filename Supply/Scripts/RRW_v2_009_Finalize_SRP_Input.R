@@ -1,8 +1,8 @@
-# This script prepares the DAT file that is input into PRMS
-# The control file and batch file in PRMS are setup as well
+# This script prepares the DAT file that is input into SRP
+# The control file and batch file in SRP are setup as well
 
 # Earlier in the process, the downloaded meteorological dataset was formatted
-# for integration into a PRMS input file
+# for integration into a SRP input file
 
 # It will now be merged into a long-running DAT file
 
@@ -15,35 +15,36 @@
 #      SPI-based predictions will be used
 
 #  (*) If 'endDate' is between March and September:
-#        (1) One of three linear regression models will be applied
-#            to identify the most similar water year for the current
-#            water year and the remainder of the water year 
-
+#      (1) One of three linear regression models will be applied
+#          to identify the most similar water year for the current
+#          water year and the remainder of the water year 
 
 # The script has several input files:
-#  (1) "ProcessedData/Weather_Processed_Data_[startDate]_[endDate].csv"
+#  (1) "ProcessedData/SRP_Meteorological_[startDate]_[endDate].csv"
 #      The processed weather data
 
-#  (2) A long-running DAT file (whose filepath is present within the directory
-#      specified by "MAIN_PRMS_DAT_FOLDER" of the control file)
+#  (2) A long-running DAT file (whose parent folder is input into 
+#      "MAIN_SRP_DAT_FOLDER" of the control file)
 
-#  (3) From the PRMS model files, the "prms_rr.control" file will be edited
+#  (3) From the SRP model files, the "SRPHM_spinup.control" file will be edited
 
-#  (4) Similarly, the model's "run.bat" file will be updated as well
+#  (4) Similarly, the model's "run_SRPHM_spinup.bat" file will be updated
 
 
 # A single output will be generated in all cases, and additional outputs will 
 # be included whenever the "Similar WY" procedure is executed: 
 
-#  (1) "DAT_PRMS_[startDate]_[endDate].dat"
+#  (1) "DAT_SRP_[startDate]_[endDate].dat"
 #      The final DAT file to use in the model run
-#      (This file is also copied to the "RR_PRMS" folder as "RR_PRMS_Input.dat")
+#      (This file is also copied to the "SRPHM" folder 
+#       as "RR_SRP_Input.dat")
 
-#  (2) If the similar WY needs to be identified, components from that procedure
-#      are generated as well
+#  (2) If the similar WY needs to be identified, a summary CSV from that 
+#      procedure will be generated as well
 
-# Technically, "prms_rr.control" and "run.bat" are output by this script as well
-# (Though, the copied "RR_PRMS" contents will be deleted at the end of the model
+# Technically, "SRPHM_spinup.control" and "run_SRPHM_spinup.bat" are output by 
+# this script as well
+# (Though, the copied "SRP" contents will be deleted at the end of the model
 #  run procedure, so they will not stick around for long)
 
 
@@ -67,7 +68,7 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function (predictWY = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRW_008_Finalize_PRMS_Input.R'!\n")
+  cat("Starting 'RRW_v2_009_Finalize_SRP_Input.R'!\n")
   
   
   # Import the start and end date
@@ -75,7 +76,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Confirm that a proper directory exists for model input and output files
-  # The actual PRMS model files should have been successfully copied to
+  # The actual SRP model files should have been successfully copied to
   # the "ProcessedData" folder too
   cat(paste0("[1/", if_else(predictWY, 5, 4),
              "]\tChecking directories...\n"))
@@ -85,8 +86,8 @@ mainProcedure <- function (predictWY = TRUE) {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Also confirm that the "RR_PRMS" folder was copied to "ProcessedData"
-  prmsPath <- validateModelCopy_PRMS()
+  # Also confirm that the SRP model folder was copied to "ProcessedData"
+  srpPath <- validateModelCopy_SRP_2024()
   
   
   cat("\tDone!\n\n")
@@ -96,28 +97,26 @@ mainProcedure <- function (predictWY = TRUE) {
              "]\tLoading meteorological data and long-running DAT file...\n"))
   
   
-  # Read in two of the main input files:
-  #  (*) The PRMS Meteorological CSV 
-  #  (*) The primary DAT file
-  # (These files are used in all cases, regardless of the value for 'predictWY')
+  # Read in two of the main input files
+  # (The SRP Meteorological CSV and the primary DAT file)
   filePaths <- tibble("METEOROLOGICAL" = 
-                        paste0("ProcessedData/PRMS_Meteorological_", startDate,
+                        paste0("ProcessedData/SRP_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
+                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
   
   
   # "MAIN_DAT" contains a folder path right now
   # Extract the latest primary DAT file from there
   filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$", 
-                  title = "PRMS Main DAT File")
+    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
+                  "SRP Main DAT File")
   
   
-  # Read in the two files after that (Meteorological CSV and Main PRMS DAT file)
-  # (while also verifying that they exist)
+  # Read in the two files next (while also verifying that they exist)
   meteorDF <- filePaths$METEOROLOGICAL[1] |> 
-    checkForPreviousOutput() |> 
+    checkForPreviousOutput() |>
     getDelim(",")
+  
   
   primaryDAT <- getFile(filePaths$MAIN_DAT[1], delim = ",")
   
@@ -125,7 +124,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "PRMS", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRP", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -142,24 +141,22 @@ mainProcedure <- function (predictWY = TRUE) {
   # (Overlapping dates with 'startDate' are removed from 'primaryDAT')
   # (Also, "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND" are 
   #  added to 'meteorDF')
-  # (The "RUNOFF" columns are added as well, and they may contain "NA" initially)
   mergedDAT <- primaryDAT |> 
     filter(DATE < startDate) |>
     bind_rows(meteorDF |>
                 mutate(YEAR = year(DATE), MONTH = month(DATE), DAY = day(DATE),
-                       HOUR = 0, MINUTE = 0, SECOND = 0)) |>
-    mutate(across(starts_with("RUNOFF"), ~replace_na(., 1)))
+                       HOUR = 0, MINUTE = 0, SECOND = 0))
   
   
   cat("\tDone!\n\n")
   
   
-  # After that, if 'predictWY' is TRUE, add predictions 
-  # for the current water year
+  # After that, if 'predictWY' is TRUE, add predictions for 
+  # the current water year
   if (predictWY) {
     
-    cat(paste0("[4/5]\tAppending weather predictions for the ",
-               "current water year...\n"))
+    cat(paste0("[4/5]\tAppending weather predictions for ",
+               "the current water year...\n"))
     
     
     mergedDAT <- predictCurrentWY(mergedDAT,
@@ -187,17 +184,17 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Finally, write 'mergedDAT' to a file
-  # It will be stored in both the "RR_PRMS" folder and the model run 
-  # output folder 
+  # It will be stored in both the "SRPHM_update_ag" folder and the model run 
+  # hydrology folder 
   mergedDAT |>
-    outputDAT(startDate, endDate, dirPath, prmsPath, predictWY)
+    outputDAT(startDate, endDate, dirPath, srpPath, predictWY)
   
   
   cat("\tDone!\n\n")
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_008_Finalize_PRMS_Input.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_009_Finalize_SRP_Input.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -207,7 +204,7 @@ mainProcedure <- function (predictWY = TRUE) {
 
 
 
-predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
+predictCurrentWY <- function (mergedDAT, startDate, endDate, srpCols,
                               dirPath, pathMainDAT) {
   
   # Based on 'endDate', apply different methods to select predictions 
@@ -224,7 +221,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     
     
     # But still update the metadata file after that
-    updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
+    updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
                        modelEndDate = endDate, 
                        "Not Required", pathMainDAT)
     
@@ -238,13 +235,13 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     # (*) "Most Similar WY" prediction
     
     # In both cases, historic precipitation data is required for
-    # the PRMS model domain
+    # the SRP model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_FOLDER") |>
-      getLatestFile(paste0("^RR_Workflow_PRISM_PRMS_Avg_Historic_Precip_",
+    pastPrecipPath <- getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
+      getLatestFile(paste0("^RR_Workflow_PRISM_SRP_Avg_Historic_Precip_",
                            "CY1981_to_WY[0-9]{4}\\.csv$"),
-                    "PRMS Historic Precip File")
+                    "SRP Historic Precip File")
     
     
     # Read in the file and validate it
@@ -263,11 +260,11 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       # Then, choose months with the driest conditions and use them 
       # as predictions for the remaining months of the current water year
       finalDAT <- spiPrediction(mergedDAT, pastPrecip, 
-                                startDate, endDate, prmsCols)
+                                startDate, endDate, srpCols)
       
       
       # Update the metadata file next
-      updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+      updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
                          modelEndDate = getModeledWY(endDate)[2],
                          predictionMethod = "SPI", 
                          pathMainDAT = pathMainDAT, 
@@ -291,7 +288,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     
     # For both the SPI and Similar Water Year methods, archive 'pastPrecipPath'
     copyFile(pastPrecipPath, 
-             paste0(dirPath, "/PRMS/Input/",
+             paste0(dirPath, "/SRP/Input/",
                     pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
                normalizePath(mustWork = FALSE), 
              quietly = TRUE)
@@ -299,15 +296,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
   }
   
   
-  # Make sure the "Runoff" columns all contain "1" for every row
-  # (The meteorological dataset does not have these columns, and that causes
-  #  "NA" entries to appear)
-  finalDAT <- finalDAT |>
-    mutate(across(starts_with("RUNOFF"), ~replace_na(., 1)))
-  
-  
   # Perform a few checks on 'finalDAT'
-  validateInputDAT(finalDAT, sourcePath = NA_character_, "PRMS", prmsCols,
+  validateInputDAT(finalDAT, sourcePath = NULL, "SRP", srpCols,
                    startDate, endDate, datType = "Final")
   
   
@@ -318,7 +308,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
 
 
 
-spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) {
+spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, srpCols) {
   
   # Use the 12-month Standard Precipitation Index (SPI) to predict precipitation
   # and temperature for the rest of the water year
@@ -444,8 +434,8 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) 
     spiDAT <- spiDAT |>
       filter(!(MONTH == 2 & DAY == 29))
     
-  # However, if February 29th is present in the modeled water year,
-  # double-check that an entry is present for that date
+    # However, if February 29th is present in the modeled water year,
+    # double-check that an entry is present for that date
   } else {
     
     # If no row is present, duplicate the row for February 28th
@@ -470,7 +460,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) 
   
   
   # Validate the DAT file before continuing
-  spiDAT <- validateInputDAT(spiDAT, NA_character_, "PRMS", prmsCols, 
+  spiDAT <- validateInputDAT(spiDAT, NA_character_, "SRP", srpCols, 
                              startDate, endDate, datType = "SPI")
   
   
@@ -500,17 +490,17 @@ updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate,
   
   
   updateMetadataCSV(dirPath,
-                    newCols = list("PRMS_MAIN_DAT_FILE" = pathMainDAT,
-                                   "PRMS_WY_PREDICTION_METHOD" = predictionMethod,
-                                   "PRMS_MODEL_DOMAIN_HISTORIC_PRECIP" = 
+                    newCols = list("SRP_MAIN_DAT_FILE" = pathMainDAT,
+                                   "SRP_WY_PREDICTION_METHOD" = predictionMethod,
+                                   "SRP_MODEL_DOMAIN_HISTORIC_PRECIP" = 
                                      pathPastPrecip,
-                                   "PRMS_MODEL_DOMAIN_CURRENT_WY_PRECIP" = 
+                                   "SRP_MODEL_DOMAIN_CURRENT_WY_PRECIP" = 
                                      pathCurrentPrecip,
-                                   "PRMS_MOST_SIMILAR_WY" = similarWY,
-                                   "PRMS_REGRESSION_MODEL_SLOPE" = linModel$m,
-                                   "PRMS_REGRESSION_MODEL_INTERCEPT" = linModel$b,
-                                   "PRMS_DAT_START_DATE" = datStartDate,
-                                   "PRMS_MODEL_END_DATE" = modelEndDate))
+                                   "SRP_MOST_SIMILAR_WY" = similarWY,
+                                   "SRP_REGRESSION_MODEL_SLOPE" = linModel$m,
+                                   "SRP_REGRESSION_MODEL_INTERCEPT" = linModel$b,
+                                   "SRP_DAT_START_DATE" = datStartDate, 
+                                   "SRP_MODEL_END_DATE" = modelEndDate))
   
   
   # Return nothing
@@ -523,7 +513,7 @@ updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate,
 similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, 
                                  dirPath, pathMainDAT, pathPastPrecip) {
   
-  # Use data downloaded from PRISM for the PRMS model bounds
+  # Use data downloaded from PRISM for the SRP model bounds
   # in a linear regression model to identify which past water year 
   # is most similar to the current water year's conditions
   
@@ -539,9 +529,9 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   
   # The hard-coded model coefficients are here:
-  linModel <- list("FEB" = list(m = 1.17609533458122, b = 179.674010163306),
-                   "MAR" = list(m = 1.10546021129827, b = 25.5273627224535),
-                   "APR" = list(m = 1.00852388216750, b = 47.0563971511456))
+  linModel <- list("FEB" = list(m = 1.18889417583887, b = 127.497807635486),
+                   "MAR" = list(m = 1.09263349165030, b = 28.1349370455440),
+                   "APR" = list(m = 1.01611885039427, b = 33.7042053778413))
   
   
   # The model to use depends on the current month in 'endDate'
@@ -569,9 +559,9 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   }
   
   
-  # PRISM data that was previously downloaded for PRMS is also required
+  # PRISM data that was previously downloaded for SRP is also required
   # Locate that file, confirm its existence, and validate the data
-  prismPath <- paste0("WebData/PRISM_PRMS_Domain_Data_",
+  prismPath <- paste0("WebData/PRISM_SRP_Domain_Data_",
                       getModeledWY(endDate)[1], "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
@@ -584,7 +574,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   # so include dummy columns for "TMIN" and "TMAX" when checking the data
   currentPrecip |>
     mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
-    validateWebData(dataSource = "PRISM",
+    validateWebData(dataSource = "PRISM", 
                     inputPath = prismPath,
                     stationVec = currentPrecip$Name |> unique(),
                     siPRISM = TRUE)
@@ -615,7 +605,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   
   # After that, update the metadata file
-  updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+  updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
                      modelEndDate = getModeledWY(endDate)[2],
                      predictionMethod = "WY", pathMainDAT = pathMainDAT,
                      pathPastPrecip = pathPastPrecip, 
@@ -623,8 +613,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # 'currentPrecip' shoul be archived too, but that was already accomplished
-  # in a prior script
+  # 'currentPrecip' should be archived in the hydrology folder as well
+  # (This was already done in "RRW_v2_007_Setup_Output_Directory.R")
   
   
   # Return 'finalDAT'
@@ -809,7 +799,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   
   # Write 'precipDF' as a CSV file to 'dirPath' next
   precipDF |>
-    writeOutput(paste0(dirPath, "/PRMS/Input/SimilarWY_Analysis.csv") |>
+    writeOutput(paste0(dirPath, "/SRP/Input/SimilarWY_Analysis.csv") |>
                   normalizePath(mustWork = FALSE))
   
   
@@ -893,85 +883,127 @@ similarWY_appendDAT <- function (mergedDAT, endDate, similarWY) {
 
 
 
-outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath, 
+outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath, 
                        predictWY, quietly = FALSE) {
   
   # Write 'mergedDAT' to two folders:
-  #  (1) In the hydrology directory, store the file under "PRMS > Input"
-  #  (2) In the copied PRMS model files, 
-  #      under "PRMS > input > climate_scenarios" 
+  #  (1) In the hydrology directory, store the file under "SRP > Input"
+  #  (2) In the copied SRP model files, store it under the "external_files" 
+  #      folder within "SRPHM" 
   
   
   # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
-  datName <- paste0("DAT_PRMS_", startDate, "_", endDate, ".dat")
+  datName <- paste0("DAT_SRP_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
-  # In "RR_PRMS", a generic name will be used instead
-  genericName <- "RR_PRMS_Input.dat"
+  # In "SRPHM_update_ag", a generic name will be used instead
+  genericName <- "RR_SRP_Input.dat"
   
   
   # Create a finalized version of 'mergedDAT':
   #  (1) Remove the "DATE" column
-  #  (2) Round every numeric value to one decimal place (at most)
+  #  (2) Round every numeric value to four decimal places (exact)
   #  (3) Convert every column to character (needed for the next step)
   finalDAT <- mergedDAT |>
     select(-DATE) |>
-    mutate(across(where(is.numeric), ~ round(., 1))) |>
+    mutate(across(matches("^(PRE)|(TM)"), ~ round(., 4) |> 
+                    sprintf(fmt = "%.4f"))) |>
     mutate(across(everything(), as.character))
   
   
-  # Add a header to the DAT file as well
+  # The final format of 'finalDAT' will be a string with spaces separating
+  # each of the column values
+  
+  # However, the number of spaces is inconsistent:
+  
+  #  (*) Between all of the datetime columns, there is only one space
+  #  (*) Before and after "PRECIP1", there are five spaces
+  #  (*) Between all subsequent columns, there are four spaces
+  
+  finalDAT <- finalDAT |>
+    # Add a column to 'finalDAT' that merges the datetime columns
+    # (with a single space of separation)
+    unite(col = "DATETIME_MERGED",
+          c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND"), 
+          sep = " ", remove = FALSE) |>
+    # Add another column that combines "DATETIME_MERGED" with "PRECIP1"
+    # (this time, there are five spaces of separation)
+    unite(col = "DATETIME_PRECIP1_APPENDED",
+          c("DATETIME_MERGED", "PRECIP1"),
+          sep = str_dup(" ", 5), remove = FALSE) |>
+    # Then, merge together the precipitation and temperature columns 
+    # (ignoring "PRECIP1", which was already merged with the datetime values)
+    # (There are four spaces of separation between these climate columns)
+    unite(col = "OTHER_CLIMATE_COLS",
+          matches("^(PRE)|(TM)") & !matches("^PRECIP1$"),
+          sep = str_dup(" ", 4), remove = FALSE) |>
+    # Finally, merge together "DATETIME_PRECIP1_APPENDED" and
+    # "OTHER_CLIMATE_COLS"
+    # Put five spaces of separation (so that "PRECIP1" has five spaces 
+    # before and after its value)
+    unite(col = "FINAL",
+          c("DATETIME_PRECIP1_APPENDED", "OTHER_CLIMATE_COLS"),
+          sep = str_dup(" ", 5), remove = TRUE)
+  
+  
+  # Add a header to the DAT file next
   # It mainly describes the number of columns 
-  headerDAT <- tibble(YEAR = c("Originally generated by J.A.Engott",
-                               paste0("precip ", names(finalDAT) |> 
-                                        str_subset("PRECIP") |> length()),
-                               paste0("tmax ", names(finalDAT) |> 
-                                        str_subset("TMAX") |> length()),
-                               paste0("tmin ", names(finalDAT) |> 
-                                        str_subset("TMIN") |> length()),
-                               paste0("runoff ", names(finalDAT) |> 
-                                        str_subset("RUNOFF") |> length()),
-                               str_dup("#", 73)))
+  headerDAT <- tibble(FINAL = c(paste0("generated in Excel/R : ",
+                                       "1947-1980 USGS daily grid, ",
+                                       "1981-present PRISM daily interp ",
+                                       "station, Author: Pascual Benito ",
+                                       "(pbenito@elmontgomery.com)"),
+                                
+                                paste0("precip ", names(mergedDAT) |> 
+                                         str_subset("PRECIP") |> length()),
+                                
+                                paste0("tmax ", names(mergedDAT) |> 
+                                         str_subset("TMAX") |> length()),
+                                
+                                paste0("tmin ", names(mergedDAT) |> 
+                                         str_subset("TMIN") |> length()),
+                                
+                                c(str_dup("#", 19), names(mergedDAT)) |> 
+                                  tolower() |> str_replace("second", "sec") |>
+                                  str_replace("([a-z])([0-9])$", "\\10\\2") |>
+                                  paste0(collapse = str_dup(" ", 10))))
   
   
+  # Append 'headerDAT' to the beginning of 'finalDAT'
   finalDAT <- bind_rows(headerDAT,
                         finalDAT) |>
-    mutate(across(everything(), ~replace_na(., "")))
+    select(FINAL)
   
   
   # Write 'finalDAT' to the hydrology folder first
-  finalDAT |>
-    writeOutput(paste0(dirPath, "/PRMS/Input/", datName) |> 
+  finalDAT$FINAL |>
+    writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
                   normalizePath(mustWork = FALSE),
-                writeFunction = "write_tsv", quietly = quietly,
-                col_names = FALSE)
+                writeFunction = "write_lines", quietly = quietly)
   
   
-  # Write 'finalDAT' to the PRMS model folder next
-  # The name will be fixed as "RR_PRMS_Input.dat" 
-  # for ease of modeling automation
-  finalDAT |>
-    writeOutput(paste0(prmsPath, 
-                       "/PRMS/input/climate_scenarios/", genericName) |> 
+  # Write 'finalDAT' to the SRP model folder next
+  # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
+  finalDAT$FINAL |>
+    writeOutput(paste0(srpPath, "/external_files/", genericName) |> 
                   normalizePath(mustWork = FALSE),
-                writeFunction = "write_tsv", quietly = quietly,
-                col_names = FALSE)
+                writeFunction = "write_lines", quietly = quietly)
   
   
-  # Update the PRMS control file next
+  # Update the SRP control file next
   # (Its presence was already confirmed at the beginning of the script in 
-  #  `validateModelCopy_PRMS`)
-  updateControlFilePRMS(dirPath, prmsPath, genericName, endDate, predictWY)
+  #  `validateModelCopy_SRP`)
+  updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
   
   
-  # Update the PRMS batch file
-  updateBatchFilePRMS(prmsPath)
+  # Update the SRP batch file
+  updateBatchFileSRP(srpPath)
   
   
   # Finally, add metadata containing 'datName'
   updateMetadataCSV(dirPath,
-                    list("PRMS_FINAL_DAT_FILE_NAME" = datName))
+                    list("SRP_FINAL_DAT_FILE_NAME" = datName))
   
   
   # Return nothing
@@ -981,25 +1013,26 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
 
 
 
-updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate, 
-                                   predictWY) {
+updateControlFileSRP <- function (dirPath, srpPath, datName, endDate, 
+                                  predictWY) {
   
-  # Update the fields in the "prms_rr" control file
-  # This customizes the PRMS model run
+  # Update the fields in the "SRPHM_update.control" control file
+  # This customizes the SRP model run
   
-  # (Some metadata will be saved at the end of this function as well)
+  # (Some metadata will be added at the end of the function too)
   
   
   # First, read in the file
-  controlPath <- paste0(prmsPath, "/windows/prms_rr.control") |>
+  controlPath <- paste0(srpPath, 
+                        "/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control") |>
     normalizePath(mustWork = TRUE)
   
   
-  prmsControl <- controlPath |>
+  srpControl <- controlPath |>
     getFile(fileType = "OTHER")
   
   
-  # 'prmsControl' is a vector of strings, with each element corresponding to a 
+  # 'srpControl' is a vector of strings, with each element corresponding to a 
   # line of the control file
   # The parameters in these lines will be customized in preparation 
   # for the model run
@@ -1022,47 +1055,35 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # Locate "end_time" in the control file
-  targetLoc <- grep("^end_time$", prmsControl)[1]
+  targetLoc <- grep("^end_time$", srpControl)[1]
   
   
   # Three lines after "end_time", the next three lines are the components of 
   # the end date for the model run
-  prmsControl[targetLoc + 3] <- modelEnd |> year()
-  prmsControl[targetLoc + 4] <- modelEnd |> month() |> sprintf(fmt = "%.2d")
-  prmsControl[targetLoc + 5] <- modelEnd |> day() |> sprintf(fmt = "%.2d")
+  srpControl[targetLoc + 3] <- modelEnd |> year()
+  srpControl[targetLoc + 4] <- modelEnd |> month() |> sprintf(fmt = "%.2d")
+  srpControl[targetLoc + 5] <- modelEnd |> day() |> sprintf(fmt = "%.2d")
   
   
   # The next parameter to update is the name of the input DAT file
   # This will be a fixed name in all cases for ease of automation
   
   # This information is stored under the "data_file" parameter
-  targetLoc <- grep("^data_file$", prmsControl)[1]
+  targetLoc <- grep("^data_file$", srpControl)[1]
   
   
   # Three lines after "data_file", the DAT filename is specified
-  prmsControl[targetLoc + 3] <- paste0("..\\PRMS\\input\\climate_scenarios\\",
-                                       datName)
+  srpControl[targetLoc + 3] <- paste0("..\\..\\external_files\\", datName)
   
   
-  # The final parameter to change is the name of the output file
-  # This is stored under "nsubOutBaseFileName"
-  targetLoc <- grep("^nsubOutBaseFileName$", prmsControl)[1]
-  
-  
-  # Three lines after "nsubOutBaseFileName", the final output name is specified
-  # To make the automated process easier, the name will always 
-  # be "RR_PRMS_Output_"
-  prmsControl[targetLoc + 3] <- "..\\PRMS\\output\\RR_PRMS_Output_"
-  
-  
-  # Write 'prmsControl' back to a file (overwriting the previous version)
-  writeOutput(prmsControl, controlPath, quietly = TRUE)
+  # Write 'srpControl' back to a file (overwriting the previous version)
+  writeOutput(srpControl, controlPath, quietly = TRUE)
   
   
   # Finally, save metadata about the model start date
   updateMetadataCSV(dirPath,
-                    list("PRMS_MODEL_START_DATE" = 
-                           prmsControl[grep("start_time", prmsControl) + 3:5] |>
+                    list("SRP_MODEL_START_DATE" = 
+                           srpControl[grep("start_time", srpControl) + 3:5] |>
                            paste0(collapse = "-") |>
                            as.Date(format = "%Y-%m-%d")))
   
@@ -1074,28 +1095,33 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
 
 
 
-updateBatchFilePRMS <- function (prmsPath) {
+updateBatchFileSRP <- function (srpPath) {
   
-  # Update the "run.bat" file that initiates PRMS
+  # Update the "run_SRPHM_spinup.bat" file that initiates SRP
   
   
   # This file contains two commands:
-  # cd [RR_PRMS "WINDOW" FOLDER]
+  # cd [SRP FULL MODEL PATH]
   # [PATH TO GSFLOW.EXE] [PATH TO CONTROL FILE]
   
   
-  batchCommands <- c(paste0("cd ", prmsPath, "\\windows"),
-                     "..\\bin\\gsflow.exe prms_rr.control")
-  
-  # The first command changes the working directory to the "windows" sub-folder
-  # of "RR_PRMS"
-  # The second command then executes gsflow.exe using "prms_rr.control" (which
-  # is also located in the "windows" sub-folder)
+  batDir <- paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/") |>
+    normalizePath(mustWork = TRUE)
   
   
-  # Write these commands to "run.bat"
+  batchCommands <- c(paste0("cd ", shQuote(batDir)),
+                     "bin\\gsflow.exe SRPHM_spinup.control")
+  
+  # The first command changes the working directory to the location of 
+  # the SRP bat file (the "SRPHM_post_spinup_WY2021" directory in "SRPHM")
+  # The second command then executes gsflow.exe using "SRPHM_spinup.control" 
+  # (the latter is also located in the same directory as the bat file)
+  
+  
+  # Write these commands to "run_SRPHM_spinup.bat"
   batchCommands |>
-    writeOutput(paste0(prmsPath, "/windows/run.bat") |> 
+    writeOutput(paste0(srpPath, 
+                       "/model1/SRPHM_post_spinup_WY2021/run_SRPHM_spinup.bat") |> 
                   normalizePath(mustWork = FALSE),
                 quietly = TRUE)
   

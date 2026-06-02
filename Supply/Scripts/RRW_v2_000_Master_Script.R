@@ -59,7 +59,7 @@ source("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
 
 source("Scripts/RRW_004_CIMIS_API_Scraper.R")
 
-# CDEC Script
+source("Scripts/RRW_v2_005_CDEC_API_Scraper.R")
 
 
 ##### SRP #####
@@ -69,24 +69,29 @@ source("Scripts/RRW_v2_006_Process_SRP_Weather_Data.R")
 
 
 # Setup the output directory for the workflow model runs
+source("Scripts/RRW_v2_007_Setup_Output_Directory.R")
 
 
 # Setup the temporary SRP model location
+source("Scripts/RRW_v2_008_Setup_SRP_Model.R")
 
 
 # Generate the input DAT file for SRP
+source("Scripts/RRW_v2_009_Finalize_SRP_Input.R")
 
 
 # Run SRP
+source("Scripts/RRW_v2_010_Run_SRP.R")
 
 
 # Store key outputs and clear out the copied model files
+source("Scripts/RRW_v2_011_SRP_Cleanup.R")
 
 
+#### RRIHM ####
 
-
-
-
+# Setup the temporary RRIHM model location
+source("Scripts/RRW_v2_012_Setup_RRIHM_Model.R")
 
 
 

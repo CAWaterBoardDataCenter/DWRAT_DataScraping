@@ -26,12 +26,9 @@
 #  (2) A long-running DAT file (whose parent folder is input into 
 #      "MAIN_SRP_DAT_FOLDER" of the control file)
 
-#  (3) A DAT file containing predictions for the current water year (its 
-#      filepath should be given in "SRP_DAT_SPI_FILE" of the control file)
+#  (3) From the SRP model files, the "SRPHM_update.control" file will be edited
 
-#  (4) From the SRP model files, the "SRPHM_update.control" file will be edited
-
-#  (5) Similarly, the model's "Run_updated_Model.bat" file will be updated
+#  (4) Similarly, the model's "Run_updated_Model.bat" file will be updated
 
 
 # A single output will be generated in all cases, and additional outputs will 
@@ -121,7 +118,7 @@ mainProcedure <- function (predictWY = TRUE) {
     getDelim(",")
   
   
-  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], delim = ",")
   
   
   # Validate the primary DAT file next
@@ -617,11 +614,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # Copy 'currentPrecip' to the hydrology folder as well
-  copyFile(prismPath,
-           paste0(dirPath, "/SRP/Input/",
-                  prismPath |> str_remove("^.+[/\\\\]")) |>
-             normalizePath(mustWork = FALSE))
+  # 'currentPrecip' shoul be archived too, but that was already accomplished
+  # in a prior script
   
   
   # Return 'finalDAT'
@@ -898,10 +892,8 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   #  (2) In the copied SRP model files, under "SRPHM_update_ag" 
   
   
-  # The final filename of 'mergedDAT' will contain 'startDate', 'endDate', and
-  # the name of the user running this script
-  datName <- paste0("DAT_SRP_", Sys.info()[["user"]], "_", startDate, 
-                    "_", endDate, ".dat")
+  # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
+  datName <- paste0("DAT_SRP_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
@@ -975,7 +967,9 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
                                          str_subset("TMIN") |> length()),
                                 
                                 c(str_dup("#", 19), names(mergedDAT)) |> 
-                                  tolower() |> str_replace("second", "sec") |>
+                                  tolower() |> 
+                                  str_subset("^date$", negate = TRUE) |>
+                                  str_replace("second", "sec") |>
                                   str_replace("([a-z])([0-9])$", "\\10\\2") |>
                                   paste0(collapse = str_dup(" ", 10))))
   

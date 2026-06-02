@@ -245,7 +245,7 @@ class FetchCdec(DataFetcher):
                 return False
             sensor_res = sensors.loc[sensor_id, 'resolution']
 
-            if isinstance(sensor_res, list):
+            if isinstance(sensor_res, (pd.Series, list)): # TODO: Fix to check for series
                 return res in sensor_res or res.lower() in [r.lower() for r in sensor_res]
             elif isinstance(sensor_res, str):
                 res_list = [r.strip() for r in sensor_res.split(',')]

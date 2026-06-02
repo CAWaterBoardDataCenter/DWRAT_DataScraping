@@ -3,9 +3,8 @@
 # The model files will be copied from another location
 # to the "ProcessedData" folder
 
-# The source location is specified in the field "RR_SRP_SOURCE_LOCATION" 
+# The source location is specified in the field "SRPHM_SOURCE_LOCATION" 
 # in "RR_Workflow_Control_File.xlsx"
-
 
 
 #### Setup ####
@@ -28,27 +27,31 @@ source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_012_Setup_SRP_Model.R'!\n\n")
+  cat("Starting 'RRW_v2_008_Setup_SRP_Model.R'!\n\n")
   
   
   # Get the location of the SRP model files
-  sourceDir <- getFromControl_RR("RR_SRP_SOURCE_LOCATION")
+  sourceDir <- getFromControl_RR("SRPHM_SOURCE_LOCATION")
   
   
   # Validate the user's input and ensure that this directory contains
   # all required components
   # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
   #  to reflect that)
-  sourceDir <- validateSourceModelDirectory(sourceDir, "RR_SRP_SOURCE_LOCATION",
-                                            "SRP", 
-                                            c("basin", "External Files", 
-                                              "input", "nsub", "output"),
-                                            c("SRPHM_update.control", 
-                                              "Run_updated_Model.bat",
-                                              "gsflow_ag.exe"))
+  sourceDir <- validateSourceModelDirectory(
+    sourceDir, 
+    "SRPHM_SOURCE_LOCATION",
+    "SRP", 
+    c("external_files", "model1", "model1/SRPHM_post_spinup_WY2021",
+      "model1/SRPHM_post_spinup_WY2021/bin", 
+      "model1/SRPHM_post_spinup_WY2021/output"),
+    c("model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe",
+      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
+      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
+      "external_files/restartdata_2020.out"))
   
   
-  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM_update_ag\"...\n")
+  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM\"...\n")
   
   
   # Borrow a function from the PRMS model setup script
@@ -56,14 +59,14 @@ mainProcedure <- function () {
   
   
   # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
-  copyModel(sourceDir, "ProcessedData/SRPHM_update_ag")
+  copyModel(sourceDir, "ProcessedData/SRPHM")
   
   
   cat("\tDone!\n\n")
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_012_Setup_SRP_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_008_Setup_SRP_Model.R' is complete!\n\n"))
   
   
   # Return nothing
