@@ -37,8 +37,8 @@
 # Gage data was downloaded on May 21, 2026 for the period between 
 # January 1, 1990 and December 31, 2025
 
-# The Pre-PRISM meteorological CSV will be required for this script
-# ("PRMS_Pre-PRISM_Meteorological_1990-01-01_2025-12-31.csv")
+# The intermediate QA/QC meteorological CSV will be required for this script
+# ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
 # "ProcessedData" folder 
@@ -102,8 +102,8 @@ mainProcedure <- function () {
   cat("\n[1/3]\tGetting gage and PRISM data...\n")
   
   
-  # Get the path to the "Pre-PRISM" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_Pre-PRISM_Meteorological_",
+  # Get the path to the "Pre-QAQC" meteorological CSV
+  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -111,7 +111,7 @@ mainProcedure <- function () {
   if (!file.exists(meteorPath)) {
     
     paste0("Missing Required Meteorological File\n\n",
-           "Please obtain the \"Pre-PRISM\" meteorological file that ",
+           "Please obtain the \"Intermediate QA/QC\" meteorological file that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
            "it in the \"ProcessedData\" folder.\n\n",
            "(\"", normalizePath(meteorPath, mustWork = FALSE), "\" does ",
@@ -414,8 +414,7 @@ generateModels <- function (meteorDF, prismDF) {
     # }
     
     
-    excludeVec <- c("PRECIP1", "PRECIP4", "PRECIP7", 
-                    "PRECIP6", "PRECIP12") |>
+    excludeVec <- c("PRECIP1", "PRECIP4", "PRECIP7") |>
       base::setdiff(paste0("PRECIP", i))
     
     
@@ -424,7 +423,7 @@ generateModels <- function (meteorDF, prismDF) {
     # (Ignore PRISM and certain problematic gages)
     similarGages <- compiledDF |>
       filter(PREDICTOR == precipNames[i] | RESPONSE == precipNames[i]) |>
-      filter(PREDICTOR != "PRISM") |>
+      #filter(PREDICTOR != "PRISM") |>
       filter(!(PREDICTOR %in% excludeVec)) |>
       filter(!(RESPONSE %in% excludeVec)) |>
       arrange(desc(R_SQUARED)) |>
@@ -436,7 +435,9 @@ generateModels <- function (meteorDF, prismDF) {
     
     # Calculate the average values among the three selected gages
     avgDF <- meteorDF |>
-      select(DATE, all_of(similarGages)) |>
+      select(DATE, all_of(similarGages[similarGages != "PRISM"])) |>
+      full_join(prismDF |> select(DATE, all_of(precipNames[i])) |> rename(PRISM = precipNames[i]),
+                by = "DATE", relationship = "one-to-one") |>
       mutate(AVG_PRECIP = NA_real_)
     
     

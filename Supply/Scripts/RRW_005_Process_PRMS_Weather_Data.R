@@ -164,7 +164,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # For archival purposes, save 'meteorDF' without any data substitution
   # or outlier modifications
   meteorDF |>
-    writeOutput(paste0("ProcessedData/PRMS_No-QAQC_Meteorological_", 
+    writeOutput(paste0("ProcessedData/PRMS_Meteorological_No_QC_", 
                        startDate, "_", endDate, ".csv"),
                 quietly = TRUE)
   
@@ -172,7 +172,9 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # After that, check for and remove outliers from the dataset
   # Then, fill in empty entries using other gages' data or PRISM values
   meteorDF <- datQAQC(meteorDF, outlierDF, corrDF, 
+                      cimisInput, cimisDF, inputFiles$CIMIS_OUTPUT,
                       prismDF, prismInput, allTempColumnsFromPRISM,
+                      startDate, endDate, 
                       fullQAQC = TRUE)
   
   
@@ -533,9 +535,28 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
   # The 'climateDF' data frames need to be widened 
   # (so that each station's data is in its own separate column)
   
+  
   # The "PRMS" column names in 'climateInput' will then be used to switch 
   # from the station IDs to the PRMS field names
   fieldNameVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = TRUE)
+
+  
+  # Before performing that step, check if the input data is from NOAA
+  # That data has US customary units rather than metric units
+  if (dataSource == "NOAA") {
+    
+    # Convert precipitation data from units of inches into millimeters
+    # in * 25.4 mm / in
+    
+    # Convert the temperature data from Fahrenheit into Celsius as well
+    # (deg-F - 32) * 5/9 = deg-C
+    
+    climateDF <- climateDF |>
+      mutate(PRCP = PRCP * 25.4,
+             TMAX = 5/9 * (TMAX - 32),
+             TMIN = 5/9 * (TMIN - 32))
+    
+  }
   
   
   # Start by renaming the columns in 'climateDF' to be consistent 
@@ -588,9 +609,30 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
 
 
 
-datQAQC <- function (meteorDF, outlierDF, corrDF, 
-                     prismDF, prismInput, allTempSub,
+datQAQC <- function (meteorDF, outlierDF, corrDF, cimisInput, cimisDF, cimisPath, 
+                     prismDF, prismInput, allTempSub, startDate, endDate, 
                      fullQAQC = TRUE) {
+  
+  # Perform different QA/QC routines to flag and replace suspicious precipitation data
+  
+  # If 'allTempSub' is TRUE, all temperature data will come from PRISM
+  
+  
+  # Start by addressing CIMIS data
+  
+  # Data from other stations is already modified with their own QA/QC procedures
+  
+  # CIMIS has quality-control flags, but they are not applied by default
+  # Use a function to perform those edits now
+  meteorDF <- meteorDF |>
+    applyFlags_CIMIS(cimisInput, cimisDF, cimisPath)
+  
+  
+  # Save 'meteorDF' to an intermediate file
+  # CIMIS flags are the only QA/QC applied at this point, and this 
+  meteorDF |>
+    writeOutput(paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
+                       startDate, "_", endDate, ".csv"))
   
   
   # If 'fullQAQC' is TRUE, the outlier procedure and correlation-based 
@@ -619,6 +661,99 @@ datQAQC <- function (meteorDF, outlierDF, corrDF,
   
   
   # Return 'meteorDF'
+  return(meteorDF)
+  
+}
+
+
+
+applyFlags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisPath) {
+  
+  # The raw CIMIS data in 'cimisDF' has QA/QC flags as columns in the data
+  # https://cimis.water.ca.gov/Content/PDF/CurrentFlags2.pdf
+  
+  # No corrections have been made, but these flags are present so that
+  # users can make corrections at their discretion
+  
+  # This function will remove records that have certain precipitation flags
+  
+  
+  # First, modify the column names in 'cimisDF' to be easier to work with
+  # 'fieldNameVec' can help convert the raw headers in 'cimisDF' 
+  fieldNameVec <- validateWebData_expectedColumnNames("CIMIS", siPRISM = TRUE)
+  
+  
+  # Rename some columns in 'cimisDF'
+  cimisDF <- cimisDF |>
+    rename(all_of(fieldNameVec))
+  
+  
+  # For convenience, filter 'cimisInput' as well
+  # Keep only rows with values in "PRMS_PRECIP_NAME"
+  # (These stations' precipitation values will be used in the model)
+  cimisInput <- cimisInput |>
+    filter(!is.na(PRMS_PRECIP_NAME))
+  
+  
+  # Next, locate "PRECIP_QC" in 'cimisDF'
+  # If it is not present, output an error message
+  cimisDF |>
+    checkMissingCol(colNames = "PRECIP_QC", 
+                    msg = 
+                      paste0("Missing CIMIS QC Column\n\n",
+                             "The raw data downloaded from CIMIS should have ",
+                             "contained a column labeled \"PRECIP_QC\". ",
+                             "However, it could not be found. Please ",
+                             "investigate the file.\n\n",
+                             "(This error occurred for \"", cimisPath, "\""))
+  
+  
+  # Next, identify precipitation records in 'cimisDF' with problematic flags
+  
+  # Data with these flags will be removed:
+  #   (*) H - Severe issues in the underlying hourly precipitation data
+  #           (e.g., missing or extreme values).
+  #   (*) I - Meaningless data
+  #   (*) R - Extreme data (e.g., value > 12 inches)
+  #   (*) S - Sensor issues or very extreme data (e.g., value > 14 inches)
+  
+  
+  # Record "DATE" and "STATION_ID" for entries that have suspect precipitation data
+  flaggedDF <- cimisDF |>
+    filter(STATION_ID %in% cimisInput$STATION_ID) |>
+    filter(PRECIP_QC %in% c("H", "I", "R", "S")) |>
+    select(DATE, STATION_ID)
+  
+  
+  # Use 'cimisInput' to append PRMS precipitation information to 'flaggedDF'
+  # "PRMS_PRECIP_NAME" will identify the actual PRMS column names (as it appears
+  # in 'meteorDF') that correspond to CIMIS precipitation data
+  flaggedDF <- flaggedDF |>
+    left_join(cimisInput |> select(STATION_ID, PRMS_PRECIP_NAME),
+              by = "STATION_ID", relationship = "many-to-one")
+  
+  
+  # Iterate through each of the stations in 'cimisInput'
+  for (i in 1:nrow(cimisInput)) {
+    
+    # Get the flagged dates associated with this specific CIMIS station
+    errDates <- flaggedDF$DATE[flaggedDF$STATION_ID == cimisInput$STATION_ID[i]]
+    
+    
+    # If 'errDates' is empty, skip to the next precipitation station
+    if (length(errDates) == 0) {
+      next
+    }
+    
+    
+    # Otherwise, update entries in 'meteorDF' for this CIMIS station
+    # Flagged dates should have their precipitation values set to NA
+    meteorDF[[cimisInput$PRMS_PRECIP_NAME[i]]][meteorDF$DATE %in% errDates] <- NA_real_
+    
+  }
+  
+  
+  # Return 'meteorDF' afterwards
   return(meteorDF)
   
 }

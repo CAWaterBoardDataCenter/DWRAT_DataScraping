@@ -34,8 +34,8 @@
 # Gage data was downloaded on May 21, 2026 for the period between 
 # January 1, 1990 and December 31, 2025
 
-# The Pre-PRISM meteorological CSV will be required for this script
-# ("PRMS_Pre-PRISM_Meteorological_1990-01-01_2025-12-31.csv")
+# The intermediate QAQC meteorological CSV will be required for this script
+# ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
 # "ProcessedData" folder 
@@ -77,8 +77,8 @@ mainProcedure <- function () {
   cat("\n[1/3]\tGetting gage data...\n")
   
   
-  # Get the path to the "Pre-PRISM" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_Pre-PRISM_Meteorological_",
+  # Get the path to the "Pre-QAQC" meteorological CSV
+  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -86,7 +86,7 @@ mainProcedure <- function () {
   if (!file.exists(meteorPath)) {
     
     paste0("Missing Required Meteorological File\n\n",
-           "Please obtain the \"Pre-PRISM\" meteorological file that ",
+           "Please obtain the \"Intermediate QA/QC\" meteorological file that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
            "it in the \"ProcessedData\" folder.\n\n",
            "(\"", normalizePath(meteorPath, mustWork = FALSE), "\" does ",
@@ -202,11 +202,30 @@ calcOutlierBounds <- function (meteorDF) {
       
       # For precipitation gage 'i', filter 'subsetDF' to month 'j'
       # Get Quartile 3 (the 75th percentile) and add 3.5 multiplied by the IQR
-      # Then, extract the result and save it in 'outlierDF'
-      outlierDF[[outlierColNames[j]]][i] <- subsetDF |>
+      # That is the outlier bound for this gage and month
+      outlierCalc <- subsetDF |>
         filter(MONTH == j) |>
         summarize(OUT_BOUND = quantile(PRECIP, 0.75) + 3.5 * IQR(PRECIP)) |>
         unlist(use.names = FALSE)
+      
+      
+      # However, if 'outlierCalc' is NA, replace it with 3.5 inches as an arbitrary limit
+      if (is.na(outlierCalc)) {
+        
+        # 'outlierCalc' will be NA if it has no precipitation data available
+        # for the month
+        # Alternatively, it may not have any precipitation values greater
+        # than one inch for this month
+        
+        
+        # 3.5 in * 25.4 mm/in
+        outlierCalc <- 3.5 * 25.4
+        
+      }
+      
+      
+      # Then, save 'outlierCalc' to 'outlierDF'
+      outlierDF[[outlierColNames[j]]][i] <- outlierCalc
       
       
       # Using this newly calculated limit, count the number of precipitation

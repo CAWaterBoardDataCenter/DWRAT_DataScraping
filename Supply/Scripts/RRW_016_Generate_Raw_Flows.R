@@ -95,7 +95,7 @@ mainProcedure <- function () {
   
   # Start with the PRMS output file
   inqDF <- getDelim(inqPath, ",", trim_ws = TRUE) |>
-    validateInqCSV(inqPath, dirPath)
+    validateSubCSV(inqPath, dirPath)
   
   
   # Read in the six SRP GAG files next
@@ -205,18 +205,24 @@ mainProcedure <- function () {
 
 
 
-validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
+validateSubCSV <- function (subDF, subPath, dirPath, type = "inq", nsub = 22) {
   
-  # Check the "sub_inq" output of PRMS
+  # Check either the "sub_inq" or the "sub_cfs" output file of PRMS
   
-  # It should contain simulated hydrological flows for the first 22 sub-basins 
+  # The two files are nearly identical
+  
+  # Both should contain simulated hydrological flows for the first 22 sub-basins 
+  
+  # The main difference is that "sub_inq" is NOT cumulative, while "sub_cfs" is
+  # cumulative (i.e., upstream sub-basin flows are incorporated into downstream
+  # sub-basins' values)
   
   
-  # First, confirm that 'inqDF' contains a "Date" column and 22 sub-basin columns
-  if (length(names(inqDF)) != (1 + nsub)) {
+  # First, confirm that 'subDF' contains a "Date" column and 22 sub-basin columns
+  if (length(names(subDF)) != (1 + nsub)) {
     
-    paste0("Unexpected Number of Columns in sub_inq CSV\n\n",
-           "The PRMS output file (\"", inqPath, "\") should contain a \"Date\" ",
+    paste0("Unexpected Number of Columns in sub_", type, " CSV\n\n",
+           "The PRMS output file (\"", subPath, "\") should contain a \"Date\" ",
            "column and ", nsub, " additional column",
            if_else(nsub > 1, "s ", " "), "(one for each modeled sub-basin ",
            "in the Russian River watershed). Please investigate the file.") |>
@@ -227,10 +233,10 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   
   
   # Check for the exact column names too
-  if (anyFalse(c("Date" %in% names(inqDF), 1:nsub %in% names(inqDF)))) {
+  if (anyFalse(c("Date" %in% names(subDF), 1:nsub %in% names(subDF)))) {
     
-    paste0("Unexpected Columns in sub_inq CSV\n\n",
-           "The PRMS output file (\"", inqPath, "\") should contain a \"Date\" ",
+    paste0("Unexpected Columns in sub_", type, " CSV\n\n",
+           "The PRMS output file (\"", subPath, "\") should contain a \"Date\" ",
            "column and ", nsub, " additional column",
            if_else(nsub > 1, "s ", " "), "(one for each modeled sub-basin ",
            "in the Russian River watershed). Each sub-basin column header ",
@@ -244,22 +250,22 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   
   
   # Confirm that the sub-basin flow columns are numeric
-  if (anyFalse(map_lgl(inqDF[names(inqDF) != "Date"], is.numeric))) {
+  if (anyFalse(map_lgl(subDF[names(subDF) != "Date"], is.numeric))) {
     
     # Identify the non-numeric columns (ignoring "Date")
-    nonNumCols <- which(!map_lgl(inqDF, is.numeric)) |>
-      base::setdiff(which(names(inqDF) == "Date"))
+    nonNumCols <- which(!map_lgl(subDF, is.numeric)) |>
+      base::setdiff(which(names(subDF) == "Date"))
     
     
     # Use 'nonNumCols' in the error message
-    paste0("PRMS sub_inq File - Column Type Issue\n\n",
-           "The PRMS output file (\"", inqPath, "\") should contain a \"Date\" ",
+    paste0("PRMS sub_", type, " File - Column Type Issue\n\n",
+           "The PRMS output file (\"", subPath, "\") should contain a \"Date\" ",
            "column and ", nsub, " additional column",
            if_else(nsub > 1, "s ", " "), "(one for each modeled sub-basin ",
            "in the Russian River watershed). Each sub-basin column should be ",
            "numeric. However, ", length(nonNumCols), " column",
            if_else(length(nonNumCols) > 1, "s ", " "), " (", 
-           vec2QuotedStr(names(inqDF)[nonNumCols]), ") ",
+           vec2QuotedStr(names(subDF)[nonNumCols]), ") ",
            if_else(length(nonNumCols) > 1, "are", "is"), " a different type. ",
            "Please investigate the file.") |>
       errWrap() |>
@@ -268,7 +274,7 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   }
   
   
-  # Confirm that 'inqDF' contains data from the start of PRMS to the end of 
+  # Confirm that 'subDF' contains data from the start of PRMS to the end of 
   # the modeled water year
   
   # "metadata.csv" contains this information
@@ -282,7 +288,7 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   
   
   # Confirm that every date between "PRMS_MODEL_START_DATE" and
-  # "PRMS_MODEL_END_DATE" is present in 'inqDF'
+  # "PRMS_MODEL_END_DATE" is present in 'subDF'
   dateSeq <- seq(from = metaDF$PRMS_MODEL_START_DATE[1],
                  to = metaDF$PRMS_MODEL_END_DATE[1],
                  by = "days")
@@ -290,13 +296,13 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   
   # This vector will contain the indices of dates that are missing
   # (It will be empty if no data is missing)
-  missingDates <- which(!(dateSeq %in% inqDF$Date))
+  missingDates <- which(!(dateSeq %in% subDF$Date))
   
   
   if (length(missingDates) > 0) {
     
-    paste0("PRMS sub_inq File - Missing Data Issue\n\n",
-           "The PRMS output file (\"", inqPath, "\") should contain daily ",
+    paste0("PRMS sub_", type, " File - Missing Data Issue\n\n",
+           "The PRMS output file (\"", subPath, "\") should contain daily ",
            "flow values (in cfs). However, ", length(missingDates),
            if_else(length(missingDates) > 1, " dates are ", " date is "),
            "missing data (", vec2QuotedStr(dateSeq[missingDates]), "). ",
@@ -307,11 +313,11 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   }
   
   
-  # As a final check, ensure no values are "NA" in 'inqDF'
-  if (anyNA(inqDF)) {
+  # As a final check, ensure no values are "NA" in 'subDF'
+  if (anyNA(subDF)) {
     
-    paste0("PRMS sub_inq File - Missing Data Issue\n\n",
-           "The PRMS output file (\"", inqPath, "\") should contain daily ",
+    paste0("PRMS sub_", type, " File - Missing Data Issue\n\n",
+           "The PRMS output file (\"", subPath, "\") should contain daily ",
            "flow values (in cfs). However, missing elements were detected in ",
            "the file. Please investigate.") |>
       errWrap() |>
@@ -320,9 +326,8 @@ validateInqCSV <- function (inqDF, inqPath, dirPath, nsub = 22) {
   }
   
   
-  
-  # Return 'inqDF' after that
-  return(inqDF)
+  # Return 'subDF' after that
+  return(subDF)
   
 }
 

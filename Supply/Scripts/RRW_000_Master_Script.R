@@ -74,10 +74,6 @@ source("Scripts/RRW_007_Setup_PRMS_Model.R")
 source("Scripts/RRW_008_Finalize_PRMS_Input.R")
 
 
-# Check the gage data for issues before proceeding
-#source("Scripts/HLP_012_Check_for_Precipitation_Outliers.R")
-
-
 # Run PRMS
 source("Scripts/RRW_009_Run_PRMS.R")
 
@@ -94,6 +90,10 @@ source("Scripts/HLP_009_Compare_PRMS_Precip.R")
 
 # Check streamflow data in PRMS's output too
 source("Scripts/HLP_010_Plot_PRMS_Streamflow.R")
+
+
+# Before proceeding, compare PRMS's streamflow output to USGS gages' datasets
+source("Scripts/HLP_012_Compare_PRMS_Output_to_USGS_Gage.R")
 
 
 ##### SRP #####
