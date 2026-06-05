@@ -52,7 +52,7 @@ mainProcedure <- function () {
   
   
   # Copy the contents from 'sourceDir' to a new "RR_PRMS" folder in "ProcessedData"
-  copyModel(sourceDir)
+  copyModel(sourceDir, "ProcessedData/RR_PRMS")
   
   
   cat("\tDone!\n\n")
@@ -69,14 +69,9 @@ mainProcedure <- function () {
 
 
 
-copyModel <- function (sourceDir) {
+copyModel <- function (sourceDir, newDir) {
   
-  # Copy the files from 'sourceDir' into a newly created "RR_PRMS" folder in
-  # the "ProcessedData" folder
-  
-  
-  # 'newDir' will contain the new folder location relative to the working directory
-  newDir <- "ProcessedData/RR_PRMS"
+  # Copy the files from 'sourceDir' into a newly created folder called 'newDir'
   
   
   # If the folder already exists, delete it and its contents
@@ -87,17 +82,12 @@ copyModel <- function (sourceDir) {
   }
   
   
-  # Next, create the "RR_PRMS" folder
+  # Next, create the 'newDir' folder
   dir.create(newDir)
   
   
   # Copy the entire contents of 'sourceDir' into this new folder
   dir_copy(sourceDir, newDir, overwrite = TRUE)
-  
-  
-  # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "RR_PRMS"
-  # In "ProcessedData", the folder will still be called "RR_PRMS"
   
   
   # Return nothing

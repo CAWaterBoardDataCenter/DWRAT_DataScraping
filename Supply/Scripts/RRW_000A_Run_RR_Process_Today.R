@@ -92,7 +92,8 @@ controlScript[indexLoc] <- paste0("endDate <- \"", plannedEnd, "\"")
 
 
 # Save these updates to the control file
-writeOutput(controlScript, controlPath, "write_lines", quietly = TRUE)
+writeOutput(controlScript, controlPath, 
+            writeFunction = "write_lines", quietly = TRUE)
 
 
 # Clear the environment
@@ -100,4 +101,4 @@ base::remove(list = ls())
 
 
 # Finally, run the master script and begin the RR Workflow process
-source("Scripts/RRW_000_Master_Script_RR_Supply.R")
+source("Scripts/RRW_000_Master_Script.R")

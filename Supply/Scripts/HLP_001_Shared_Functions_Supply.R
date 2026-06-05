@@ -4,7 +4,7 @@
 #### Dependencies ####
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+#source("Scripts/HLP_000_Load_Packages.R")
 
 
 #### Functions ####
@@ -28,21 +28,24 @@ makeSharePointPath <- function (filePathFragment) {
 
 
 
-getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile = FALSE) {
+getFile <- function (filePath, fileType = NULL, largeFile = FALSE, delim = NULL,
+                     select = NULL, trim_ws = FALSE, 
+                     worksheet = NULL, range = NULL, col_names = TRUE,
+                     col_types = NULL, skip = 0, n_max = Inf, guess_max = min(1000, n_max)) {
   
   # Given the path to a file, read it into a tibble
   
   # There are several optional arguments as well:
-  #   (*) 'parameterVec' is a vector of additional information for reading in the file
-  #       (such as the worksheet of a spreadsheet)
-  
   #   (*) 'fileType' is the type of the file
-  #       It can have these values: "XLSX", "CSV", "DELIM", or "OTHER"
+  #       It can have these values: "XLSX", "CSV", "TSV", "DELIM", or "OTHER"
   #       If 'fileType' is NULL, this function will guess the type
   
   #   (*) 'largeFile' is a boolean that applies to "CSV" and "DELIM" files only
   #       If this value is TRUE, fread() from the 'data.table' package will 
   #       be used instead of read_delim() from the 'readr' package
+  
+  #   (*) The remaining arguments can be supplied to the different file-reading
+  #       functions (like `read_xlsx`, `fread`, `read_delim`, and `read_lines`)
   
   
   # First make sure that 'filePath' is not NA
@@ -64,18 +67,18 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   # If so, guess the type
   if (is.null(fileType)) {
     
-    fileType <- guessFileType(filePath, parameterVec)
+    fileType <- guessFileType(filePath, delim)
     
   }
   
   
   # Make sure 'fileType' is one of the accepted values
-  if (!(fileType %in% c("XLSX", "CSV", "DELIM", "OTHER"))) {
+  if (!(fileType %in% c("XLSX", "CSV", "TSV", "DELIM", "OTHER"))) {
     
     stop(paste0("Unknown File Type\n\n",
                 "The file type specified in `getFile()` should only be one of ",
                 "these strings: ",
-                "\"XLSX\", \"CSV\", \"DELIM\", or \"OTHER\"") |>
+                "\"XLSX\", \"CSV\", \"TSV\", \"DELIM\", or \"OTHER\"") |>
            errWrap() |>
            str_replace_all("\"(.+)\"", paste0("\"", col_green("\\1"), "\"")))
     
@@ -84,11 +87,7 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   
   # Next, check if 'filePath' contains a SharePoint path
   # If it is, modify 'filePath' to be a complete SharePoint path
-  if (file.exists(makeSharePointPath(filePath))) {
-    
-    filePath <- makeSharePointPath(filePath)
-    
-  }
+  filePath <- sharepointPathCheck(filePath, isFolder = FALSE)
   
   
   # If it is not a SharePoint path, and the file still does not exist,
@@ -108,20 +107,32 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
   # Finally, call different functions to read in the file
   if (fileType == "XLSX") {
     
-    return(getXLSX(filePath, parameterVec))
+    return(getXLSX(filePath, worksheet = worksheet, range = range, 
+                   col_names = col_names, col_types = col_types, skip = skip,
+                   n_max = n_max, guess_max = guess_max))
     
   } else if (fileType == "CSV") {
     
-    return(getDelim(filePath, ",", largeFile))
+    return(getDelim(filePath, delim = ",", largeFile, select = select,
+                    col_types = col_types, skip = skip, trim_ws = trim_ws,
+                    n_max = n_max, col_names = col_names))
+    
+  } else if (fileType == "TSV") {
+    
+    return(getDelim(filePath, delim = "\t", largeFile, select = select,
+                    col_types = col_types, skip = skip, trim_ws = trim_ws,
+                    n_max = n_max, col_names = col_names))
     
   } else if (fileType == "DELIM") {
     
-    return(getDelim(filePath, parameterVec[1], largeFile))
+    return(getDelim(filePath, delim = delim, largeFile, select = select,
+                    col_types = col_types, skip = skip, trim_ws = trim_ws,
+                    n_max = n_max, col_names = col_names))
     
   } else {
     
     # For files labeled as "OTHER", just use read_lines()
-    return(read_lines(filePath))
+    return(read_lines(filePath, n_max = n_max, skip = skip))
     
   }
   
@@ -129,12 +140,12 @@ getFile <- function (filePath, parameterVec = NULL, fileType = NULL, largeFile =
 
 
 
-guessFileType <- function (filePath, parameterVec = NULL) {
+guessFileType <- function (filePath, delim = NULL) {
   
   # Guess the type of file input by the user
   
   # The returned string will be one of these values:
-  # "XLSX", "CSV", "DELIM", or "OTHER"
+  # "XLSX", "CSV", "TSV", "DELIM", or "OTHER"
   
   
   # If the filepath ends in something akin to ".xlsx", assume it is a spreadsheet
@@ -147,10 +158,13 @@ guessFileType <- function (filePath, parameterVec = NULL) {
     
     return("CSV")
     
-  # If the filepath has a parameter specified in 'parameterVec',
-  # and 'parameterVec' contains a single character, assume it is a delimited file
-  } else if (!is.null(parameterVec) && length(parameterVec) == 1 &&
-             is.character(parameterVec[1]) && nchar(parameterVec[1]) == 1) {
+  # If the file extension is ".tsv", return "TSV" instead
+  } else if (grepl("\\.tsv$", filePath, ignore.case = TRUE)) {  
+    
+    return("TSV")
+    
+  # If the filepath has a value for 'delim' specified, assume it is delimited
+  } else if (!is.null(delim) && !is.na(delim)) {
     
     return("DELIM")
     
@@ -160,6 +174,56 @@ guessFileType <- function (filePath, parameterVec = NULL) {
     return("OTHER")
     
   }
+  
+}
+
+
+
+sharepointPathCheck <- function (path, isFolder = FALSE) {
+  
+  # Check if a file/folder is a SharePoint file/folder
+  
+  # Use its path ('path') to make this assessment
+  
+  # If yes, return 'path' as a full SharePoint path
+  # Otherwise, just return the path as-is
+  
+  
+  # 'isFolder' is TRUE if the input path is for a folder
+  # Otherwise, it should be FALSE for files
+  
+  
+  # Make a SharePoint version of 'path'
+  sharepointPath <- makeSharePointPath(path)
+  
+  
+  # Based on 'isFolder', use either `file.exists` or `dir.exists`
+  if (isFolder) {
+    
+    # Check if the folder exists on SharePoint
+    if (dir.exists(sharepointPath)) {
+      
+      # If yes, return the SharePoint path
+      return(sharepointPath)
+      
+    }
+    
+  } else {
+    
+    # Check if the file exists on SharePoint
+    if (file.exists(sharepointPath)) {
+      
+      # If yes, return the SharePoint path
+      return(sharepointPath)
+      
+    }
+    
+  }
+  
+  
+  # If the procedure reaches this point, the file/folder is NOT on SharePoint
+  # In that case, return 'path' without any changes
+  return(path)
   
 }
 
@@ -195,19 +259,38 @@ getXLSX <- function (filePath, worksheet = NULL,
   if ("try-error" %in% class(sheetDF)) {
     
     # In every case, output the actual error message first
+    cat("\n\n")
     message(sheetDF)
+    cat("\n\n")
     
     
     # Next, address different errors with custom messages
     if (grepl("zip file .+ cannot be opened", sheetDF, ignore.case = TRUE)) {
       
-      stop(paste0("Inaccessible File Issue\n\n",
-                  "The above error message usually occurs if the target ",
-                  "spreadsheet is open in Excel.\n\nPlease close '", filePath, 
-                  "' and try again.") |>
-             errWrap() |>
-             str_replace("(open)", col_red("\\1")) |>
-             str_replace("(close)", col_green("\\1")))
+      # There are at least two different situations where this error can occur
+      
+      # This error can occur when trying to read in a file that is NOT 
+      # an Excel spreadsheet
+      if (!grepl("\\.xls.?$", filePath)) {
+        
+        stop(paste0("Incorrect File Issue\n\n",
+                    "The input file '", filePath, "' does not appear to be ",
+                    "an Excel spreadsheet. Please investigate.") |>
+               errWrap())
+        
+      # Alternatively, it can happen when trying to read a SharePoint 
+      # spreadsheet that is already open locally
+      } else {
+        
+        stop(paste0("Inaccessible File Issue\n\n",
+                    "The above error message usually occurs if the target ",
+                    "spreadsheet is open in Excel.\n\nPlease close '", filePath, 
+                    "' and try again.") |>
+               errWrap() |>
+               str_replace("(open)", col_red("\\1")) |>
+               str_replace("(close)", col_green("\\1")))
+        
+      }
       
     } else if (grepl("path. does not exist", sheetDF, ignore.case = TRUE)) {
       
@@ -249,9 +332,9 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
                       select = NULL, col_types = NULL, skip = 0,
-                      trim_ws = FALSE) {
+                      trim_ws = FALSE, n_max = Inf, col_names = TRUE) {
   
-  # Use read_delim() or fread() to import a file as a data frame
+  # Use `read_delim` or `fread` to import a file as a data frame
   
   
   # First, make sure 'filePath' is a character variable
@@ -272,13 +355,35 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
   if (largeFile) {
     
     fileDF <- try(fread(filePath, sep = delim, select = select,
-                        strip.white = trim_ws), silent = TRUE)
+                        strip.white = trim_ws, nrows = n_max,
+                        header = col_names), silent = TRUE)
     
   } else {
     
-    fileDF <- try(read_delim(filePath, delim = delim, 
-                             col_types = col_types, show_col_types = FALSE,
-                             skip = skip, trim_ws = trim_ws))
+    # Both options use `read_delim` here
+    
+    # However, the "col_select" argument can interpret arguments using 
+    # the tidyverse mini-language, and that causes an error when it tries 
+    # to interpret the input value "select", even if it's NULL
+    
+    # For that reason, a value is specified for "col_select" only when it's
+    # actually intended to be used
+    if (is.null(select)) {
+      
+      fileDF <- try(read_delim(filePath, delim = delim, 
+                               col_types = col_types, show_col_types = FALSE,
+                               skip = skip, trim_ws = trim_ws, n_max = n_max,
+                               col_names = col_names), silent = TRUE)
+      
+    } else {
+      
+      fileDF <- try(read_delim(filePath, delim = delim, 
+                               col_types = col_types, show_col_types = FALSE,
+                               skip = skip, trim_ws = trim_ws, n_max = n_max,
+                               col_names = col_names, col_select = select), 
+                    silent = TRUE)
+      
+    }
     
   }
   
@@ -288,7 +393,7 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
     
     # In every case, output the actual error message first
     cat("\n\n")
-    print(fileDF)
+    message(fileDF)
     cat("\n\n")
     
     
@@ -475,11 +580,23 @@ getFromControl_RR <- function (fieldName) {
   # If the control file has a blank entry for this field, notify the user
   if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
     
-    stop(paste0("Empty Field in Control File\n\n",
-                "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
-                "is empty\n\n",
-                "Please update '", controlPath, "'") |>
-           errWrap())
+    # Exceptions:
+    if (fieldName %in% c("ADDITIONAL_ARCHIVE_LOCATION", 
+                         "CIMIS_LOGIN_CREDENTIALS",
+                         "LONG-RUNNING_METADATA_FILE_LOCATION",
+                         "USGS_API_KEY")) {
+      
+      # These fields are optional, so it is okay if they are "NA"
+      
+    } else {
+      
+      stop(paste0("Empty Field in Control File\n\n",
+                  "The corresponding 'VALUE' entry for the field '", fieldName, "' ",
+                  "is empty\n\n",
+                  "Please update '", controlPath, "'") |>
+             errWrap())
+      
+    }
     
   }
   
@@ -492,24 +609,75 @@ getFromControl_RR <- function (fieldName) {
 
 
 
-writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALSE,
-                         col_names = TRUE) {
+writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
+                         col_names = TRUE, delim = NA_character_) {
   
   # Write a variable 'x' to 'outPath'
   
-  # Use "write_csv", "write_tsv", or "write_lines" depending on the specification in 'writeFunction'
+  # Use "write_csv", "write_tsv", "write_delim", "write_xlsx", or "write_lines" 
+  # depending on the specification in 'writeFunction'
   
-  # 'quietly' is a boolean for whether an output message will be given
+  # 'quietly' is a Boolean for whether an output message will be given
   
   # If 'col_names' is TRUE, column names will be written in the output for 
   # "write_csv" and "write_tsv"
   
   
+  # If 'writeFunction' is not specified, infer it from the file extension
+  if (is.null(writeFunction)) {
+    
+    # Guess the type of file using 'outPath'
+    fileType <- guessFileType(outPath, delim = delim)
+    
+    
+    # For spreadsheets, use `write_xlsx`
+    if (fileType == "XLSX") {
+      
+      writeFunction <- "write_xlsx"
+      
+    # For CSV files, use `write_xlsx`
+    } else if (fileType == "CSV") {
+      
+      writeFunction <- "write_csv"
+      
+    # For TSV files, use `write_tsv`
+    } else if (fileType == "TSV") {
+      
+      writeFunction <- "write_tsv"
+      
+    # For other delimited files, use `write_delim`
+    } else if (fileType == "DELIM") {
+      
+      writeFunction <- "write_delim"
+      
+    # For all other file types, use `write_lines`
+    } else if (fileType == "OTHER") {
+      
+      writeFunction <- "write_lines"
+      
+    } else {
+      
+      paste0("Unrecognized File Type\n\n",
+             "The file type returned by `guessFileType` should have been one of ",
+             "these strings: ",
+             "\"XLSX\", \"CSV\", \"TSV\", \"DELIM\", or \"OTHER\".\n\n",
+             "However, it returned an unknown value '", fileType, "'.") |>
+        errWrap() |>
+        str_replace_all("\"(.+)\"", paste0("\"", col_green("\\1"), "\"")) |>
+        stop()
+      
+    }
+    
+  }
+  
+  
   # If 'writeFunction' is "write_csv" or a similar function, 'x' has to be a data frame
-  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv")) {
+  if (!is.data.frame(x) && writeFunction %in% c("write_csv", "write_tsv", 
+                                                "write_delim", "write_xlsx")) {
     
     stop(paste0("Improper Input For `writeOutput()`\n\n",
-                "If \"write_csv\" will be called to write this output, ",
+                "If `write_csv`, `write_tsv`, `write_delim`, or `write_xlsx` ",
+                "will be called to write this output, ",
                 "the input variable has to be a data frame. Please revise ",
                 "the procedure.\n\n",
                 "(Note: Nothing was written to \"", outPath, "\")") |>
@@ -527,17 +695,25 @@ writeOutput <- function (x, outPath, writeFunction = "write_csv", quietly = FALS
     
     writeRes <- try(write_lines(x, outPath))
     
+  } else if (writeFunction == "write_xlsx") {
+    
+    writeRes <- try(write_xlsx(x, outPath, col_names = col_names))
+    
   } else if (writeFunction == "write_tsv") {
     
     writeRes <- try(write_tsv(x, outPath, col_names = col_names))
+    
+  } else if (writeFunction == "write_delim") {
+    
+    writeRes <- try(write_delim(x, outPath, delim = delim, col_names = col_names))
     
   } else {
     
     stop(paste0("Improper Input For `writeOutput()`\n\n",
                 "\"", writeFunction, "\" is not a recognized value for ",
                 "the function argument 'writeFunction'. Please revise it.\n\n",
-                "\"write_csv\", \"write_tsv\", and \"write_lines\" are the only ",
-                "acceptable values.\n\n",
+                "\"write_csv\", \"write_tsv\", \"write_delim\", \"write_xlsx\", ",
+                "and \"write_lines\" are the only acceptable values.\n\n",
                 "(Note: Nothing was written to \"", outPath, "\")") |>
            errWrap())
     
@@ -750,6 +926,49 @@ getModeledWY <- function (endDate) {
                          paste0(year(endDate), "-09-30"),
                          paste0(year(endDate) + 1, "-09-30"))) |>
            as.Date(format = "%Y-%m-%d"))
+  
+}
+
+
+
+getLatestFile <- function (dir, filePattern, title = "File") {
+  
+  # Given a directory ('dir'), get the path to a file 
+  # that can be identified using the regular expression in 'filePattern'
+  
+  # The list of files that match 'filePattern' will be sorted and the 
+  # last option in the list will be returned
+  
+  # (This generally corresponds to the most recent version of a file
+  #  when sorted by date)
+  
+  
+  # First, check whether 'dir' contains a SharePoint path
+  dir <- dir |>
+    sharepointPathCheck(isFolder = TRUE)
+  
+  
+  # Get the latest file among those that have the format 'filePattern'
+  latestFile <- list.files(dir, full.names = TRUE,
+                           pattern = filePattern) |>
+    sort() |> tail(1)
+  
+  
+  # Output an error message if no files are found at all
+  if (length(latestFile) == 0) {
+    
+    paste0(title, " Not Found\n\n",
+           "The directory \"", dir, "\" does not appear to have any file that ",
+           "satisfies this regular expression: \"", filePattern, "\". ",
+           "Please make the necessary adjustments and try again.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there are no issues, return 'latestFile'
+  return(latestFile)
   
 }
 
@@ -1043,7 +1262,8 @@ getPRISM <- function (prismPath) {
   # Then, use the proper CSV processing function to 
   
   
-  prismVec <- getFile(prismPath, fileType = "OTHER")
+  prismVec <- getFile(prismPath, fileType = "OTHER", 
+                      "n_max" = 50)
   
   
   # Get the line where the headers start
@@ -1107,6 +1327,503 @@ getPRISM <- function (prismPath) {
   
   # Return 'prismDF'
   return(prismDF)
+  
+}
+
+
+
+read_dat <- function (datPath, datType = NULL) {
+  
+  # Read in a DAT file
+  
+  # It will have one of several formats depending on the model
+  
+  # This will affect the method of reading in the file
+  
+  
+  # First, read in a portion of the DAT file
+  # This can help determine the type of DAT file (as well as the headers)
+  datPartial <- getFile(datPath, n_max = 50, fileType = "OTHER")
+  
+  
+  # If 'datType' is NULL, try to guess the type of DAT file
+  if (is.null(datType)) {
+    
+    datType <- guessDAT(datPartial)
+    
+  }
+  
+  
+  # Make sure 'datType' is one of the expected values
+  datOptions <- c("PRMS", "SRP", "RRIHM")
+  
+  
+  # If 'datType' is something else, output an error message
+  if (!(datType %in% datOptions)) {
+    
+    paste0("Unrecognized DAT Type\n\n", 
+           "The function parameter 'datType' is expected to be 1 of ",
+           length(datOptions), " different options (", vec2QuotedStr(datOptions),
+           "). However, `read_dat` received \"", datType, "\" as input ",
+           "instead. Please investigate the cause.\n\n", 
+           "(This error occurred while reading \"", datPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The next step is to determine the column headers
+  # The method will differ depending on the type of DAT file
+  # The end result should be a tibble with separate columns and headers applied
+  if (datType == "SRP") {
+    
+    # In the row containing multiple "#", 'datPartial' will have the names of
+    # its columns
+    
+    # Locate that row first
+    headerRegex <- "^\\s*#+\\s*"
+    
+    # This regex says that the line should begin with:
+    #   (*) 0 or more spaces
+    #   (*) 1 or more "#"
+    #   (*) Followed by 0 or more spaces
+    
+    
+    # Locate the header
+    headerRow <- grep(headerRegex, datPartial)
+    
+    
+    # If 'headerRow' was not found, output an error message
+    if (length(headerRow) != 1) {
+      
+      paste0("Header Row Not Found\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to locate the header. The regular expression \"", 
+             headerRegex, "\" returned ", length(headerRow), " matches instead ",
+             "of a single location, as expected. Please investigate the ",
+             "cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Extract the column headers from 'headerRow' 
+    # Note: If "date" appears in that list, exclude it
+    #       That should never have been there in the first place! ^_^'
+    headers <- datPartial[headerRow] |>
+      str_split("\\s") |> unlist() |>
+      str_subset("^$", negate = TRUE) |>
+      str_subset("^#+$", negate = TRUE) |>
+      str_subset("^date$", negate = TRUE)
+    
+    
+    # Make sure 'headers' is not empty or NA
+    if (length(headers) == 0 || anyNA(headers)) {
+      
+      paste0("Failed to Extract Headers\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to extract the headers from Line ", headerRow, ". ",
+             "Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Extract the first row after 'headerRow' and confirm that the number 
+    # of headers matches the number of elements in the row
+    
+    # (Though, if 'headerRow' is at the end of 'datPartial', another row
+    #  must be read in for this check)
+    if (headerRow == length(datPartial)) {
+      
+      datPartial <- getFile(datPath, fileType = "OTHER", n_max = headerRow + 1)
+      
+    }
+    
+    
+    # Take the row after 'headerRow' and get the number of elements
+    numCols <- datPartial[headerRow + 1] |>
+      str_split("\\s") |> unlist() |>
+      str_subset("^$", negate = TRUE) |> length()
+    
+    
+    # Raise an exception if 'numCols' does not equal the length of 'headers'
+    if (length(headers) != numCols) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from Line ", headerRow, ". ",
+             "However, ", length(headers), " header(s) were extracted, while ",
+             numCols, " unique column(s) were identified in the subsequent ",
+             "line. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Next, read in the entirety of the DAT file
+    # (Skip the lines up until the header row)
+    datDF <- getFile(datPath, fileType = "OTHER", skip = headerRow)
+    
+    
+    # Split 'datDF' wherever spaces occur (and remove empty strings)
+    datDF <- datDF |>
+      str_split("\\s") |> unlist() |>
+      str_subset("^$", negate = TRUE)
+    
+    
+    # Make sure the length of 'datDF' is divisible by 'numCols'
+    if (length(datDF) %% numCols != 0) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from Line ", headerRow, ". ",
+             "However, ", numCols, " header(s) were extracted, while ",
+             length(datDF), " values were identified in the subsequent ",
+             "rows. This number is not divisible by ", numCols, ", so the ",
+             "data cannot be formatted into a tibble. Please investigate ",
+             "the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Reformat 'datDF' as a matrix and then a tibble
+    # After that, apply 'headers' as the column names
+    datDF <- datDF |>
+      matrix(ncol = numCols, byrow = TRUE) |>
+      as_tibble(.name_repair = "minimal") |>
+      set_names(headers)
+    
+    
+  # This procedure is for PRMS DAT files instead
+  } else if (datType == "PRMS") {
+    
+    # Before the row containing multiple "#", 'datPartial' will have the names 
+    # of different types of columns (and the number of those columns)
+    
+    
+    # Locate that row first
+    headerRegex <- "^\\s*#+\\s*"
+    
+    # This regex says that the line should begin with:
+    #   (*) 0 or more spaces
+    #   (*) 1 or more "#"
+    #   (*) Followed by 0 or more spaces
+    
+    
+    # Locate the header
+    headerCutoff <- grep(headerRegex, datPartial)
+    
+    
+    # If 'headerCutoff' was not found, output an error message
+    if (length(headerCutoff) != 1) {
+      
+      paste0("Header Cutoff Row Not Found\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to locate the header cutoff. The regular expression \"", 
+             headerRegex, "\" returned ", length(headerCutoff), " matches instead ",
+             "of a single location, as expected. Please investigate the ",
+             "cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Get the rows before 'headerCutoff'
+    # Extract the strings that contain numbers
+    # (These entries tell the number of columns of that type)
+    headerInfo <- datPartial[1:headerCutoff] |>
+      str_split("\t") |> unlist() |>
+      str_subset("[A-Za-z]+\\s*[0-9]+")
+    
+    
+    # Check to make sure 'headerInfo' is not empty
+    if (length(headerInfo) == 0 || anyNA(headerInfo)) {
+      
+      paste0("Failed to Extract Header Metadata\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "failed to locate the header strings that indicate the number of ",
+             "each column type within the file. These strings were expected ",
+             "to appear within the first ", headerCutoff, " lines(s) of the ",
+             "file. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Create a tibble that separates out the column label and the number
+    headerTypes <- tibble(TYPE = headerInfo |> str_extract("[A-Za-z]+"),
+                          NUM = headerInfo |> str_extract("[0-9]+") |>
+                            as.numeric())
+    
+    
+    # Make sure there are no missing entries in 'headerTypes'
+    if (nrow(headerTypes) == 0 || anyNA(headerTypes)) {
+      
+      paste0("Failed to Extract Header Metadata\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "attempted to extract metadata that indicates the number of ",
+             "each column type located within the file. However, it failed ",
+             "to extract the column types and their frequencies properly. ",
+             "These strings appear within the first ", headerCutoff, 
+             " lines(s) of the file. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Create headers based on the types of headers and the number of them
+    # that appear in the DAT file
+    typeHeaders <- map2(headerTypes$TYPE, headerTypes$NUM, 
+                        ~ paste0(.x, 1:.y)) |>
+      unlist()
+    
+    
+    # Additional headers related to the date and time are still missing
+    headers <- c("year", "month", "day", "hour", "minute", "sec",
+                 typeHeaders)
+    
+    
+    # Extract the first row after 'headerCutoff' and confirm that the number 
+    # of headers matches the number of elements in the row
+    
+    # (Though, if 'headerCutoff' is at the end of 'datPartial', another row
+    #  must be read in for this check)
+    if (headerCutoff == length(datPartial)) {
+      
+      datPartial <- getFile(datPath, fileType = "OTHER", 
+                            n_max = headerCutoff + 1)
+      
+    }
+    
+    
+    # Take the row after 'headerCutoff' and get the number of elements
+    numCols <- datPartial[headerCutoff + 1] |>
+      str_split("\t") |> unlist() |>
+      str_subset("^$", negate = TRUE) |> length()
+    
+    
+    # Raise an exception if 'numCols' does not equal the length of 'headers'
+    if (length(headers) != numCols) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from before Line ", headerCutoff, ". ",
+             "However, ", length(headers), " header(s) were extracted, while ",
+             numCols, " unique column(s) were identified in the subsequent ",
+             "line. Please investigate the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Next, read in the entirety of the DAT file
+    # (Skip the lines through the header cutoff)
+    datDF <- getFile(datPath, fileType = "OTHER", skip = headerCutoff)
+    
+    
+    # Split 'datDF' wherever tab spaces occur (and remove empty strings)
+    datDF <- datDF |>
+      str_split("\t") |> unlist() |>
+      str_subset("^$", negate = TRUE)
+    
+    
+    # Make sure the length of 'datDF' is divisible by 'numCols'
+    if (length(datDF) %% numCols != 0) {
+      
+      paste0("Header Mismatch\n\n", 
+             "While parsing a DAT file for ", datType, ", the function ",
+             "extracted column headers from before Line ", headerCutoff, ". ",
+             "However, ", numCols, " header(s) were extracted, while ",
+             length(datDF), " values were identified in the subsequent ",
+             "rows. This number is not divisible by ", numCols, ", so the ",
+             "data cannot be formatted into a tibble. Please investigate ",
+             "the cause.\n\n", 
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Reformat 'datDF' as a matrix and then a tibble
+    # After that, apply 'headers' as the column names
+    datDF <- datDF |>
+      matrix(ncol = numCols, byrow = TRUE) |>
+      as_tibble(.name_repair = "minimal") |>
+      set_names(headers)
+    
+    
+  # This code runs for RRIHM DAT files
+  } else {
+    
+    # Not all RRIHM DAT files share the exact same format
+    
+    # The procedure will vary slightly based on observed patterns in 'datPartial'
+    
+    
+    # One type of DAT file has no headers at all (e.g., the "Mark West" one)
+    # Its first line starts with values right away
+    if (grepl("^[0-9]+\t[0-9]+", datPartial[1])) {
+      
+      # If there are no headers, generic ones will be created (e.g., "X1")
+      
+      
+      # Get the number of headers by counting the number of tab spaces in 
+      # the first line of 'datPartial'
+      numHeaders <- str_count(datPartial[1], "\t") + 1
+      
+      
+      # Create headers for the DAT file
+      headers <- paste0("X", 1:numHeaders)
+      
+      
+    } else {
+      
+      paste0("Unknown Type of ", datType, " DAT File\n\n", 
+             "While parsing an RRIHM DAT file, the function tried to ",
+             "determine its sub-type (e.g., \"Mark West\" DAT style). ",
+             "However, it did not match any of the sub-types in this function. ",
+             "Please investigate the cause.\n\n",
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Read in the full DAT file next
+    datDF <- getFile(datPath, fileType = "OTHER")
+    
+    
+    # Split 'datDF' at the tab spaces
+    datDF <- datDF |>
+      strsplit("\t")
+    
+    
+    # Double-check that every line in 'datDF' has a matching number of columns
+    if (any(lengths(datDF) != numHeaders)) {
+      
+      cat("\n\n")
+      cat("Line(s) with a Different Number of Columns:\n")
+      print(which(lengths(datDF) != numHeaders))
+      cat("\n\n")
+      
+      paste0("Inconsistent Number of Colums\n\n", 
+             "While parsing a ", datType, " DAT file, the function tried to ",
+             "split the data rows into ", numHeaders, " columns each. However, ",
+             "one or more rows had a different number of columns (see the ",
+             "indices printed above). Please investigate the cause.\n\n",
+             "(This error occurred while reading \"", datPath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # Reformat 'datDF' into a matrix and then a tibble
+    datDF <- datDF |> unlist() |> 
+      matrix(ncol = numHeaders, byrow = TRUE) |>
+      as_tibble(.name_repair = "minimal") |>
+      set_names(headers)
+    
+    
+    # Check if a column contains a "#" followed by a date 
+    # (i.e., a commented datestamp)
+    commentedDateRegex <- "^#[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    
+    
+    # Use that to add a "DATE" column to 'datDF'
+    if (any(map_lgl(datDF[1, ], ~ grepl(commentedDateRegex, .)))) {
+      
+      # Locate the column that contains a commented-out date
+      # Get the index, and if there are multiple matches, take the first one
+      dateCol <- datDF[1, ] |>
+        map_lgl(~ grepl(commentedDateRegex, .)) |>
+        which() |> head(1)
+      
+      
+      # Define a "DATE" column using the values in that column
+      datDF <- datDF |>
+        mutate(DATE = get(names(datDF)[dateCol]) |>
+                 str_remove("^#") |>
+                 as.Date(format = "%Y-%m-%d"))
+      
+    }
+    
+  }
+  
+  
+  # Once 'datDF' is formatted into a tibble, try to convert numeric columns
+  # into numbers
+  
+  # Iterate through the columns in 'datDF'
+  for (j in 1:ncol(datDF)) {
+    
+    # Check if at least 90% of a column appear to be numeric
+    # If yes, convert the column type
+    if (sum(numDetector(datDF[[j]])) > 0.90 * nrow(datDF)) {
+      
+      datDF[[j]] <- datDF[[j]] |> as.numeric()
+      
+    }
+    
+  }
+  
+  
+  # Return 'datDF'
+  return(datDF)
+  
+}
+
+
+
+guessDAT <- function (datPartial) {
+  
+  # Try to guess the type of DAT file based on the first couple of lines
+  # contained within 'datPartial'
+  
+  # DAT files can be for PRMS, SRP, and RRIHM
+  
+  
+  # If no tab spaces are detected, it is likely a DAT file for SRP
+  if (!any(grepl("\t", datPartial))) {
+    
+    return("SRP")
+    
+  }
+  
+  
+  # If there is a line with many hashtags "#" in a row as well as "runoff" columns, 
+  # it is probably a DAT file for PRMS
+  if (any(grepl("#{2,}", datPartial)) && any(grepl("runoff\\s", datPartial))) {
+    
+    return("PRMS")
+    
+  # In all other cases, assume it is a DAT file for RRIHM
+  } else {
+    
+    return("RRIHM")
+    
+  }
   
 }
 
@@ -1212,27 +1929,104 @@ read_gag <- function (gagPath) {
     
     # Check if at least 90% of a column match this regular expression
     # If yes, convert the column into numeric
-    if (sum(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", gagDF[[j]])) > 
-        0.90 * nrow(gagDF)) {
+    if (sum(numDetector(gagDF[[j]])) > 0.90 * nrow(gagDF)) {
       
       gagDF[[j]] <- gagDF[[j]] |> as.numeric()
       
     }
-    
-    # Explanation of the regex: 
-    # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
-    
-    #  (*) The string may start with a minus sign ("-")
-    #  (*) The string contains some number of digits (1 or more)
-    #  (*) The string may contain a decimal point, followed by more digits
-    #  (*) The string may end with scientific notation 
-    #      ("e" followed by a plus or minus, and then one or more digits)
     
   }
   
   
   # Return 'gagDF'
   return(gagDF)
+  
+}
+
+
+
+numDetector <- function (str) {
+  
+  # Check a string (or vector of strings)
+  # Use a regular expression to assess whether the data is numeric
+  
+  
+  return(grepl("^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$", str))
+  
+  
+  # Explanation of the regex: 
+  # "^-?[0-9]+(\\.[0-9]+)?([Ee][+-][0-9]+)?$"
+  
+  #  (*) The string may start with a minus sign ("-")
+  #  (*) The string contains some number of digits (1 or more)
+  #  (*) The string may contain a decimal point, followed by more digits
+  #  (*) The string may end with scientific notation 
+  #      ("e" followed by a plus or minus, and then one or more digits)
+  
+}
+
+
+
+checkMissingCol <- function (df, colNames, sourcePath, 
+                             infoStr = "file", msg = NULL) {
+  
+  # Check a named object 'df' and confirm that it contains all columns that appear
+  # in the vector 'colNames'
+  
+  # If any are missing, output those missing values to the console 
+  
+  # Then output an error message
+  
+  # There are two options for this error message:
+  #   (1) A generic message can be used 
+  #       (with limited details provided using 'infoStr')
+  #
+  #  (2) A full custom message can be specified using 'msg'
+  #      (if 'msg' is not NULL, it will take priority over using 'infoStr')
+  
+  
+  # Check if any values in 'colNames' are missing in the names of 'df'
+  if (anyFalse(colNames %in% names(df))) {
+    
+    # Get the names of missing values
+    missingVals <- colNames[!(colNames %in% names(df))]
+    
+    
+    # Print those names to the console
+    cat("\n\n")
+    cat(paste0("Missing Name", if_else(length(missingVals) > 1, "s", ""), ":\n"))
+    print(missingVals)
+    cat("\n\n")
+    
+    
+    # Check if 'msg' is NULL
+    # If yes, output a generic error message
+    if (is.null(msg)) {
+      
+      paste0("Missing Name", 
+             if_else(length(missingVals) > 1, "s", ""), " Issue\n\n",
+             "The ", infoStr, " was expected to have ", length(colNames), " ",
+             "key columns. However, ", length(missingVals), " column", 
+             if_else(length(missingVals) > 1, "s are", " is"), " missing. Please ",
+             "investigate the dataset for issues.\n\n",
+             "(This error occurred for ", vec2QuotedStr(sourcePath), ")") |>
+        errWrap() |>
+        stop()
+      
+    # Otherwise, if 'msg' is NOT empty, use that as the error message
+    } else {
+      
+      msg |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+  }
+  
+  
+  # Return nothing if there are no issues
+  return(invisible(NULL))
   
 }
 
@@ -1285,13 +2079,13 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   }
   
   
-  # Next, read in the metadata CSV
+  # Next, read in the metadata file
   metaPath <- paste0(dirPath, "/", filename) |>
     normalizePath(mustWork = FALSE)
   
   
-  # The metadata file should be a CSV file
-  metaDF <- getDelim(metaPath, ",")
+  # (The metadata file is likely a CSV file)
+  metaDF <- getFile(metaPath)
   
   
   # Add 'newCols to 'metaDF'
@@ -1299,7 +2093,7 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
   
   # Save 'metaDF'
-  writeOutput(metaDF, metaPath, "write_csv", quietly = TRUE)
+  writeOutput(metaDF, metaPath, quietly = TRUE)
   
   
   # Return nothing
@@ -1324,7 +2118,7 @@ getGitHash <- function () {
   
   c("git rev-parse --short HEAD",
     "exit") |>
-    writeOutput(tempName, "write_lines", quietly = TRUE)
+    writeOutput(tempName, writeFunction = "write_lines", quietly = TRUE)
   
   
   # Execute the batch file
@@ -1487,16 +2281,615 @@ installAnacondaEnv <- function (batPath, envPath) {
     cat("\n\n")
     
     
-    paste0("Could Not Create Environment\n\n",
-           "The procedure failed for an unknown reason. Please ",
-           "investigate the messages from Anaconda shown above.") |>
-      errWrap() |>
-      stop()
+    # If an authentication error occurs and a token is required, 
+    # perform that update automatically here
+    if (any(grepl("AnacondaAuthError", envRes)) &&
+        any(grepl("anaconda token install", envRes))) {
+      
+      cat("\n\n")
+      paste0("It appears that a token is required! Attempting install...") |>
+        errWrap() |>
+        str_replace("Attempting install...", col_green("Attempting install...")) |>
+        cat()
+      cat("\n\n")
+      
+      
+      # Create a temporary batch file to initiate this process
+      tokenBat <- "temp-token.bat"
+      
+      
+      paste0("echo y | (", shQuote(batPath),  " && anaconda token install)") |>
+        writeOutput(tokenBat, writeFunction = "write_lines", quietly = TRUE)
+      
+      # "echo y" provides the "yes" input needed to confirm installation
+      # of the token
+      
+      
+      # Try to install the token
+      tokenRes <- system(tokenBat, intern = TRUE)
+      
+      
+      # Output the results of the attempt
+      cat("\n\n")
+      print(tokenRes)
+      cat("\n\n")
+      
+      
+      # Delete the batch file next
+      unlink(tokenBat)
+      
+      
+      # If the process is successful, retry this function
+      if (any(grepl("Success!", tokenRes))) {
+        
+        paste0("The token was installed successfully! Retrying the ",
+               "environment creation process...") |>
+          errWrap() |>
+          cat()
+        cat("\n\n")
+        
+        
+        # Recursively call this function
+        return(installAnacondaEnv(batPath, envPath))
+        
+      # If the token installation process failed, simply return an error 
+      } else {
+        
+        paste0("Could Not Install Token\n\n",
+               "The procedure failed for an unknown reason. Please ",
+               "investigate the messages from Anaconda shown above.") |>
+          errWrap() |>
+          stop()
+        
+      }
+      
+      
+    # In all other cases, output a generic error message
+    } else {
+      
+      paste0("Could Not Create Environment\n\n",
+             "The procedure failed for an unknown reason. Please ",
+             "investigate the messages from Anaconda shown above.") |>
+        errWrap() |>
+        stop()
+      
+    }
     
   }
   
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+functionStealer <- function (scriptPath, functionName) {
+  
+  # Extract a function that is present in another script ('scriptPath')
+  # Then, load it into the environment
+  
+  # WARNING
+  # The function is expected to use the full notation with curly braces
+  # ("{" and "}")
+  
+  # This function is designed with that formatting in mind
+  
+  # The curly braces are used to identify the start and end of the function
+  
+  # If there are comments in the function with "{" or "}", they can cause 
+  # this function to fail
+  
+  
+  # First, confirm that 'scriptPath' is valid
+  if (!file.exists(scriptPath)) {
+    
+    paste0("Requested Script Does Not Exist\n\n",
+           "\"", scriptPath, "\" does not point to a valid location. ",
+           "`functionStealer` requires a valid target script as input for ",
+           "'scriptPath'. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  } else if (!grepl("\\.R$", scriptPath, ignore.case = TRUE)) {
+    
+    paste0("Target Script Must Be An R Script\n\n",
+           "\"", scriptPath, "\" is not an R script (i.e., it does not have the ",
+           ".R extension). `functionStealer` requires a valid R script ",
+           "as input for 'scriptPath'. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Read the lines of the script
+  rLines <- getFile(scriptPath)
+  
+  
+  # Locate the function denoted by 'functionName'
+  functionStart <- grep(paste0("^\\s*", str_escape(functionName), 
+                               "\\s*(<-)|(=)\\s*function"),
+                        rLines, ignore.case = TRUE)
+  
+  # The regular expression that locates the function has this pattern:
+  #  (*) Starts with 0 or more spaces
+  #  (*) Contains the name of the function 
+  #      (escaped in case there are special characters, 
+  #       though that shouldn't happen)
+  #  (*) Continues with 0 or more spaces after the function name
+  #  (*) Has either "<-" or "=" to define the function
+  #  (*) Continues with 0 or more spaces after the operator
+  #  (*) Followed by the "function" keyword
+  
+  
+  # If no single function is found, output an error message
+  if (length(functionStart) != 1) {
+    
+    paste0("Function Not Found in Target Script\n\n",
+           "\"", scriptPath, "\" was expected to contain exactly one ",
+           "function with the name \"", functionName, "\". However, it could ",
+           "not be located. This input name gave ", length(functionStart), " ",
+           "matches. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The next step is to find the last line of a function
+  # This procedure uses an algorithm based on the balance of curly braces
+  # Once all open braces "{" are closed by a corresponding "}", assume that 
+  # the function code has been completely located
+  
+  # Define several variables to help with this check: 
+  
+  
+  # The line to check in the loop's current iteration
+  checkLine <- functionStart - 1
+  
+  # The current balance of open and closed braces
+  braceImbalance <- 0
+  
+  # Has the first open brace been found?
+  # (This is relevant for functions whose input parameters take up multiple 
+  #  lines, causing the first open brace to occur on a line after 'functionStart')
+  foundFirstOpen <- FALSE
+  
+  # Has the end of the function (EOF) been reached?
+  notAtEOF <- TRUE
+  
+  
+  # Keep looping while not at the end of the function
+  # (and while 'checkLine' has not reached the end of the script yet)
+  while (notAtEOF && checkLine < length(rLines)) {
+    
+    # Check the next line of the script
+    checkLine <- checkLine + 1
+    
+    
+    # Store that line of 'rLines' in a temporary character variable
+    tempLine <- rLines[checkLine]
+    
+    
+    # If "#" appears in 'tempLine' (and it's not part of a quoted string),
+    # remove that portion of 'tempLine' for these checks
+    # (Braces within comments should not be included in the counts)
+    if (grepl("#", tempLine)) {
+      
+      # The intention is to remove comments only (which start with "#")
+      
+      # The main complicating factor is that "#" can also appear in strings
+      # (e.g., in filenames)
+      
+      # Check for several cases and apply different regular expressions 
+      
+      
+      # In the simplest case, there are no quotation marks to worry about
+      if (grepl("^[^'\"]*#", tempLine)) {
+        
+        # In that case, just remove everything that comes after "#"
+        # (And then remove "#" as well)
+        tempLine <- tempLine |>
+          str_extract("^[^'\"]*#") |>
+          str_remove("#")
+        
+        
+        # Even if quotation marks are present, if none of them follow "#"
+        # Then the comment can be safely removed
+      } else if (grepl("^.*#[^'\"]*$", tempLine)) {
+        
+        # Keep only the portion of 'tempLine' that appears before the 
+        # comment "#"
+        tempLine <- tempLine |>
+          str_replace("^(.*)#[^'\"]*$", "\\1")
+        
+        # There can be other "#" in this string (matched by ".*"), 
+        # but only the "#" that seems to lead a comment is 
+        # matched by "#" in the regex
+        
+        # The limitation of this regex, though, is that no quotation marks
+        # can appear within the comment string
+        
+        # The next two checks will allow comments to have quotes in them
+        # However, they have to be either single quote only or double quote only
+        
+        # If a string contains single quotes (and no double quotes),
+        # check for "#" that do not appear between quotes
+      } else if (grepl("'", tempLine) && !grepl("\"", tempLine) &&
+                 grepl("^[^']*([^']*'[^']*'[^']*)*[^']*#", tempLine)) {
+        
+        # The regex looks complicated, but the main portion to focus on 
+        # is "([^']*'[^']*'[^']*)*"
+        
+        # This group pattern matches strings that are encased in single quotes
+        # (With optional non-single-quote characters able to appear before and 
+        #  after the opening and closing of the single quotes)
+        
+        # Any "#" that appears within quotes will count as 
+        # part of that group pattern
+        
+        # So the "#" at the end of the regex should belong to a comment
+        
+        tempLine <- tempLine |>
+          str_extract("^[^']*([^']*'[^']*'[^']*)*[^']*#") |>
+          str_remove("#")
+        
+        # Here's a more thorough breakdown of the regex:
+        
+        # "^[^']*([^']*'[^']*'[^']*)*[^']*#"
+        
+        #  (1) Start looking from the beginning of the string
+        
+        #  (2) Optionally starts with 0 or more non-single-quote characters
+        
+        #  (3) Optionally contains 0 or more instances of this group pattern:
+        #       (a) Optionally starts with 0 or more non-single-quote characters
+        #       (b) A single quote '
+        #       (c) Optionally contains 0 or more non-single-quote characters
+        #       (d) A single quote '
+        #       (e) Optionally followed by 0 or more non-single-quote characters
+        
+        #  (4) Optionally followed by 0 or more non-single-quote characters
+        
+        #  (5) A "#"
+        
+        
+        # Repeat the same procedure for instances where the string contains
+        # double quotes, but no single quotes
+      } else if (grepl("\"", tempLine) && !grepl("'", tempLine) &&
+                 grepl("^[^\"]*([^\"]*\"[^\"]*\"[^\"]*)*[^\"]*#", tempLine)) {
+        
+        tempLine <- tempLine |>
+          str_extract("^[^\"]*([^\"]*\"[^\"]*\"[^\"]*)*[^\"]*#") |>
+          str_remove("#")
+        
+        # This regex is essentially the same as the previously described one
+        # Just switch single quotes with double quotes
+        
+        
+        # The previous regular expressions cover most target scenarios:
+        
+        # No Quotes                                        [First Check]
+        
+        # Single Quotes Before # Only                      [Second Check] 
+        # Single Quotes After # Only                       [First Check] 
+        # Single Quotes Before & After # Only              [Third Check]
+        
+        # Double Quotes Before # Only                      [Second Check] 
+        # Double Quotes After # Only                       [First Check] 
+        # Double Quotes Before & After # Only              [Fourth Check]
+        
+        # Single &/OR Double Quotes Before # Only          [Second Check] 
+        # Single &/OR Double Quotes After # Only           [First Check] 
+        # Single &/OR Double Quotes Before & After # Only  [???]
+        
+        
+        # The next check is for strings that have both single and double quotes 
+        # In addition, to reach this point, the string should have single and/or 
+        # double quotes before AND after the "#"
+        # (To make sure this is the worth the effort, the function also confirms
+        #  whether 'pattern' may even be present after a "#")
+      } else if (grepl("'", tempLine) && grepl("\"", tempLine) &&
+                 grepl("#.*[\\(\\)]", tempLine)) {
+        
+        paste0("Rare Case Issue\n\n",
+               "The function was not designed to handle this unusual border ",
+               "case. Please investigate the procedure for excluding comments ",
+               "(denoted by \"#\") from extracting functions via ",
+               "`functionStealer`. (The line was \"", tempLine, "\").") |>
+          errWrap() |>
+          stop()
+        
+      }
+      
+    }
+    
+    # (The above section prevents braces that appear within a comment 
+    #  from being included in the counts)
+    
+    
+    # Count the number of open braces on 'checkLine'
+    # Exclude open braces in quotes (if present)
+    if (grepl("\".*\\{.*\"", tempLine)) { 
+      
+      numOpen <- str_count(tempLine, "\\{") - 
+        str_count(tempLine |> str_extract("\".*\\{.*\""), "\\{")
+    
+    } else if (grepl("'.*\\{.*'", tempLine)) { 
+      
+      numOpen <- str_count(tempLine, "\\{") - 
+        str_count(tempLine |> str_extract("'.*\\{.*'"), "\\{")
+      
+    } else {
+      
+      numOpen <- str_count(tempLine, "\\{")
+      
+    }
+    
+    
+    # Check for closed braces on 'checkLine'
+    # Exclude any braces in double or single quotes
+    if (grepl("\".*\\}.*\"", tempLine)) { 
+      
+      numClosed <- str_count(tempLine, "\\}") - 
+        str_count(tempLine |> str_extract("\".*\\}.*\""), "\\}")
+      
+    } else if (grepl("'.*\\}.*'", tempLine)) { 
+      
+      numClosed <- str_count(tempLine, "\\}") - 
+        str_count(tempLine |> str_extract("'.*\\}.*'"), "\\}")
+      
+    } else {
+      
+      numClosed <- str_count(tempLine, "\\}")
+      
+    }
+    
+    
+    # Adjust 'braceImbalance'
+    braceImbalance <- braceImbalance + numOpen - numClosed
+    
+    
+    # There should never be a negative balance of braces
+    # (That is a sign of an error)
+    if (braceImbalance < 0) {
+      
+      paste0("Negative Balance of Curly Braces\n\n",
+             "`functionStealer` uses the curly braces (\"{\" and \"}\") to ",
+             "identify the bounds of the function. However, this procedure ",
+             "failed. From Line ", functionStart, " to Line ", checkLine, ", ",
+             "there appear to be more closing braces overall than open braces. ",
+             "Please investigate.") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
+    
+    # If the first open brace has not yet been found yet, 'foundFirstOpen' is FALSE
+    # But, if 'numOpen' is positive, then an open brace has now been found
+    # In that case, 'foundFirstOpen' should be set to TRUE
+    if (!foundFirstOpen && numOpen > 0) {
+      foundFirstOpen <- TRUE
+    }
+    
+    
+    # While 'braceImbalance' is not 0 
+    # (or the first open curly brace has not yet been found),
+    # continue this loop
+    notAtEOF <- braceImbalance != 0 || !foundFirstOpen
+    
+  }
+  
+  
+  # If the loop ended by reaching the end of the file, 
+  # and 'notAtEOF' is still TRUE, output an error
+  if (notAtEOF) {
+    
+    paste0("Function Extraction Failed\n\n",
+           "`functionStealer` uses the curly braces (\"{\" and \"}\") to ",
+           "identify the bounds of the function. However, this procedure ",
+           "failed. Please investigate.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The entire function should be contained between 
+  # 'functionStart' and 'checkLine'
+  # Turn those lines of code in 'rLines' into a single string
+  functionStr <- paste0(rLines[functionStart:checkLine], collapse = "\n")
+  
+  
+  # Evaluate 'functionStr' as R code
+  source(textConnection(functionStr))
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+calcNSE <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate the Nash Sutcliffe Model Efficiency Coefficient 
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # 1 - sum[ (obs - sim)^2 ] / sum[ (obs - mean_obs)^2 ]
+  
+  numerator <- sum((obs - sim)^2, na.rm = na.rm)
+  denominator <- sum((obs - mean(obs, na.rm = na.rm))^2, na.rm = na.rm)
+  
+  
+  # Return 1 minus 'numerator' / 'denominator'
+  return(1 - (numerator / denominator))
+  
+}
+
+
+
+calcPBias <- function (obs, sim, na.rm = FALSE, asPercent = TRUE) {
+  
+  # Calculate the Percent Bias Coefficient 
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # sum[ (sim - obs) ] / sum[ obs ]
+  
+  
+  # NOTE
+  
+  # For this equation, we are using the formula that is posted by 
+  # the HEC-HMS Technical Reference Manual
+  
+  # (Moriasi 2007) has a different version of this formula ("obs - sim" instead)
+  
+  # With the HEC-HMS formulation, positive P-Bias values indicate model 
+  # overestimation, while negative values represent model underestimation
+  
+  
+  # Calculate P-Bias
+  pbias <- sum(sim - obs, na.rm = na.rm) / sum(obs, na.rm = na.rm)
+  
+  
+  # If 'asPercent' is TRUE, return the coefficient as a percent
+  if (asPercent) {
+    pbias <- 100 * pbias
+  }
+  
+  
+  # Add an attribute to 'pbias' to indicate whether overestimation or 
+  # underestimation has occurred
+  if (pbias > 0) {
+    
+    attr(pbias, "simulation") <- "overestimation"
+    
+  } else if (pbias < 0) {
+    
+    attr(pbias, "simulation") <- "underestimation"
+    
+  }
+  
+  
+  # Return 'pbias'
+  return(pbias)
+  
+}
+
+
+
+calcRSR <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate the "Ratio of the Root Mean Square Error (RMSE) to the 
+  # Standard Deviation Ratio (RSR)"
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # sqrt[ sum[ (obs - sim)^2 ] ] / sqrt[ sum[ (obs - mean_obs)^2 ] ]
+  
+  
+  numerator <- sqrt(sum((obs - sim)^2, na.rm = na.rm))
+  denominator <- sqrt(sum((obs - mean(obs, na.rm = na.rm))^2, na.rm = na.rm))
+  
+  
+  # Return 'numerator' / 'denominator'
+  return(numerator / denominator)
+  
+}
+
+
+
+calcMKGE <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate the "Modified Kling Gupta Efficiency"
+  
+  # Given observed and simulated values, 
+  # apply this formula to determine the coefficient:
+  
+  # 1 - sqrt[ (R - 1)^2 + (B - 1)^2 + (G - 1)^2 ]
+  
+  # Where 
+  # R = Pearson Correlation Coefficient (between 'obs' and 'sim')
+  # B = mean_sim / mean_obs
+  # G = (st_dev_sim / mean_sim) / (st_dev_obs / mean_obs)
+  
+  
+  # Calculate 'R' first
+  
+  # `cor` does not handle NA values, so that must be addressed first
+  if (na.rm) {
+    
+    # Find where 'obs' or 'sim' contains NA
+    naIndices <- which(is.na(obs) | is.na(sim)) |>
+      unique() |> sort()
+    
+    
+    # Remove entries from 'obs' and 'sim' wherever NA was detected
+    if (length(naIndices) > 0) {
+      
+      obs <- obs[-naIndices]
+      sim <- sim[-naIndices]
+      
+    }
+    
+  }
+  
+  
+  r <- cor(obs, sim, method = "pearson")
+  
+  
+  # Next, calculate 'B' (beta)
+  b <- mean(sim, na.rm = na.rm) / mean(obs, na.rm = na.rm)
+  
+  
+  # Then, determine 'G' (gamma)
+  g <- (sd(sim, na.rm = na.rm) / mean(sim, na.rm = na.rm)) /
+    (sd(obs, na.rm = na.rm) / mean(obs, na.rm = na.rm))
+  
+  
+  # Finally, calculate and return the MKGE
+  return(1 - sqrt((r - 1)^2 + (b - 1)^2 + (g - 1)^2))
+  
+}
+
+
+
+calcRSqrd <- function (obs, sim, na.rm = FALSE) {
+  
+  # Calculate R^2, the "Coefficient of Determination"
+  
+  # Given observed and simulated values, this coefficient is simply 
+  # the square of the Pearson Correlation Coefficient (R)
+  
+  
+  # `cor` does not handle NA values, so that must be addressed first
+  if (na.rm) {
+    
+    # Find where 'obs' or 'sim' contains NA
+    naIndices <- which(is.na(obs) | is.na(sim)) |>
+      unique() |> sort()
+    
+    
+    # Remove entries from 'obs' and 'sim' wherever NA was detected
+    if (length(naIndices) > 0) {
+      
+      obs <- obs[-naIndices]
+      sim <- sim[-naIndices]
+      
+    }
+    
+  }
+  
+  
+  return(cor(obs, sim, method = "pearson"))
   
 }

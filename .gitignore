@@ -30,8 +30,12 @@ Paradigm_DWRAT/**/__pycache__
 
 #IGNORE LSPC FILES
 LSPC/*.log
+LSPC/**/__pycache__
 LSPC/**/*.csv
 LSPC/**/*.out
+
+#IGNORE WORKFLOW FILES
+Workflows/*.bat
 
 #Ignore Various R files
 .Rproj.user

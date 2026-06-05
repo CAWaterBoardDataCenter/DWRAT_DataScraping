@@ -24,15 +24,12 @@
 #  (1) "ProcessedData/Weather_Processed_Data_[startDate]_[endDate].csv"
 #      The processed weather data
 
-#  (2) A long-running DAT file (whose filepath is input into 
-#      "MAIN_PRMS_DAT_FILE" of the control file)
+#  (2) A long-running DAT file (whose filepath is present within the directory
+#      specified by "MAIN_PRMS_DAT_FOLDER" of the control file)
 
-#  (3) A DAT file containing predictions for the current water year (its 
-#      filepath should be given in "PRMS_DAT_SPI_FILE" of the control file)
+#  (3) From the PRMS model files, the "prms_rr.control" file will be edited
 
-#  (4) From the PRMS model files, the "prms_rr.control" file will be edited
-
-#  (5) Similarly, the model's "run.bat" file will be updated as well
+#  (4) Similarly, the model's "run.bat" file will be updated as well
 
 
 # A single output will be generated in all cases, and additional outputs will 
@@ -103,24 +100,32 @@ mainProcedure <- function (predictWY = TRUE) {
   #  (*) The PRMS Meteorological CSV 
   #  (*) The primary DAT file
   # (These files are used in all cases, regardless of the value for 'predictWY')
-  filePaths <- c(paste0("ProcessedData/PRMS_Meteorological_", startDate,
-                        "_", endDate, ".csv"),
-                 getFromControl_RR("MAIN_PRMS_DAT_FILE"))
+  filePaths <- tibble("METEOROLOGICAL" = 
+                        paste0("ProcessedData/PRMS_Meteorological_", startDate,
+                               "_", endDate, ".csv"),
+                      "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
   
   
-  # Read in the first two files after that 
+  # "MAIN_DAT" contains a folder path right now
+  # Extract the latest primary DAT file from there
+  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
+    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$", 
+                  title = "PRMS Main DAT File")
+  
+  
+  # Read in the two files after that (Meteorological CSV and Main PRMS DAT file)
   # (while also verifying that they exist)
-  meteorDF <- filePaths[1] |> 
+  meteorDF <- filePaths$METEOROLOGICAL[1] |> 
     checkForPreviousOutput() |> 
     getDelim(",")
   
-  primaryDAT <- getFile(filePaths[2], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], delim = ",")
   
   
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, "MAIN_PRMS_DAT_FILE", "PRMS", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "PRMS", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -160,7 +165,7 @@ mainProcedure <- function (predictWY = TRUE) {
     mergedDAT <- predictCurrentWY(mergedDAT,
                                   startDate, endDate, 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
-                                  dirPath, filePaths[2])
+                                  dirPath, filePaths$MAIN_DAT[1])
     
     
     cat("\tDone!\n\n")
@@ -172,7 +177,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths[2])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
     
   }
   
@@ -236,7 +241,10 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     # the PRMS model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_CSV")
+    pastPrecipPath <- getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_FOLDER") |>
+      getLatestFile(paste0("^RR_Workflow_PRISM_PRMS_Avg_Historic_Precip_",
+                           "CY1981_to_WY[0-9]{4}\\.csv$"),
+                    "PRMS Historic Precip File")
     
     
     # Read in the file and validate it
@@ -244,7 +252,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       getFile()
     
     pastPrecip |>
-      validateHistoricPrecipFile("PRISM_PRMS_HISTORIC_PRECIP_CSV",
+      validateHistoricPrecipFile(pastPrecipPath,
                                  getModeledWY(endDate)[1])
     
     
@@ -280,6 +288,14 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       
     }
     
+    
+    # For both the SPI and Similar Water Year methods, archive 'pastPrecipPath'
+    copyFile(pastPrecipPath, 
+             paste0(dirPath, "/PRMS/Input/",
+                    pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
+               normalizePath(mustWork = FALSE), 
+             quietly = TRUE)
+    
   }
   
   
@@ -291,7 +307,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
   
   
   # Perform a few checks on 'finalDAT'
-  validateInputDAT(finalDAT, sourceField = NULL, "PRMS", prmsCols,
+  validateInputDAT(finalDAT, sourcePath = NA_character_, "PRMS", prmsCols,
                    startDate, endDate, datType = "Final")
   
   
@@ -317,10 +333,42 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) 
   wyBounds <- getModeledWY(endDate)
   
   
-  # Summarize 'pastPrecip' on a monthly timescale
-  # (But ignore records from the current water year)
+  # The next step is to summarize 'pastPrecip' on a monthly timescale
+  
+  # Before doing that, certain filters must be applied
+  # Ignore records from the current water year onwards
+  pastPrecip <- pastPrecip |>
+    filter(Date < wyBounds[1])
+  
+  
+  # Make sure the last day in 'pastPrecip' is September 30th
+  if (month(max(pastPrecip$Date)) != 9 || day(max(pastPrecip$Date)) != 30) {
+    
+    # If not, find the latest instance of September 30th and filter to that bound
+    
+    # Due to prior validation checks, 'pastPrecip' should be a continuous dataset
+    # If there is no September 30th in the latest year in 'pastPrecip',  
+    # there will definitely be one in the prior year
+    
+    # Use whichever one is available
+    
+    if (paste0(year(max(pastPrecip$Date)), "-09-30") %in% pastPrecip$Date) {
+      
+      pastPrecip <- pastPrecip |>
+        filter(Date <= paste0(year(max(pastPrecip$Date)), "-09-30"))
+      
+    } else {
+      
+      pastPrecip <- pastPrecip |>
+        filter(Date <= paste0(year(max(pastPrecip$Date)) - 1, "-09-30"))
+      
+    }
+    
+  }
+  
+  
+  # After that, summarize 'pastPrecip' into a monthly dataset
   monthDF <- pastPrecip |>
-    filter(Date < wyBounds[1]) |>
     mutate(YEAR = year(Date), MONTH = month(Date)) |>
     group_by(YEAR, MONTH) |>
     summarize(PRECIP = sum(`ppt (mm)`), .groups = "drop") |>
@@ -329,7 +377,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) 
   
   # Add dummy entries for the last three months of the year in 'monthDF'
   # (This data will round out 'monthDF' into 12 months of data per year)
-  # ("YEAR_MONTH" is an extra column that will be useful later)
+  # (Also, "YEAR_MONTH" is an extra column that will be useful later)
   dummyDF <- tibble(YEAR = max(monthDF$YEAR),
                     MONTH = 10:12,
                     PRECIP = 0) |>
@@ -536,7 +584,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   # so include dummy columns for "TMIN" and "TMAX" when checking the data
   currentPrecip |>
     mutate(`tmin (degrees C)` = 0, `tmax (degrees C)` = 0) |>
-    validateWebData(inputPath = c("PRISM" = prismPath),
+    validateWebData(dataSource = "PRISM",
+                    inputPath = prismPath,
                     stationVec = currentPrecip$Name |> unique(),
                     siPRISM = TRUE)
   
@@ -574,11 +623,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # Copy 'currentPrecip' to the hydrology folder as well
-  copyFile(prismPath,
-           paste0(dirPath, "/PRMS/Input/",
-                  prismPath |> str_remove("^.+[/\\\\]")) |>
-             normalizePath(mustWork = FALSE))
+  # 'currentPrecip' shoul be archived too, but that was already accomplished
+  # in a prior script
   
   
   # Return 'finalDAT'
@@ -633,6 +679,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   
   # Adjust the formatting of 'pastPrecip'
   # Add water year and date columns
+  # (Additional edits will occur later)
   pastPrecip <- pastPrecip |>
     mutate(YEAR = year(Date), MONTH = month(Date)) |>
     mutate(WY = if_else(MONTH < 10, YEAR, YEAR + 1)) |>
@@ -763,8 +810,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   # Write 'precipDF' as a CSV file to 'dirPath' next
   precipDF |>
     writeOutput(paste0(dirPath, "/PRMS/Input/SimilarWY_Analysis.csv") |>
-                  normalizePath(mustWork = FALSE),
-                "write_csv")
+                  normalizePath(mustWork = FALSE))
   
   
   # Finally, return 'similarWY'
@@ -856,10 +902,8 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   #      under "PRMS > input > climate_scenarios" 
   
   
-  # The final filename of 'mergedDAT' will contain 'startDate', 'endDate', and
-  # the name of the user running this script
-  datName <- paste0("DAT_PRMS_", Sys.info()[["user"]], "_", startDate, 
-                    "_", endDate, ".dat")
+  # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
+  datName <- paste0("DAT_PRMS_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
@@ -1012,7 +1056,7 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # Write 'prmsControl' back to a file (overwriting the previous version)
-  writeOutput(prmsControl, controlPath, "write_lines", quietly = TRUE)
+  writeOutput(prmsControl, controlPath, quietly = TRUE)
   
   
   # Finally, save metadata about the model start date
@@ -1053,7 +1097,7 @@ updateBatchFilePRMS <- function (prmsPath) {
   batchCommands |>
     writeOutput(paste0(prmsPath, "/windows/run.bat") |> 
                   normalizePath(mustWork = FALSE),
-                "write_lines", quietly = TRUE)
+                quietly = TRUE)
   
   
   # Return nothing

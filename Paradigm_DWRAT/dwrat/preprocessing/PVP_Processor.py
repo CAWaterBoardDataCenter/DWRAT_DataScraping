@@ -2,13 +2,10 @@ import os
 import requests
 import pandas as pd
 from datetime import date, timedelta
-
-import pandas as pd
-import requests
 from io import StringIO
 
 def downloadUSGSFlow(site, start_date, end_date):
-    print("✅ NEW downloadUSGSFlow is running")
+    print("NEW downloadUSGSFlow is running")
 
     url = "https://waterservices.usgs.gov/nwis/dv/"
     params = {
@@ -26,7 +23,7 @@ def downloadUSGSFlow(site, start_date, end_date):
     # Debug: confirm we're not getting HTML
     ct = r.headers.get("Content-Type", "")
     if "html" in ct.lower() or r.text.lstrip().startswith("<"):
-        print("❌ Got HTML instead of RDB.")
+        print("Got HTML instead of RDB.")
         print("Final URL:", r.url)
         print("Content-Type:", ct)
         print("First 300 chars:\n", r.text[:300])
@@ -165,7 +162,7 @@ def makeMonthlyACFT(LakeMendo_CFS_df, Calpella_CFS_df, SCWAForecast_CFS_df):
 
 
     # Zero out PVP
-    MonthlyACFT_df['acft'] = 0
+    #MonthlyACFT_df['acft'] = 0
 
     return MonthlyACFT_df
 
