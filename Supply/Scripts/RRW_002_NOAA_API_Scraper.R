@@ -12,7 +12,17 @@
 # The raw output will be stored in the "WebData" folder as 
 # "NOAA_API_Data_[startDate]_[endDate].csv"
 
-# Note: SI units are used for the output (mm and Celsius)
+# Note: PRMS requires SI units (mm and Celsius)
+# 
+#       However, this data will be downloaded with standard units (inches 
+#       and Fahrenheit)
+#       A later script will convert this data into the proper units
+#
+#       The reason for this decision is because the SI data from the API is 
+#       rounded to one decimal place, despite having one extra digit in the raw
+#       measurements
+#       More of this precision can be recovered when customary units are 
+#       obtained and converted
 
 
 #### Setup ####

@@ -1967,7 +1967,7 @@ numDetector <- function (str) {
 
 
 
-checkMissingCol <- function (df, colNames, sourcePath, 
+checkMissingCol <- function (df, colNames, sourcePath = NA_character_, 
                              infoStr = "file", msg = NULL) {
   
   # Check a named object 'df' and confirm that it contains all columns that appear

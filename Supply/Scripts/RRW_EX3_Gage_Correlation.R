@@ -103,7 +103,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-QAQC" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
+  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_EX_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -177,8 +177,10 @@ mainProcedure <- function () {
   
   # Use 'meteorDF' and 'prismDF' to develop models
   cat(paste0("[2/3]\tDeveloping ", 
-             choose(names(meteorDF) |> str_subset("PRECIP") |> length(), 
+             choose(names(meteorDF) |> str_subset("^PRECIP") |> length(), 
                     2) + 
+               (names(meteorDF) |> str_subset("^PRECIP") |> length()) *
+               (names(meteorDF) |> str_subset("^EX") |> length()), 
                length(sort(stationDF$PRMS_PRECIP_NAME, na.last = NA)), 
              " linear regression models...\n"))
   
@@ -188,8 +190,46 @@ mainProcedure <- function () {
     reformatPRISM(stationDF)
   
   
+  # Get CDEC data for use in 'meteorDF'
+  # cdecDF <- getFile(paste0("WebData/CDEC_API_Data_", startDate, "_", endDate, ".csv")) |>
+  #   filter(is.na(DATA_FLAG) | !(DATA_FLAG %in% c("A", "N", "v")))
+  # 
+  # cdecRef <- "Admin + Management/1. Staff Folders/APrashar/2026-05-28_RR_PRMS_Precip_QAQC/Option_4_Additional_Nearby_Gages/Maps_and_New_Stations/PRMS_Precipitation_QAQC_Candidate_Stations.csv" |>
+  #   makeSharePointPath() |>
+  #   getFile() |>
+  #   filter(SOURCE == "CDEC") |>
+  #   select(NAME, PRMS_PRECIP_NAME) |>
+  #   rename(STATION_ID = NAME)
+  # 
+  # 
+  # cdecDF <- cdecDF |>
+  #   left_join(cdecRef, by = "STATION_ID", relationship = "many-to-one")
+  # 
+  # 
+  # cdecDF <- cdecDF |> select(`DATE TIME`, VALUE, UNITS, PRMS_PRECIP_NAME) |>
+  #   pivot_wider(id_cols = `DATE TIME`, names_from = PRMS_PRECIP_NAME,
+  #               values_from = VALUE) |>
+  #   rename(DATE = `DATE TIME`) |>
+  #   mutate(DATE = as_date(DATE))
+# 
+# 
+#   meteorDF <- meteorDF |>
+#     full_join(cdecDF, by = "DATE")
+# 
+#   
+#   
+  # Remove outliers from 'meteorDF'
+  meteorDF <- meteorDF |>
+    removeOutliers()
+
+  
   # Use another function to develop each model
   modelDF <- generateModels(meteorDF, prismDF)
+  
+  
+  
+  # Try out a methodology using the regression data in 'modelDF'
+  methodDF <- testMethodology(meteorDF, prismDF, modelDF[[1]])
   
   
   cat("\tDone!\n\n")
@@ -199,8 +239,16 @@ mainProcedure <- function () {
   cat(paste0("[3/3]\tSaving results...\n"))
   
   
-  modelDF |>
+  modelDF[[1]] |>
     writeOutput("ProcessedData/RR_Workflow_PRMS_Gage_Regression.csv")
+  
+  
+  modelDF[[2]] |>
+    writeOutput("ProcessedData/RR_Workflow_PRMS_Best_Correlations.csv")
+  
+  
+  modelDF[[3]] |>
+    writeOutput("ProcessedData/RR_Workflow_PRMS_Remediation_Correlations.csv")
   
   
   cat("\tDone!\n\n")
@@ -351,6 +399,81 @@ generateModels <- function (meteorDF, prismDF) {
   }
   
   
+  # After that, generate linear regression models between "PRECIP" columns
+  # in 'meteorDF' and the "EX_PRECIP" columns in that table
+  exNames <- names(meteorDF) |>
+    str_subset("^EX_PRECIP")
+  
+  
+  for (i in 1:length(precipNames)) {
+    
+    for (j in 1:length(exNames)) {
+      
+      # Get data from both gages
+      tempDF <- meteorDF |>
+        select(DATE, all_of(precipNames[i]), all_of(exNames[j]))
+      
+      
+      # Remove entries where either value is NA or missing (-999)
+      tempDF <- tempDF |>
+        filter(!is.na(get(precipNames[i])) & !is.na(get(exNames[j]))) |>
+        filter(get(precipNames[i]) >= 0 & get(exNames[j]) >= 0)
+      
+      
+      # Skip the model if less than two years of data is available
+      if (nrow(tempDF) < 365 * 2) {
+        next
+      }
+      
+      # Skip the model unless every month is represented in the dataset
+      # (with at least one record)
+      if (anyFalse(1:12 %in% month(tempDF$DATE))) {
+        next
+      }
+      
+      
+      # Generate a precipitation model between the two datasets
+      resDF <- modelPrecip(tempDF[[precipNames[i]]], tempDF[[exNames[j]]],
+                           precipNames[i], exNames[j])
+      
+      
+      if (is.null(resDF)) {
+        next
+      }
+      
+      
+      # Add 'resDF' to 'compiledDF'
+      compiledDF <- compiledDF |>
+        bind_rows(resDF)
+      
+    }
+    
+  }
+  
+  
+  
+  for (i in 1:length(precipNames)) {
+    
+    sortedDF <- compiledDF |>
+      filter(PREDICTOR == precipNames[i] | RESPONSE == precipNames[i]) |>
+      arrange(desc(R_SQUARED))
+    
+    print(sortedDF)
+    
+    sortedDF <- sortedDF |>
+      mutate(MODEL_FOR = precipNames[i]) |>
+      relocate(MODEL_FOR)
+    
+    if (i == 1) {
+      finalDF <- sortedDF
+    } else {
+      finalDF <- bind_rows(finalDF, sortedDF)
+    }
+    
+    
+  }
+  
+  
   # stationDF <- stationDF |>
   #   filter(!is.na(PRMS_PRECIP_NAME)) |>
   #   st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "WGS84") |>
@@ -414,8 +537,9 @@ generateModels <- function (meteorDF, prismDF) {
     # }
     
     
-    excludeVec <- c("PRECIP1", "PRECIP4", "PRECIP7") |>
-      base::setdiff(paste0("PRECIP", i))
+    # excludeVec <- c("PRECIP1", "PRECIP4", "PRECIP7", "PRECIP13") |>
+    #   base::setdiff(paste0("PRECIP", i))
+    excludeVec <- ""
     
     
     # Find which gages correlated well with this iteration's gage
@@ -441,6 +565,8 @@ generateModels <- function (meteorDF, prismDF) {
       mutate(AVG_PRECIP = NA_real_)
     
     
+    reqGages <- c()
+    
     # avgDF <- avgDF |>
     #   mutate(NA_COUNT = is.na(avgDF[similarGages]) |> rowSums()) |>
     #   mutate(AVG_PRECIP = if_else(NA_COUNT < 2, 
@@ -450,7 +576,7 @@ generateModels <- function (meteorDF, prismDF) {
     for (j in 1:nrow(avgDF)) {
       
       rowVals <- avgDF[j, similarGages] |>
-        unlist(use.names = FALSE)
+        unlist(use.names = TRUE)
       
       
       rowVals <- rowVals[!is.na(rowVals)]
@@ -462,9 +588,18 @@ generateModels <- function (meteorDF, prismDF) {
         
         avgDF$AVG_PRECIP[j] <- mean(rowVals[1:3])
         
+        reqGages <- c(reqGages, names(rowVals[1:3])) |>
+          unique()
+        
+        
       } else {
         
         avgDF$AVG_PRECIP[j] <- mean(rowVals[1:2])
+        
+        reqGages <- c(reqGages, names(rowVals[1:2])) |>
+          unique()
+        
+        reqGages <- reqGages[!is.na(reqGages)]
         
       }
       
@@ -486,7 +621,7 @@ generateModels <- function (meteorDF, prismDF) {
     # Define 'tempDF' using the iteration's precipitation column and 'avgDF'
     tempDF <- meteorDF |>
       select(DATE, all_of(precipNames[i])) |>
-      left_join(avgDF |> select(DATE, AVG_PRECIP),
+      full_join(avgDF |> select(DATE, AVG_PRECIP),
                 by = "DATE", relationship = "one-to-one") |>
       filter(!is.na(AVG_PRECIP)) |>
       filter(!is.na(get(precipNames[i]))) |>
@@ -517,14 +652,29 @@ generateModels <- function (meteorDF, prismDF) {
                x = 0.10 * maxBound[2], y = 0.85 * maxBound[2])
     
 
-    if (i %in% c(13)) {
-      meteorDF |>
-        select(DATE, all_of(precipNames[i])) |>
-        full_join(avgDF, by = "DATE", relationship = "one-to-one") |>
-        mutate(!! paste0("PREDICTED_PRECIP_", i) := if_else(is.na(AVG_PRECIP), NA_real_, AVG_PRECIP * resDF$SLOPE + resDF$INTERCEPT)) |>
-        write_xlsx(paste0("PRECIP_", i, "_Analysis.xlsx"))
-    }
+    # if (i %in% c(13)) {
+    #   meteorDF |>
+    #     select(DATE, all_of(precipNames[i])) |>
+    #     full_join(avgDF, by = "DATE", relationship = "one-to-one") |>
+    #     mutate(!! paste0("PREDICTED_PRECIP_", i) := if_else(is.na(AVG_PRECIP), NA_real_, AVG_PRECIP * resDF$SLOPE + resDF$INTERCEPT)) |>
+    #     write_xlsx(paste0("PRECIP_", i, "_Analysis.xlsx"))
+    # }
 
+    if (i == 1) {
+      
+      avgResDF <- resDF |>
+        mutate(REQ_GAGES = reqGages |> paste0(collapse = ", ")) |>
+        relocate(REQ_GAGES)
+      
+    } else {
+      
+      avgResDF <- bind_rows(avgResDF,
+                            resDF |>
+                              mutate(REQ_GAGES = reqGages |> paste0(collapse = ", ")) |>
+                              relocate(REQ_GAGES))
+      
+    }
+    
     
     print(resDF)
     
@@ -532,8 +682,10 @@ generateModels <- function (meteorDF, prismDF) {
   
   
   
-  # Return 'compiledDF'
-  return(compiledDF)
+  return(list(compiledDF, finalDF, avgResDF))
+  
+  ## Return 'compiledDF'
+  #return(compiledDF)
   
 }
 
@@ -549,6 +701,13 @@ modelPrecip <- function (x, y, xName, yName) {
   precipRes <- lm(y ~ x)
   
   
+  # If no model could be developed, return nothing
+  if (is.nan(summary(precipRes)[["r.squared"]]) ||
+      nrow(summary(precipRes)[["coefficients"]]) < 2) {
+    return(NULL)
+  }
+  
+  
   # Create a tibble with information about the model
   resDF <- tibble(PREDICTOR = xName,
                   RESPONSE = yName,
@@ -559,6 +718,178 @@ modelPrecip <- function (x, y, xName, yName) {
   
   # Return 'resDF'
   return(resDF)
+  
+}
+
+
+
+removeOutliers <- function (meteorDF) {
+  
+  # Start by removing outliers from each gage in 'meteorDF'
+  
+  # This includes the remediation gages
+  
+  
+  # Get a list of PRECIP and EX_PRECIP gages
+  precipNames <- names(meteorDF) |>
+    str_subset("^PRECIP")
+  
+  
+  exNames <- names(meteorDF) |>
+    str_subset("^EX_PRECIP")
+  
+  
+  outlierBounds <- tibble(GAGE = c(precipNames, exNames))
+  
+  outlierBounds[month.abb] <- NA_real_
+  
+  
+  # Iterate through the precipitation gages and calculate outlier boundaries
+  for (i in 1:length(precipNames)) {
+    
+    subsetDF <- meteorDF |>
+      select(DATE, all_of(precipNames[i])) |>
+      rename(PRECIP = precipNames[i]) |>
+      filter(!is.na(PRECIP)) |>
+      filter(PRECIP > 1 * 25.4) |> # 1 inch
+      mutate(MONTH = month(DATE))
+    
+    
+    outlierDF <- subsetDF |>
+      group_by(MONTH) |>
+      summarize(BOUND = quantile(PRECIP, 0.75) + 3.5 * IQR(PRECIP),
+                .groups = "drop")
+    
+    
+    if (nrow(outlierDF) < 12) {
+      outlierDF <- outlierDF |>
+        bind_rows(tibble(MONTH = base::setdiff(1:12, outlierDF$MONTH),
+                         BOUND = NA_real_))
+    }
+    
+    
+    outlierDF$BOUND[is.na(outlierDF$BOUND)] <- 3.5 * 25.4
+    
+    
+    outlierDF <- outlierDF |>
+      arrange(MONTH)
+    
+    
+    outlierBounds[outlierBounds$GAGE == precipNames[i], month.abb] <- outlierDF$BOUND |> t()
+    
+    
+  }
+  
+  
+  # Calculate bounds for the EX gages next
+  for (i in 1:length(exNames)) {
+    
+    subsetDF <- meteorDF |>
+      select(DATE, all_of(exNames[i])) |>
+      rename(PRECIP = exNames[i]) |>
+      filter(!is.na(PRECIP)) |>
+      filter(PRECIP > 1 * 25.4) |> # 1 inch
+      mutate(MONTH = month(DATE))
+    
+    
+    outlierDF <- subsetDF |>
+      group_by(MONTH) |>
+      summarize(BOUND = quantile(PRECIP, 0.75) + 3.5 * IQR(PRECIP),
+                .groups = "drop")
+    
+    
+    if (nrow(outlierDF) < 12) {
+      outlierDF <- outlierDF |>
+        bind_rows(tibble(MONTH = base::setdiff(1:12, outlierDF$MONTH),
+                         BOUND = NA_real_))
+    }
+    
+    
+    outlierDF$BOUND[is.na(outlierDF$BOUND)] <- 3.5 * 25.4
+    
+    
+    outlierDF <- outlierDF |>
+      arrange(MONTH)
+    
+    
+    outlierBounds[outlierBounds$GAGE == exNames[i], month.abb] <- outlierDF$BOUND |> t()
+    
+    
+  }
+  
+  
+  
+  # Add a month column
+  meteorDF <- meteorDF |>
+    mutate(MONTH = month(DATE))
+  
+  
+  # Apply all outlier bounds to 'meteorDF'
+  for (i in 1:nrow(outlierBounds)) {
+    
+    # Find the location of the relevant gage in 'meteorDF'
+    gageCol <- which(names(meteorDF) == outlierBounds$GAGE[i])
+    
+    
+    # Remove negative precip
+    removeRows <- meteorDF |>
+      mutate(ROW = row_number()) |>
+      filter(!is.na(get(outlierBounds$GAGE[i]))) |>
+      filter(get(outlierBounds$GAGE[i]) < 0) |>
+      select(ROW)
+    
+    
+    if (nrow(removeRows) > 0) {
+      meteorDF[removeRows[[1]], gageCol] <- NA_real_
+    }
+    
+    
+    # Check each month for outliers
+    for (j in 1:12) {
+      
+      removeRows <- meteorDF |>
+        mutate(ROW = row_number()) |>
+        filter(!is.na(get(outlierBounds$GAGE[i]))) |>
+        filter(MONTH == j) |>
+        filter(get(outlierBounds$GAGE[i]) > outlierBounds[[month.abb[j]]][i]) |>
+        select(ROW)
+      
+      
+      if (nrow(removeRows) > 0) {
+        meteorDF[removeRows[[1]], gageCol] <- NA_real_
+      }
+      
+    }
+    
+  }
+  
+  # Once 'meteorDF' has been cleared of outliers, return it
+  return(meteorDF)
+  
+}
+
+
+
+testMethodology <- function (meteorDF, prismDF, compiledDF) {
+  
+  
+  # Apply a methodology for replacing QA/QC data
+  
+  # Compare its performance to the original dataset
+  
+  
+  # Wherever gage data is available, apply the procedure with the
+  # assumption that it is actually missing
+  
+  # Then compare the results of the two (remediation results vs the real data)
+  
+  
+  precipNames <- meteorDF |>
+    str_subset("^PRECIP")
+  
+  
+  
+  
   
 }
 
