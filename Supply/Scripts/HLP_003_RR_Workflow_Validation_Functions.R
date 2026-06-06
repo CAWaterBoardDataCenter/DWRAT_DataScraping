@@ -318,8 +318,8 @@ validateStationInputs <- function (inputDF, inputPath,
   if (anyFalse(inputDF[[inputFieldNames[2]]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)))) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The \"", names(inputPath), "\" file contains an invalid value ",
-           "for the field \"", inputFieldNames[2], "\" \n\n",
+           "The file contains an invalid value for the field \"", 
+           inputFieldNames[2], "\" \n\n",
            "Each row should either be blank, or it should contain a text ",
            "string like \"PRECIP1\" (up to \"PRECIP", numPrecipFields, 
            "\")\n\n", 
