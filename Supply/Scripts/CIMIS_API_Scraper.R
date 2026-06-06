@@ -301,20 +301,18 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   # Read in a list of stations
   stationDF <- read_csv("InputData/CIMIS_Stations.csv", show_col_types = FALSE)
-
   
   
   # Create the request URL
-  requestURL <- paste0("https://et.water.ca.gov/api/data?",
-                       # State the API Key (CIMIS account required to get these)
-                       # This key is tied to an account that uses Aakash's SWRCB email
-                       "appKey=", read_lines(makeSharePointPath("Admin + Management/1. Staff Folders/APrashar/CIMIS_API_Key.txt")),
+  requestURL <- paste0("https://et.water.ca.gov/StationWeb/GetDataByStationNumber?",
                        # Station IDs (comma-separated)
-                       "&targets=", stationDF$ID %>% paste0(collapse = ","),
+                       "&stationNbrs=", stationDF$ID %>% paste0(collapse = ","),
                        # Dataset Start Date
                        "&startDate=", StartDate$date,
                        # Dataset End Date
                        "&endDate=", EndDate$date,
+                       # Daily, not Hourly data
+                       "&isHourly=false",
                        # Requesting Daily TMIN, TMAX, and PRECIP
                        "&dataItems=day-air-tmp-min,day-air-tmp-max,day-precip",
                        # Metric units (mm and Celsius)
@@ -323,9 +321,12 @@ apiBasedCall <- function (StartDate, EndDate) {
   
   
   # Ask for a JSON-formatted response
+  # An API key is required for CIMIS requests 
+  # (Aakash's API key will be used by SDA staff)
   res <- GET(requestURL,
-              add_headers("Accept" = "application/json"))
-  
+              add_headers("Accept" = "application/json",
+                          "Ocp-Apim-Subscription-Key" = 
+                            read_lines(makeSharePointPath("Admin + Management/1. Staff Folders/APrashar/CIMIS_API_Key.txt"))[1]))
   
   
   # NOTE: The above code can result in an error 
