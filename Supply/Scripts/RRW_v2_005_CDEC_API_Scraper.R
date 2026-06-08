@@ -87,7 +87,8 @@ mainProcedure <- function () {
 
 
 
-requestCDEC <- function (stationVec, startDate, endDate) {
+requestCDEC <- function (stationVec, startDate, endDate, 
+                         sensorNum = 23, durCode = "D") {
   
   # Prepare a GET request and submit it to CDEC
   
@@ -100,7 +101,7 @@ requestCDEC <- function (stationVec, startDate, endDate) {
                        "Stations=", paste0(stationVec, collapse = ","),
                        # Sensor 23 is "Reservoir Outflow"
                        # "Dur Code" set to "D" means "daily" data
-                       "&SensorNums=23&dur_code=D",
+                       "&SensorNums=", sensorNum, "&dur_code=", durCode,
                        # The dates use YYYY-MM-DD format
                        "&Start=", format(startDate, "%Y-%m-%d"),
                        "&End=", format(endDate, "%Y-%m-%d"))
@@ -161,7 +162,7 @@ formatResponse <- function (res, startDate, endDate) {
   
   
   # Use `read_csv` to parse 'res'
-  cdecDF <- read_csv(res, show_col_types = FALSE)
+  cdecDF <- read_csv(I(res), show_col_types = FALSE)
   
   
   # Make sure "STATION_ID", "DATE TIME", "VALUE", and "UNITS" appear in the results

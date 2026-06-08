@@ -7,14 +7,14 @@
 
 # These IDs should be numeric values that correspond to the IDs used on 
 # CIMIS's webpage to distinguish between different stations 
-# (https://cimis-uat.water.ca.gov/stations/station-list)
+# (https://cimis.water.ca.gov/stations/station-list)
 
 
 # An API key is required as well--this should be specified in a text file and 
 # referenced in "RR_Supply_Control_File.xlsx"
 
 # Note 1: The first line of the text file should be just the API key
-# Note 2: To get a key, create an account on https://cimis-uat.water.ca.gov/
+# Note 2: To get a key, create an account on https://cimis.water.ca.gov/
 
 
 # The raw output will be stored in the "WebData" folder as 
@@ -137,23 +137,14 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   # Before continuing, check if 'startDate' and 'endDate' have a large date gap
   # CIMIS has a request limit of 1,750 records, so an excessively large gap
   # can cause issues
+  maxRequest <- length(stationVec) |> calcReqLimit()
   
-  # Calculate the maximum allowable request size
-  # Max Number of Days Per Request = (1750 / # of Stations / # of Parameters)
-  maxRequest <- floor(1750 / length(stationVec) / 3)
-  
-  
-  # And because we don't want to be using the actual maximum limit,
-  # Reduce 'maxRequest' by 15%
-  maxRequest <- floor(maxRequest * .85)
+  # 'maxRequest' will contain the maximum number of days allowed for this number
+  # of stations
+  # (It will not be the true maximum limit from CIMIS though)
   
   
-  # Even then, make sure 'maxRequest' is not too large
-  # Arbitrarily limit it to 300 days per request
-  maxRequest <- min(maxRequest, 300)
-  
-  
-  # If the gap is wider than 'maxRequest', the request will need to be split
+  # If the date gap is wider than 'maxRequest', the request will need to be split
   if (difftime(endDate, startDate, units = "days") > maxRequest) {
     
     # (CIMIS's limit is 1,750 records, not days)
@@ -163,7 +154,7 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   
   # If there are no issues, prepare the request URL
-  requestURL <- paste0("https://et-uat.water.ca.gov/StationWeb/GetDataByStationNumber?",
+  requestURL <- paste0("https://et.water.ca.gov/StationWeb/GetDataByStationNumber?",
                        # Station IDs (comma-separated)
                        "&stationNbrs=", stationVec |> paste0(collapse = ","),
                        # Dataset Start Date
@@ -213,6 +204,10 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   # Also check if the response is valid
   if (req$status_code != 200) {
+    
+    cat("\n\n")
+    print(content(req))
+    cat("\n\n")
     
     return(paste0("CIMIS API Call Failed\n\n",
                   "A request sent to CIMIS's server returned an error code of ", 
@@ -337,6 +332,38 @@ validateAPI <- function (apiKey, sourceField, provider = "CIMIS") {
   
   # Return nothing if there are no issues
   return(invisible(NULL))
+  
+}
+
+
+
+calcReqLimit <- function (numStations, trueMax = 1750) {
+  
+  # Determine a risk-averse limit for the number of days of data 
+  # that can be submitted in a single request
+  
+  # If 'startDate' and 'endDate' have a large date gap, 
+  # CIMIS may return an error
+  
+  
+  # Calculate the maximum allowable request size
+  
+  # 1750 is the maximum number of elements allowed in one request
+  # (of the old CIMIS API)
+  
+  # It's 48,000 for the new CIMIS web form
+  
+  # Max Number of Days Per Request = (1750 / # of Stations / # of Parameters)
+  maxRange <- floor(trueMax / numStations / 3)
+  
+  
+  # And because we don't want to be using the actual maximum limit,
+  # Reduce 'maxRange' by 15%
+  maxRange <- floor(maxRange * .85)
+  
+  
+  # Return 'maxRange'
+  return(maxRange)
   
 }
 
@@ -522,16 +549,7 @@ splitRequest <- function (stationVec, startDate, endDate, maxGap) {
   # that satisfy the limitation set by 'maxGap'
   # (The number of days in each request will at most be ~90% 
   #  of the limit set by 'maxGap')
-  dateVec <- seq(from = startDate, to = endDate,
-                 by = paste0(round(0.90 * maxGap), " day"))
-  
-  
-  # If 'endDate' does not appear in 'dateVec', add it in
-  if (!(endDate %in% dateVec)) {
-    
-    dateVec <- c(dateVec, endDate)
-    
-  }
+  dateVec <- splitDays(startDate, endDate, dayGap = round(0.90 * maxGap))
   
   
   # Output a message to the user to inform them of the split
@@ -599,6 +617,34 @@ splitRequest <- function (stationVec, startDate, endDate, maxGap) {
   
   # Finally, return 'combinedDF'
   return(combinedDF)
+  
+}
+
+
+
+splitDays <- function (startDate, endDate, dayGap) {
+  
+  # Create a vector with 'startDate', 'endDate', and intermediate dates
+  
+  # 'dayGap' determines which dates are included in the new vector
+  # (Essentially, it will help record every N days, beginning from 'startDate')
+  
+  
+  # Create the initial sequence, starting from 'startDate'
+  dateVec <- seq(from = startDate, to = endDate,
+                 by = paste0(dayGap, " day"))
+  
+  
+  # If 'endDate' does not appear in 'dateVec', add it in
+  if (!(endDate %in% dateVec)) {
+    
+    dateVec <- c(dateVec, endDate)
+    
+  }
+  
+  
+  # Return this vector
+  return(dateVec)
   
 }
 
@@ -1200,9 +1246,11 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   outFile <- "WebData/daily_report.csv"
   
   
-  if (file.exists(outFile)) {
-    unlink(outFile)
-  }
+  # Remove "daily_report.csv" and any numeric increment version of the name
+  # (e.g., "daily_report (1).csv")
+  list.files("WebData", pattern = "^daily_report(\\s?\\([0-9]+\\))?\\.csv$", 
+             full.names = TRUE) |>
+    unlink()
   
   
   # First, setup the server and remote driver for RSelenium
@@ -1253,17 +1301,114 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   seleniumLogin(rd, server, userLogin)
   
   
-  # Fill out the form on CIMIS's data download webpage
-  seleniumFormFill(rd, server, startDate, endDate, stationVec)
+  # Check if the request is very large
+  # In that case, it will need to be split
+  maxRequest <- calcReqLimit(length(stationVec), trueMax = 48000)
+  
+  # The limit for this form is 48,000 records (stations * days)
   
   
-  # If "daily_report.csv" has not yet finished downloading, wait a little longer
-  while ("daily_report.csv.crdownload" %in% list.files("WebData")) {
+  # If 'startDate' and 'endDate' have a greater gap than 'maxRequest',
+  # the request will need to split into chunks
+  if (length(seq(from = startDate, to = endDate, by = "days")) > maxRequest) {
     
-    message("Waiting for \"daily_report.csv\" to finish downloading!")
-    cat("\n\n")
+    # Get intermediate dates between 'startDate' and 'endDate'
+    # These will define new starting points and ending points for each sub-request
+    dateVec <- splitDays(startDate, endDate, maxRequest)
     
-    Sys.sleep(runif(1, min = 1.2, max = 3.6))
+    
+    # Output a message to inform users of the split
+    cat(paste0("\n\tSplitting procedure into ", length(dateVec) - 1, 
+               " form submissions...\n"))
+    
+  # Alternatively, if 'startDate' and 'endDate' do not have a large gap,
+  # a single form request can be made to obtain all of the data
+  } else {
+    
+    # Define 'dateVec' to contain only 'startDate' and 'endDate'
+    dateVec <- c(startDate, endDate)
+    
+  }
+  
+  
+  # Iterate through 'dateVec' next
+  # For split requests, this code will run multiple times
+  # For cases where splitting is NOT required, it will only run once
+  for (i in 2:length(dateVec)) {
+    
+    cat(paste0("\t[", i - 1, "/", length(dateVec) - 1, "]\tObtaining data...\n"))
+    
+    
+    # For the first iteration, rely on `seleniumFormFill` to fill out the form
+    # and generate a report
+    if (i == 2) {
+      
+      # Fill out the form on CIMIS's data download webpage
+      seleniumFormFill(rd, server, dateVec[i - 1], dateVec[i], 
+                       stationVec, outFile)
+      
+      # If requests will NOT be split, there will be no further iterations
+      
+      # However, for split requests, subsequent iterations can reuse much of
+      # the selections performed in `seleniumFormFill`
+      
+      # Only the dates must be changed
+    } else {
+      
+      # Update the dates in the reporting form
+      # (it is still open from a previous iteration)
+      changeReportDates(rd, server, dateVec[i - 1], dateVec[i])
+      
+      
+      # Wait a bit before proceeding
+      Sys.sleep(runif(1, min = 2, max = 3.5))
+      
+      
+      # Scroll to and click the submit button next
+      generateReport(rd, server)
+      
+      
+      # Wait for the file to download
+      waitForFileDL(outFile, server, rd)
+      
+    }
+    
+    
+    # Next, try to read in "daily_report.csv"
+    cimisDF <- try(getFile(outFile))
+    
+    
+    # If an error occurred, stop the remote driver and server
+    if ("try-error" %in% class(cimisDF)) {
+      
+      try(rd$quit(), silent = TRUE)
+      try(server$stop(), silent = TRUE)
+      
+      
+      # Print out the error message and stop the script
+      stop(cimisDF)
+      
+    }
+    
+    
+    # Bind together 'cimisDF' from each downloaded CSV
+    if (i == 2) {
+      compiledDF <- cimisDF
+    } else {
+      compiledDF <- bind_rows(compiledDF, cimisDF) |> unique()
+    }
+    
+    
+    # Remove "daily_report.csv" 
+    # (so that the next download can use the same filename)
+    unlink(outFile)
+    
+    
+    cat("\t\tDone!\n\n")
+    
+    
+    # Wait a bit before advancing to the next step
+    Sys.sleep(0.4)
     
   }
   
@@ -1282,12 +1427,11 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   try(server$stop(), silent = TRUE)
   
   
-  # Read in "daily_report.csv"
-  cimisDF <- getFile(outFile)
+  # 'compiledDF' contains the data from each downloaded file 
+  # (or a single file if splitting was not required)
   
-  
-  # Process the file and return it
-  return(processSeleniumCIMIS(cimisDF))
+  # Process the data and return it
+  return(processSeleniumCIMIS(compiledDF))
   
 }
 
@@ -1303,7 +1447,7 @@ seleniumLogin <- function (rd, server, userLogin) {
   
   
   # Visit the homepage of the new CIMIS website
-  rd$navigate("https://cimis-uat.water.ca.gov/")
+  rd$navigate("https://cimis.water.ca.gov/")
   
   loopWait(rd, server, "((Login</a>)|(Go to New CIMIS))")
   
@@ -1351,7 +1495,7 @@ seleniumLogin <- function (rd, server, userLogin) {
 
 
 
-seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
+seleniumFormFill <- function (rd, server, startDate, endDate, stationVec, outFile) {
   
   # Fill out the "Station Reports" page on CIMIS's website
   
@@ -1359,7 +1503,7 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
   
   
   # Navigate to CIMIS's data download webpage
-  rd$navigate("https://cimis-uat.water.ca.gov/data/station-reports")
+  rd$navigate("https://cimis.water.ca.gov/data/station-reports")
   
   loopWait(rd, server, "Station Reports")
   loopWait(rd, server, "Report Type:")
@@ -1383,28 +1527,9 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
             "m")
   
   
-  # Set the "From Date" to 'startDate'
-  
-  # Clear out pre-filled text first
-  clearText(rd, server, '//*[@id="pv_id_1"]')
-  
-  
-  # Fill in the desired start date
-  fillInput(rd, server,
-            '//*[@id="pv_id_1"]',
-            startDate |> format("%m/%d/%Y"))
-  
-  
-  # Set the "To Date" to 'endDate'
-  
-  # Clear out pre-filled text first
-  clearText(rd, server, '//*[@id="pv_id_4"]')
-  
-  
-  # Fill in the desired end date
-  fillInput(rd, server,
-            '//*[@id="pv_id_4"]',
-            endDate |> format("%m/%d/%Y"))
+  # In a separate function, change the starting and ending dates for the report
+  # (This is located separately because it the process simpler for split requests)
+  changeReportDates(rd, server, startDate, endDate)
   
   
   # Select stations next
@@ -1420,10 +1545,10 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
   Sys.sleep(0.2)
   
   
-  # Scroll down further slightly
-  rd$executeScript("window.scrollBy(0, 50);")
-  
-  Sys.sleep(0.5)
+  # Scroll down further slightly (all the way to the "Submit" button)
+  # The list of stations is beneath that button
+  scrollToElement(rd, server, 
+                  '//*[@id="main-content"]/div/div/div/div/section/div/form/div[4]/button', "xpath")
   
   
   # The CIMIS stations are contained within rows of a table
@@ -1458,11 +1583,15 @@ seleniumFormFill <- function (rd, server, startDate, endDate, stationVec) {
   
   
   # Finally, click the "Run Report" button to generate the CSV file
-  clickButton(rd, server, '//*[@id="main-content"]/div/div/div/div/section/div/form/div[4]/button')
+  # (This is done in another function to help with split requests)
+  generateReport(rd, server)
   
   
   # Wait a bit so that the file can be downloaded
-  Sys.sleep(1)
+  waitForFileDL(outFile, server, rd)
+  
+  
+  Sys.sleep(0.7)
   
   
   # Return nothing
@@ -1481,36 +1610,14 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
   
   
   # Find the element
-  foundElement <- try(rd$findElement(using = searchType, value = val))
-  
-  
-  # Error Check
-  # Stop if no element is found or if more than one element is found
-  if (length(foundElement) != 1 || "try-error" %in% class(foundElement)) {
-    
-    # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
-    
-    
-    # Then output an error message
-    paste0("Could Not Find Specified Element\n\n",
-           "The element whose ", searchType, " is \"", val, 
-           "\" was not found.",
-           if_else(length(foundElement) != 1,
-                   paste0(" The input returned ", length(foundElement), " ",
-                          "matches."),
-                   "")) |>
-      errWrap() |>
-      stop()
-    
-  }
+  foundElement <- locateElement(rd, server, val, searchType)
   
   
   # Click on the element
   tryRes <- try(foundElement$clickElement())
   
   
+  # Check for errors
   if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
     
     # Stop the remote driver and server
@@ -1539,15 +1646,15 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
 
 
 
-fillInput <- function (rd, server, val, input, searchType = "xpath") {
+locateElement <- function (rd, server, val, searchType = "xpath") {
   
   # Use an element's attribute/value/xpath to locate it 
   # ('xpath' is the default method)
   
-  # Then type 'input' into it
+  # If found, that element will be returned
   
   
-  # Find the element
+  # Use `findElement` to locate the element
   foundElement <- try(rd$findElement(using = searchType, value = val))
   
   
@@ -1563,12 +1670,34 @@ fillInput <- function (rd, server, val, input, searchType = "xpath") {
     # Then output an error message
     paste0("Could Not Find Specified Element\n\n",
            "The element whose ", searchType, " is \"", val, 
-           "\" was not found. The input returned ", length(foundElement),
-           "matches.") |>
+           "\" was not found.",
+           if_else(length(foundElement) != 1,
+                   paste0(" The input returned ", length(foundElement), " ",
+                          "matches."),
+                   "")) |>
       errWrap() |>
       stop()
     
   }
+  
+  
+  # If there are no issues, return 'foundElement'
+  return(foundElement)
+  
+}
+
+
+
+fillInput <- function (rd, server, val, input, searchType = "xpath") {
+  
+  # Use an element's attribute/value/xpath to locate it 
+  # ('xpath' is the default method)
+  
+  # Then type 'input' into it
+  
+  
+  # Find the element
+  foundElement <- locateElement(rd, server, val, searchType)
   
   
   # Input the text into the element
@@ -1680,6 +1809,210 @@ clearText <- function (rd, server, val, searchType = "xpath",
   
   
   # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+scrollToElement <- function (rd, server, val, searchType = "xpath") {
+  
+  # Use an element's attribute/value/xpath to locate it 
+  # ('xpath' is the default method)
+  
+  # Then scroll to it using JavaScript
+  
+  
+  # Find the element
+  foundElement <- locateElement(rd, server, val, searchType)
+  
+  
+  # Scroll to the element
+  tryRes <- try(rd$executeScript("arguments[0].scrollIntoView(true);", 
+                                 list(foundElement)))
+  
+  
+  if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
+    
+    # Stop the remote driver and server
+    try(rd$quit(), silent = TRUE)
+    try(server$stop(), silent = TRUE)
+    
+    
+    # Then output an error message
+    paste0("Could Not Scroll to Element\n\n",
+           "The element whose ", searchType, " is \"", val, 
+           "\" could not be interacted with. It may be hidden.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Wait around a second before continuing
+  Sys.sleep(runif(1, min = 1.4, max = 1.9))
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+changeReportDates <- function (rd, server, startDate, endDate) {
+  
+  # While filling out the Station Data form on CIMIS, 
+  # the start and end dates must be specified
+  
+  # This function contains the code for that
+  # (It is separate from `seleniumFormFill` so that split requests can just 
+  #  update this portion and resubmit the form without having to redo the  
+  #  entire process from scratch)
+  
+  
+  # Set the "From Date" to 'startDate'
+  
+  # Clear out pre-filled text first
+  clearText(rd, server, '//*[@id="pv_id_1"]')
+  
+  
+  # Fill in the desired start date
+  fillInput(rd, server,
+            '//*[@id="pv_id_1"]',
+            startDate |> format("%m/%d/%Y"))
+  
+  
+  # Set the "To Date" to 'endDate'
+  
+  # Clear out pre-filled text first
+  clearText(rd, server, '//*[@id="pv_id_4"]')
+  
+  
+  # Fill in the desired end date
+  fillInput(rd, server,
+            '//*[@id="pv_id_4"]',
+            endDate |> format("%m/%d/%Y"))
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+generateReport <- function (rd, server) {
+  
+  # Click the final button that can create a downloadable report
+  
+  # (This is present in a separate function to assist with split requests)
+  
+  
+  # Reference the xpath of the button here
+  buttonXpath <- '//*[@id="main-content"]/div/div/div/div/section/div/form/div[4]/button'
+  
+  
+  # Scroll to it first (if that hasn't already been done)
+  scrollToElement(rd, server, buttonXpath, "xpath")
+  
+  
+  # Click the button to initiate generation of the CSV file
+  clickButton(rd, server, buttonXpath, "xpath")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
+  
+  # Wait for a file to start downloading
+  
+  # Once it finishes, end the procedure 
+  
+  
+  # For the first step, make sure that the download has started
+  
+  # Check for either the output file or its ".crdownload" version
+  # (That extension appears when a file is being downloaded)
+  
+  
+  # Define a counter to limit the waiting
+  counter <- 0
+  
+  
+  while (counter < maxWait && 
+         !any(file.exists(c(outFile, paste0(outFile, ".crdownload"))))) {
+    
+    
+    # Wait for a random amount of time
+    Sys.sleep(runif(1, min = 0.7, max = 2.3))
+    
+    
+    # Increment 'counter'
+    counter <- counter + 1
+    
+  }
+  
+  
+  # If 'counter' reaches 'maxWait' and the file cannot be found,
+  # output an error message
+  if (counter == maxWait &&
+      !any(file.exists(c(outFile, paste0(outFile, ".crdownload"))))) {
+    
+    # Close the web driver and server
+    try(rd$quit(), silent = TRUE)
+    try(server$stop(), silent = TRUE)
+    
+    
+    # Output an error message
+    paste0("File Download Failed\n\n",
+           "\"", outFile, "\" could not be downloaded for an unknown reason.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Next, if a download has started, but is still in progress, continue waiting
+  while (file.exists(paste0(outFile, ".crdownload"))) {
+    
+    message(paste0("Waiting for \"", outFile, "\" to finish downloading!"))
+    cat("\n\n")
+    
+    Sys.sleep(runif(1, min = 1.2, max = 3.6))
+    
+  }
+  
+  
+  # Wait a brief moment
+  Sys.sleep(0.2)
+  
+  
+  # Then, check for the file
+  # After the ".crdownload" file disappears, it should be present
+  # If not, output an error message
+  if (!file.exists(outFile)) {
+    
+    # Close the web driver and server
+    try(rd$quit(), silent = TRUE)
+    try(server$stop(), silent = TRUE)
+    
+    
+    # Generate an error message
+    paste0("File Download Failed\n\n",
+           "\"", outFile, "\" could not be downloaded for an unknown reason.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Otherwise, once the download is complete, return nothing
   return(invisible(NULL))
   
 }
