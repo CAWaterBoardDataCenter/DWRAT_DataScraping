@@ -435,13 +435,27 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, postCimisMete
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
   
   
-  # Save the raw downloaded CIMIS data too
-  # Its quality control flags are not applied by default, so a record of what
-  # data was flagged is worth preserving
-  copyFile(paste0("WebData/CIMIS_API_Data_", startDate, "_",
-                  endDate, ".csv"),
-           paste0(outputDirectory, "/PRMS/Input/CIMIS_API_Data_", startDate, "_",
-                  endDate, ".csv"), quietly = TRUE)
+  # Save the raw downloaded station data too
+  
+  # Some stations have extra gages' data to help with QA/QC
+  
+  # In CIMIS's case, too, its quality control flags are not applied by default, 
+  # so a record of what data was flagged is worth preserving
+  copyStationFile(paste0("WebData/PRISM_PRMS_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory)
+  
+  copyStationFile(paste0("WebData/NOAA_API_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory)
+  
+  copyStationFile(paste0("WebData/RAWS_HTTP_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory)
+  
+  copyStationFile(paste0("WebData/CIMIS_API_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory)
   
   
   # Finally, copy the "renv.lock" file located in the root "Supply" directory
@@ -472,6 +486,31 @@ copyStationInputFile <- function (sourceField, outputDirectory, model = "PRMS") 
   # Set the output path next
   # The filename will be the same as in 'inputPath'
   # (But any earlier folders in the path are replaced)
+  outputPath <- paste0(outputDirectory, "/", model, "/Input/",
+                       inputPath |> str_remove("^.+[/\\\\]"))
+  
+  
+  # Copy the file
+  copyFile(inputPath, outputPath, quietly = TRUE)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+copyStationFile <- function (inputPath, outputDirectory, model = "PRMS") {
+  
+  # Given a path to a station's scraped data file, copy it to 'outputDirectory'
+  # with a similar name
+  
+  
+  # Set the output path first
+  
+  # Modify 'inputPath' into a location within the model's "Input" folder
+  # in 'outputDirectory'
   outputPath <- paste0(outputDirectory, "/", model, "/Input/",
                        inputPath |> str_remove("^.+[/\\\\]"))
   
