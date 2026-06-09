@@ -127,7 +127,7 @@ mainProcedure <- function () {
   
   pvpForecast <- getXLSX(inputDF$PVP_FORECAST,
                          range = cell_cols("A:N"), col_names = FALSE) |>
-    validateForecastPVP(inputDF$PVP_FORECAST)
+    validateForecastPVP(inputDF$PVP_FORECAST, endDate)
   
   
   # NOTE: "...#" will become column names in 'pvpHistoric' and 'pvpForecast' for
@@ -925,7 +925,7 @@ validateHistoricPVP <- function (pvpHistoric, pvpPath) {
 
 
 
-validateForecastPVP <- function (pvpForecast, pvpPath) {
+validateForecastPVP <- function (pvpForecast, pvpPath, endDate) {
   
   # Validate the Russian River watershed's PVP forecast spreadsheet
   
@@ -1068,6 +1068,44 @@ validateForecastPVP <- function (pvpForecast, pvpPath) {
       stop()
     
   }
+  
+  
+  # Check if the last forecast day comes before 'endDate'
+  # That's a sign that the forecast spreadsheet must be updated
+  if (max(pvpForecast$...2, na.rm = TRUE) < endDate) {
+    
+    # Prepare the output message
+    # It may be either an error message or warning message
+    outStr <- paste0("PVP Forecasted Flows - Outdated File Issue\n\n", 
+                     "The file containing PVP flow forecasts ends at ",
+                     max(pvpForecast$...2, na.rm = TRUE), ". However, the final ",
+                     "date of the data scraping bounds is ", endDate, ". ",
+                     "This means that the forecast spreadsheet is outdated. ",
+                     "Please obtain an updated copy.\n\n",
+                     "(This occurred for '", pvpPath, "')") |>
+      errWrap()
+    
+    
+    # Check the control spreadsheet and decide whether 'outStr' should be
+    # an error message
+    if (getFromControl_RR("PVP_FORECASTED_FLOWS_OUTOFDATE_ERROR_TOGGLE") |>
+        trimws() |> toupper() %in% c("T", "TRUE")) {
+      
+      # If "PVP_FORECASTED_FLOWS_OUTOFDATE_ERROR_TOGGLE" contains something
+      # similar to "TRUE", output 'outStr' as an error message
+      stop(outStr)
+      
+    } else {
+      
+      # Otherwise, use the string in a message only
+      cat("\n\n")
+      message(outStr)
+      cat("\n\n")
+      
+    }
+    
+  }
+  
   
   
   # After that, use 'valStart' and check for "NA" or non-numeric values
