@@ -1089,7 +1089,7 @@ validateForecastPVP <- function (pvpForecast, pvpPath, endDate) {
     # Check the control spreadsheet and decide whether 'outStr' should be
     # an error message
     if (getFromControl_RR("PVP_FORECASTED_FLOWS_OUTOFDATE_ERROR_TOGGLE") |>
-        trimws() |> toupper() %in% c("T", "TRUE")) {
+        trimws() |> toupper() %in% c("T", "TRUE", "YES")) {
       
       # If "PVP_FORECASTED_FLOWS_OUTOFDATE_ERROR_TOGGLE" contains something
       # similar to "TRUE", output 'outStr' as an error message
