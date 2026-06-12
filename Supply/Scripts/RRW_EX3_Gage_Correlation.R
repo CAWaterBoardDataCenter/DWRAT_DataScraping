@@ -190,34 +190,32 @@ mainProcedure <- function () {
     reformatPRISM(stationDF)
   
   
-  # Get CDEC data for use in 'meteorDF'
-  # cdecDF <- getFile(paste0("WebData/CDEC_API_Data_", startDate, "_", endDate, ".csv")) |>
-  #   filter(is.na(DATA_FLAG) | !(DATA_FLAG %in% c("A", "N", "v")))
-  # 
-  # cdecRef <- "Admin + Management/1. Staff Folders/APrashar/2026-05-28_RR_PRMS_Precip_QAQC/Option_4_Additional_Nearby_Gages/Maps_and_New_Stations/PRMS_Precipitation_QAQC_Candidate_Stations.csv" |>
-  #   makeSharePointPath() |>
-  #   getFile() |>
-  #   filter(SOURCE == "CDEC") |>
-  #   select(NAME, PRMS_PRECIP_NAME) |>
-  #   rename(STATION_ID = NAME)
-  # 
-  # 
-  # cdecDF <- cdecDF |>
-  #   left_join(cdecRef, by = "STATION_ID", relationship = "many-to-one")
-  # 
-  # 
-  # cdecDF <- cdecDF |> select(`DATE TIME`, VALUE, UNITS, PRMS_PRECIP_NAME) |>
-  #   pivot_wider(id_cols = `DATE TIME`, names_from = PRMS_PRECIP_NAME,
-  #               values_from = VALUE) |>
-  #   rename(DATE = `DATE TIME`) |>
-  #   mutate(DATE = as_date(DATE))
-# 
-# 
-#   meteorDF <- meteorDF |>
-#     full_join(cdecDF, by = "DATE")
-# 
-#   
-#   
+# Get CDEC data for use in 'meteorDF'
+cdecDF <- getFile(paste0("WebData/CDEC_API_Data_", startDate, "_", endDate, ".csv")) |>
+  filter(is.na(DATA_FLAG) | !(DATA_FLAG %in% c("A", "N", "v")))
+
+cdecRef <- "Admin + Management/1. Staff Folders/APrashar/2026-05-28_RR_PRMS_Precip_QAQC/Option_4_Additional_Nearby_Gages/Maps_and_New_Stations/PRMS_Precipitation_QAQC_Candidate_Stations.csv" |>
+  makeSharePointPath() |>
+  getFile() |>
+  filter(SOURCE == "CDEC") |>
+  select(NAME, PRMS_PRECIP_NAME) |>
+  rename(STATION_ID = NAME)
+
+
+cdecDF <- cdecDF |>
+  left_join(cdecRef, by = "STATION_ID", relationship = "many-to-one")
+
+
+cdecDF <- cdecDF |> select(`DATE TIME`, VALUE, UNITS, PRMS_PRECIP_NAME) |>
+  pivot_wider(id_cols = `DATE TIME`, names_from = PRMS_PRECIP_NAME,
+              values_from = VALUE) |>
+  rename(DATE = `DATE TIME`) |>
+  mutate(DATE = as_date(DATE))
+
+
+  meteorDF <- meteorDF |>
+    full_join(cdecDF, by = "DATE")
+
   # Remove outliers from 'meteorDF'
   meteorDF <- meteorDF |>
     removeOutliers()
@@ -229,7 +227,7 @@ mainProcedure <- function () {
   
   
   # Try out a methodology using the regression data in 'modelDF'
-  methodDF <- testMethodology(meteorDF, prismDF, modelDF[[1]])
+  #methodDF <- testMethodology(meteorDF, prismDF, modelDF[[1]])
   
   
   cat("\tDone!\n\n")
@@ -447,6 +445,42 @@ generateModels <- function (meteorDF, prismDF) {
         bind_rows(resDF)
       
     }
+    
+  }
+  
+  
+  
+  # After that, generate linear regression models between EX gages and 'prismDF'
+  for (i in 1:length(exNames)) {
+    
+    # Use "DATE" and join the same corresponding precipitation columns
+    # into a new temporary tibble
+    tempDF <- full_join(prismDF |> select(DATE, all_of(exNames[i])) |>
+                          rename(PRISM = exNames[i]),
+                        meteorDF |> select(DATE, all_of(exNames[i])) |>
+                          rename(GAGE = exNames[i]),
+                        by = "DATE", relationship = "one-to-one")
+    
+    
+    # Remove entries where either value is NA or missing (-999)
+    tempDF <- tempDF |>
+      filter(!is.na(PRISM) & !is.na(GAGE)) |>
+      filter(PRISM >= 0 & GAGE >= 0)
+    
+    
+    if (nrow(tempDF) == 0) {
+      next
+    }
+    
+    
+    # Generate a precipitation model between the two datasets
+    resDF <- modelPrecip(tempDF$PRISM, tempDF$GAGE,
+                         "PRISM", exNames[i])
+    
+    
+    # Add 'resDF' to 'compiledDF'
+    compiledDF <- compiledDF |>
+      bind_rows(resDF)
     
   }
   
