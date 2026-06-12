@@ -2,6 +2,7 @@
 # https://git-scm.com/docs/gitignore
 
 # Ignore Various R files
+.Rproj.user
 **/.Rproj.user
 **/.Rhistory
 
