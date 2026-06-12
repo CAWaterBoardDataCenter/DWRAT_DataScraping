@@ -28,4 +28,4 @@ Tools such as LSPC and Paradigm DWRAT are stored here.
 The scripts in this folder are not integrated into a formal workflow, but they may contain useful supplemental or one-off procedures. The **Archive** sub-folder also contains files from obsolete workflows and scripts. This folder contains an important directory as well:  
   
 ### Additional_Scripts/XLSX_Tracking  
-To improve the structure and usability of the control files, they are primarily shared as spreadsheets. However, the downside is that they are binary files, which are not tracked well by git. The imperfect workaround to this is an R script that extracts the underlying XML of these spreadsheets and stores them in this folder. These XML files are text-based and can be tracked by git.  
+To improve the structure and usability of the workflows' control files, they are primarily shared as spreadsheets. However, the downside is that they are binary files, which are not tracked well by git. The imperfect workaround to this is an R script that extracts the underlying XML of these spreadsheets and stores them in this folder. These XML files are text-based and can be tracked by git.  
