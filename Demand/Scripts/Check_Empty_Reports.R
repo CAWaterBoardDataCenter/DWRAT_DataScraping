@@ -210,6 +210,14 @@ mainProcedure <- function () {
   # Iterate through the values in 'naRecords'
   for (i in 1:nrow(naRecords)) {
     
+    if (nrow(naRecords) > 10) {
+      
+      cat(paste0("Report ", i, " of ", nrow(naRecords), "...\n"))
+      
+    }
+    
+    
+    
     # First, get the water right ID that corresponds to this value of "APPLICATION_NUMBER"
     wrID <- ewrimsDF$WR_WATER_RIGHT_ID[which(ewrimsDF$APPLICATION_NUMBER == 
                                                naRecords$APPLICATION_NUMBER[i])] %>%

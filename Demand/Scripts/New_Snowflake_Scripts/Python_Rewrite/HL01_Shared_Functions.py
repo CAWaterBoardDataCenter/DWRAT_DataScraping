@@ -8,23 +8,21 @@
 
 #### SETUP ####
 
-import subprocess
 import re
 import pandas as pd
-import openpyxl
 import os
 import geopandas as gpd
 #from arcgis.gis import GIS
 from arcgis.features import FeatureLayer, FeatureLayerCollection, GeoAccessor, GeoSeriesAccessor
 #import arcgis.geometry as geom
-import numpy as np
+#import numpy as np
 import requests
 
 
 
 #### FUNCTIONS ####
 
-def wsReadFile (ws: pd.DataFrame, fieldNames: list) -> pd.DataFrame:
+def wsReadFile (ws: pd.DataFrame, fieldNames: list[str]) -> pd.DataFrame:
     """
     This is a wrapper function for readFile() that initiates the
     process for reading in an XLSX, CSV, TSV, or regular type of file
@@ -37,7 +35,7 @@ def wsReadFile (ws: pd.DataFrame, fieldNames: list) -> pd.DataFrame:
 
 
     # To start, use 'ws' and extract the file parameters related to the items in 'fieldNames' 
-    FILEPATH_PARAMETERS = extractPathInfo(ws, fieldNames)
+    FILEPATH_PARAMETERS = wsExtract(ws, fieldNames)
 
 
     # The next step is to determine what kind of file will be read
@@ -50,7 +48,7 @@ def wsReadFile (ws: pd.DataFrame, fieldNames: list) -> pd.DataFrame:
 
 
 
-def guessFileType (FILEPATH_PARAMETERS: list) -> str:
+def guessFileType (FILEPATH_PARAMETERS: list[str]) -> str:
     """
     Given a list that contains filepath information, try to determine the identity of the file.
     It will be labeled as "XLSX", "CSV", "TSV", "HTML", or "TXT"
@@ -82,7 +80,7 @@ def guessFileType (FILEPATH_PARAMETERS: list) -> str:
 
 
 
-def wsReadGIS (ws: pd.DataFrame, fieldNames: list) -> gpd.GeoDataFrame:
+def wsReadGIS (ws: pd.DataFrame, fieldNames: list[str]) -> gpd.GeoDataFrame:
     """
     This is a precursor function for readFile() that initiates the 
     process for reading in a GIS file
@@ -95,7 +93,7 @@ def wsReadGIS (ws: pd.DataFrame, fieldNames: list) -> gpd.GeoDataFrame:
 
 
     # Use 'ws' to extract the file parameters related to the items in 'fieldNames' 
-    FILEPATH_PARAMETERS = extractPathInfo(ws, fieldNames)
+    FILEPATH_PARAMETERS = wsExtract(ws, fieldNames)
 
 
     # Then, call the general function readFile() to read in the "GIS" file
@@ -103,7 +101,7 @@ def wsReadGIS (ws: pd.DataFrame, fieldNames: list) -> gpd.GeoDataFrame:
 
 
 
-def readFile (FILEPATH_PARAMETERS: list, FILE_TYPE: str) -> pd.DataFrame | gpd.GeoDataFrame:
+def readFile (FILEPATH_PARAMETERS: list[str], FILE_TYPE: str) -> pd.DataFrame | gpd.GeoDataFrame:
     """
     This function attempts to read a file ('CSV', 'XLSX', 'TSV', 'HTML', or GIS files)
 
@@ -188,7 +186,7 @@ def isURL (filePath: str) -> bool:
     If "http://" or "https://" appears at the start of the string,
     it is assumed to be a URL
 
-    Note: re.match only does pattern matching at the start of the string (unlike re.search)
+    Note: re.match() only does pattern matching at the start of the string (unlike re.search())
     """
 
     return re.match("https?://", filePath) is not None
@@ -202,21 +200,12 @@ def makeSharePointPath (filePathFragment: str) -> str:
     Everything up to "Supply and Demand Assessment - Documents" (inclusive) will already be specified by this function
     
     (This function assumes that the SharePoint filepath is "C:/Users/[username]/Water Boards/Supply and Demand Assessment - Documents/...")
-    (In that case, the only unknown variable is the username. Command Prompt will be used to get that information.)
+    (In that case, the only unknown variable is the username. os.getlogin() can be used to get that information.)
     """
 
 
-    # Run 'whoami' via Command Prompt and capture the output
-    username = subprocess.run("whoami", text = True, stdout = subprocess.PIPE)
-    
-    
-    # Extract the string from the "stdout" element and remove the newline
-    username = username.stdout.strip()
-    
-    
-    # The username will be in the format "epa\username"
-    # Remove the "epa\" portion
-    username = re.sub("^epa\\\\", "", username)
+    # Get the user's username as a string
+    username = os.getlogin()
 
     
     # Return a full string using 'username' and 'filePathFragment'
@@ -225,7 +214,7 @@ def makeSharePointPath (filePathFragment: str) -> str:
 
 
 
-def readXLSX (FILEPATH_PARAMETERS: list, isSharePoint: bool) -> pd.DataFrame:
+def readXLSX (FILEPATH_PARAMETERS: list[str], isSharePoint: bool) -> pd.DataFrame:
     """
     Read in an Excel file as a data frame
 
@@ -247,7 +236,7 @@ def readXLSX (FILEPATH_PARAMETERS: list, isSharePoint: bool) -> pd.DataFrame:
 
     # If a second element is present in 'FILEPATH_PARAMETERS',
     # it is probably a string containing the worksheet name
-    if len(FILEPATH_PARAMETERS) > 1 and FILEPATH_PARAMETERS[1] is not None:
+    if len(FILEPATH_PARAMETERS) > 1 and pd.notna(FILEPATH_PARAMETERS[1]):
         worksheetName = FILEPATH_PARAMETERS[1]
 
     # If no second element is present, by default, read in the first worksheet of the file
@@ -272,7 +261,7 @@ def readXLSX (FILEPATH_PARAMETERS: list, isSharePoint: bool) -> pd.DataFrame:
 
 
 
-def readCSV (FILEPATH_PARAMETERS: list, isSharePoint: bool, sep: str) -> pd.DataFrame:
+def readCSV (FILEPATH_PARAMETERS: list[str], isSharePoint: bool, sep: str = ',') -> pd.DataFrame:
     """
     Read in a CSV (or similar) file as a data frame
 
@@ -300,7 +289,7 @@ def readCSV (FILEPATH_PARAMETERS: list, isSharePoint: bool, sep: str) -> pd.Data
 
 
 
-def readHTML (FILEPATH_PARAMETERS: list) -> pd.DataFrame:
+def readHTML (FILEPATH_PARAMETERS: list[str]) -> pd.DataFrame:
     """
     Read in an HTML file as a data frame using an HTTP GET request
 
@@ -327,7 +316,7 @@ def readHTML (FILEPATH_PARAMETERS: list) -> pd.DataFrame:
 
 
 
-def readLines (FILEPATH_PARAMETERS: list, isSharePoint: bool) -> pd.DataFrame:
+def readLines (FILEPATH_PARAMETERS: list[str], isSharePoint: bool) -> pd.DataFrame:
     """
     Read in a text file as a data frame
 
@@ -361,12 +350,12 @@ def readLines (FILEPATH_PARAMETERS: list, isSharePoint: bool) -> pd.DataFrame:
 
 
 
-def readGIS (FILEPATH_PARAMETERS: list, isSharePoint: bool, isURL: bool) -> gpd.GeoDataFrame:
+def readGIS (FILEPATH_PARAMETERS: list[str], isSharePoint: bool, isURL: bool) -> gpd.GeoDataFrame:
     """
     Read in a GIS file as a data frame
 
     It can be something like a shapefile or a geoJSON file
-    # Alternatively, it can be a layer in a container (like a geopackage or geodatabase)
+    Alternatively, it can be a layer in a container (like a geopackage or geodatabase)
 
     A URL that points to an ArcGIS Portal layer can also be provided
 
@@ -389,7 +378,7 @@ def readGIS (FILEPATH_PARAMETERS: list, isSharePoint: bool, isURL: bool) -> gpd.
 
     # After that, consider whether a second element is present in 'FILEPATH_PARAMETERS'
     # If yes, it is probably a string containing the layer name
-    if len(FILEPATH_PARAMETERS) > 1 and FILEPATH_PARAMETERS[1] is not None:
+    if len(FILEPATH_PARAMETERS) > 1 and pd.notna(FILEPATH_PARAMETERS[1]):
         layerName = FILEPATH_PARAMETERS[1]
 
     # If no second element is present, by default, set 'layerName' to None
@@ -400,10 +389,10 @@ def readGIS (FILEPATH_PARAMETERS: list, isSharePoint: bool, isURL: bool) -> gpd.
     # After that, for ArcGIS Portal URLs, try to read in the layer using their functions
     # (And then convert it into a GeoDataFrame)
     if isURL and isPortalURL(filePath, layerName):
-        gisDF = getPortalLayer(filePath, layerName)
+        gisDF = readPortalLayer(filePath, layerName)
 
     else:
-        # For all other cases, try to use read_file
+        # For all other cases, try to use read_file()
         gisDF = gpd.read_file(filePath, layer = layerName)
 
 
@@ -441,7 +430,7 @@ def isPortalURL(urlPath: str, layerName: str | None) -> bool:
 
 
 
-def getPortalLayer(urlPath: str, layerName: str | None) -> gpd.GeoDataFrame:
+def readPortalLayer(urlPath: str, layerName: str | None) -> gpd.GeoDataFrame:
     """
     This function reads a Feature Layer or Feature Layer Collection from ArcGIS,
     extracts a layer, and tries to read the layer as a GeoDataFrame
@@ -477,8 +466,8 @@ def getPortalLayer(urlPath: str, layerName: str | None) -> gpd.GeoDataFrame:
     tempFileName = "tempScript.geojson"
 
 
-    with open(tempFileName, "w", encoding = "utf-8") as file:
-        file.write(layerDF.to_geojson)
+    with open(tempFileName, "w", encoding = "utf-8") as f:
+        f.write(layerDF.to_geojson())
 
     
     # Read in this temporary file using read_file
@@ -495,9 +484,13 @@ def getPortalLayer(urlPath: str, layerName: str | None) -> gpd.GeoDataFrame:
 
 
 
-def extractPathInfo(ws: pd.DataFrame, fieldNames: list) -> list:
+def wsExtract(ws: pd.DataFrame, fieldNames: list[str], naOkay: bool = True) -> list[str]:
     """
     This function extracts information from 'ws' for the data fields specified in 'fieldNames' 
+    
+    'naOkay' is an optional argument that affects the error-handling routine of the function.
+    By default, 'NA' entries are okay to be added to the final output list.
+    
     """
 
 
@@ -531,13 +524,21 @@ def extractPathInfo(ws: pd.DataFrame, fieldNames: list) -> list:
         # Most of the loop's actions will different depending on 'spreadsheetStyle'
         if spreadsheetStyle == "COLUMN":
             
-            # First, make sure 'field' actually exists in 'ws'
-            if len(ws[ws.iloc[:, 0] == field]) == 0:
-                raise ValueError("The field '" + field + "' does not exist in 'ws'!")
+            # There is a special exception for column-based spreadsheets
+            # If "NAME" is given as the requested parameter name, for this spreadsheet style, 
+            # this is the name of the second column in 'ws'
+            if field == "NAME":
+                extractedValue = ws.columns[1]
+
+            # For all other data field names, perform a slightly more complicated procedure
+            else:
+                # First, make sure 'field' actually exists in 'ws'
+                if len(ws[ws.iloc[:, 0] == field]) == 0:
+                    raise ValueError("The field '" + field + "' does not exist in 'ws'!")
 
 
-            # If yes, extract the second column's value (index 1) from the row whose first column (index 0) matches 'field'
-            extractedValue = ws[ws.iloc[:, 0] == field].iloc[0, 1]
+                # If yes, extract the second column's value (index 1) from the row whose first column (index 0) matches 'field'
+                extractedValue = ws[ws.iloc[:, 0] == field].iloc[0, 1]
 
         # For a row-based spreadsheet, the process is the same, but the extraction code is different
         elif spreadsheetStyle == "ROW":
@@ -552,23 +553,23 @@ def extractPathInfo(ws: pd.DataFrame, fieldNames: list) -> list:
 
         # If 'spreadsheetStyle' is neither "ROW" nor "COLUMN", somebody made a mistake in this function
         else:
-            raise ValueError('The variable "spreadsheetStyle" was not set correctly in the function extractPathInfo()!')
+            raise ValueError('The variable "spreadsheetStyle" was not set correctly in the function wsExtract()!')
 
 
         # At this point in the loop through 'fieldNames', whether 'spreadsheetStyle' is "ROW" or "COLUMN",
         # 'extractedValue' has been obtained (as a string, most likely)
-        # An important check now is whether 'extractedValue' is NaN
+        # An important check now is whether 'extractedValue' is NA
         # (This would happen if its entry in the paths spreadsheet is empty)
-
-        # If 'extractedValue' is NOT NaN, add that element to 'parameterList'
-        if not np.isnan(extractedValue):
+        
+        
+        # If 'extractedValue' is NOT NA, add that element to 'parameterList'
+        # (This restriction can be circumvented if 'naOkay' is equal to True)
+        if pd.isna(extractedValue) and not naOkay:
+            raise ValueError("The watershed " + wsExtract(ws, ["NAME"])[0] + " lacks a value for '" + field + "'!")
+        
+        else: 
             parameterList.append(extractedValue)
-    
-
-    # After the loop is complete, if 'parameterList' is still empty, raise an exception
-    if len(parameterList) == 0:
-        raise ValueError("The watershed lacks path information for all of the following field(s): " + "; ".join(fieldNames))
-
+            
     
     # Finally, return 'parameterList'
     return parameterList

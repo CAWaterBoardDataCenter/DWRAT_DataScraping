@@ -22,20 +22,21 @@ from WS01_Set_Parameters import wsIndex
 
 # The next variable defines the filepaths to the general paths spreadsheet
 # There are two versions of this file (depending on whether the user is a part of SDA or not)
-sheetPaths = ["Program Watersheds/4. Demand Data Tracking/Watershed_Demand_Dataset_Paths.xlsx",
-              "../../../InputData/Watershed_Demand_Dataset_Paths.xlsx"]
+sheetPaths = ["Program Watersheds/4. Demand Data Tracking/Snowflake_Watershed_Demand_Dataset_Paths.xlsx",
+              "Input_Data/Snowflake_Watershed_Demand_Dataset_Paths.xlsx"]
 
 
 # The final important variable defines the style of the paths table
 # It should be one of two values ("COLUMN" or "ROW")
-spreadsheetStyle = "ROW"
+spreadsheetStyle = "COLUMN"
 
 # The legacy filepath spreadsheet uses a "ROW" styling
 # Each watershed has its own row in the spreadsheet
-# (And each column corresponds to a different filepath option)
+# (And each column corresponds to a different file-related field)
 
 # The new version of the paths spreadsheet uses a "COLUMN" styling
 # Each column (starting from the third one onwards) corresponds to a different watershed
+# The second column in the table contains the names of different file-related fields
 
 
 
@@ -49,10 +50,13 @@ if os.path.exists(hlp.makeSharePointPath(sheetPaths[0])):
 
     ws = hlp.readXLSX([sheetPaths[0]], True)
 
-else:
+elif os.path.exists(sheetPaths[1]):
     print("\nUsing local repository version of the watershed paths spreadsheet!\n")
 
     ws = hlp.readXLSX([sheetPaths[1]], False)
+
+else:
+    raise ValueError("In 'WS02_Watershed_Selection.py', both filepaths specified in 'sheetPaths' do not point to a valid location.")
 
 
 # Next, based on 'spreadsheetStyle', apply a different approach to narrow 'ws' to only the selected watershed

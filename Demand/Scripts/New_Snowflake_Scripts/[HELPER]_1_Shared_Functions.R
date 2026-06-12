@@ -30,7 +30,7 @@ getPath <- function (ws, FILEPATH_COLUMN) {
   
   
   return(ws %>%
-           filter(WATERSHED == FILEPATH_COLUMN) %>%
+           filter(COLUMN == FILEPATH_COLUMN) %>%
            select(2) %>%
            unlist(use.names = FALSE))
   
@@ -60,7 +60,7 @@ getGIS <- function (ws, GIS_FILE_PATH_COLUMN, GIS_FILE_LAYER_NAME) {
   # 'ws' contains filepaths that link to GIS layers
   # This function can help extract that data
   
-  
+  print(GIS_FILE_PATH_COLUMN)
   
   # First ensure that a path to a layer was specified for this watershed
   if (is.na(ws %>% getPath(GIS_FILE_PATH_COLUMN))) {

@@ -12,7 +12,6 @@ requestFlowPath <- function (pod) {
   # (That can also be converted into linestrings using a "LINEID" column)
   
   
-  
   # Ensure that 'pod' has the correct CRS (WGS84 is needed)
   pod <- pod %>%
     st_transform("epsg:4326")
@@ -52,7 +51,7 @@ requestFlowPath <- function (pod) {
                     #Sec-Fetch-Site:
                     #  same-origin
                     #"User-Agent" = "R version 4.2.3",
-                    "User-Contact" = "DWR-SDA@waterboards.ca.gov")),
+                    "X-User-Contact" = "DWR-SDA@waterboards.ca.gov")),
                   body = paste0('[{"id":1,"name":"Start point location","required":true,',
                                 '"description":"Specified lat/long/crs  navigation start location",', 
                                 '"valueType":"geojson point geometry",', 

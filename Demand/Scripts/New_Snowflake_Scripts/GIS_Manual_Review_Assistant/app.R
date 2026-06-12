@@ -51,7 +51,7 @@ source("../[HELPER]_5_GIS_Analysis_Functions.R")
 
 # Read in the selected watershed's polygon 
 Watershed_Polygon <- getGIS(ws, 
-                            "WATERSHED_BOUNDARY_DATABASE_SHAREPOINT_PATH", 
+                            "WATERSHED_BOUNDARY_DATABASE_PATH", 
                             "WATERSHED_BOUNDARY_LAYER_NAME") %>%
   st_transform("epsg:4326") %>%
   mutate(WATERSHED = names(ws)[2]) %>%
@@ -613,7 +613,7 @@ server <- function(input, output, session) {
       
       # Filter to the current watershed
       exitDF <- read_xlsx(reviewPath, sheet = "WS_EXIT_POINT") %>%
-        filter(DATABASE_PATH == getPath(ws, "WATERSHED_BOUNDARY_DATABASE_SHAREPOINT_PATH")) %>%
+        filter(DATABASE_PATH == getPath(ws, "WATERSHED_BOUNDARY_DATABASE_PATH")) %>%
         filter(is.na(LAYER_PATH) | LAYER_PATH == getPath(ws, "WATERSHED_BOUNDARY_LAYER_NAME"))
       
       
@@ -920,7 +920,7 @@ server <- function(input, output, session) {
     
     # Prepare a data frame with the relevant exit point information
     exitDF <- data.frame(POINT_INDEX = as.numeric(selectVal),
-                         DATABASE_PATH = getPath(ws, "WATERSHED_BOUNDARY_DATABASE_SHAREPOINT_PATH"),
+                         DATABASE_PATH = getPath(ws, "WATERSHED_BOUNDARY_DATABASE_PATH"),
                          LAYER_PATH = if_else(is.na(getPath(ws, "WATERSHED_BOUNDARY_LAYER_NAME")),
                                               NA_character_,
                                               getPath(ws, "WATERSHED_BOUNDARY_LAYER_NAME")))

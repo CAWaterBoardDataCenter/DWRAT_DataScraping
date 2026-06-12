@@ -46,7 +46,7 @@ cat("Gathering watershed and water right files...\n\n\n\n")
 # Given a filepath in 'ws', a different boundary layer will be read in
 # (The assigned variable name will always be 'wsBound')
 wsBound <- getGIS(ws, 
-                  "WATERSHED_BOUNDARY_DATABASE_SHAREPOINT_PATH",
+                  "WATERSHED_BOUNDARY_DATABASE_PATH",
                   "WATERSHED_BOUNDARY_LAYER_NAME")
 
 
@@ -343,7 +343,8 @@ cat("\n\nGenerating a manual review spreadsheet and Flagged POD geopackage...\n\
 
 # For now, just notify the user if there is overlap between the review sheets
 # Note that they may be able to reuse some of their previous review effort
-if (!is.na(getPath(ws, "GIS_PREPROCESSING_SPREADSHEET_SHAREPOINT_PATH"))) {
+if (length(getPath(ws, "GIS_PREPROCESSING_SPREADSHEET_SHAREPOINT_PATH")) > 0 &&
+    !is.na(getPath(ws, "GIS_PREPROCESSING_SPREADSHEET_SHAREPOINT_PATH"))) {
   
   cat(paste0("NOTE: A previous GIS manual review spreadsheet exists for this ",
              "watershed. There may be some overlap between that prior review and ",

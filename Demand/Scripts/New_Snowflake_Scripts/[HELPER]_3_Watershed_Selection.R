@@ -124,7 +124,7 @@ if (length(colIndex) > 1) {
 # corresponds to 'colIndex' (as well as the "WATERSHED" column, which
 # contains labels for each row entry)
 ws <- wsSpreadsheet %>%
-  select(WATERSHED, names(wsSpreadsheet)[colIndex])
+  select(COLUMN, names(wsSpreadsheet)[colIndex])
 
 
 
