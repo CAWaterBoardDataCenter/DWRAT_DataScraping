@@ -313,9 +313,11 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Start with the precipitation fields
-  # For PRMS, the values should be "NA", or something between "PRECIP1" and 
+  # For PRMS, the values should be "NA", "EX_PRECIP_#", or something between "PRECIP1" and 
   # "PRECIP15" (inclusive)--for SRP, it's up to "PRECIP2" only
-  if (anyFalse(inputDF[[inputFieldNames[2]]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)))) {
+  if (anyFalse(inputDF[[inputFieldNames[2]]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)) |
+               (model %in% "PRMS" & 
+                grepl("^EX_PRECIP_[0-9]+$", inputDF[[inputFieldNames[2]]])))) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value for the field \"", 

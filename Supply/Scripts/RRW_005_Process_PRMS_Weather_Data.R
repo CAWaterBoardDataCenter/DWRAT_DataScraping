@@ -158,7 +158,8 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   meteorDF <- combineMeteorologicalDatasets(noaaInput, rawsInput, cimisInput,
                                             noaaDF, rawsDF, cimisDF,
-                                            startDate, endDate)
+                                            startDate, endDate) |>
+    select(-starts_with("EX_PRECIP"))
   
   
   # For archival purposes, save 'meteorDF' without any data substitution
@@ -692,7 +693,7 @@ applyFlags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisPath) {
   # Keep only rows with values in "PRMS_PRECIP_NAME"
   # (These stations' precipitation values will be used in the model)
   cimisInput <- cimisInput |>
-    filter(!is.na(PRMS_PRECIP_NAME))
+    filter(!is.na(PRMS_PRECIP_NAME) & !grepl("^EX_PRECIP", PRMS_PRECIP_NAME))
   
   
   # Next, locate "PRECIP_QC" in 'cimisDF'
@@ -775,14 +776,10 @@ removeOutliers <- function (meteorDF, outlierDF) {
   for (i in 1:length(precipNames)) {
     
     # Note: This procedure will not be applied to several gages
-    if (precipNames[i] %in% c("PRECIP1", "PRECIP4", "PRECIP7",
-                              "PRECIP6", "PRECIP12")) {
+    if (precipNames[i] %in% c("PRECIP1", "PRECIP4", "PRECIP7", "PRECIP13")) {
       
-      # Gages 1, 4, and 7 are outside the watershed and correlate poorly with
+      # Gages 1, 4, 7, and 13 are outside the watershed and correlate poorly with
       # all other gages
-      
-      # Gages 6 and 12 come from CIMIS, but they are raw and unsuitable for 
-      # this process
       
       next
     }
