@@ -1,48 +1,43 @@
-#IGNORE SUPPLY DATA FILES
-# Ignore all files in ProcessedData and WebData
-Supply/WebData/*.csv
-Supply/InputData/*.gag
-Supply/ProcessedData/*.csv
-Supply/ProcessedData/*.dat
-Supply/ProcessedData/*.txt
-Supply/ProcessedData/*.xlsx
-
-#IGNORE DEMAND DATA FILES 
-# Ignore all CSVs and xlsx files in IntermediateData, RawData and ProcessedData folders
-Demand/RawData/*.csv
-Demand/RawData/*.sqlite
-Demand/IntermediateData/*.csv
-Demand/IntermediateData/*.xlsx
-Demand/IntermediateData/*.ini
-Demand/ModuleAndScriptComparisons/*.csv
-Demand/ModuleAndScriptComparisons/*.xlsx
-Demand/OutputData/*.csv
-Demand/OutputData/*.xlsx
-Demand/OutputData/*.geoJSON
-Demand/OutputData/*.gpkg
-Demand/OutputData/*.docx
-Demand/OutputData/*.html
-
-#IGNORE PARADIGM_DWRAT FILES
-Paradigm_DWRAT/dwrat/output/*.csv
-Paradigm_DWRAT/dwrat/output/*.log
-Paradigm_DWRAT/**/__pycache__
-
-#IGNORE LSPC FILES
-LSPC/*.log
-LSPC/**/__pycache__
-LSPC/**/*.csv
-LSPC/**/*.out
-
-#IGNORE WORKFLOW FILES
-Workflows/*.bat
-
-#Ignore Various R files
-.Rproj.user
-Supply/.Rproj.user
-Demand/.Rproj.user
-.Rhistory
-Supply/.Rhistory
-Demand/.Rhistory
-
+# Git Ignore Reference Doc
 # https://git-scm.com/docs/gitignore
+
+# Ignore Various R files
+**/.Rproj.user
+**/.Rhistory
+
+# Ignore any Python-related "pycache" directory too
+**/__pycache__/**
+
+
+# In the workflow folders, ignore files in the "Intermediate", "Output", and "Workflow_Bin" folders
+**/Intermediate/**
+**/Output/**
+**/Workflow_Bin/**
+
+# However, do not ignore the actual folders themselves
+!**/Intermediate
+!**/Output
+!**/Workflow_Bin
+
+
+# In the LSPC model folder, ignore log files
+Models/LSPC/*.log
+
+
+# In the Archive folder, ignore file download and processing contents
+**/WebData/**
+**/ProcessedData/**
+**/RawData/**
+**/IntermediateData/**
+**/OutputData/**
+
+# Do not ignore these folders though
+!**/WebData
+!**/ProcessedData
+!**/RawData
+!**/IntermediateData
+!**/OutputData
+
+
+# Finally, do not ignore any .gitkeep file
+!**/.gitkeep
