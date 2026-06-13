@@ -17,7 +17,7 @@ require(openxlsx)
 mainProcedure <- function () {
   
   # Given the watershed in 'ws', perform the GIS pre-processing steps
-  source("Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
   
   
   
@@ -37,7 +37,7 @@ mainProcedure <- function () {
   # (3) Then, make 'pod_points_statewide' into a GIS layer
   #     Use the numeric "LATITUDE" and "LONGITUDE" layers as coordinates
   #     (The data in these columns will not be easily accessible afterwards, so that's why copies were used)
-  pod_points_statewide <- list.files("IntermediateData/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
+  pod_points_statewide <- list.files("W1_Watershed_Demand/Intermediate/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
     sort() %>% tail(1) %>%
     read_csv(show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
     mutate(LONGITUDE2 = as.numeric(LONGITUDE), LATITUDE2 = as.numeric(LATITUDE)) %>%
@@ -57,7 +57,7 @@ mainProcedure <- function () {
   
   
   # Import PLSS Sections for the entire state
-  PLSS_Sections_Fill <- st_read("InputData/GIS_General/Public_Land_Survey_System_(PLSS)%3A_Sections.gpkg",
+  PLSS_Sections_Fill <- st_read("W1_Watershed_Demand/Input/GIS_General/Public_Land_Survey_System_(PLSS)%3A_Sections.gpkg",
                                 layer = "Public_Land_Survey_System_(PLSS)%3A_Sections")
   
   
@@ -375,10 +375,10 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   # Write 'allDF' to a gpkg
   # (But first remove the older version, if it exists in the directory)
-  if (paste0(ws$ID, "_PODs_of_Interest.gpkg") %in% list.files("OutputData")) {
+  if (paste0(ws$ID, "_PODs_of_Interest.gpkg") %in% list.files("W1_Watershed_Demand/Output")) {
     
     #system("rm OutputData/NV_PODS_of_Interest.gpkg", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
-    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.gpkg")))
+    invisible(unlink(paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs_of_Interest.gpkg")))
     
   }
   
@@ -418,7 +418,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   
   
-  st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.gpkg"), layer = "Flagged_PODs", delete_dsn = TRUE)
+  st_write(allDF, paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs_of_Interest.gpkg"), layer = "Flagged_PODs", delete_dsn = TRUE)
   
   
   
@@ -568,7 +568,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   
   # Save 'wb' to a file
   saveWorkbook(wb, 
-               paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
+               paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
   
   
   
@@ -787,4 +787,4 @@ print("Starting 'GIS_Preprocessing.R'...")
 mainProcedure()
 
 
-remove(mainProcedure, confirmCS, deleteIdentical, outputResults)#, outputResults_NoTask2)
+base::remove(mainProcedure, confirmCS, deleteIdentical, outputResults)#, outputResults_NoTask2)

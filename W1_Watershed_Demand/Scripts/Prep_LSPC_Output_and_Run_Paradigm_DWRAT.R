@@ -38,7 +38,7 @@ mainProcedure <- function (hucBased = TRUE) {
   
   
   # Select a watershed
-  source("Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
   
   
   
@@ -87,8 +87,10 @@ mainProcedure <- function (hucBased = TRUE) {
   
   
   # Use the HUC-12 boundaries for modeling in DWRAT
-  huc12 <- makeSharePointPath("Program Watersheds/1. Watershed Folders/Navarro River/Data/GIS Datasets/WBD_18_HU2_Shape/Shape/") %>%
-    st_read(layer = "WBDHU12") %>%
+  load("W1_Watershed_Demand/Input/GIS_General/NHD_H_California_State_WBDHU12.RData")
+  
+  
+  huc12 <- huc12 %>%
     st_transform(st_crs(wsBound)) %>%
     select(huc12, name)
   
@@ -309,18 +311,18 @@ deleteOldOutputs <- function (wsID) {
   
   # Delete the input and output files
   removalStrings %>%
-    map(~ list.files("OutputData", pattern = ., full.names = TRUE) %>% unlink())
+    map(~ list.files("W1_Watershed_Demand/Output", pattern = ., full.names = TRUE) %>% unlink())
   
   
   
   # Make sure the files were successfully deleted
   # Otherwise, output an error message
   if (TRUE %in% map_lgl(removalStrings, 
-                        ~ length(list.files("OutputData", pattern = ., full.names = TRUE)) > 1)) {
+                        ~ length(list.files("W1_Watershed_Demand/Output", pattern = ., full.names = TRUE)) > 1)) {
     
     cat(paste0("\n\n\nPlease manually delete these files:\n\n",
                map(removalStrings, 
-                   ~ list.files("OutputData", pattern = ., full.names = TRUE)) %>%
+                   ~ list.files("W1_Watershed_Demand/Output", pattern = ., full.names = TRUE)) %>%
                  unlist() %>% paste0(collapse = "\n"),
                "\n\n"))
     
@@ -1117,9 +1119,9 @@ outputAndRun <- function (mdtDF, roSupply, flowsTo, ws, lastCatch) {
     
     
     # Define a vector with the planned filenames
-    filePaths <- c(Demand = paste0("OutputData/", ws$ID, "_formatted_demand.csv"),
-                   Supply = paste0("OutputData/", ws$ID, "_formatted_supply.csv"),
-                   Basin = paste0("OutputData/", ws$ID, "_generated_basins.csv"))
+    filePaths <- c(Demand = paste0("W1_Watershed_Demand/Output/", ws$ID, "_formatted_demand.csv"),
+                   Supply = paste0("W1_Watershed_Demand/Output/", ws$ID, "_formatted_supply.csv"),
+                   Basin = paste0("W1_Watershed_Demand/Output/", ws$ID, "_generated_basins.csv"))
     
     
     # Demand
@@ -1246,9 +1248,9 @@ outputAndRun <- function (mdtDF, roSupply, flowsTo, ws, lastCatch) {
       # Save the model input files to the "OutputData" folder
       
       # Define a vector with the planned filenames
-      filePaths <- c(Demand = paste0("OutputData/", ws$ID, "_formatted_demand_", i, ".csv"),
-                     Supply = paste0("OutputData/", ws$ID, "_formatted_supply_", i, ".csv"),
-                     Basin = paste0("OutputData/", ws$ID, "_generated_basins_", i, ".csv"))
+      filePaths <- c(Demand = paste0("W1_Watershed_Demand/Output/", ws$ID, "_formatted_demand_", i, ".csv"),
+                     Supply = paste0("W1_Watershed_Demand/Output/", ws$ID, "_formatted_supply_", i, ".csv"),
+                     Basin = paste0("W1_Watershed_Demand/Output/", ws$ID, "_generated_basins_", i, ".csv"))
       
       # Note: If these filePaths are ever modified in the future, don't forget to update
       # the paths that appear in createModelBasinOutputs_NoUsers() and 
@@ -1396,12 +1398,12 @@ createModelBasinOutputs_NoUsers <- function (flowsToSplitList, i, roSupply, ws) 
   
   # Write the outputs to a file
   resList[[1]] %>%
-    write_csv(paste0("OutputData/", ws$ID, "_basin_appropriative_output_", i, ".csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_appropriative_output_", i, ".csv"))
   
   
   
   resList[[2]] %>%
-    write_csv(paste0("OutputData/", ws$ID, "_basin_riparian_output_", i, ".csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_riparian_output_", i, ".csv"))
   
   
   
@@ -1773,19 +1775,19 @@ createModelOutputs_OneUser <- function (flowsToSplitList, i, userDF, roSupply, w
   
   # Write the four data frames to CSV files
   appBasinOutput %>%
-    write_csv(paste0("OutputData/", ws$ID, "_basin_appropriative_output_", i, ".csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_appropriative_output_", i, ".csv"))
   
   
   ripBasinOutput %>%
-    write_csv(paste0("OutputData/", ws$ID, "_basin_riparian_output_", i, ".csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_riparian_output_", i, ".csv"))
   
   
   appUserOutput %>%
-    write_csv(paste0("OutputData/", ws$ID, "_user_appropriative_output_", i, ".csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_appropriative_output_", i, ".csv"))
   
   
   ripUserOutput %>%
-    write_csv(paste0("OutputData/", ws$ID, "_user_riparian_output_", i, ".csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_riparian_output_", i, ".csv"))
   
   
   
@@ -1949,7 +1951,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   # Include the initial output directory in this operation 
   # (the "output" folder in the "Paradigm_DWRAT" sub-repository)
   modifiedPaths <- c(filePaths,
-                     "../Paradigm_DWRAT/dwrat/output/") %>%
+                     "W1_Watershed_Demand/Models/Paradigm_DWRAT/dwrat/output/") %>%
     normalizePath(winslash = "/") 
   
   
@@ -1960,7 +1962,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   
   
   # Specify (as a variable) the location of the main DWRAT script
-  scriptPath <- "../Paradigm_DWRAT/LSPC_DWRAT.py"
+  scriptPath <- "W1_Watershed_Demand/Models/Paradigm_DWRAT/LSPC_DWRAT.py"
   
   
   
@@ -2018,22 +2020,22 @@ runDWRAT <- function (filePaths, i = NULL) {
   
   # Copy four output files from the Paradigm DWRAT "output" folder 
   # to the Demand "OutputData" folder
-  file.copy("../Paradigm_DWRAT/dwrat/output/basin_appropriative_output_Paradigm_DWRAT.csv",
+  file.copy("Models/Paradigm_DWRAT/dwrat/output/basin_appropriative_output_Paradigm_DWRAT.csv",
             filePaths[1] %>% str_replace("formatted_demand", "basin_appropriative_output"),
             overwrite = TRUE)
   
   
-  file.copy("../Paradigm_DWRAT/dwrat/output/user_appropriative_output_Paradigm_DWRAT.csv",
+  file.copy("Models/Paradigm_DWRAT/dwrat/output/user_appropriative_output_Paradigm_DWRAT.csv",
             filePaths[1] %>% str_replace("formatted_demand", "user_appropriative_output"),
             overwrite = TRUE)
   
   
-  file.copy("../Paradigm_DWRAT/dwrat/output/basin_riparian_output_Paradigm_DWRAT.csv",
+  file.copy("Models/Paradigm_DWRAT/dwrat/output/basin_riparian_output_Paradigm_DWRAT.csv",
             filePaths[1] %>% str_replace("formatted_demand", "basin_riparian_output"),
             overwrite = TRUE)
   
   
-  file.copy("../Paradigm_DWRAT/dwrat/output/user_riparian_output_Paradigm_DWRAT.csv",
+  file.copy("Models/Paradigm_DWRAT/dwrat/output/user_riparian_output_Paradigm_DWRAT.csv",
             filePaths[1] %>% str_replace("formatted_demand", "user_riparian_output"),
             overwrite = TRUE)
   
@@ -2136,11 +2138,11 @@ combineOutputs <- function (ws, numFlowPaths) {
   for (i in 1:numFlowPaths) {
     
     # Read in this flow path's DWRAT basin outputs
-    tempBasinApp <- read_csv(paste0("OutputData/", ws$ID, "_basin_appropriative_output_", i, ".csv"),
+    tempBasinApp <- read_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_appropriative_output_", i, ".csv"),
                              show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
       filter(BASIN != "SUBBASIN_REMOVE_THIS")
     
-    tempBasinRip <- read_csv(paste0("OutputData/", ws$ID, "_basin_riparian_output_", i, ".csv"),
+    tempBasinRip <- read_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_riparian_output_", i, ".csv"),
                              show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
       filter(BASIN != "SUBBASIN_REMOVE_THIS")
     
@@ -2155,8 +2157,8 @@ combineOutputs <- function (ws, numFlowPaths) {
     
     # If the flow path had no users, there wouldn't be any user files for this iteration
     # Check first if those files exist
-    if (!file.exists(paste0("OutputData/", ws$ID, "_user_appropriative_output_", i, ".csv")) ||
-        !file.exists(paste0("OutputData/", ws$ID, "_user_riparian_output_", i, ".csv"))) {
+    if (!file.exists(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_appropriative_output_", i, ".csv")) ||
+        !file.exists(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_riparian_output_", i, ".csv"))) {
       
       
       # If there really are no users, the sum of the demands in both of the basin files should be 0
@@ -2171,8 +2173,8 @@ combineOutputs <- function (ws, numFlowPaths) {
       # User files should exist in that scenario
       } else {
         
-        stop(paste0("'OutputData/", ws$ID, "_user_appropriative_output_", i, ".csv' and/or ",
-                    "'OutputData/", ws$ID, "_user_riparian_output_", i, ".csv' could not be found! ",
+        stop(paste0("'W1_Watershed_Demand/Output/", ws$ID, "_user_appropriative_output_", i, ".csv' and/or ",
+                    "'W1_Watershed_Demand/Output/", ws$ID, "_user_riparian_output_", i, ".csv' could not be found! ",
                     "\nSince there are non-zero demands in the basin files, there should be user files too."))
         
       }
@@ -2184,11 +2186,11 @@ combineOutputs <- function (ws, numFlowPaths) {
     
     # This code only runs if user files exist
     # Try to read them in
-    tempUserApp <- read_csv(paste0("OutputData/", ws$ID, "_user_appropriative_output_", i, ".csv"),
+    tempUserApp <- read_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_appropriative_output_", i, ".csv"),
                             show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
       filter(USER != "REMOVE_THIS")
     
-    tempUserRip <- read_csv(paste0("OutputData/", ws$ID, "_user_riparian_output_", i, ".csv"),
+    tempUserRip <- read_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_riparian_output_", i, ".csv"),
                             show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
       filter(USER != "REMOVE_THIS")
     
@@ -2221,16 +2223,16 @@ combineOutputs <- function (ws, numFlowPaths) {
   
   # Write the combined variables to files
   combinedBasinApp %>%
-    write_csv(paste0("OutputData/", ws$ID, "_basin_appropriative_output_combined.csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_appropriative_output_combined.csv"))
   
   combinedBasinRip %>%
-    write_csv(paste0("OutputData/", ws$ID, "_basin_riparian_output_combined.csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_basin_riparian_output_combined.csv"))
   
   combinedUserApp %>%
-    write_csv(paste0("OutputData/", ws$ID, "_user_appropriative_output_combined.csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_appropriative_output_combined.csv"))
   
   combinedUserRip %>%
-    write_csv(paste0("OutputData/", ws$ID, "_user_riparian_output_combined.csv"))
+    write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_user_riparian_output_combined.csv"))
   
   
   
@@ -2247,4 +2249,4 @@ mainProcedure(hucBased = TRUE)
 
 
 # Clean the environment
-remove(list = ls())
+base::remove(list = ls())

@@ -53,7 +53,7 @@ resTibble <- data.frame(ZONE = sort(c(1:7, 1:7)),
 
 
 # Read in the watershed boundaries as well
-source("Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
 
 
 
@@ -179,4 +179,4 @@ cat("(Different counties correspond to each zone)\n")
 
 
 # Remove all variables
-remove(list = ls())
+base::remove(list = ls())

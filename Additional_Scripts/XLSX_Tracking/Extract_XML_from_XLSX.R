@@ -112,4 +112,4 @@ for (i in 1:length(xlsxList)) {
 
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())

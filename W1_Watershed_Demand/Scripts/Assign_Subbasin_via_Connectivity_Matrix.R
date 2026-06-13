@@ -22,8 +22,8 @@ cat("Starting 'Assign_Subbasin_to_POD.R'...\n")
 mainProcedure <- function () {
   
   
-  source("Scripts/Watershed_Selection.R")
-  source("Scripts/Dataset_Year_Range.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
   
   
   
@@ -121,7 +121,7 @@ mainProcedure <- function () {
   
   # The next step is to export 'podTable' to a file
   podTable %>%
-    write_xlsx(paste0("OutputData/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
+    write_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_POD_Subbasin_Assignment.xlsx"))
   
   
   
@@ -568,7 +568,7 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
   # Read in the flow spreadsheet
   if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
     
-    flowDF <- read_xlsx(paste0("OutputData/", ws$ID, "_",
+    flowDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                                yearRange[1], "_", yearRange[2],
                                "_Monthly_Diversions",
                                "_Excluded_",
@@ -581,7 +581,7 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
     
   } else {
     
-    flowDF <- read_xlsx(paste0("OutputData/", ws$ID, "_",
+    flowDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                                yearRange[1], "_", yearRange[2],
                                "_Monthly_Diversions.xlsx"))
     
@@ -703,7 +703,7 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
   if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
     
     flowDF %>%
-      write_xlsx(paste0("OutputData/", ws$ID, "_",
+      write_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                         yearRange[1], "_", yearRange[2],
                         "_Monthly_Diversions",
                         "_Excluded_",
@@ -717,7 +717,7 @@ splitWaterRight <- function (podTable, appNum, subsetConn, colName,
   } else {
     
     flowDF %>%
-      write_xlsx(paste0("OutputData/", ws$ID, "_",
+      write_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                         yearRange[1], "_", yearRange[2],
                         "_Monthly_Diversions.xlsx"))
     
@@ -854,5 +854,5 @@ cat("Done!\n")
 
 
 # Remove the functions from the workspace
-remove(mainProcedure, checkOverlap, checkForMultiBasinRights, subbasinUpdate,
-       splitWaterRight, createSubbasinCombinations, identifyMinimumSubbasinCombination)
+base::remove(mainProcedure, checkOverlap, checkForMultiBasinRights, subbasinUpdate,
+             splitWaterRight, createSubbasinCombinations, identifyMinimumSubbasinCombination)

@@ -9,12 +9,12 @@ require(readxl)
 
 
 # Generic functions that are used in multiple scripts
-source("Scripts/Shared_Functions_Demand.R")
+source("W1_Watershed_Demand/Scripts/Shared_Functions_Demand.R")
 
 
 
 # IMPORTANT!! CHOOSE A WATERSHED
-index <- 9 # Change the index to your desired watershed's corresponding "INDEX" value
+index <- 2 # Change the index to your desired watershed's corresponding "INDEX" value
 
 # No other edits are needed to this file!
 
@@ -28,7 +28,7 @@ if (file.exists(makeSharePointPath(getFromMasterControl("SHAREPOINT_DEMAND_CONTR
   
 } else {
   
-  ws <- read_xlsx("InputData/Watershed_Demand_Dataset_Paths.xlsx",
+  ws <- read_xlsx("W1_Watershed_Demand/Input/Watershed_Demand_Dataset_Paths.xlsx",
                   sheet = "Main_Sheet", skip = 1)
   
 }
@@ -50,5 +50,4 @@ cat(paste0("Running script for ", ws$NAME, "\n"))
 
 
 # Remove 'index' from the environment
-remove(index)
-
+base::remove(index)

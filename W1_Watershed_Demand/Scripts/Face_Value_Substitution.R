@@ -24,7 +24,7 @@ faceValSub <- function (inputDF, yearRange = (year(Sys.Date()) - 2):year(Sys.Dat
   
   # Read in data from "water_use_report_extended.csv"
   # Filter it to APPLICATION_NUMBER values in 'inputDF'
-  extendedDF <- fread("RawData/water_use_report_extended.csv",
+  extendedDF <- fread("W1_Watershed_Demand/Intermediate/water_use_report_extended.csv",
                       select = c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
                                  "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", "EFFECTIVE_DATE",
                                  "WATER_RIGHT_TYPE", "DIRECT_DIV_SEASON_START",

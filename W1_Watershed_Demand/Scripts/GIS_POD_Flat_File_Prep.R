@@ -12,7 +12,7 @@ require(readxl)
 
 
 # Reference shared functions
-source("Scripts/Shared_Functions_Demand.R")
+source("W1_Watershed_Demand/Scripts/Shared_Functions_Demand.R")
 
 
 # Repair function for corrupted flat files----
@@ -125,13 +125,13 @@ ReportManager <- dbConnect(odbc(),
 # Save the POD flat file, ~73 MB as of 2/13/2024
 Flat_File_PODs <- dbGetQuery(ReportManager,
                              paste0("Select * from ", getFromMasterControl("FLAT_FILE_POD_TABLE_NAME"))) %>%
-  write_csv("RawData/ewrims_flat_file_pod.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_pod.csv")
 
 
 # Get the master flat file as well, ~69 MB as of 2/13/2024
 flat_file <- dbGetQuery(conn = ReportManager,
            statement = paste0("Select * from ", getFromMasterControl("FLAT_FILE_MAIN_TABLE_NAME"))) %>% 
-  write_csv("RawData/ewrims_flat_file.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file.csv")
 
 
 # Download the Water Rights Annual Water Use Report file next, ~389 MB as of 2/13/2024
@@ -150,11 +150,11 @@ if (water_use_report %>%
   # Apply the fixData function to water_use_report
   water_use_report_repaired <- fixData(water_use_report)
   
-  write_csv(water_use_report_repaired,"RawData/water_use_report.csv")
+  write_csv(water_use_report_repaired,"W1_Watershed_Demand/Intermediate/water_use_report.csv")
   
 } else {
   
-  write_csv(water_use_report,"RawData/water_use_report.csv")
+  write_csv(water_use_report,"W1_Watershed_Demand/Intermediate/water_use_report.csv")
   
 }
 
@@ -198,11 +198,11 @@ if (water_use_report_extended %>%
     rename(APPLICATION_NUMBER = APPL_ID)
   
   #Export water_use_report_extended_repaired to CSV
-  write_csv(x = water_use_report_extended_repaired, file = "RawData/water_use_report_extended.csv")
+  write_csv(x = water_use_report_extended_repaired, file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv")
   
 } else {
   
-  write_csv(x = water_use_report_extended, file = "RawData/water_use_report_extended.csv")
+  write_csv(x = water_use_report_extended, file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv")
   
 }
 
@@ -210,7 +210,7 @@ if (water_use_report_extended %>%
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
 ewrims_flat_file_use_season <- dbGetQuery(conn = ReportManager, 
            statement = paste0("Select * from ", getFromMasterControl("FLAT_FILE_USE_SEASON_TABLE_NAME"))) %>% 
-  write_csv("RawData/ewrims_flat_file_use_season.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
@@ -228,7 +228,7 @@ ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
             BILLING_ADDRESS_LINE_2, BILLING_CITY,
             BILLING_STATE, BILLING_ZIP,
             BILLING_COUNTRY, BILLING_FOREIGN_CODE)) %>%
-  write_csv("RawData/ewrims_flat_file_party.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_party.csv")
 
 
 # Read the POD flat file
@@ -355,7 +355,7 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
 write_csv(Flat_File_eWRIMS,
-          paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
+          paste0("W1_Watershed_Demand/Intermediate/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
 
 
 end_time = proc.time()
@@ -366,4 +366,4 @@ cat("The script ran in ", round(run_time["elapsed"], 2), " seconds\n")
 
 # Clear the environment----
   # Get the name of all variables in the environment
-remove(list = ls())
+base::remove(list = ls())

@@ -8,8 +8,8 @@
 cat("Starting 'MasterDemandTable.R'...\n")
 
 
-source("Scripts/Watershed_Selection.R")
-source("Scripts/Dataset_Year_Range.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
 
 
 #### Dependencies ####
@@ -48,7 +48,7 @@ assignBasinData_RR <- function (ewrimsDF) {
   # It contains data used with the original demand dataset and methodology
   # (Note: This spreadsheet has one row per unique "APPLICATION_NUMBER" value)
   
-  rrDF <- read_xlsx("InputData/RUSSIAN_RIVER_DATABASE_2022.xlsx", sheet = "in") %>%
+  rrDF <- read_xlsx("W1_Watershed_Demand/Input/RUSSIAN_RIVER_DATABASE_2022.xlsx", sheet = "in") %>%
     select(APPLICATION_NUMBER, BASIN, MAINSTEM, LONGITUDE, LATITUDE)
   
   
@@ -99,7 +99,7 @@ assignBasinData_RR <- function (ewrimsDF) {
     
     ewrimsDF %>%
       filter(is.na(MAINSTEM)) %>%
-      write_xlsx("OutputData/Russian_River_Rights_Missing_Mainstem.xlsx")
+      write_xlsx("W1_Watershed_Demand/Output/Russian_River_Rights_Missing_Mainstem.xlsx")
     
     
     warning(paste0("The following water rights are missing a mainstem designation:\n\n  ",
@@ -234,7 +234,7 @@ colMean <- function (colData) {
            #               grep("^[A-Z]{3}_STORAGE_DIVERSION$", names(expectedDF)))] %>%
   #mutate(across(ends_with("DIVERSION"), as.numeric))
 
-diverDF <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+diverDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                             "_Monthly_Diversions",
                             if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                     "",
@@ -270,7 +270,7 @@ diverDF %>%
   arrange(APPLICATION_NUMBER, YEAR) %>%
   mutate(CALENDAR_YEAR_OR_WATER_YEAR = if_else(YEAR < 2022, "CY", "WY")) %>%
   relocate(CALENDAR_YEAR_OR_WATER_YEAR, .after = YEAR) %>%
-  write_csv(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+  write_csv(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                    "_DemandDataset_MonthlyValues",
                    if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                            "",
@@ -323,7 +323,7 @@ if (anyNA(sumDF)) {
 # Import the ewrims_flat_file_working_file.csv----
   # Will be the basis of the Master Demand Table
   # (In the master table, "PRIMARY_OWNER_ENTITY_TYPE" is called "PRIMARY_OWNER_TYPE")
-ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+ewrimsDF <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                             "_ewrims_flat_file_Working_File",
                             if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                     "",
@@ -340,7 +340,7 @@ ewrimsDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", 
 
 
 # Add in columns from the beneficial use module
-beneficialUse <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+beneficialUse <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                                   "_Beneficial_Use_Return_Flow_Scripted",
                                   if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                           "",
@@ -367,7 +367,7 @@ ewrimsDF <- ewrimsDF %>%
 
 
 #Join Priority Date Module data to ewrimsDF----
-priorityDF <- read_xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
+priorityDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
   rename(ASSIGNED_PRIORITY_DATE_SOURCE = APPROPRIATIVE_DATE_SOURCE) %>%
   select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE, ASSIGNED_PRIORITY_DATE_SOURCE, 
          PRE_1914, RIPARIAN, APPROPRIATIVE) %>%
@@ -392,7 +392,7 @@ ewrimsDF <- ewrimsDF %>%
 #expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
 #                        col_types = "text") %>%
 #  spreadsheetAdjustment()
-expectedDF <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+expectedDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                                "_ExpectedDemand_FV",
                                if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                        "",
@@ -495,7 +495,7 @@ if (grepl("Russian", ws$NAME)) {
   
   
   # Read in the adjusted eWRIMS POD flat file, which contains a "COUNTY" field
-  podDF <- list.files("IntermediateData/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
+  podDF <- list.files("W1_Watershed_Demand/Intermediate/", full.names = TRUE, pattern = "^Flat_File_eWRIMS") %>%
     sort() %>% tail(1) %>%
     read_csv(show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
     mutate(LATITUDE = as.numeric(LATITUDE), LONGITUDE = as.numeric(LONGITUDE))
@@ -520,7 +520,7 @@ if (grepl("Russian", ws$NAME)) {
   if (anyNA(ewrimsDF$COUNTY)) {
     
     # Read in a layer containing California counties
-    countyDF <- st_read("InputData/GIS_General/ca_counties.geojson") %>%
+    countyDF <- st_read("W1_Watershed_Demand/Input/GIS_General/ca_counties.geojson") %>%
       select(NAME) %>%
       rename(COUNTY = NAME)
     
@@ -726,7 +726,7 @@ if (!grepl("Russian", ws$NAME)) {
 
 #Write the MasterDemandTable to a CSV----
 #dataset that includes 2021 and 2022 curtailment reporting years
-write.csv(ewrimsDF, file = paste0("OutputData/", ws$ID, "_",
+write.csv(ewrimsDF, file = paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                                          yearRange[1], "_", yearRange[2],
                                          "_MDT_", format(Sys.Date(), "%Y-%m-%d"),
                                   if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
@@ -773,4 +773,4 @@ print("The MasterDemandTable.R script has finished running")
 
 
 
-remove(list = ls())
+base::remove(list = ls())

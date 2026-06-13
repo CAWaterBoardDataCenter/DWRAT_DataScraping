@@ -26,8 +26,8 @@ mainProcedure <- function () {
   
   
   # Get the watershed and demand dataset range
-  source("Scripts/Watershed_Selection.R")
-  source("Scripts/Dataset_Year_Range.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
   
   
   
@@ -37,7 +37,7 @@ mainProcedure <- function () {
   
   
   # Master Demand Table
-  mdtDF <- list.files("OutputData/", 
+  mdtDF <- list.files("W1_Watershed_Demand/Output/", 
                       pattern = paste0(ws$ID, "_", 
                                        yearRange[1], "_", yearRange[2], 
                                        "_MDT_"), 
@@ -56,7 +56,7 @@ mainProcedure <- function () {
   
   
   # "DemandDataset_MonthlyValues" CSV
-  monthlyDF <- paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+  monthlyDF <- paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                       "_DemandDataset_MonthlyValues",
                       if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                               "",
@@ -91,7 +91,7 @@ mainProcedure <- function () {
   
   # Read in two input layers as well
   # (HUC12 boundaries and watershed catchments)
-  load("InputData/GIS_General/NHD_H_California_State_WBDHU12.RData") # Loads variable 'huc12'
+  load("W1_Watershed_Demand/Input/GIS_General/NHD_H_California_State_WBDHU12.RData") # Loads variable 'huc12'
   
   
   
@@ -113,7 +113,7 @@ mainProcedure <- function () {
   
   
   # Also read in the eWRIMS Flat File and the watershed boundaries
-  ewrimsDF <- read.csv("RawData/ewrims_flat_file.csv")
+  ewrimsDF <- read.csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file.csv")
   
   
   
@@ -156,7 +156,7 @@ mainProcedure <- function () {
   
   
   # Ensure that 'wsBound' does not extend past the coastline
-  pacific <- st_read("InputData/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") |>
+  pacific <- st_read("W1_Watershed_Demand/Input/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") |>
     st_transform(st_crs(wsBound))
   
   
@@ -404,7 +404,7 @@ mainProcedure <- function () {
   # Create output files
   write_csv(monthlyDF %>%
               select(APPLICATION_NUMBER, YEAR, MONTH, TYPE, DIVERSION),
-            paste0("OutputData/", ws$ID, "_Monthly_Demand.csv"))
+            paste0("W1_Watershed_Demand/Output/", ws$ID, "_Monthly_Demand.csv"))
   
   
   
@@ -413,13 +413,13 @@ mainProcedure <- function () {
                            Curtailment, DEMAND, `SHORTAGE %`,
                            BASIN, PRIORITY, Month) %>%
                     rename(`Application ID` = APPLICATION_NUMBER)),
-             paste0("OutputData/", ws$ID, "_DWRAT_Allocations.xlsx"))
+             paste0("W1_Watershed_Demand/Output/", ws$ID, "_DWRAT_Allocations.xlsx"))
   
   
   
   write_xlsx(list("Sheet1" = appDF %>%
                     select(APPLICATION_NUMBER)),
-             paste0("OutputData/", ws$ID, "_AppID_List.xlsx"))
+             paste0("W1_Watershed_Demand/Output/", ws$ID, "_AppID_List.xlsx"))
   
   
   
@@ -434,7 +434,7 @@ mainProcedure <- function () {
                      PRE_1914, RIPARIAN, APPROPRIATIVE, FACE_VALUE_AMOUNT_AF,
                      INI_REPORTED_DIV_AMOUNT_AF, NULL_DEMAND, PERCENT_FACE,
                      ZERO_DEMAND, ORIGINAL_APPLICATION_NUMBER, BASIN),
-            paste0("OutputData/", ws$ID, "_MDT.csv"))
+            paste0("W1_Watershed_Demand/Output/", ws$ID, "_MDT.csv"))
   
   
   
@@ -443,7 +443,7 @@ mainProcedure <- function () {
                     select(APPLICATION_NUMBER, POD_ID,
                            LATITUDE, LONGITUDE, HUC12,
                            HUC12_NAME, NHD_CAT)),
-             paste0("OutputData/", ws$ID, "_PODs.xlsx"))
+             paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs.xlsx"))
   
   
   
@@ -451,7 +451,7 @@ mainProcedure <- function () {
                     st_drop_geometry() %>%
                     select(NHD_CAT, HUC12, HUC12_NAME, NHD_OUTLET, HUC12_OUTLET,
                            NHD_DOWNSTREAM, HUC12_DOWNSTREAM)),
-             paste0("OutputData/", ws$ID, "_Catchments.xlsx"))
+             paste0("W1_Watershed_Demand/Output/", ws$ID, "_Catchments.xlsx"))
   
   
   
@@ -722,7 +722,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   # Write all of these layers to a file
   st_write(wsBound |> 
              st_transform("WGS84"),
-           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"), 
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"), 
            layer = "Watershed_Boundary",
            append = FALSE)
   
@@ -735,7 +735,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
                     ASSIGNED_HUC12, ASSIGNED_HUC12_NAME,
                     ASSIGNED_NHD_CAT) |> 
              st_transform("WGS84"),
-           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Water_Rights",
            append = FALSE)
   
@@ -746,7 +746,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
              rename(HUC12 = huc12,
                     HUC12_NAME = name) |> 
              st_transform("WGS84"),
-           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "HUC12_Subbasins",
            append = FALSE)
   
@@ -756,7 +756,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
              select(NHD_CAT, HUC12, HUC12_NAME) |>
              st_transform("WGS84") |> 
              st_make_valid(),
-           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Catchments",
            append = FALSE)
   
@@ -764,7 +764,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   st_write(flowLines |> 
              st_transform("WGS84"),
-           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Flowlines",
            append = FALSE)
 
@@ -772,7 +772,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   st_write(wsMask |> 
              st_transform("WGS84"),
-           paste0("OutputData/", ws$ID, "_GIS_Layers.gpkg"),
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Watershed_Mask",
            append = FALSE)
   
@@ -785,7 +785,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   # Output a completion message
   cat("\n\n")
-  print("Check the 'OutputData' folder for the files to be used in the PowerBI dashboard!")
+  print("Check the 'Output' folder for the files to be used in the PowerBI dashboard!")
   
 }
 
@@ -801,9 +801,9 @@ generateMetadata <- function (ws) {
   
   # Check first if the metadata document already exists
   # (Delete it if this is the case)
-  if (file.exists(paste0("OutputData/", ws$ID, "_GIS_Layers_Metadata.html"))) {
+  if (file.exists(paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers_Metadata.html"))) {
     
-    unlink(paste0("OutputData/", ws$ID, "_GIS_Layers_Metadata.html"))
+    unlink(paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers_Metadata.html"))
     
   }
   
@@ -1014,7 +1014,7 @@ generateMetadata <- function (ws) {
   
   
   # Save the HTML to a file
-  write_lines(htmlVec, paste0("OutputData/", ws$ID, "_GIS_Layers_Metadata.html"))
+  write_lines(htmlVec, paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers_Metadata.html"))
   
 }
 

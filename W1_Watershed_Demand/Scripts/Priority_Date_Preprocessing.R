@@ -11,7 +11,7 @@ library(readxl)
 cat("Starting 'Priority_Date_Preprocessing.R'...\n")
 
 
-source("Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
 
 
 ######################################################################## List of Application from GIS Step ####################################################################################
@@ -31,7 +31,7 @@ Application_Number <- Application_Number %>%
 
 
 # Read in the eWRIMS Flat File
-ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
+ewrims_flat_file <- read.csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file.csv") %>%
   unique()
 
 # Perform an inner join using "APPLICATION_NUMBER"; 
@@ -41,24 +41,24 @@ ewrims_flat_file_Combined <- inner_join(Application_Number, ewrims_flat_file, by
                                         relationship = "one-to-one")
 
 # Output 'ewrims_flat_file_Combined' to a folder
-write_csv(ewrims_flat_file_Combined, paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_WITH_FILTERS.csv"))
+write_csv(ewrims_flat_file_Combined, paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_ewrims_flat_file_WITH_FILTERS.csv"))
 ################################################################### Priority Date ############################################################
 
 # Produce the input file for the Priority Date module
 
 # First, read in a flat file
-Priority_Date <- read.csv(paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_WITH_FILTERS.csv"))
+Priority_Date <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_ewrims_flat_file_WITH_FILTERS.csv"))
 
 # Extract a subset of the columns
 Priority_Date_FINAL <- Priority_Date %>%
   select(APPLICATION_NUMBER, WATER_RIGHT_TYPE, PRIORITY_DATE, APPLICATION_RECD_DATE, APPLICATION_ACCEPTANCE_DATE, SUB_TYPE, YEAR_DIVERSION_COMMENCED)
 
 # Output that variable to a CSV file
-write_csv(Priority_Date_FINAL, paste0("IntermediateData/", ws$ID, "_Priority_Date_FINAL.csv"))
+write_csv(Priority_Date_FINAL, paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_Priority_Date_FINAL.csv"))
 
 
 # Remove variables that are no longer needed
-remove(Priority_Date, Priority_Date_FINAL, ewrims_flat_file, ewrims_flat_file_Combined)
+base::remove(Priority_Date, Priority_Date_FINAL, ewrims_flat_file, ewrims_flat_file_Combined)
 
 
 # Output a completion message to the console

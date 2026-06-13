@@ -49,27 +49,27 @@ fixData <- function(x) {
 
 # Save the POD flat file
 download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_pod.csv", 
-              "RawData/ewrims_flat_file_pod.csv", mode = "wb", quiet = TRUE)
+              "W1_Watershed_Demand/Intermediate/ewrims_flat_file_pod.csv", mode = "wb", quiet = TRUE)
 
 
 # Get the master flat file as well
 download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file.csv",
-              "RawData/ewrims_flat_file.csv", mode = "wb", quiet = TRUE)
+              "W1_Watershed_Demand/Intermediate/ewrims_flat_file.csv", mode = "wb", quiet = TRUE)
 
 
 # Download the Water Rights Annual Water Use Report file next
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report.csv", show_col_types = FALSE) %>%
-  write_csv("RawData/water_use_report.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/water_use_report.csv")
 
 # Save the Water Rights Annual Water Use Extended Report file too
 # (This works, but it takes a long time, and the progress bar might not update)
 options(timeout = 10^9) # With this setting change, download.file() will now stop if the download takes more than a billion seconds (~31.7 years), about 15.7 GB
-download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "RawData/water_use_report_extended.csv", mode = "wb", quiet = FALSE)
+download.file("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=water_use_report_extended.csv", "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv", mode = "wb", quiet = FALSE)
 
 
 # Save the Water Rights Uses and Seasons flat file as well, ~96 MB
 read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.xhtml?fileName=ewrims_flat_file_use_season.csv", show_col_types = FALSE, col_types = cols(.default = col_character())) %>%
-  write_csv("RawData/ewrims_flat_file_use_season.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_use_season.csv")
 
 
 # Get the Water Rights Parties flat file after that
@@ -85,13 +85,13 @@ read_csv("http://intapps.waterboards.ca.gov/downloadFile/faces/flatFilesEwrims.x
             BILLING_ADDRESS_LINE_2, BILLING_CITY,
             BILLING_STATE, BILLING_ZIP,
             BILLING_COUNTRY, BILLING_FOREIGN_CODE)) %>%
-  write_csv("RawData/ewrims_flat_file_party.csv")
+  write_csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_party.csv")
 
 
 
 # Fix a data issue in the two water use report flat files
 
-water_use_report <- fread("RawData/water_use_report.csv")
+water_use_report <- fread("W1_Watershed_Demand/Intermediate/water_use_report.csv")
 
 
 # Convert the YEAR  column to numeric
@@ -105,17 +105,17 @@ if (water_use_report %>%
   # Apply the fixData function to water_use_report
   water_use_report_repaired <- fixData(water_use_report)
   
-  write_csv(water_use_report_repaired,"RawData/water_use_report.csv")
+  write_csv(water_use_report_repaired,"W1_Watershed_Demand/Intermediate/water_use_report.csv")
   
 } else {
   
-  write_csv(water_use_report,"RawData/water_use_report.csv")
+  write_csv(water_use_report,"W1_Watershed_Demand/Intermediate/water_use_report.csv")
   
 }
 
 
 
-water_use_report_extended <- fread("RawData/water_use_report_extended.csv", 
+water_use_report_extended <- fread("W1_Watershed_Demand/Intermediate/water_use_report_extended.csv", 
       select = c("APPLICATION_NUMBER", "YEAR", "MONTH",
                  "AMOUNT", "DIVERSION_TYPE", "MAX_STORAGE",
                  "FACE_VALUE_AMOUNT", "FACE_VALUE_UNITS", 
@@ -148,18 +148,18 @@ if (water_use_report_extended %>%
     rename(APPLICATION_NUMBER = APPL_ID)
   
   #Export water_use_report_extended_repaired to CSV
-  write_csv(x = water_use_report_extended_repaired, file = "RawData/water_use_report_extended.csv")
+  write_csv(x = water_use_report_extended_repaired, file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv")
   
 } else {
   
-  write_csv(x = water_use_report_extended, file = "RawData/water_use_report_extended.csv")
+  write_csv(x = water_use_report_extended, file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv")
   
 }
 
 
 
 # Read the POD flat file
-Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
+Flat_File_PODs <- read.csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_pod.csv")
 
 #Apply the proper filters----
 
@@ -255,7 +255,7 @@ Flat_File_eWRIMS <- Flat_File_eWRIMS %>%
 #######################################USE THIS FILE FOR THE GIS STEP##########################################################################################################################################################################
 ####Check your output file
 write_csv(Flat_File_eWRIMS,
-          paste0("IntermediateData/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
+          paste0("W1_Watershed_Demand/Intermediate/Flat_File_eWRIMS_", Sys.Date() - 1, ".csv"))
 
 
 
@@ -267,4 +267,4 @@ all_vars = ls()
 # Remove variables
 rm(list = all_vars)
 
-remove(all_vars)
+base::remove(all_vars)

@@ -8,12 +8,12 @@ require(openxlsx)
 print("Starting 'Expected_Demand_Units_Issue_Flagger.R'...")
 
 
-source("Scripts/Watershed_Selection.R")
-source("Scripts/Dataset_Year_Range.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
 
 
 # Read in the Expected Demand spreadsheet
-expDemand <- read_xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions",
+expDemand <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions",
                               if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                       "",
                                       paste0("_Excluded_",
@@ -88,7 +88,7 @@ expDemand <- expDemand %>%
 
 
 # Read in the other Units QA/QC spreadsheet and remove rows that are already present in that spreadsheet
-mainSheet <- list.files("OutputData", 
+mainSheet <- list.files("W1_Watershed_Demand/Output", 
                         pattern = paste0("^", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx$"), 
                         full.names = TRUE) %>%
   read_xlsx()
@@ -160,7 +160,7 @@ if (sum(expDemand$APPLICATION_NUMBER %in% mainSheet$APPLICATION_NUMBER) > 0) {
   
   # Then, overwrite the review spreadsheet for it
   mainSheet %>%
-    write.xlsx(paste0("OutputData/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx"))
+    write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx"))
   
 }
 
@@ -201,12 +201,12 @@ if (!is.na(ws$QAQC_MEDIAN_BASED_UNIT_CONVERSION_ERRORS_SPREADSHEET_PATH)) {
     # Update the review spreadsheet that corresponds to 'mainSheet'
     mainSheet %>%
       filter(!(APPLICATION_NUMBER %in% reviewDF$APPLICATION_NUMBER)) %>%
-      write.xlsx(paste0("OutputData/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx"))
+      write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID[1], "_Expected_Demand_Units_QAQC.xlsx"))
     
   }
   
   
-  remove(reviewDF)
+  base::remove(reviewDF)
   
 }
 
@@ -217,7 +217,7 @@ write.xlsx(expDemand %>%
              mutate(QAQC_Action_Taken = NA,
                     QAQC_Reason = NA,
                     Staff = NA),
-           paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_Expected_Demand_Units_QAQC_Median_Based.xlsx"), overwrite = TRUE)
 
 
 
@@ -241,4 +241,4 @@ write.xlsx(expDemand %>%
 
 cat("Done!\n")
 
-remove(expDemand, medVals, mainSheet, makeKey_APP_YEAR_AMOUNT, compareKeys)
+base::remove(expDemand, medVals, mainSheet, makeKey_APP_YEAR_AMOUNT, compareKeys)

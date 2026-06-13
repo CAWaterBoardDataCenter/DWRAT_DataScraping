@@ -13,7 +13,7 @@
 #### SETUP ####
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())
 
 
 require(tidyverse)
@@ -35,7 +35,7 @@ mainProcedure <- function() {
   
   
   # Get the selected watershed
-  source("Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
   cat("\n")
   
   
@@ -439,14 +439,14 @@ generateMap <- function (catchDF, fieldName, ws) {
   
   
   # Finally, save 'leafMap'
-  outName <- paste0("OutputData/", ws$ID, "_Catchment_QAQC_Map.html")
+  outName <- paste0("W1_Watershed_Demand/Output/", ws$ID, "_Catchment_QAQC_Map.html")
   
   
   mapshot(leafMap, outName)
   
   
   # Notify the user about the map
-  paste0("Generated map and saved it in the \"OutputData\" folder!\n\n",
+  paste0("Generated map and saved it in the \"Output\" folder!\n\n",
          "Please inspect \"", outName, "\" for issues.") |>
     strwrap(width = 0.99 * getOption("width")) |>
     paste0(collapse = "\n") |>
@@ -577,6 +577,4 @@ mainProcedure()
 
 
 # Clean up
-remove(list = ls())
-
-
+base::remove(list = ls())

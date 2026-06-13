@@ -11,8 +11,8 @@ require(data.table)
 cat("Starting 'Priority_Date_Postprocessing.R'...\n")
 
 
-source("Scripts/Watershed_Selection.R")
-source("Scripts/Dataset_Year_Range.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
 
 
 ######################################################################## Break ####################################################################################
@@ -24,7 +24,7 @@ source("Scripts/Dataset_Year_Range.R")
 # Read in the (very large) water use report extended flat file
 # Import only certain columns
 # Also, restrict the years included in the dataset
-water_use_report <- fread(file = "RawData/water_use_report_extended.csv", 
+water_use_report <- fread(file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv", 
                          select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>% 
   unique()
 
@@ -110,7 +110,7 @@ if (!is.na(ws$EXCLUDED_REPORTING_YEARS) && grepl("[0-9]{4}", ws$EXCLUDED_REPORTI
   
   
   # Free up space used by this sub-procedure
-  remove(i, removeYears)
+  base::remove(i, removeYears)
   
 } 
 
@@ -143,11 +143,11 @@ if (!is.na(ws$EXCLUDED_REPORTING_YEARS) && grepl("[0-9]{4}", ws$EXCLUDED_REPORTI
 
 # REMEDIATION BLOCK----
 # QA/QC functions for correcting unit conversion errors and duplicate reporting
-source("Scripts/QAQC_Functions.R")
+source("W1_Watershed_Demand/Scripts/QAQC_Functions.R")
 
 
 # A function to update reported amounts for new rights
-source("Scripts/Face_Value_Substitution.R")
+source("W1_Watershed_Demand/Scripts/Face_Value_Substitution.R")
 
 
 
@@ -174,7 +174,7 @@ water_use_report_Date <- water_use_report_Date %>%
 
 # Output the data to a CSV file
 write.csv(water_use_report_Date,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -185,16 +185,16 @@ write.csv(water_use_report_Date,
                                   paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 # Remove variables from the environment that will no longer be used (free up memory)
-remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Combined,
-       chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
-       faceValSub, faceValExtract, faceValAssign, monthExtract,
-       applyConversionFactor)#, conn)
+base::remove(water_use_report, water_use_report_Date, unitFixer, water_use_report_Combined,
+             chooseUseType, iterateQAQC, useMeasurementData, dupReportingFixer, removeDups,
+             faceValSub, faceValExtract, faceValAssign, monthExtract,
+             applyConversionFactor)#, conn)
 
 ######################################################################## Break ####################################################################################
 
 # FLAGGING BLOCK ----
 # Read the use season flat file next
-ewrims_flat_file_use_season <- read.csv("RawData/ewrims_flat_file_use_season.csv")
+ewrims_flat_file_use_season <- read.csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file_use_season.csv")
 
 
 # Perform another inner join
@@ -242,7 +242,7 @@ ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS <- ewrims_flat_fil
 
 # Write the output to a file
 write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -253,10 +253,10 @@ write.csv(ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
                                   paste0(collapse = "_"))), ".csv"), row.names = FALSE)
 
 # Remove unnecessary variables again to save memory
-remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
-       ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS,
-       ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
-       ewrims_flat_file_use_season_Combined_USE_STATUS)
+base::remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
+             ewrims_flat_file_use_season_Combined_COLLECTION_SEASON_STATUS,
+             ewrims_flat_file_use_season_Combined_DIRECT_DIV_SEASON_STATUS,
+             ewrims_flat_file_use_season_Combined_USE_STATUS)
 
 
 ################################################################### Beneficial Use and Return Flow ############################################################
@@ -264,7 +264,7 @@ remove(ewrims_flat_file_use_season, ewrims_flat_file_use_season_Combined,
 # Prepare the input file for the beneficial use module next
 
 # Read in the CSV
-Beneficial_Use_and_Return_Flow <- read.csv(paste0("IntermediateData/", ws$ID, 
+Beneficial_Use_and_Return_Flow <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, 
                                                   "_", yearRange[1], "_", yearRange[2], 
                                                   "_ewrims_flat_file_use_season_WITH_FILTERS",
                                                   if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
@@ -287,7 +287,7 @@ Beneficial_Use_and_Return_Flow_FINAL <- Beneficial_Use_and_Return_Flow %>%
 
 ####Output the variable to a file
 write.csv(Beneficial_Use_and_Return_Flow_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Beneficial_Use_and_Return_Flow_FINAL",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Beneficial_Use_and_Return_Flow_FINAL",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -304,7 +304,7 @@ write.csv(Beneficial_Use_and_Return_Flow_FINAL,
 # Get statistical data next
 
 # Read in a CSV 
-Statistics <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+Statistics <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
                               if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                       "",
                                       paste0("_Excluded_",
@@ -322,7 +322,7 @@ Statistics_FINAL  <- Statistics %>%
 
 # Output the data
 write.csv(Statistics_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -334,7 +334,7 @@ write.csv(Statistics_FINAL,
 
 
 # Read in another CSV next 
-Statistics_FaceValue_IniDiv <- read.csv(paste0("IntermediateData/", ws$ID, "_ewrims_flat_file_WITH_FILTERS.csv"))
+Statistics_FaceValue_IniDiv <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_ewrims_flat_file_WITH_FILTERS.csv"))
 
 
 # Remove most variables from the data frame
@@ -345,7 +345,7 @@ Statistics_FaceValue_IniDiv_Final  <- Statistics_FaceValue_IniDiv %>%
 
 # Output results to a file structure
 write.csv(Statistics_FaceValue_IniDiv_Final,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -361,7 +361,7 @@ write.csv(Statistics_FaceValue_IniDiv_Final,
 # Write a CSV file for the first Diversion out of Season module
 
 # Read in the use season flat file
-Diversion_out_of_Season_Part_A <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS",
+Diversion_out_of_Season_Part_A <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_use_season_WITH_FILTERS",
                                                   if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                                           "",
                                                           paste0("_Excluded_",
@@ -382,7 +382,7 @@ Diversion_out_of_Season_Part_A_FINAL <- Diversion_out_of_Season_Part_A %>%
 
 # Output the data to a file
 write.csv(Diversion_out_of_Season_Part_A_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_A_FINAL",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_A_FINAL",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -398,7 +398,7 @@ write.csv(Diversion_out_of_Season_Part_A_FINAL,
 # Write a CSV file for the second Diversion out of Season module
 
 # Read in a flat file
-Diversion_out_of_Season_Part_B <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+Diversion_out_of_Season_Part_B <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
                                                   if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                                           "",
                                                           paste0("_Excluded_",
@@ -424,7 +424,7 @@ Diversion_out_of_Season_Part_B_FINAL <- Diversion_out_of_Season_Part_B_N %>%
 
 # Output a CSV file
 write.csv(Diversion_out_of_Season_Part_B_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_B_FINAL",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Diversion_out_of_Season_Part_B_FINAL",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -436,12 +436,12 @@ write.csv(Diversion_out_of_Season_Part_B_FINAL,
 
 
 # Remove unnecessary variables at this step to free up memory
-remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
-       Diversion_out_of_Season_Part_A, Diversion_out_of_Season_Part_A_FINAL,
-       Diversion_out_of_Season_Part_B_N, Diversion_out_of_Season_Part_B,
-       Diversion_out_of_Season_Part_B_FINAL, 
-       Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,
-       Statistics_FINAL)
+base::remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
+             Diversion_out_of_Season_Part_A, Diversion_out_of_Season_Part_A_FINAL,
+             Diversion_out_of_Season_Part_B_N, Diversion_out_of_Season_Part_B,
+             Diversion_out_of_Season_Part_B_FINAL, 
+             Statistics, Statistics_FaceValue_IniDiv, Statistics_FaceValue_IniDiv_Final,
+             Statistics_FINAL)
 
 
 ###################################################################Missing RMS Reports############################################################
@@ -450,7 +450,7 @@ remove(Beneficial_Use_and_Return_Flow, Beneficial_Use_and_Return_Flow_FINAL,
 
 
 # Read in a flat file CSV
-Missing_RMS_Reports <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
+Missing_RMS_Reports <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_water_use_report_DATE",
                                        if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                                "",
                                                paste0("_Excluded_",
@@ -463,7 +463,7 @@ Missing_RMS_Reports <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRang
 
 
 # Read in the results from the Priority Date module
-Priority_Date <- read_xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
+Priority_Date <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
   select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE, PRE_1914, RIPARIAN, APPROPRIATIVE, APPROPRIATIVE_DATE_SOURCE, STATEMENT_PRIORITY_SOURCE)
 
 
@@ -483,7 +483,7 @@ Missing_RMS_Reports_FINAL <- Missing_RMS_Reports_Priority_Date_Combined %>%
 
 # Output the data
 write.csv(Missing_RMS_Reports_FINAL,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Missing_RMS_Reports_FINAL",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Missing_RMS_Reports_FINAL",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -507,7 +507,7 @@ write.csv(Missing_RMS_Reports_FINAL,
 
 
 # Read in the eWRIMS Flat File
-ewrims_flat_file <- read.csv("RawData/ewrims_flat_file.csv") %>%
+ewrims_flat_file <- read.csv("W1_Watershed_Demand/Intermediate/ewrims_flat_file.csv") %>%
   select(APPLICATION_NUMBER, WATER_RIGHT_TYPE, WATER_RIGHT_STATUS, 
          PRIMARY_OWNER_ENTITY_TYPE, APPLICATION_PRIMARY_OWNER, SOURCE_NAME,
          TRIB_DESC, WATERSHED) %>%
@@ -533,7 +533,7 @@ ewrims_flat_file_Working_File <- ewrims_flat_file_Three %>%
 
 # Output data to a file structure
 write.csv(ewrims_flat_file_Working_File,
-          paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_Working_File",
+          paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ewrims_flat_file_Working_File",
                  if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                          "",
                          paste0("_Excluded_",
@@ -576,11 +576,11 @@ write.csv(ewrims_flat_file_Working_File,
 
 
 # Finally, remove all variables from the workspace
-remove(ewrims_flat_file, ewrims_flat_file_one, #ewrims_flat_file_party,
-       #ewrims_flat_file_party_APPLICATION_ID, ewrims_flat_file_party_Final,
-       ewrims_flat_file_Three, ewrims_flat_file_Working_File, #Nine, Phone, Email,
-       Application_Number, Priority_Date, Missing_RMS_Reports, Missing_RMS_Reports_FINAL,
-       Missing_RMS_Reports_Priority_Date_Combined)
+base::remove(ewrims_flat_file, ewrims_flat_file_one, #ewrims_flat_file_party,
+             #ewrims_flat_file_party_APPLICATION_ID, ewrims_flat_file_party_Final,
+             ewrims_flat_file_Three, ewrims_flat_file_Working_File, #Nine, Phone, Email,
+             Application_Number, Priority_Date, Missing_RMS_Reports, Missing_RMS_Reports_FINAL,
+             Missing_RMS_Reports_Priority_Date_Combined)
 
 
 cat("Done!\n")

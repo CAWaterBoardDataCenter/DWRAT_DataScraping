@@ -21,14 +21,14 @@ mainProcedure <- function () {
   cat("Starting 'Check_NA_Reports.R'...\n")
   
   
-  source("Scripts/Watershed_Selection.R")
-  source("Scripts/Dataset_Year_Range.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
   
   
   # Read in th expected demand dataset
   if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
     
-    flowDF <- paste0("OutputData/", ws$ID, "_",
+    flowDF <- paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                      yearRange[1], "_", yearRange[2],
                      "_Monthly_Diversions",
                      "_Excluded_",
@@ -42,7 +42,7 @@ mainProcedure <- function () {
     
   } else {
     
-    flowDF <- paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+    flowDF <- paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                      "_Monthly_Diversions.xlsx") %>%
       read_xlsx()
     
@@ -126,7 +126,7 @@ mainProcedure <- function () {
       if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
         
         flowDF %>%
-          write_xlsx(paste0("OutputData/", ws$ID, "_",
+          write_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                             yearRange[1], "_", yearRange[2],
                             "_Monthly_Diversions",
                             "_Excluded_",
@@ -140,7 +140,7 @@ mainProcedure <- function () {
       } else {
         
         flowDF %>%
-          write_xlsx(paste0("OutputData/", ws$ID, "_",
+          write_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                             yearRange[1], "_", yearRange[2],
                             "_Monthly_Diversions.xlsx"))
         
@@ -197,7 +197,7 @@ mainProcedure <- function () {
   
   # First read in the eWRIMS flat file
   # (It has the water right IDs needed to access the RMS Reports table)
-  ewrimsDF <- list.files("IntermediateData/", pattern = "^Flat_File_e", full.names = TRUE) %>%
+  ewrimsDF <- list.files("W1_Watershed_Demand/Intermediate/", pattern = "^Flat_File_e", full.names = TRUE) %>%
     sort() %>% tail(1) %>%
     read_csv(show_col_types = FALSE)
   
@@ -292,14 +292,14 @@ mainProcedure <- function () {
     # Output a message that a manual review is required
     cat("\nA manual review is required to inspect the reports that contain only NA (empty values)\n")
     cat("Reports that truly do not exist should be left as empty. Reports that have data (even if 0) should not be NA\n")
-    cat(paste0("\nPlease see ", "OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx", "\n"))
+    cat(paste0("\nPlease see ", "W1_Watershed_Demand/Output/", ws$ID, "_Empty_Reports_Manual_Review.xlsx", "\n"))
     
     
     
     # Then write 'naDF' to a file
     naDF %>%
       mutate(Staff = NA_character_) %>%
-      write_xlsx(paste0("OutputData/", ws$ID, "_Empty_Reports_Manual_Review.xlsx"))
+      write_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_Empty_Reports_Manual_Review.xlsx"))
     
   }
   
@@ -323,7 +323,7 @@ mainProcedure <- function () {
   # Finally, write 'flowDF' to a file
   # (Overwriting its original version)
   write_xlsx(flowDF,
-             paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+             paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                     "_Monthly_Diversions",
                     if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                             "",
@@ -446,4 +446,4 @@ mainProcedure()
 
 #### Cleanup ####
 
-remove(mainProcedure, extractTable, updateValues)
+base::remove(mainProcedure, extractTable, updateValues)

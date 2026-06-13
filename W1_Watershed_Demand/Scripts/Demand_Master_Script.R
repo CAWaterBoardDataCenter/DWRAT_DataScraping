@@ -23,25 +23,25 @@ options(viewer = NULL) # For mapview
 
 # IMPORTANT!!
 # Update "Watershed_Selection.R" to select a watershed
-source("Scripts/Watershed_Selection.R") # DATA ACQUISITION SCRIPT
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R") # DATA ACQUISITION SCRIPT
 
 # IMPORTANT!! x2
 # Specify the years to be included in the demand dataset
-source("Scripts/Dataset_Year_Range.R")  #DATA ACQUISITION SCRIPT
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")  #DATA ACQUISITION SCRIPT
 
 
 # GIS Pre-Processing Initial Steps
-source("Scripts/GIS_POD_Flat_File_Prep.R") # Consists of Remediation coding block and
+source("W1_Watershed_Demand/Scripts/GIS_POD_Flat_File_Prep.R") # Consists of Remediation coding block and
 # Data Acquisition coding block
 
 
 # GIS Pre-Processing
-source("Scripts/GIS_Preprocessing.R") # FLAGGING SCRIPT
+source("W1_Watershed_Demand/Scripts/GIS_Preprocessing.R") # FLAGGING SCRIPT
 
 
 # Uses coordinate data input into the "R_Review" worksheet of the GIS Pre-Processing spreadsheet
 # to identify which PODs flow into the watershed (via USGS StreamStats)
-source("Scripts/POD_StreamStats_Analysis.R")
+source("W1_Watershed_Demand/Scripts/POD_StreamStats_Analysis.R")
 
 
 # Convert "water_use_report_extended.csv" to a SQLite database
@@ -49,15 +49,15 @@ source("Scripts/POD_StreamStats_Analysis.R")
 
 
 # Priority Date Pre-Processing
-source("Scripts/Priority_Date_Preprocessing.R") # FLAGGING SCRIPT
+source("W1_Watershed_Demand/Scripts/Priority_Date_Preprocessing.R") # FLAGGING SCRIPT
 
 
 # Priority Date Module
-source("Scripts/Priority_Date.R") # FLAGGING SCRIPT and # DWRAT COMPLIANCE SCRIPT
+source("W1_Watershed_Demand/Scripts/Priority_Date.R") # FLAGGING SCRIPT and # DWRAT COMPLIANCE SCRIPT
 
 
 # Priority Date Post-Processing
-source("Scripts/Priority_Date_Postprocessing.R") # FLAGGING SCRIPT and REMEDIATION SCRIPT
+source("W1_Watershed_Demand/Scripts/Priority_Date_Postprocessing.R") # FLAGGING SCRIPT and REMEDIATION SCRIPT
 
 # Duplicate Report Module *
   # Identifies 1 owner per water right per reporting year
@@ -65,20 +65,20 @@ source("Scripts/Priority_Date_Postprocessing.R") # FLAGGING SCRIPT and REMEDIATI
   # in the same year
   # Doesn't need to be run again unless we want to analyze new Russian River water rights; 
   # the manual review has already been performed on the duplicates
-source("Scripts/Multiple_Owner_Analysis.R") # FLAGGING SCRIPT
+source("W1_Watershed_Demand/Scripts/Multiple_Owner_Analysis.R") # FLAGGING SCRIPT
 
 # Expected Demand Module
-source("Scripts/Expected_Demand.R") # FLAGGING SCRIPT
+source("W1_Watershed_Demand/Scripts/Expected_Demand.R") # FLAGGING SCRIPT
 
 # Supplemental Expected Demand Module
-source("Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
+source("W1_Watershed_Demand/Scripts/Expected_Demand_Units_Issue_Flagger.R") # FLAGGING SCRIPT
 
 
 # Try to fix reports with NA values for all months and diversion types
-source("Scripts/Check_Empty_Reports.R") # FLAGGING AND REMEDIATION SCRIPT
+source("W1_Watershed_Demand/Scripts/Check_Empty_Reports.R") # FLAGGING AND REMEDIATION SCRIPT
 
 # Beneficial Use, Return Flow Module
-source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
+source("W1_Watershed_Demand/Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 # because DWRAT does not consider beneficial uses or return flows
 
 
@@ -92,12 +92,12 @@ source("Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SCRIPT and An ARTIFACT
 
 # QA/QC Catchment Layer
 # Inspect catchment layers for potential issues before using them!
-source("Scripts/Catchment_QAQC.R")
+source("W1_Watershed_Demand/Scripts/Catchment_QAQC.R")
 
 
 # POD Sub-basin Assignment
 #source("Scripts/Assign_Subbasin_to_POD.R") # use this script for the Russian River watershed
-source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
+source("W1_Watershed_Demand/Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 # ^ Alternative script that uses connectivity matrix for sub-basin assignment
 
 
@@ -110,17 +110,17 @@ source("Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 
 
 # MasterDemandTable.CSV for DWRAT
-source("Scripts/MasterDemandTable.R")
+source("W1_Watershed_Demand/Scripts/MasterDemandTable.R")
 
 
 
 # Prepare spreadsheets and GIS layers for a watershed's PowerBI dashboard*
-source("Scripts/PowerBI_Dashboard_Prep.R")
+source("W1_Watershed_Demand/Scripts/PowerBI_Dashboard_Prep.R")
 
 
 
 # Optional Analysis - Plot average annual demand by sub-basin*
-source("Scripts/Subbasin_Average_Annual_Demand_Mapping.R")
+source("W1_Watershed_Demand/Scripts/Subbasin_Average_Annual_Demand_Mapping.R")
 
 
 

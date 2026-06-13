@@ -28,12 +28,12 @@ mainProcedure <- function () {
   # The main body of the script
   
   
-  source("Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
   
   
   # Read in the CSV file containing data on the water rights holders
   # ("Priority_Data_FINAL.csv")
-  priorityDateCSV <- read.csv(paste0("IntermediateData/", ws$ID, "_Priority_Date_FINAL.csv")) %>%
+  priorityDateCSV <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_Priority_Date_FINAL.csv")) %>%
     unique()
 
   
@@ -264,7 +264,7 @@ mainProcedure <- function () {
   # Output 'priorityDateCSV' as a new XLSX file
   # (in the "OutputData" folder)
   priorityDateCSV %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
   
   
   
@@ -285,4 +285,4 @@ mainProcedure()
 
 
 # Remove the function from the environment when the procedure is complete
-remove(mainProcedure)
+base::remove(mainProcedure)

@@ -18,15 +18,15 @@ mainProcedure <- function () {
   
   # The main body of the script
   
-  source("Scripts/Watershed_Selection.R")
-  source("Scripts/Dataset_Year_Range.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
   
   
   
   # Read in the input CSV file for this analysis
   if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
     
-    inputDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+    inputDF <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                                "_Beneficial_Use_and_Return_Flow_FINAL",
                                "_Excluded_", 
                                ws$EXCLUDED_REPORTING_YEARS %>%
@@ -38,7 +38,7 @@ mainProcedure <- function () {
     
   } else {
     
-    inputDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+    inputDF <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                                "_Beneficial_Use_and_Return_Flow_FINAL.csv"))
     
   }
@@ -541,7 +541,7 @@ writeSpreadsheet <- function (inputDF, resDF, wsID) {
   # Save 'wb' to a file
   if (!is.na(ws$EXCLUDED_REPORTING_YEARS)) {
     
-    saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+    saveWorkbook(wb, paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                             "_Beneficial_Use_Return_Flow_Scripted",
                             "_Excluded_",
                             ws$EXCLUDED_REPORTING_YEARS %>%
@@ -553,7 +553,7 @@ writeSpreadsheet <- function (inputDF, resDF, wsID) {
     
   } else {
     
-    saveWorkbook(wb, paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
+    saveWorkbook(wb, paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
                             "_Beneficial_Use_Return_Flow_Scripted",
                             ".xlsx"), overwrite = TRUE)
     
@@ -574,4 +574,4 @@ cat("Starting 'Beneficial_Use_Return_Flow.R'...")
 
 mainProcedure()
 
-remove(mainProcedure, standardReturnFlow, useRanking, writeSpreadsheet)
+base::remove(mainProcedure, standardReturnFlow, useRanking, writeSpreadsheet)

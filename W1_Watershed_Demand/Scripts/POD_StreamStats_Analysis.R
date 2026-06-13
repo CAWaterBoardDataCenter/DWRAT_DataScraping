@@ -24,7 +24,7 @@ options(viewer = NULL) # For mapview and R version 4.4.0
 mainProcedure <- function () {
 
   # Analyze the specified coordinates in the GIS manual review
-  source("Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
   
   
   
@@ -121,7 +121,7 @@ mainProcedure <- function () {
   
   
   # After that, load in the PLSS sections
-  plssDF <- st_read("InputData/GIS_General/Public_Land_Survey_System_(PLSS)%3A_Sections.gpkg",
+  plssDF <- st_read("W1_Watershed_Demand/Input/GIS_General/Public_Land_Survey_System_(PLSS)%3A_Sections.gpkg",
                     layer = "Public_Land_Survey_System_(PLSS)%3A_Sections")
   
   
@@ -382,9 +382,9 @@ mainProcedure <- function () {
   
   # Write 'finalDF' to a geopackage file
   # (Make sure that file doesn't already exist first)
-  if (paste0(ws$ID, "_PODs_Final_List.gpkg") %in% list.files("OutputData")) {
+  if (paste0(ws$ID, "_PODs_Final_List.gpkg") %in% list.files("W1_Watershed_Demand/Output")) {
     
-    invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_Final_List.gpkg")))
+    invisible(unlink(paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs_Final_List.gpkg")))
     
   }
   
@@ -392,7 +392,7 @@ mainProcedure <- function () {
   
   st_write(finalDF %>%
              st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = "NAD83"), 
-           paste0("OutputData/", ws$ID, "_PODs_Final_List.gpkg"), layer = "Final_POD_List", delete_dsn = TRUE)
+           paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs_Final_List.gpkg"), layer = "Final_POD_List", delete_dsn = TRUE)
   
   
   
@@ -400,7 +400,7 @@ mainProcedure <- function () {
   write_xlsx(list("StreamStats_Res" = podDF %>% select(-KEY), 
                   "Final_List" = finalDF %>%
                     select(APPLICATION_NUMBER, POD_ID, AT_LEAST_ONE_EXIT, LONGITUDE, LATITUDE)), 
-             paste0("OutputData/", ws$ID, "_POD_StreamStats_Review.xlsx"))
+             paste0("W1_Watershed_Demand/Output/", ws$ID, "_POD_StreamStats_Review.xlsx"))
   
   
   
@@ -517,10 +517,10 @@ verifyWatershedOverlap <- function (pod, wsExit, wsBound) {
   # Save a copy of the results if 'overlapRes' and 'exitDist' < 200 give different results
   if (overlapRes != (exitDist < 200)) {
     
-    counter <- 1 + length(list.files(pattern = "^StreamStats_Diff_Check.+\\.RData$"))
+    counter <- 1 + length(list.files("W1_Watershed_Demand/Intermediate", pattern = "^StreamStats_Diff_Check.+\\.RData$"))
     
     save(wsBound, flowPath, wsExit, overlapRes, exitDist,
-         file = paste0("StreamStats_Diff_Check_This_", 
+         file = paste0("W1_Watershed_Demand/Intermediate/StreamStats_Diff_Check_This_", 
                        paste0(rep(0, 3 - str_count(counter, "[0-9]")), collapse = ""), 
                        counter, ".RData"))
     
@@ -663,10 +663,10 @@ requestFlowPath <- function (pod) {
   #### Output File for Potential Errors #2 ####
   if (nrow(pointDF) < 2) {
     
-    counter <- 1 + length(list.files(pattern = "^StreamStats_Diff_Check.+\\.RData$"))
+    counter <- 1 + length(list.files("W1_Watershed_Demand/Intermediate", pattern = "^StreamStats_Diff_Check.+\\.RData$"))
     
     save(pod, flowReq, flowRes, pointDF,
-         file = paste0("StreamStats_Diff_Check_This_", 
+         file = paste0("W1_Watershed_Demand/Intermediate/StreamStats_Diff_Check_This_", 
                        paste0(rep(0, 3 - str_count(counter, "[0-9]")), collapse = ""), 
                        counter, ".RData"))
     
@@ -1208,15 +1208,15 @@ getSubPLSS <- function (section, township, range, meridian) {
   
   
   # First read in that dataset
-  load("InputData/GIS_General/PLSS_Subdivisions_BLM_20240123_Part_1.RData")
-  load("InputData/GIS_General/PLSS_Subdivisions_BLM_20240123_Part_2.RData")
-  load("InputData/GIS_General/PLSS_Subdivisions_BLM_20240123_Part_3.RData")
+  load("W1_Watershed_Demand/Input/GIS_General/PLSS_Subdivisions_BLM_20240123_Part_1.RData")
+  load("W1_Watershed_Demand/Input/GIS_General/PLSS_Subdivisions_BLM_20240123_Part_2.RData")
+  load("W1_Watershed_Demand/Input/GIS_General/PLSS_Subdivisions_BLM_20240123_Part_3.RData")
   
   
   plssSub <- bind_rows(plssSub1, plssSub2, plssSub3)
   
   
-  remove(plssSub1, plssSub2, plssSub3)
+  base::remove(plssSub1, plssSub2, plssSub3)
   
   
   
@@ -1602,7 +1602,7 @@ oceanOverlapCheck <- function (pod) {
   
   
   # Read in a polygon containing the Pacific Ocean (that is close to California)
-  pacific <- st_read("InputData/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") %>%
+  pacific <- st_read("W1_Watershed_Demand/Input/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") %>%
     st_transform("epsg:3488")
   
   
@@ -1628,7 +1628,8 @@ mainProcedure()
 print("The script has finished running!")
 
 
-remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
-       requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
-       chooseSection, section2point, extractCorner, findLot, getSubPLSS,
-       splitSection, translatePoint, oceanOverlapCheck)
+base::remove(mainProcedure, checkSectionMatches, colIndex, verifyWatershedOverlap,
+             requestFlowPath, checkForIntersection, calcMinDistance, sectionMovePOD,
+             chooseSection, section2point, extractCorner, findLot, getSubPLSS,
+             splitSection, translatePoint, oceanOverlapCheck)
+

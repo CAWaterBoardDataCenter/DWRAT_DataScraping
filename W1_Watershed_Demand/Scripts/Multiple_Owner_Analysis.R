@@ -9,8 +9,8 @@ require(writexl) # for write_xlsx function
 require(readxl) # for read_xlsx function
 
 
-source("Scripts/Watershed_Selection.R")
-source("Scripts/Dataset_Year_Range.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
 
 
 #Import Raw Data ----
@@ -18,7 +18,7 @@ source("Scripts/Dataset_Year_Range.R")
 #Import Statistics_FINAL.csv. This is one of the output files of the Priority_Date_Preprocessing.R 
 #script; but we just want the unique APPLICATION_NUMBERS; these are just water rights
 #in the Russian River.
-appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
+appYears <- read_csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
                             if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                     "",
                                     paste0("_Excluded_",
@@ -58,7 +58,7 @@ appYears <- read_csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", 
   #APPLICATION_PRIMARY_OWNER is the primary owner in the reporting year
   #PARTY_ID is the Party ID tied to the primary owner in the reporting year
 
-file_path <- "RawData/water_use_report_extended.csv"
+file_path <- "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv"
 selected_columns <- c("APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE",
                       "APPLICATION_PRIMARY_OWNER", "PARTY_ID")
 
@@ -178,7 +178,7 @@ if (!is.na(ws$QAQC_DUPLICATE_REPORTING_SPREADSHEET_PATH)) {
     filter(!(PK %in% reviewDF$PK))
   
   
-  remove(reviewDF)
+  base::remove(reviewDF)
   
 }
 
@@ -198,12 +198,12 @@ Duplicate_Reports <- Duplicate_Reports %>%
 
 
 
-writexl::write_xlsx(x= Duplicate_Reports, path = paste0("OutputData/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
+writexl::write_xlsx(x= Duplicate_Reports, path = paste0("W1_Watershed_Demand/Output/", ws$ID, "_Duplicate_Reports_Manual_Review.xlsx"), col_names = TRUE)
 
 print("The Multiple_Owner_Analysis.R script is done running!")
 
 
 
-remove(appYears, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,# conn,
-       RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3, file_path,
-       RMS_parties4, selected_columns)
+base::remove(appYears, Duplicate_Reports, RMS_parties, RMS_parties_aggregate,# conn,
+             RMS_parties_NDD, RMS_parties_PK_aggregate, RMS_parties2, RMS_parties3, file_path,
+             RMS_parties4, selected_columns)

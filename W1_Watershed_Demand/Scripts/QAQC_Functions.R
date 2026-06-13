@@ -470,7 +470,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         #        because the 2021 RMS report only extends up to September 2021)
         if (actionYear < 2022) {
           
-          tempDF <- fread(file = "RawData/water_use_report_extended.csv",
+          tempDF <- fread(file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv",
                           select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
             filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR == actionYear) %>%
             arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
@@ -478,7 +478,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         # Otherwise, data from both 'actionYear' and the prior year are required
         } else {
           
-          tempDF <- fread(file = "RawData/water_use_report_extended.csv",
+          tempDF <- fread(file = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv",
                           select = c("APPLICATION_NUMBER","YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE")) %>%
             filter(APPLICATION_NUMBER == unitsQAQC$APPLICATION_NUMBER[i] & YEAR %in% c(actionYear, actionYear - 1)) %>%
             arrange(APPLICATION_NUMBER, YEAR, MONTH, DIVERSION_TYPE)
@@ -924,7 +924,7 @@ removeDups <- function (inputDF, unitsQAQC, i, wsID) {
   
   
   # Get the priority dates for these application numbers next
-  priorityDF <- read_xlsx(paste0("OutputData/", wsID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
+  priorityDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", wsID, "_Priority_Date_Scripted.xlsx"), col_types = "text") %>%
     select(APPLICATION_NUMBER, ASSIGNED_PRIORITY_DATE) %>%
     filter(APPLICATION_NUMBER %in% appVec)
   

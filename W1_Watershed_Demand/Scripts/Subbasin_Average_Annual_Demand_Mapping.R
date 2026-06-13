@@ -7,12 +7,13 @@
 require(tidyverse)
 require(sf)
 require(mapview)
+require(webshot)
 
 options(viewer = NULL)
 
 
-source("Scripts/Watershed_Selection.R")
-source("Scripts/Dataset_Year_Range.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
 
 
 
@@ -28,7 +29,7 @@ subWS <- getGIS(ws = ws,
 
 
 # Master Demand Table
-mdt <- list.files("OutputData", 
+mdt <- list.files("W1_Watershed_Demand/Output", 
                   pattern = paste0(ws$ID, "_", yearRange[1], "_", yearRange[2], "_MDT_"),
                   full.names = TRUE) %>%
   str_subset(if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
@@ -67,9 +68,9 @@ print(mapview(subWS, zcol = "TOTAL_DIVERSION_AF"))
 
 
 mapshot(mapview(subWS, zcol = "TOTAL_DIVERSION_AF"), 
-        url = "Output.html")
-
+        url = paste0("W1_Watershed_Demand/Output/", ws$ID, 
+                     "_Average_Annual_Demand.html"))
 
 
 # Clear the environment
-remove(list = ls())
+base::remove(list = ls())

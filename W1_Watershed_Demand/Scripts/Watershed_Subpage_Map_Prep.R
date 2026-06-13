@@ -11,7 +11,7 @@ require(mapview)
 options(viewer = NULL)
 
 
-source("Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
 
 
 projLoc <- paste0("C:/Users/", Sys.info()[["user"]], 
@@ -47,7 +47,7 @@ nhdFlowlines <- getGIS(ws,
 
 
 
-load("InputData/GIS_General/NHD_H_California_State_WBDHU12.RData")
+load("W1_Watershed_Demand/Input/GIS_General/NHD_H_California_State_WBDHU12.RData")
 
 
 huc12 <- huc12 |>
@@ -62,7 +62,7 @@ mapview(huc12) + mapview(wsBound, col.regions = "gray")
 
 
 
-pacific <- st_read("InputData/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") |>
+pacific <- st_read("W1_Watershed_Demand/Input/GIS_General/3853-s3_2002_s3_reg_pacific_ocean-geojson.json") |>
   st_transform(st_crs(wsBound))
 
 

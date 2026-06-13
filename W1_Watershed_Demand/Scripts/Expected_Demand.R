@@ -25,13 +25,13 @@ mainProcedure <- function () {
   # The main body of the script
   
   
-  source("Scripts/Watershed_Selection.R")
-  source("Scripts/Dataset_Year_Range.R")
+  source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+  source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
   
   
   # Load in the two required input files for this module
   # (unique() is used because a duplicate row exists in 'fvDF')
-  statDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
+  statDF <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FINAL",
                             if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                     "",
                                     paste0("_Excluded_",
@@ -41,7 +41,7 @@ mainProcedure <- function () {
                                              as.numeric() %>% sort() %>% unique() %>%
                                              paste0(collapse = "_"))),
                             ".csv"))
-  fvDF <- read.csv(paste0("IntermediateData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final",
+  fvDF <- read.csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Statistics_FaceValue_IniDiv_Final",
                           if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                                   "",
                                   paste0("_Excluded_",
@@ -648,7 +648,7 @@ mainProcedure <- function () {
            AUG_STORAGE_DIVERSION, SEP_STORAGE_DIVERSION,
            OCT_STORAGE_DIVERSION, NOV_STORAGE_DIVERSION,
            DEC_STORAGE_DIVERSION) %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions",
+    write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_Monthly_Diversions",
                       if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                               "",
                               paste0("_Excluded_",
@@ -667,7 +667,7 @@ mainProcedure <- function () {
     select(APPLICATION_NUMBER, INI_REPORTED_DIV_AMOUNT, INI_REPORTED_DIV_UNIT, 
            FACE_VALUE_AMOUNT, FACE_VALUE_UNITS, IniDiv_Converted_to_AF) %>%
     unique() %>%
-    write.xlsx(paste0("OutputData/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ExpectedDemand_FV",
+    write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], "_ExpectedDemand_FV",
                       if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
                               "",
                               paste0("_Excluded_",
@@ -692,7 +692,7 @@ mainProcedure <- function () {
                  select(APPLICATION_NUMBER) %>% unlist() %>% sort() %>% paste0(collapse = "\n"),
                "\n\n"))
     
-    cat(paste0("Note: This list can be extracted from the spreadsheet 'OutputData/", ws$ID, 
+    cat(paste0("Note: This list can be extracted from the spreadsheet 'W1_Watershed_Demand/Output/", ws$ID, 
                "_", yearRange[1], "_", yearRange[2], 
                "_ExpectedDemand_FV",
                if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
@@ -770,7 +770,7 @@ mainProcedure <- function () {
              (Diversion_as_Percent_of_IniDiv > 100 & IniDiv_Converted_to_AF > 0) | 
              (Diversion_as_Percent_of_IniDiv < 0.01 & Diversion_as_Percent_of_IniDiv > 0 & IniDiv_Converted_to_AF > 0)) %>%
     arrange(APPLICATION_NUMBER, YEAR) %>% 
-    write.xlsx(paste0("OutputData/", ws$ID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
+    write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_Expected_Demand_Units_QAQC.xlsx"), overwrite = TRUE)
   
   
   
@@ -1474,7 +1474,7 @@ makeXLSX <- function (avgDF, fvDF, monthlyDF, statDF, expectedReports, maxYear,
   
   # Finally, save the workbook as a file
   saveWorkbook(wb, 
-               "OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx", 
+               "W1_Watershed_Demand/Output/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx", 
                overwrite = TRUE)
   
   
@@ -1574,7 +1574,7 @@ mainProcedure()
 print("The Expected_Demand.R script is done running!")
 
 
-remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues, CY2WY)
+base::remove(mainProcedure, makeXLSX, monthlyAvg, monthlyUseValues, CY2WY)
 
 
 
