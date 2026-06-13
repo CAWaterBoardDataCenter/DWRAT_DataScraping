@@ -1951,7 +1951,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   # Include the initial output directory in this operation 
   # (the "output" folder in the "Paradigm_DWRAT" sub-repository)
   modifiedPaths <- c(filePaths,
-                     "W1_Watershed_Demand/Models/Paradigm_DWRAT/dwrat/output/") %>%
+                     "Models/Paradigm_DWRAT/dwrat/output/") %>%
     normalizePath(winslash = "/") 
   
   
@@ -1962,7 +1962,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   
   
   # Specify (as a variable) the location of the main DWRAT script
-  scriptPath <- "W1_Watershed_Demand/Models/Paradigm_DWRAT/LSPC_DWRAT.py"
+  scriptPath <- "Models/Paradigm_DWRAT/LSPC_DWRAT.py"
   
   
   
