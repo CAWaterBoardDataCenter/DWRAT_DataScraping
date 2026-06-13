@@ -262,7 +262,7 @@ mainProcedure <- function () {
   
   
   # Output 'priorityDateCSV' as a new XLSX file
-  # (in the "OutputData" folder)
+  # (in the "Output" folder)
   priorityDateCSV %>%
     write.xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_Priority_Date_Scripted.xlsx"), overwrite = TRUE)
   

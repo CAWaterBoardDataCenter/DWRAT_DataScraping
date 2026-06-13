@@ -221,7 +221,7 @@ colMean <- function (colData) {
 
 
 # Import the data from the Expected Demand module----
-#expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+#expectedDF <- read_xlsx("Output/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
                         #col_types = "text") #%>%
 #  spreadsheetAdjustment()
 
@@ -389,7 +389,7 @@ ewrimsDF <- ewrimsDF %>%
 
 
 # Import the expected demand module----
-#expectedDF <- read_xlsx("OutputData/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
+#expectedDF <- read_xlsx("Output/ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx",
 #                        col_types = "text") %>%
 #  spreadsheetAdjustment()
 expectedDF <- read_xlsx(paste0("W1_Watershed_Demand/Output/", ws$ID, "_", yearRange[1], "_", yearRange[2], 
@@ -740,12 +740,12 @@ write.csv(ewrimsDF, file = paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
                                   ".csv"), row.names = FALSE)
 
 #just the 2017-2020 reporting years
-#write.csv(ewrimsDF, file = "OutputData/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
+#write.csv(ewrimsDF, file = "Output/2017-2020_RR_MasterDemandTable.csv", row.names = FALSE)
 
 
 #Compare 2023_RRMasterDemandTable to Russian_River_Database_2022.csv----
-# MasterDemandTable = read.csv(file = "OutputData/2023_RR_MasterDemandTable.csv")
-# RussianRiverDatabase2022 = read.csv(file = "InputData/RUSSIAN_RIVER_DATABASE_2022.csv")
+# MasterDemandTable = read.csv(file = "Output/2023_RR_MasterDemandTable.csv")
+# RussianRiverDatabase2022 = read.csv(file = "Input/RUSSIAN_RIVER_DATABASE_2022.csv")
 # 
 # # Structure of 2023_RRMasterDemandTable
 # structure_MDT = data.frame(
@@ -767,7 +767,7 @@ write.csv(ewrimsDF, file = paste0("W1_Watershed_Demand/Output/", ws$ID, "_",
 #   writeDataTable(MDT_Comparison, "MDT2023", structure_MDT)
 #   addWorksheet(MDT_Comparison,"RR2022")
 #   writeDataTable(MDT_Comparison, "RR2022", structure_RR2022)
-#   saveWorkbook(MDT_Comparison, file = paste0("OutputData/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
+#   saveWorkbook(MDT_Comparison, file = paste0("Output/MDT2023_RR2022_Comparison.xlsx"), overwrite =  TRUE)
 # 
 print("The MasterDemandTable.R script has finished running")
 

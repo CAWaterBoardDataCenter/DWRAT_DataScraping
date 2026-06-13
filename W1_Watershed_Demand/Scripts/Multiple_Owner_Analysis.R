@@ -36,17 +36,17 @@ appYears <- read_csv(paste0("W1_Watershed_Demand/Intermediate/", ws$ID, "_", yea
 ##Water use extended report flat file structural analysis----
 
 #Import the first 10 rows of the water use report extended flat file
-# extended <- read_csv("RawData/water_use_report_extended.csv", nrows = 100000)
+# extended <- read_csv("Raw/water_use_report_extended.csv", nrows = 100000)
 # extended2 = extended %>%filter(AMOUNT > 0) %>% nrow()
 # 
 # extended_column_names <- colnames(extended)
 # print(extended_column_names)
 # 
-# write.csv(extended, file = "IntermediateData/water_use_report_extended_subset.csv", 
+# write.csv(extended, file = "Intermediate/water_use_report_extended_subset.csv", 
 #           row.names = FALSE)
 # 
 # #Export extended_column_names to CSV
-# write.csv(extended_column_names, file = "IntermediateData/extended_names.csv")
+# write.csv(extended_column_names, file = "Intermediate/extended_names.csv")
 
 
 ##Import only 7 columns of the water_use_report_extended.csv----
@@ -68,7 +68,7 @@ RMS_parties <- fread(file = file_path, select = selected_columns)
 
 
 # SQLite approach
-# conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+# conn <- dbConnect(dbDriver("SQLite"), "Raw/water_use_report_extended_subset.sqlite")
 # RMS_parties <- dbGetQuery(conn, 
 #                           paste0('SELECT DISTINCT ',
 #                                  selected_columns %>% paste0('"', ., '"', collapse = ", "),

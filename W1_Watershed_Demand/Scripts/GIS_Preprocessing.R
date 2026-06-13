@@ -31,7 +31,7 @@ mainProcedure <- function () {
   
   
   # After that, import a full list of PODs from eWRIMS
-  # (1) To do that, get the most recent "Flat_File_eWRIMS_[DATE].csv" file in the "IntermediateData" folder
+  # (1) To do that, get the most recent "Flat_File_eWRIMS_[DATE].csv" file in the "Intermediate" folder
   # (2) Every column is read in as a character column by default
   #     Make new columns for "LATITUDE" and "LONGITUDE" that are numeric 
   # (3) Then, make 'pod_points_statewide' into a GIS layer
@@ -377,7 +377,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
   # (But first remove the older version, if it exists in the directory)
   if (paste0(ws$ID, "_PODs_of_Interest.gpkg") %in% list.files("W1_Watershed_Demand/Output")) {
     
-    #system("rm OutputData/NV_PODS_of_Interest.gpkg", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
+    #system("rm Output/NV_PODS_of_Interest.gpkg", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
     invisible(unlink(paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs_of_Interest.gpkg")))
     
   }
@@ -603,10 +603,10 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
 #   
 #   # Write 'allDF' to a GeoJSON file
 #   # (But first remove the older version, if it exists in the directory)
-#   if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("OutputData")) {
+#   if (paste0(ws$ID, "_PODs_of_Interest.GeoJSON") %in% list.files("Output")) {
 #     
-#     #system("rm OutputData/NV_PODS_of_Interest.GeoJSON", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
-#     invisible(file.remove(paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON")))
+#     #system("rm Output/NV_PODS_of_Interest.GeoJSON", intern = TRUE, wait = TRUE, invisible = FALSE, minimized = FALSE)
+#     invisible(file.remove(paste0("Output/", ws$ID, "_PODs_of_Interest.GeoJSON")))
 #     
 #   }
 #   
@@ -640,7 +640,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
 #   
 #   
 #   
-#   st_write(allDF, paste0("OutputData/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
+#   st_write(allDF, paste0("Output/", ws$ID, "_PODs_of_Interest.GeoJSON"), delete_dsn = TRUE)
 #   
 #   
 #   
@@ -766,7 +766,7 @@ outputResults <- function (ws, WS_pod_points_Merge, wsBound_OneMile_Intersect, w
 #   
 #   # Save 'wb' to a file
 #   saveWorkbook(wb, 
-#                paste0("OutputData/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
+#                paste0("Output/", ws$ID, "_GIS_Preprocessing.xlsx"), overwrite = TRUE)
 #   
 #   
 #   

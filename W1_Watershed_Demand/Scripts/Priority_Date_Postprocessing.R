@@ -117,7 +117,7 @@ if (!is.na(ws$EXCLUDED_REPORTING_YEARS) && grepl("[0-9]{4}", ws$EXCLUDED_REPORTI
 
 
 # SQLite Approach
-# conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+# conn <- dbConnect(dbDriver("SQLite"), "Raw/water_use_report_extended_subset.sqlite")
 # water_use_report <- dbGetQuery(conn, 
 #                                paste0('SELECT DISTINCT ',
 #                                       '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
@@ -499,7 +499,7 @@ write.csv(Missing_RMS_Reports_FINAL,
 ####################Application Numbers############################
 
 # Use "RR_pod_points_Merge_filtered_PA_[DATE].xlsx", extract two columns, update the spreadsheet as needed, depends on the result of your GIS pre-processing review for your watershed
-# Application_Number <- read_xlsx("InputData/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
+# Application_Number <- read_xlsx("Input/RR_pod_points_Merge_filtered_PA_2023-09-19.xlsx") %>%
 #   group_by(APPLICATION_NUMBER, POD_ID) %>%
 #   summarize(FREQUENCY = n(), .groups = "drop") %>%
 #   select(APPLICATION_NUMBER, FREQUENCY) %>%
@@ -548,7 +548,7 @@ write.csv(ewrims_flat_file_Working_File,
 
 # Load in the party flat file for contact information
 # Keep only a subset of the columns
-#ewrims_flat_file_party <- read.csv(paste0("RawData/", ws$ID, "_ewrims_flat_file_party.csv")) %>%
+#ewrims_flat_file_party <- read.csv(paste0("Raw/", ws$ID, "_ewrims_flat_file_party.csv")) %>%
 #  select(APPLICATION_ID, CONTACT_INFORMATION_PHONE, CONTACT_INFORMATION_EMAIL)
 
 

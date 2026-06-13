@@ -35,7 +35,7 @@ faceValSub <- function (inputDF, yearRange = (year(Sys.Date()) - 2):year(Sys.Dat
   
   # R SQLite code
   # Also, keep only data for "Appropriative" rights
-  # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+  # conn <- dbConnect(dbDriver("SQLite"), "Raw/water_use_report_extended_subset.sqlite")
   # extendedDF <- dbGetQuery(conn, 
   #                          paste0('SELECT DISTINCT "APPLICATION_NUMBER", "YEAR", ',
   #                          '"MONTH", "AMOUNT", "DIVERSION_TYPE", "FACE_VALUE_AMOUNT", ',

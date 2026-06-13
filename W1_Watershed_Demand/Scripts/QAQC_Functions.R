@@ -18,8 +18,8 @@ unitFixer <- function (inputDF, ws) {
   # Given the water use report dataset ('inputDF'), perform corrections on specified values
   
   # Two spreadsheets will be used to update 'inputDF':
-  #  (1) "InputData/Expected_Demand_Units_QAQC_[DATE].xlsx"
-  #  (2) "InputData/Expected_Demand_Units_QAQC_Median_Based_[DATE].xlsx"
+  #  (1) "Input/Expected_Demand_Units_QAQC_[DATE].xlsx"
+  #  (2) "Input/Expected_Demand_Units_QAQC_Median_Based_[DATE].xlsx"
   # ("[DATE]" in these filenames should be the most recent copies available)
   
   
@@ -462,7 +462,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         str_extract("[0-9]{4}") %>% as.numeric()
       
       
-      # If 'actionYear' is outside the data range of 'inputData', "water_use_report_extended.csv" will need to be read in
+      # If 'actionYear' is outside the data range of 'inputDF', "water_use_report_extended.csv" will need to be read in
       if (actionYear < min(inputDF$YEAR)) {
         
         # If 'actionYear' is a report that uses a calendar year, then only one year's data is needed
@@ -491,7 +491,7 @@ iterateQAQC <- function (inputDF, unitsQAQC, wsID, ws) {
         stopifnot(nrow(tempDF) > 0)
         
         # RSQLite code
-        # conn <- dbConnect(dbDriver("SQLite"), "RawData/water_use_report_extended_subset.sqlite")
+        # conn <- dbConnect(dbDriver("SQLite"), "Raw/water_use_report_extended_subset.sqlite")
         # water_use_report <- dbGetQuery(conn, 
         #                                paste0('SELECT DISTINCT ',
         #                                       '"APPLICATION_NUMBER", "YEAR", "MONTH", "AMOUNT", "DIVERSION_TYPE" ',
@@ -894,7 +894,7 @@ useMeasurementData <- function (inputDF, qaqcInfo, wsID, ws) {
   
   
   
-  # Return 'inputData' after these changes
+  # Return 'inputDF' after these changes
   return(inputDF)
   
 }

@@ -658,7 +658,7 @@ mainProcedure <- function () {
                                        as.numeric() %>% sort() %>% unique() %>%
                                        paste0(collapse = "_"))), ".xlsx"),
                overwrite = TRUE)
-    #write.xlsx(paste0("OutputData/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
+    #write.xlsx(paste0("Output/", ws$ID, "_ExpectedDemand_ExceedsFV_UnitConversion_StorVsUseVsDiv_Statistics_Scripted.xlsx"),
     #           overwrite = TRUE)
   
   
@@ -777,7 +777,7 @@ mainProcedure <- function () {
   # Then include a spreadsheet focused on "CALENDAR_YEAR_TOTAL"/"WATER_YEAR_TOTAL" for all rights in 'monthlyDF'
   # monthlyDF %>%
   #   select(APPLICATION_NUMBER, YEAR, CALENDAR_YEAR_TOTAL, WATER_YEAR_TOTAL) %>%
-  #   write.xlsx(paste0("OutputData/", ws$ID, "_Calendar_or_Water_Year_Totals_AF.xlsx"), overwrite = TRUE)
+  #   write.xlsx(paste0("Output/", ws$ID, "_Calendar_or_Water_Year_Totals_AF.xlsx"), overwrite = TRUE)
   
   
   

@@ -235,7 +235,7 @@ write.xlsx(expDemand %>%
 #            YEAR_TOTAL < OUTLIER_BOUND_L_MEAN |
 #            YEAR_TOTAL > OUTLIER_BOUND_R_MEDIAN | 
 #            YEAR_TOTAL > OUTLIER_BOUND_R_MEAN) %>%
-#   write.xlsx("OutputData/Expected_Demand_Units_QAQC_Statistical_Outliers.xlsx", overwrite = TRUE)
+#   write.xlsx("Output/Expected_Demand_Units_QAQC_Statistical_Outliers.xlsx", overwrite = TRUE)
 
 
 

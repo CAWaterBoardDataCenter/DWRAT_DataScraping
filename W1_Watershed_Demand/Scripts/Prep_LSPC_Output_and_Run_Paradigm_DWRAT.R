@@ -55,7 +55,7 @@ mainProcedure <- function (hucBased = TRUE) {
   
   
   
-  # Clear the "OutputData" folder of model files from previous script runs
+  # Clear the "Output" folder of model files from previous script runs
   deleteOldOutputs(ws$ID)
   
   
@@ -264,7 +264,7 @@ mainProcedure <- function (hucBased = TRUE) {
   
   # In a separate function, produce output files that will be input into DWRAT 
   # Then, try to run the model as well
-  # (And store their outputs into the "OutputData" folder too)
+  # (And store their outputs into the "Output" folder too)
   outputAndRun(mdtDF, roSupply, flowsTo, ws, lastCatch)
   
   
@@ -290,14 +290,14 @@ mainProcedure <- function (hucBased = TRUE) {
 
 deleteOldOutputs <- function (wsID) {
   
-  # Clear out script-related output files from the "OutputData" folder
+  # Clear out script-related output files from the "Output" folder
   # Previous runs of this script may have introduced those files
   # If not removed, they can interfere with the file combination process at the end
   
   
   
   # Regex strings for DWRAT input and output files produced by this script
-  # These will be used to located files in the "OutputData" folder and delete them
+  # These will be used to located files in the "Output" folder and delete them
   removalStrings <- c("_formatted_demand",
                       "_formatted_supply",
                       "_generated_basins",
@@ -1097,7 +1097,7 @@ outputAndRun <- function (mdtDF, roSupply, flowsTo, ws, lastCatch) {
   # that is a sign of multiple outlets
   if (sum(flowsTo$FLOWS_TO == "SUBBASIN_000") == 1) {
     
-    # If there's only one outlet, write the files to the "OutputData" folder
+    # If there's only one outlet, write the files to the "Output" folder
     # without special modifications
     
     
@@ -1245,7 +1245,7 @@ outputAndRun <- function (mdtDF, roSupply, flowsTo, ws, lastCatch) {
       
       
       
-      # Save the model input files to the "OutputData" folder
+      # Save the model input files to the "Output" folder
       
       # Define a vector with the planned filenames
       filePaths <- c(Demand = paste0("W1_Watershed_Demand/Output/", ws$ID, "_formatted_demand_", i, ".csv"),
@@ -1943,7 +1943,7 @@ getAnacondaBatchPath <- function () {
 runDWRAT <- function (filePaths, i = NULL) {
   
   # Given the input filepaths for Paradigm DWRAT
-  # Run DWRAT and save the basin and user outputs to the "OutputData" folder
+  # Run DWRAT and save the basin and user outputs to the "Output" folder
   
   
   
@@ -2019,7 +2019,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   
   
   # Copy four output files from the Paradigm DWRAT "output" folder 
-  # to the Demand "OutputData" folder
+  # to the Demand "Output" folder
   file.copy("Models/Paradigm_DWRAT/dwrat/output/basin_appropriative_output_Paradigm_DWRAT.csv",
             filePaths[1] %>% str_replace("formatted_demand", "basin_appropriative_output"),
             overwrite = TRUE)

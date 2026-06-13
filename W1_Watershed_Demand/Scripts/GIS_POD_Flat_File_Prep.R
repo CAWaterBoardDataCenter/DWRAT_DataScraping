@@ -233,7 +233,7 @@ ewrims_flat_file_party <- dbGetQuery(conn = ReportManager,
 
 # Read the POD flat file
 # (This is already assigned earlier at the SQL query step)
-#Flat_File_PODs <- read.csv("RawData/ewrims_flat_file_pod.csv")
+#Flat_File_PODs <- read.csv("Raw/ewrims_flat_file_pod.csv")
 
 
 # Disconnect from ReportDB Database
