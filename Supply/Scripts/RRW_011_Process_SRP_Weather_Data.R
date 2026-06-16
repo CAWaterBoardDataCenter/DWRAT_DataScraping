@@ -55,16 +55,19 @@ mainProcedure <- function () {
   
   
   # Start with a vector containing every single required input file
-  inputFiles <- c("PRISM INPUT" = getFromControl_RR("PRISM_SRP_STATIONS_CSV"),
-                  "PRISM OUTPUT" = paste0("WebData/PRISM_SRP_Data_",
-                                          startDate, "_", endDate, ".csv"))
+  inputFiles <- tibble("PRISM_INPUT" = 
+                         getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
+                         sharepointPathCheck(isFolder = FALSE),
+                       "PRISM_OUTPUT" = 
+                         paste0("WebData/PRISM_SRP_Data_",
+                                startDate, "_", endDate, ".csv"))
   
   
   # Check if any required input files are missing
-  if (anyFalse(file.exists(inputFiles))) {
+  if (anyFalse(map_lgl(inputFiles, file.exists))) {
     
     # Get the names of the missing files before sending a message
-    missingFiles <- inputFiles[!file.exists(inputFiles)]
+    missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
     
     
     # Output the error
@@ -92,8 +95,8 @@ mainProcedure <- function () {
   
   
   # Read in the files next
-  prismInput <- inputFiles[1] |> getFile() |> unique()
-  prismDF <- getPRISM(inputFiles[2])
+  prismInput <- inputFiles$PRISM_INPUT[1] |> getFile() |> unique()
+  prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
   
   
   # Validate the variables next
@@ -124,13 +127,13 @@ mainProcedure <- function () {
   
   
   prismProcessed |>
-    writeOutput(outFile, "write_csv")
+    writeOutput(outFile)
   
   
   # Save 'prismProcessed' to the hydrology folder as well
   prismProcessed |>
     writeOutput(paste0(dirPath, "/SRP/Input/SRP_Meteorological_", startDate, 
-                       "_", endDate, ".csv"), "write_csv", quietly = TRUE)
+                       "_", endDate, ".csv"), quietly = TRUE)
   
   
   # Finally, update the metadata file as well
@@ -162,13 +165,15 @@ validateInputs <- function (prismInput, prismDF, inputFiles) {
   
   
   # First, check the input PRISM tibble
-  validateStationInputs(prismInput, inputFiles[1], "SRP", numPrecip, numTemp)
+  validateStationInputs(prismInput, inputFiles$PRISM_INPUT[1], "SRP", 
+                        numPrecip, numTemp)
   
   
   # Validate the weather output tibble next
   
   # Using a general function for all weather sources, check 'prismDF'
-  validateWebData(prismDF, inputFiles[2], prismInput$STATION_ID, siPRISM = FALSE)
+  validateWebData(prismDF, "PRISM", inputFiles$PRISM_OUTPUT[1], 
+                  prismInput$STATION_ID, siPRISM = FALSE)
   
   
   # Return nothing

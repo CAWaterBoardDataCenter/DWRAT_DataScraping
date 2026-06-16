@@ -232,6 +232,14 @@ mainProcedure <- function (hucBased = TRUE) {
     mutate(Date = str_replace(Date, "/[0-9]{2}/", "/01/"))
   
   
+  # Adjust the values in 'roSupply'
+  # "RO" is a cumulative parameter, but DWRAT requires the flows generated in each sub-basin
+  # The 'flowsTo' table can help guide these adjustments
+  # (Negative flows will also need to be addressed)
+  roSupply <- roSupply |>
+    decumulateFlows(flowsTo)
+  
+  
   
   # The final input file lists the various sub-basins and their connectivity
   # (In a simplified one-to-one format)
@@ -761,6 +769,305 @@ prepDemandData <- function (mdtDF, lastCatch, connMat, subWS, hucBased, flowsTo)
   
   # Return 'mdtDF'
   return(mdtDF)
+  
+}
+
+
+
+decumulateFlows <- function (roSupply, flowsTo) {
+  
+  # RO supply contains monthly values in each row
+  # Each column is a different sub-basin
+  
+  # Use 'flowsTo' to adjust these values and remove cumulative flow
+  # (i.e., flow from upstream sub-basins)
+  
+  
+  # Create a copy of 'roSupply' that will have its flows adjusted
+  adjustedRO <- roSupply
+  
+  
+  stopifnot(names(adjustedRO)[1] == "Date")
+  
+  
+  # Iterate through the columns of 'adjustedRO'
+  for (j in 2:ncol(adjustedRO)) {
+    
+    # Get the name of the current sub-basin
+    iterBasin <- names(adjustedRO)[j]
+    
+    
+    # Identify which sub-basins flow into 'iterBasin'
+    immediateUpstream <- flowsTo$DWRAT_SUBBASIN[flowsTo$FLOWS_TO == iterBasin]
+    
+    
+    # If 'immediateUpstream' is empty, there is no upstream sub-basin
+    # Leave the values for this sub-basin as-is in 'adjustedRO'
+    if (length(immediateUpstream) == 0) {
+      
+      next
+      
+    # If there is exactly one sub-basin upstream of 'iterBasin',
+    # take the difference between the two sub-basins' outlet "RO" values
+    } else if (length(immediateUpstream) == 1) {
+      
+      adjustedRO[, j] <- roSupply[, j] - roSupply[, names(roSupply) == immediateUpstream]
+      
+    } else {
+      
+      # If there are multiple immediately upstream sub-basins, subtract all of their outlet values
+      # from the "RO" values for 'iterBasin'
+      supplyVals <- roSupply[, j]
+      
+      
+      for (k in 1:length(immediateUpstream)) {
+        
+        supplyVals <- supplyVals - roSupply[, names(roSupply) == immediateUpstream[k]]
+        
+      }
+      
+      
+      # Replace the values for 'iterBasin' with 'supplyVals'
+      adjustedRO[, j] <- supplyVals
+      
+    }
+    
+  }
+  
+  
+  
+  # The final check is for negative flows
+  # If there are any negative values, another procedure must be applied
+  if (any(adjustedRO[, -1] < 0)) {
+    
+    # Negative flows must be adjusted
+    message("Need to adjust negative flow values!")
+    
+    
+    adjustedRO <- adjustedRO |>
+      adjustNegativeFlows(flowsTo)
+    
+    
+  }
+  
+  
+  
+  # Return 'adjustedRO' after these updates
+  return(adjustedRO)
+  
+}
+
+
+
+adjustNegativeFlows <- function (adjustedRO, flowsTo) {
+  
+  # Check each month-year pair in 'adjustedRO'
+  
+  # If there are any negative values for a sub-basin, zero it out
+  # "Borrow" flows from upstream sub-basins to account for these negative values
+  
+  
+  stopifnot(names(adjustedRO)[1] == "Date")
+  
+  
+  # Iterate through every month
+  for (i in 1:nrow(adjustedRO)) {
+    
+    # Skip the row if no values are negative
+    if (!any(adjustedRO[i, -1] < 0)) {
+      next
+    }
+    
+    
+    # Set up an infinite while loop while negative flow values are detected
+    while (any(adjustedRO[i, -1] < 0)) {
+      
+      # Identify the locations of negative flow values
+      colIndex <- which(adjustedRO[i, ] < 0 & names(adjustedRO) != "Date")
+      
+      
+      # Get the names of these sub-basins
+      basinName <- names(adjustedRO)[colIndex]
+      
+      
+      # Iterate through each of these sub-basins and try to fix their negative flows
+      for (j in 1:length(basinName)) {
+        
+        # Identify which sub-basins are upstream of 'basinName'
+        immediateUpstream <- flowsTo$DWRAT_SUBBASIN[flowsTo$FLOWS_TO == basinName[j]]
+        
+        
+        # If no sub-basins flow into 'basinName', just zero out its negative flow
+        if (length(immediateUpstream) == 0) {
+          
+          adjustedRO[i, colIndex[j]] <- 0
+          
+        # If there is one sub-basin that is upstream of 'basinName'
+        } else if (length(immediateUpstream) == 1) {
+          
+          # Add the negative flow in 'basinName' to this sub-basin's flow value
+          # This effectively "borrows" some of the upstream flow
+          # Then, the value for 'basinName' is zeroed out
+          adjustedRO[i, names(adjustedRO) == immediateUpstream] <- 
+            adjustedRO[i, names(adjustedRO) == immediateUpstream] +
+            adjustedRO[i, colIndex[j]]
+          
+          adjustedRO[i, colIndex[j]] <- 0
+          
+          
+          # If the upstream flow value becomes negative because of this change,
+          # there is no problem
+          
+          # The while loop will just have another iteration because a negative
+          # flow value would still be present in the row
+          
+        # If there are multiple upstream sub-basins, more efforts will be required
+        } else {
+          
+          # In this case, borrow flow from every immediately upstream sub-basin
+          
+          # The amount of flow to borrow from each sub-basin will be based
+          # on the total amount of flow available in their upstream paths
+          # (That means considering all upstream sub-basins in the flow paths)
+          
+          # Calculate the total available 
+          totalAvailability <- immediateUpstream |>
+            map_dbl(~ calcTotalAvailableFlow(flowsTo, adjustedRO[i, ], .))
+          
+          
+          # If all upstream flow paths have zero flow available, just zero out 
+          # the negative value for 'basinName'
+          if (all(totalAvailability == 0)) {
+            
+            adjustedRO[i, colIndex[j]] <- 0
+            
+          } else {
+            
+            # Otherwise, calculate ratios based on 'totalAvailability'
+            contributionRatios <- totalAvailability / sum(totalAvailability)
+            
+            
+            # From each of the sub-basins that are upstream of 'basinNum',
+            # borrow flow based on their corresponding ratios
+            for (k in 1:length(immediateUpstream)) {
+              
+              # Locate one of the immediately upstream sub-basins in 'adjustedRO'
+              upstreamIndex <- which(names(adjustedRO) == immediateUpstream[k])
+              
+              
+              # Double-check that the index is valid
+              if (length(upstreamIndex) == 0) {
+                
+                paste0("Sub-Basin ID Not Detected\n\n",
+                       "For ", adjustedRO$Date[i], ", the script attempted to extract ",
+                       "data related to Sub-Basin \"", immediateUpstream[k], "\". ",
+                       "However, the procedure failed to find a matching column ",
+                       "in the flow dataset.\n\n",
+                       "This could be an error in the flow data or in the ",
+                       "sub-basin connectivity table. Please investigate.") |>
+                  strwrap(width = 0.99 * getOption("width")) |>
+                  paste0(collapse = "\n") |>
+                  stop()
+                
+              } else if (length(upstreamIndex) > 1) {
+                
+                paste0("Sub-Basin ID Not Present More Than Once\n\n",
+                       "For ", adjustedRO$Date[i], ", the script attempted to extract ",
+                       "data related to Sub-Basin \"", immediateUpstream[k], "\". ",
+                       "However, the procedure encountered multiple columns with ",
+                       "this name in the flow dataset.\n\n",
+                       "This is likely a script error. Please investigate.") |>
+                  strwrap(width = 0.99 * getOption("width")) |>
+                  paste0(collapse = "\n") |>
+                  stop()
+                
+              }
+              
+              
+              # Adjust the upstream sub-basin and "borrow" some flow to offset
+              # the negative value in that sub-basin
+              adjustedRO[i, upstreamIndex] <- 
+                adjustedRO[i, upstreamIndex] + 
+                contributionRatios[k] * adjustedRO[i, colIndex[j]]
+              
+              
+              # The contribution ratios consider the flow available in the 
+              # entire upstream path for each immediately upstream sub-basin
+              
+              # So, it is possible that the immediately upstream sub-basin will
+              # get a negative flow value after this operation
+              
+              # That's okay though, because the "while" loop will keep going
+              # as long as there are any negative flows
+              
+            } # End of 'k' loop through immediate upstream sub-basins
+            
+            
+            # Zero out the negative sub-basin flow too
+            adjustedRO[i, colIndex[j]] <- 0
+            
+            
+          } # End of conditional for 'totalAvailability'
+          
+        } # End of conditional for multiple immediate upstream sub-basins
+        
+      } # End of 'j' loop through sub-basins with negative flows
+      
+    } # End of while loop for detecting negative flows for a certain month-year
+    
+  } # End of 'i' loop through dates in 'adjustedRO'
+  
+  
+  # Return 'adjustedRO' at the end of this process
+  return(adjustedRO)
+  
+}
+
+
+
+calcTotalAvailableFlow <- function (flowsTo, flowRow, startingBasin) {
+  
+  # Given 'flowRow', which contains flow values for each sub-basin,
+  # and 'flowsTo', which expresses the connectivity between sub-basins,
+  # determine the total available flow from 'startinBasin' and ALL of 
+  # its upstream sub-basins
+  
+  
+  # Define 'upstreamVec' to hold all upstream sub-basins
+  # (starting with the one defined in 'startingBasin')
+  upstreamVec <- startingBasin
+  
+  
+  # This variable will contain the total available upstream flow
+  # Start with the sum of the flow available in 'startingBasin'
+  totalFlow <- flowRow[1, which(names(flowRow) == startingBasin)] |>
+    sum()
+  
+  
+  # While 'upstreamVec' still contains sub-basins
+  while (length(upstreamVec) > 0) {
+    
+    # Identify which sub-basins are upstream of the one(s) that appear 
+    # currently in 'upstreamVec'
+    upstreamVec <- flowsTo$DWRAT_SUBBASIN[which(flowsTo$FLOWS_TO %in% upstreamVec)]
+    
+    
+    # Add to 'totalFlow' the flows of each of the sub-basins in 'upstreamVec'
+    # (If 'upstreamVec' is empty, it will contribute "0" to 'totalFlow')
+    totalFlow <- totalFlow +
+      sum(flowRow[1, which(names(flowRow) %in% upstreamVec)])
+    
+  }
+  
+  
+  # If 'totalFlow' is negative, return 0 as the total available upstream flow
+  if (totalFlow < 0) {
+    return(0)
+  }
+  
+  
+  # Otherwise, return 'totalFlow' if it's a positive number
+  return(totalFlow)
   
 }
 
@@ -1653,7 +1960,7 @@ runDWRAT <- function (filePaths, i = NULL) {
   
   
   # Specify (as a variable) the location of the main DWRAT script
-  scriptPath <- "../Paradigm_DWRAT/DWRAT_Mad.py"
+  scriptPath <- "../Paradigm_DWRAT/LSPC_DWRAT.py"
   
   
   

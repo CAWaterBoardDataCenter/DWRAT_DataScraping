@@ -85,7 +85,7 @@ mainProcedure <- function () {
   
   
   # Write the file to the "WebData" folder
-  writeOutput(rawsDF, outFile, "write_csv")
+  writeOutput(rawsDF, outFile)
   
   
   # Output a completion message
