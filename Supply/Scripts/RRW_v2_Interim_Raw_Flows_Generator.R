@@ -96,14 +96,14 @@ for (i in 1:length(goPaths)) {
   dateVec <- seq(from = startDate, by = "days", length.out = nrow(tempDF))
   
   
-  # Convert the flow values from m^3/s to AF/day, and then wrap them up into AF/month
+  # Convert the flow values from m^3/day to AF/day, and then wrap them up into AF/month
   # Rename "Flow" into the sub-basin number too
   tempDF <- tempDF |>
     mutate(Date = dateVec) |>
     select(Date, Flow) |>
     mutate(MONTH = month(Date), YEAR = year(Date)) |>
     group_by(YEAR, MONTH) |>
-    summarize(Flow = sum(Flow * 60 * 60 * 24 / 1233.48), .groups = "drop") |>
+    summarize(Flow = sum(Flow / 1233.48), .groups = "drop") |>
     rename(!! as.character(i) := Flow)
   
   
@@ -131,14 +131,14 @@ for (i in 1:length(gagPaths)) {
   dateVec <- seq(from = startDate, by = "days", length.out = nrow(tempDF))
   
   
-  # Convert the flow values from cfs to AF/day, and then wrap them up into AF/month
+  # Convert the flow values from cfd to AF/day, and then wrap them up into AF/month
   # Rename "Flow" into the sub-basin number too
   tempDF <- tempDF |>
     mutate(Date = dateVec) |>
     select(Date, Flow) |>
     mutate(MONTH = month(Date), YEAR = year(Date)) |>
     group_by(YEAR, MONTH) |>
-    summarize(Flow = sum(Flow * 60 * 60 * 24 / 43559.9), .groups = "drop") |>
+    summarize(Flow = sum(Flow / 43559.9), .groups = "drop") |>
     rename(!! as.character(i) := Flow)
   
   
