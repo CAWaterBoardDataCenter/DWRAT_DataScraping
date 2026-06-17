@@ -10,7 +10,7 @@ base::remove(list = ls())
 
 
 # Regex for what to search for in each matching file
-searchStr <- "((Raw)|(Input)|(Intermediate)|(Output))Data"
+searchStr <- "HLP_001_"
 
 
 # Get a list of files with a certain extension
@@ -20,6 +20,10 @@ fileList <- list.files("./", pattern = "\\.R$",
 
 # Use code like this to filter out certain directories
 fileList <- fileList[!grepl("/Archive/", fileList)]
+fileList <- fileList[!grepl("/renv/", fileList)]
+
+# Use code like this to filter to a specific directory
+#fileList <- fileList[grepl("/W2", fileList)]
 
 
 # Iterate through the list of files
