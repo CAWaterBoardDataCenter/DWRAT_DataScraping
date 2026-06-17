@@ -38,7 +38,7 @@
 # ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
-# "ProcessedData" folder 
+# "Output" folder 
 
 
 #### Setup ####
@@ -48,12 +48,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -78,7 +78,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-QAQC" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
+  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -88,7 +88,7 @@ mainProcedure <- function () {
     paste0("Missing Required Meteorological File\n\n",
            "Please obtain the \"Intermediate QA/QC\" meteorological file that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
-           "it in the \"ProcessedData\" folder.\n\n",
+           "it in the \"Output\" folder.\n\n",
            "(\"", normalizePath(meteorPath, mustWork = FALSE), "\" does ",
            "not exist)") |>
       errWrap() |>
@@ -120,7 +120,7 @@ mainProcedure <- function () {
   
   
   outlierDF |>
-    writeOutput("ProcessedData/RR_Workflow_PRMS_Gage_Outlier_Bounds.csv")
+    writeOutput("W2_Russian_River/Output/RR_Workflow_PRMS_Gage_Outlier_Bounds.csv")
   
   
   cat("\tDone!\n\n")

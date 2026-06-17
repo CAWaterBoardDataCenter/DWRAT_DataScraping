@@ -13,7 +13,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -40,7 +40,7 @@ mainProcedure <- function () {
   c(#        (*) Label the "DWRAT_DataScraping" folder as a safe directory
     #            (to avoid dubious ownership errors)
     paste0("git config --global --add safe.directory ",
-           normalizePath("..") |> shQuote(), " && ",
+           getwd() |> normalizePath() |> shQuote(), " && ",
            
            # (*) Switch to the main branch
            "git switch main", " && ",    

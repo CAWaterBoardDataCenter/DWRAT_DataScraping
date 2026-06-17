@@ -8,7 +8,7 @@
 # These IDs should be the four-character IDs on RAWS (e.g., "CHAW" or "CBOO") 
 
 
-# The raw output will be stored in the "WebData" folder as 
+# The raw output will be stored in the "Intermediate" folder as 
 # "RAWS_HTTP_Data_[startDate]_[endDate].csv"
 
 # Note: SI units are used for the output (mm and Celsius)
@@ -21,12 +21,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 #### Functions ####
 
@@ -37,7 +37,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Read in the list of stations 
@@ -80,11 +80,11 @@ mainProcedure <- function () {
   
   
   # Define the output file name as well
-  outFile <- paste0("WebData/RAWS_HTTP_Data_", startDate, "_",
-                    endDate, ".csv")
+  outFile <- paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_", 
+                    startDate, "_", endDate, ".csv")
   
   
-  # Write the file to the "WebData" folder
+  # Write the file to the "Intermediate" folder
   writeOutput(rawsDF, outFile)
   
   

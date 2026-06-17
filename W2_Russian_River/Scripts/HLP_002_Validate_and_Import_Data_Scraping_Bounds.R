@@ -13,7 +13,7 @@ require(tidyverse)
 #### Script Procedure ####
 
 # For ease of editing this script, specify the relative path to the date script here
-controlPath <- "Scripts/CTR_001_Set_Start_and_End_Dates.R"
+controlPath <- "W2_Russian_River/Scripts/CTR_001_Set_Start_and_End_Dates.R"
 
 
 # Read in the date range script

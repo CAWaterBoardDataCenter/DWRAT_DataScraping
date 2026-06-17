@@ -10,7 +10,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -83,11 +83,12 @@ installDWRAT <- function (batPath) {
   # Establish a new Anaconda environment for DWRAT
   
   # This function relies on the "environment.yml" file located in 
-  # the "Paradigm_DWRAT" sub-folder of the SDA "DWRAT_DataScraping" repository
+  # the "Paradigm_DWRAT" sub-folder of the "DWRAT_DataScraping" repository's 
+  # "Models" folder
   
   
-  # First, look for "environment.yml" and confirm its existence
-  envPath <- "../Paradigm_DWRAT/environment.yml" |>
+  # First, look for "Paradigm_DWRAT_Environment.yml" and confirm its existence
+  envPath <- "Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml" |>
     normalizePath(mustWork = FALSE)
   
   
@@ -96,8 +97,8 @@ installDWRAT <- function (batPath) {
     
     paste0("Environment.yml Not Found\n\n", 
            "The Paradigm DWRAT scripts should have an accompanying ",
-           "\"environment.yml\" file in their folder in the ",
-           "\"DWRAT_DataScraping\" repository. Please investigate.") |>
+           "\"Paradigm_DWRAT_Environment.yml\" file in their sub-folder within ",
+           "the \"Models\" folder. Please investigate.") |>
       errWrap() |>
       stop()
     

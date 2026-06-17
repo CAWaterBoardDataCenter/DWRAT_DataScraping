@@ -48,12 +48,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -78,7 +78,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-PRISM" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_Pre-PRISM_Meteorological_",
+  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Pre-PRISM_Meteorological_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -88,7 +88,7 @@ mainProcedure <- function () {
     paste0("Missing Required Meteorological File\n\n",
            "Please obtain the \"Pre-PRISM\" meteorological file that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
-           "it in the \"ProcessedData\" folder.\n\n",
+           "it in the \"Output\" folder.\n\n",
            "(\"", normalizePath(meteorPath, mustWork = FALSE), "\" does ",
            "not exist)") |>
       errWrap() |>
@@ -120,7 +120,7 @@ mainProcedure <- function () {
   
   
   outlierDF |>
-    writeOutput("ProcessedData/PRMS_Gage_Outlier_Bounds.csv")
+    writeOutput("W2_Russian_River/Output/PRMS_Gage_Outlier_Bounds.csv")
   
   
   cat("\tDone!\n\n")

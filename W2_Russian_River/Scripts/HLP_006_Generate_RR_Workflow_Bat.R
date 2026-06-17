@@ -14,7 +14,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -42,8 +42,8 @@ mainProcedure <- function () {
   
   
   # Define the output location for a log
-  # By default, store this file in the DWRAT_DataScraping "Workflows" folder
-  logPath <- "..\\Workflows\\RR_Workflow.log"
+  # By default, store this file in the Russian River "Workflow_Bin" folder
+  logPath <- "W2_Russian_River\\Workflow_Bin\\RR_Workflow.log"
   
   
   # Write several commands to this bat file:
@@ -55,23 +55,27 @@ mainProcedure <- function () {
     paste0("(",
            
            # Run "HLP_005_Git_Update_Main.R" to ensure the scripts are up-to-date
-           shQuote(rPath), rOpts, shQuote("Scripts\\HLP_005_Git_Update_Main.R"),
+           shQuote(rPath), rOpts, 
+           shQuote("W2_Russian_River\\Scripts\\HLP_005_Git_Update_Main.R"),
            
            " && ",
            
            # Execute "RRW_000A_Run_RR_Process_Today.R" to run the 
            # entire Russian River process
-           shQuote(rPath), rOpts, shQuote("Scripts\\RRW_000A_Run_RR_Process_Today.R"),
+           shQuote(rPath), rOpts, 
+           shQuote("W2_Russian_River\\Scripts\\RRW_000A_Run_RR_Process_Today.R"),
            
            # All output is stored in a new file established at 'logPath'
            ") > ", shQuote(logPath), " 2>&1 "),
            
     # Copy the log file to the model archive folder
-    paste0(shQuote(rPath), rOpts, shQuote("Scripts\\HLP_007_Archive_Log_File.R")),
+    paste0(shQuote(rPath), rOpts, 
+           shQuote("W2_Russian_River\\Scripts\\HLP_007_Archive_Log_File.R")),
     
     # Call "exit" to ensure that the batch file closes properly
     "exit") |>
-    writeOutput("../Workflows/RR_Workflow.bat", writeFunction = "write_lines")
+    writeOutput("W2_Russian_River/Workflow_Bin/RR_Workflow.bat", 
+                writeFunction = "write_lines")
   
   
   # If there are no issues, conclude the script

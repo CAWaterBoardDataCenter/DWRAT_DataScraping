@@ -17,7 +17,7 @@ require(renv)
 
 restore()
 
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -53,7 +53,7 @@ plannedStart <- paste0(priorWY - 1, "-10-01")
 
 
 # Read in the control file
-controlPath <- "Scripts/CTR_001_Set_Start_and_End_Dates.R"
+controlPath <- "W2_Russian_River/Scripts/CTR_001_Set_Start_and_End_Dates.R"
 
 
 controlScript <- getFile(controlPath, fileType = "OTHER")
@@ -101,4 +101,4 @@ base::remove(list = ls())
 
 
 # Finally, run the master script and begin the RR Workflow process
-source("Scripts/RRW_000_Master_Script.R")
+source("W2_Russian_River/Scripts/RRW_000_Master_Script.R")

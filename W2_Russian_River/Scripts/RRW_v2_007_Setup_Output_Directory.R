@@ -12,12 +12,12 @@
 
 # The meteorological CSV file from the previous script will be 
 # copied there as well
-# ("ProcessedData/SRP_Meteorological_[startDate]_[endDate].csv")
+# ("W2_Russian_River/Output/SRP_Meteorological_[startDate]_[endDate].csv")
 
 # The weather station input files will be archived in this folder as well
 
 
-# After that, one additional output will be added to the "ProcessedData" folder
+# After that, one additional output will be added to the "Output" folder
 
 # It will be a text file containing a single line that specifies 
 # the path to the newly generated directory
@@ -32,12 +32,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -49,12 +49,12 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Verify that the SRP meteorological CSV file exists
   # (This is a sign that the previous script completed its procedure)
-  meteorPath <- paste0("ProcessedData/SRP_Meteorological_", startDate,
+  meteorPath <- paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate,
                        "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
@@ -90,10 +90,10 @@ mainProcedure <- function () {
   cat("[3/3]\tSaving new folder path to a text file for easy access...\n")
   
   
-  # Save 'outputDirectory' to a text file in the "ProcessedData" folder
+  # Save 'outputDirectory' to a text file in the "Output" folder
   # This will make it easier to reference in later scripts
   outputDirectory |>
-    writeOutput(paste0("ProcessedData/Hydrology_Output_Location_", startDate,
+    writeOutput(paste0("W2_Russian_River/Output/Hydrology_Output_Location_", startDate,
                        "_", endDate, ".txt"))
   
   
@@ -338,12 +338,12 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   
   # Save the PRISM grid-cell-averaged precipitation data too
   # There is one file each for the RRIHM and SRP model domains
-  prmsGridPath <- paste0("WebData/PRISM_PRMS_Domain_Data_", 
+  prmsGridPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
                          getModeledWY(endDate)[1], "_", 
                          endDate, ".csv")
   
   
-  srpGridPath <- paste0("WebData/PRISM_SRP_Domain_Data_", 
+  srpGridPath <- paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
                         getModeledWY(endDate)[1], "_", 
                         endDate, ".csv")
   

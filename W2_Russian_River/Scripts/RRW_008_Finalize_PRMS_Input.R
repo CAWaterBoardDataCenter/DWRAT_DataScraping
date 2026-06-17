@@ -21,7 +21,7 @@
 
 
 # The script has several input files:
-#  (1) "ProcessedData/Weather_Processed_Data_[startDate]_[endDate].csv"
+#  (1) "W2_Russian_River/Output/Weather_Processed_Data_[startDate]_[endDate].csv"
 #      The processed weather data
 
 #  (2) A long-running DAT file (whose filepath is present within the directory
@@ -54,12 +54,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -71,12 +71,12 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Confirm that a proper directory exists for model input and output files
   # The actual PRMS model files should have been successfully copied to
-  # the "ProcessedData" folder too
+  # the "Output" folder too
   cat(paste0("[1/", if_else(predictWY, 5, 4),
              "]\tChecking directories...\n"))
   
@@ -85,7 +85,7 @@ mainProcedure <- function (predictWY = TRUE) {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Also confirm that the "RR_PRMS" folder was copied to "ProcessedData"
+  # Also confirm that the "RR_PRMS" folder was copied to "Output"
   prmsPath <- validateModelCopy_PRMS()
   
   
@@ -101,7 +101,7 @@ mainProcedure <- function (predictWY = TRUE) {
   #  (*) The primary DAT file
   # (These files are used in all cases, regardless of the value for 'predictWY')
   filePaths <- tibble("METEOROLOGICAL" = 
-                        paste0("ProcessedData/PRMS_Meteorological_", startDate,
+                        paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate,
                                "_", endDate, ".csv"),
                       "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
   
@@ -571,7 +571,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   # PRISM data that was previously downloaded for PRMS is also required
   # Locate that file, confirm its existence, and validate the data
-  prismPath <- paste0("WebData/PRISM_PRMS_Domain_Data_",
+  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_",
                       getModeledWY(endDate)[1], "_", endDate, ".csv") |>
     checkForPreviousOutput()
   

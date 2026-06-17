@@ -12,15 +12,15 @@
 
 # The meteorological CSV file from the previous script will be 
 # copied there as well
-# ("ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv")
+# ("Output/PRMS_Meteorological_[startDate]_[endDate].csv")
 
 # Its pre-QAQC version will be included too
-# ("ProcessedData/PRMS_Meteorological_No_QC_[startDate]_[endDate].csv")
+# ("W2_Russian_River/Output/PRMS_Meteorological_No_QC_[startDate]_[endDate].csv")
 
 # The weather station input files will be archived in this folder as well
 
 
-# After that, one additional output will be added to the "ProcessedData" folder
+# After that, one additional output will be added to the "Output" folder
 
 # It will be a text file containing a single line that specifies 
 # the path to the newly generated directory
@@ -36,12 +36,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -53,24 +53,24 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Verify that the meteorological CSV file exists
   # (This is a sign that the previous script completed its procedure)
-  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_", startDate,
+  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate,
                        "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
   
   # Check for the "Pre-QAQC" version of this file as well
-  prePrismMeteor <- paste0("ProcessedData/PRMS_Meteorological_No_QC_", startDate,
+  prePrismMeteor <- paste0("W2_Russian_River/Output/PRMS_Meteorological_No_QC_", startDate,
                            "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
   
   # Include the intermediate QA/QC file too (after CIMIS flags have been applied)
-  postCimisMeteor <- paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_",
+  postCimisMeteor <- paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_CIMIS_",
                             "Intermediate_", startDate, "_", endDate, ".csv") |> 
     checkForPreviousOutput()
   
@@ -107,9 +107,9 @@ mainProcedure <- function () {
   cat("[3/3]\tSaving new folder path to a text file for easy access...\n")
   
   
-  # Save 'outputDirectory' to a text file in the "ProcessedData" folder
+  # Save 'outputDirectory' to a text file in the "Output" folder
   # This will make it easier to reference in later scripts
-  outPath <- paste0("ProcessedData/Hydrology_Output_Location_", startDate,
+  outPath <- paste0("W2_Russian_River/Output/Hydrology_Output_Location_", startDate,
                     "_", endDate, ".txt")
   
   outputDirectory |>
@@ -118,7 +118,7 @@ mainProcedure <- function () {
   
   # Save that file to 'outputDirectory' too
   
-  # Edit 'outPath' to point to 'outputDirectory' instead of "ProcessedData"
+  # Edit 'outPath' to point to 'outputDirectory' instead of "Output"
   outPath <- outPath |>
     str_remove("^.+[/\\\\]") |>
     paste0(outputDirectory, "/", ... = _) |> 
@@ -388,12 +388,12 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, postCimisMete
   
   # Save the PRISM grid-cell-averaged precipitation data too
   # There is one file each for the PRMS and SRP model domains
-  prmsGridPath <- paste0("WebData/PRISM_PRMS_Domain_Data_", 
+  prmsGridPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
                          getModeledWY(endDate)[1], "_", 
                          endDate, ".csv")
   
   
-  srpGridPath <- paste0("WebData/PRISM_SRP_Domain_Data_", 
+  srpGridPath <- paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
                         getModeledWY(endDate)[1], "_", 
                         endDate, ".csv")
   
@@ -441,19 +441,19 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, postCimisMete
   
   # In CIMIS's case, too, its quality control flags are not applied by default, 
   # so a record of what data was flagged is worth preserving
-  copyStationFile(paste0("WebData/PRISM_PRMS_Data_", startDate, "_",
+  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", startDate, "_",
                          endDate, ".csv"),
                   outputDirectory)
   
-  copyStationFile(paste0("WebData/NOAA_API_Data_", startDate, "_",
+  copyStationFile(paste0("W2_Russian_River/Intermediate/NOAA_API_Data_", startDate, "_",
                          endDate, ".csv"),
                   outputDirectory)
   
-  copyStationFile(paste0("WebData/RAWS_HTTP_Data_", startDate, "_",
+  copyStationFile(paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_", startDate, "_",
                          endDate, ".csv"),
                   outputDirectory)
   
-  copyStationFile(paste0("WebData/CIMIS_API_Data_", startDate, "_",
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_", startDate, "_",
                          endDate, ".csv"),
                   outputDirectory)
   

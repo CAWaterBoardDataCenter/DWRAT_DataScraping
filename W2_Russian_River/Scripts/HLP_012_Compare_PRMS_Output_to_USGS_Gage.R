@@ -17,12 +17,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -39,7 +39,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   cat("\n[1/3]\tGetting \"sub_cfs\" file and precipitation data...\n")
@@ -63,7 +63,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   # Validate the contents of 'subDF'
   # To do this, borrow the "validateSubCSV" function from the Raw Flows script
   c("validateSubCSV", "getColsFromMetadata") |>
-    map(~ functionStealer("Scripts/RRW_016_Generate_Raw_Flows.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_016_Generate_Raw_Flows.R", .))
   
   
   subDF <- subDF |>
@@ -87,7 +87,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   # Import those functions and apply them
   c("gatherPrecipPRISM", "validateAndSummarizePRISM",
     "gatherPrecipDAT") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
   # Use the average precipitation among PRISM grid cells in the PRMS model domain
@@ -123,7 +123,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   
   # Once again, import functions from the "SRP" script
   c("checkForValidKey", "requestUSGS", "validateUSGS") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
   # Check if the user provided an API key in the control spreadsheet
@@ -154,7 +154,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   c("compareGageAndModel", "prepNewDirectory", "generatePlotsAndTable",
     "generateStreamflowPlot", "getNiceAxisBreaks", "setPrecipColumnWidths",
     "generateComparisonScatterplot") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   compareGageAndModel(usgsDF, subDF, dirPath, gageID, subPath, prismDF, datDF,
                       model = "PRMS")

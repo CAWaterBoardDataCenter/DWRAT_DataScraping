@@ -19,14 +19,14 @@
 # 15 precipitation columns and 8 max/min temperature columns
 
 # In addition to these files, the outputs of the web scraping scripts are all required:
-#  (1) "WebData/PRISM_PRMS_Data_[startDate]_[endDate].csv"
-#  (2) "WebData/NOAA_API_Data_[startDate]_[endDate].csv"
-#  (3) "WebData/RAWS_HTTP_Data_[startDate]_[endDate].csv"
-#  (4) "WebData/CIMIS_API_Data_[startDate]_[endDate].csv"
+#  (1) "W2_Russian_River/Intermediate/PRISM_PRMS_Data_[startDate]_[endDate].csv"
+#  (2) "W2_Russian_River/Intermediate/NOAA_API_Data_[startDate]_[endDate].csv"
+#  (3) "W2_Russian_River/Intermediate/RAWS_HTTP_Data_[startDate]_[endDate].csv"
+#  (4) "W2_Russian_River/Intermediate/CIMIS_API_Data_[startDate]_[endDate].csv"
 
 
 # These files will be combined into a single output file:
-#  (1) "ProcessedData/PRMS_Meteorological_[startDate]_[endDate].csv"
+#  (1) "W2_Russian_River/Output/PRMS_Meteorological_[startDate]_[endDate].csv"
 
 
 #### Setup ####
@@ -36,12 +36,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -53,7 +53,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Start with a vector containing every single required input file
@@ -75,13 +75,13 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
                        "PRECIP_GAGE_CORRELATION" = getFromControl_RR("PRMS_PRECIP_GAGE_CORRELATION_TABLE") |>
                          sharepointPathCheck(isFolder = FALSE), 
                        
-                       "PRISM_OUTPUT" = paste0("WebData/PRISM_PRMS_Data_",
+                       "PRISM_OUTPUT" = paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_",
                                                startDate, "_", endDate, ".csv"),
-                       "NOAA_OUTPUT" = paste0("WebData/NOAA_API_Data_",
+                       "NOAA_OUTPUT" = paste0("W2_Russian_River/Intermediate/NOAA_API_Data_",
                                               startDate, "_", endDate, ".csv"),
-                       "RAWS_OUTPUT" = paste0("WebData/RAWS_HTTP_Data_",
+                       "RAWS_OUTPUT" = paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_",
                                               startDate, "_", endDate, ".csv"),
-                       "CIMIS_OUTPUT" = paste0("WebData/CIMIS_API_Data_",
+                       "CIMIS_OUTPUT" = paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_",
                                                startDate, "_", endDate, ".csv"))
   
   
@@ -165,7 +165,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # For archival purposes, save 'meteorDF' without any data substitution
   # or outlier modifications
   meteorDF |>
-    writeOutput(paste0("ProcessedData/PRMS_Meteorological_No_QC_", 
+    writeOutput(paste0("W2_Russian_River/Output/PRMS_Meteorological_No_QC_", 
                        startDate, "_", endDate, ".csv"),
                 quietly = TRUE)
   
@@ -189,7 +189,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Once this step is complete, write 'meteorDF' to a file
-  outFile <- paste0("ProcessedData/PRMS_Meteorological_", startDate, "_",
+  outFile <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate, "_",
                     endDate, ".csv")
   
   
@@ -632,7 +632,7 @@ datQAQC <- function (meteorDF, outlierDF, corrDF, cimisInput, cimisDF, cimisPath
   # Save 'meteorDF' to an intermediate file
   # CIMIS flags are the only QA/QC applied at this point, and this 
   meteorDF |>
-    writeOutput(paste0("ProcessedData/PRMS_Meteorological_QC_CIMIS_Intermediate_",
+    writeOutput(paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv"))
   
   

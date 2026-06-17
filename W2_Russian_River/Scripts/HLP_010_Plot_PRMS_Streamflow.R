@@ -13,12 +13,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -30,7 +30,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Confirm that a proper directory exists for model input and output files
@@ -62,7 +62,7 @@ mainProcedure <- function () {
   
   # Use functions from another script to handle that process
   c("gatherPrecipPRISM", "validateAndSummarizePRISM") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
   # Collect PRISM precipitation data that is averaged for 
@@ -72,7 +72,7 @@ mainProcedure <- function () {
   
   # Import more precipitation data from the DAT file that was used to run PRMS
   # "HLP_011_Compare_SRP_Output_to_USGS_Gage.R" has a function for that too
-  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+  functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
                   "gatherPrecipDAT")
   
   
@@ -146,7 +146,7 @@ plotModelResults <- function (dirPath, outDF, prismDF, datDF) {
   
   # After that, create a new folder in the PRMS "output" directory 
   # This will hold the data output by this function
-  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+  functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
                   "prepNewDirectory")
   
   
@@ -161,7 +161,7 @@ plotModelResults <- function (dirPath, outDF, prismDF, datDF) {
   
   # Borrow function that can help generate plots
   c("generateStreamflowPlot", "getNiceAxisBreaks", "setPrecipColumnWidths") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
   # First generate plots for the full dataset

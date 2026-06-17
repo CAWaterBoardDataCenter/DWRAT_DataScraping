@@ -1,7 +1,7 @@
 # After the SRP run has completed successfully, 
 # copy key output files into the hydrology model input/output folder
 
-# Then, delete the "SRPHM" folder from the "ProcessedData" folder
+# Then, delete the "SRPHM" folder from the "Output" folder
 
 
 #### Setup ####
@@ -11,12 +11,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -28,12 +28,12 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Confirm that a proper directory exists for model input and output files
   # The actual SRP model files should have been successfully copied to
-  # the "ProcessedData" folder too
+  # the "Output" folder too
   cat("[1/3]\tChecking directories...\n")
   
   
@@ -41,7 +41,7 @@ mainProcedure <- function () {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Also confirm that the "SRPHM" folder was copied to "ProcessedData"
+  # Also confirm that the "SRPHM" folder was copied to "Output"
   srpPath <- validateModelCopy_SRP_2024()
   
   
@@ -59,7 +59,7 @@ mainProcedure <- function () {
   
   
   # The final step is to delete the "SRPHM" folder that was copied to 
-  # the "ProcessedData" folder
+  # the "Output" folder
   cat("[3/3]\tDeleting the model files...\n")
   
   
@@ -140,7 +140,7 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
 
 deleteFiles <- function (srpPath) {
   
-  # Delete the "SRPHM" directory in the "ProcessedData" folder
+  # Delete the "SRPHM" directory in the "Output" folder
   
   # Start by deleting that folder
   dir_delete(srpPath)
@@ -151,7 +151,7 @@ deleteFiles <- function (srpPath) {
     
     stop(paste0("Failed to Delete SRP Directory\n\n",
                 "The script attempted to delete the SRP model files that ",
-                "were located in the \"ProcessedData\" folder. However, it ",
+                "were located in the \"Output\" folder. However, it ",
                 "was unsuccessful for an unknown reason. Please investigate.\n\n",
                 "(This error occurred for \"", srpPath, "\")") |>
            errWrap())

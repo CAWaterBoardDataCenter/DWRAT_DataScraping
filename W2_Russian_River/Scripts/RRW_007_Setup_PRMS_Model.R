@@ -1,7 +1,7 @@
 # Prepare the PRMS files for a model run
 
 # The model files will be copied from another location
-# to the "ProcessedData" folder
+# to the "Output" folder
 
 # The source location is specified in the field "RR_PRMS_SOURCE_LOCATION" 
 # in "RR_Supply_Control_File.xlsx"
@@ -15,12 +15,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -48,11 +48,11 @@ mainProcedure <- function () {
                                               "windows/run.bat"))
   
   
-  cat("[1/1]\tCopying the PRMS folder to \"ProcessedData/RR_PRMS\"...\n")
+  cat("[1/1]\tCopying the PRMS folder to \"W2_Russian_River/Output/RR_PRMS\"...\n")
   
   
-  # Copy the contents from 'sourceDir' to a new "RR_PRMS" folder in "ProcessedData"
-  copyModel(sourceDir, "ProcessedData/RR_PRMS")
+  # Copy the contents from 'sourceDir' to a new "RR_PRMS" folder in "Output"
+  copyModel(sourceDir, "W2_Russian_River/Output/RR_PRMS")
   
   
   cat("\tDone!\n\n")

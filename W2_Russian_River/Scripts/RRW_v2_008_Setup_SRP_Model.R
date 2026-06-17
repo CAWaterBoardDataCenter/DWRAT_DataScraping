@@ -1,7 +1,7 @@
 # Prepare the SRP files for a model run
 
 # The model files will be copied from another location
-# to the "ProcessedData" folder
+# to the "Output" folder
 
 # The source location is specified in the field "SRPHM_SOURCE_LOCATION" 
 # in "RR_Workflow_Control_File.xlsx"
@@ -14,12 +14,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -51,15 +51,15 @@ mainProcedure <- function () {
       "external_files/restartdata_2020.out"))
   
   
-  cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM\"...\n")
+  cat("[1/1]\tCopying the SRP folder to \"W2_Russian_River/Output/SRPHM\"...\n")
   
   
   # Borrow a function from the PRMS model setup script
-  functionStealer("Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
   
   
-  # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
-  copyModel(sourceDir, "ProcessedData/SRPHM")
+  # Copy the contents from 'sourceDir' to a new SRP folder in "Output"
+  copyModel(sourceDir, "W2_Russian_River/Output/SRPHM")
   
   
   cat("\tDone!\n\n")

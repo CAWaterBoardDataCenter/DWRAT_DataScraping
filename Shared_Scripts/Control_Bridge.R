@@ -28,7 +28,7 @@ getFromMasterControl <- function (fieldName) {
   
   
   # First, read in the primary spreadsheet
-  controlDF <- getXLSX("../Master_Control_File.xlsx")
+  controlDF <- getXLSX("Master_Control_File.xlsx")
   
   
   # Find a match for 'fieldName' in the "FIELD" column
@@ -68,7 +68,7 @@ getFromMasterControl <- function (fieldName) {
         paste0("Empty SharePoint Field in Control File\n\n",
                "SharePoint connectivity is disabled because the corresponding ",
                "'VALUE' entry for the field '", fieldName, "' is empty\n\n",
-               "Please consider updating '../Master_Control_File.xlsx'\n\n",
+               "Please consider updating 'Master_Control_File.xlsx'\n\n",
                "\n\n_______\n\n",
                "(This message will only display once per session/day)") |>
           errWrap() |>
@@ -99,7 +99,7 @@ getFromMasterControl <- function (fieldName) {
       stop(paste0("Empty Field in Control File\n\n",
                   "The corresponding 'VALUE' entry for the field '", fieldName, 
                   "' is empty\n\n",
-                  "Please update '../Master_Control_File.xlsx'") |>
+                  "Please update 'Master_Control_File.xlsx'") |>
              errWrap())
       
     }
@@ -151,7 +151,7 @@ getFromControl_RR <- function (fieldName) {
   # In all other cases, use the local version of the control file
   if (!exists("controlDF")) {
     
-    controlPath <- "InputData/RR_Workflow_Control_File.xlsx"
+    controlPath <- "W2_Russian_River/Input/RR_Workflow_Control_File.xlsx"
     
     controlDF <- getXLSX(controlPath)
     

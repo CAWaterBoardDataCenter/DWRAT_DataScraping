@@ -7,7 +7,7 @@
 #### Setup ####
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
@@ -1246,7 +1246,7 @@ validateHydroFolder <- function (startDate, endDate) {
   
   
   # Get the text file that contains the path to the hydrology folder
-  folderFilePath <- paste0("ProcessedData/Hydrology_Output_Location_",
+  folderFilePath <- paste0("W2_Russian_River/Output/Hydrology_Output_Location_",
                            startDate, "_", endDate, ".txt")
   
   
@@ -1369,14 +1369,14 @@ validateHydroFolder <- function (startDate, endDate) {
 
 validateModelCopy_PRMS <- function () {
   
-  # In a prior script, PRMS model files were copied to the "ProcessedData" folder
+  # In a prior script, PRMS model files were copied to the "Output" folder
   # Verify that it exists
   
   # This function also returns the path to the model folder
   
   
   # The expected path of the "RR_PRMS" folder
-  prmsPath <- "ProcessedData/RR_PRMS" |> normalizePath(mustWork = FALSE)
+  prmsPath <- "W2_Russian_River/Output/RR_PRMS" |> normalizePath(mustWork = FALSE)
   
   
   # Make sure that that folder exists 
@@ -1384,7 +1384,7 @@ validateModelCopy_PRMS <- function () {
     
     paste0("PRMS Folder Not Found\n\n",
            "A copy of the PRMS model files should have been added ",
-           "to the \"ProcessedData\" folder in an earlier script. ",
+           "to the \"Output\" folder in an earlier script. ",
            "However, it was not found. ",
            "Please run the previous scripts before running this one.\n\n",
            "The expected directory was \"", prmsPath, "\"") |>
@@ -1402,7 +1402,7 @@ validateModelCopy_PRMS <- function () {
   if (!file.exists(controlPath)) {
     
     paste0("Missing PRMS Control File\n\n",
-           "When the PRMS folder was copied into the \"ProcessedData\" ", 
+           "When the PRMS folder was copied into the \"Output\" ", 
            "folder, a control file was present in the \"windows\" folder. ",
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", controlPath, "\")") |>
@@ -1421,7 +1421,7 @@ validateModelCopy_PRMS <- function () {
   if (!file.exists(batPath)) {
     
     paste0("Missing PRMS Batch File\n\n",
-           "When the PRMS folder was copied into the \"ProcessedData\" ", 
+           "When the PRMS folder was copied into the \"Output\" ", 
            "folder, a batch file was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", batPath, "\")") |>
@@ -1439,7 +1439,7 @@ validateModelCopy_PRMS <- function () {
   if (!file.exists(exePath)) {
     
     paste0("Missing PRMS EXE File\n\n",
-           "When the PRMS folder was copied into the \"ProcessedData\" ", 
+           "When the PRMS folder was copied into the \"Output\" ", 
            "folder, \"gsflow.exe\" was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", exePath, "\")") |>
@@ -1483,7 +1483,7 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/PRMS_Output_Messages.txt")
+      writeOutput(modelOutput, "W2_Russian_River/Output/PRMS_Output_Messages.txt")
       
     }
     
@@ -1549,14 +1549,14 @@ getModelOutputs_PRMS <- function (prmsPath,
 
 validateModelCopy_SRP <- function () {
   
-  # In a prior script, SRP model files were copied to the "ProcessedData" folder
+  # In a prior script, SRP model files were copied to the "Output" folder
   # Verify that it exists
   
   # This function also returns the path to the model folder
   
   
   # The expected path of the "SRPHM_update_ag" folder
-  srpPath <- "ProcessedData/SRPHM_update_ag" |> normalizePath(mustWork = FALSE)
+  srpPath <- "W2_Russian_River/Output/SRPHM_update_ag" |> normalizePath(mustWork = FALSE)
   
   
   # Make sure that that folder exists 
@@ -1564,7 +1564,7 @@ validateModelCopy_SRP <- function () {
     
     paste0("SRP Folder Not Found\n\n",
            "A copy of the SRP model files should have been added ",
-           "to the \"ProcessedData\" folder in an earlier script. ",
+           "to the \"Output\" folder in an earlier script. ",
            "However, it was not found. ",
            "Please run the previous scripts before running this one.\n\n",
            "The expected directory was \"", srpPath, "\"") |>
@@ -1582,7 +1582,7 @@ validateModelCopy_SRP <- function () {
   if (!file.exists(controlPath)) {
     
     paste0("Missing SRP Control File\n\n",
-           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "When the SRP folder was copied into the \"Output\" ", 
            "folder, a control file was present in the root folder. ",
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", controlPath, "\")") |>
@@ -1601,7 +1601,7 @@ validateModelCopy_SRP <- function () {
   if (!file.exists(batPath)) {
     
     paste0("Missing SRP Batch File\n\n",
-           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "When the SRP folder was copied into the \"Output\" ", 
            "folder, a batch file was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", batPath, "\")") |>
@@ -1619,7 +1619,7 @@ validateModelCopy_SRP <- function () {
   if (!file.exists(exePath)) {
     
     paste0("Missing SRP EXE File\n\n",
-           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "When the SRP folder was copied into the \"Output\" ", 
            "folder, \"gsflow_ag.exe\" was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", exePath, "\")") |>
@@ -1663,7 +1663,7 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt")
+      writeOutput(modelOutput, "W2_Russian_River/Output/SRP_Output_Messages.txt")
       
     }
     
@@ -1729,14 +1729,14 @@ getModelOutputs_SRP <- function (srpPath) {
 
 validateModelCopy_SRP_2024 <- function () {
   
-  # In a prior script, SRP model files were copied to the "ProcessedData" folder
+  # In a prior script, SRP model files were copied to the "Output" folder
   # Verify that it exists
   
   # This function also returns the path to the model folder
   
   
   # The expected path of the "SRPHM" folder
-  srpPath <- "ProcessedData/SRPHM" |> normalizePath(mustWork = FALSE)
+  srpPath <- "W2_Russian_River/Output/SRPHM" |> normalizePath(mustWork = FALSE)
   
   
   # Make sure that that folder exists 
@@ -1744,7 +1744,7 @@ validateModelCopy_SRP_2024 <- function () {
     
     paste0("SRP Folder Not Found\n\n",
            "A copy of the SRP model files should have been added ",
-           "to the \"ProcessedData\" folder in an earlier script. ",
+           "to the \"Output\" folder in an earlier script. ",
            "However, it was not found. ",
            "Please run the previous scripts before running this one.\n\n",
            "The expected directory was \"", srpPath, "\"") |>
@@ -1763,7 +1763,7 @@ validateModelCopy_SRP_2024 <- function () {
   if (!file.exists(controlPath)) {
     
     paste0("Missing SRP Control File\n\n",
-           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "When the SRP folder was copied into the \"Output\" ", 
            "folder, a control file was present in the spinup folder. ",
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", controlPath, "\")") |>
@@ -1782,7 +1782,7 @@ validateModelCopy_SRP_2024 <- function () {
   if (!file.exists(batPath)) {
     
     paste0("Missing SRP Batch File\n\n",
-           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "When the SRP folder was copied into the \"Output\" ", 
            "folder, a batch file was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", batPath, "\")") |>
@@ -1800,7 +1800,7 @@ validateModelCopy_SRP_2024 <- function () {
   if (!file.exists(exePath)) {
     
     paste0("Missing SRP EXE File\n\n",
-           "When the SRP folder was copied into the \"ProcessedData\" ", 
+           "When the SRP folder was copied into the \"Output\" ", 
            "folder, \"bin/gsflow.exe\" was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", exePath, "\")") |>
@@ -1843,7 +1843,7 @@ checkForModelOutputs_SRP_2024 <- function (srpPath, modelOutput = NULL) {
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt")
+      writeOutput(modelOutput, "W2_Russian_River/Output/SRP_Output_Messages.txt")
       
     }
     
@@ -1915,14 +1915,14 @@ getModelOutputs_SRP_2024 <- function (srpPath) {
 
 validateModelCopy_RRIHM <- function () {
   
-  # In a prior script, RRIHM model files were copied to the "ProcessedData" folder
+  # In a prior script, RRIHM model files were copied to the "Output" folder
   # Verify that it exists
   
   # This function also returns the path to the model folder
   
   
   # The expected path of the "RRIHM" folder
-  rrPath <- "ProcessedData/RRIHM" |> normalizePath(mustWork = FALSE)
+  rrPath <- "W2_Russian_River/Output/RRIHM" |> normalizePath(mustWork = FALSE)
   
   
   # Make sure that that folder exists 
@@ -1930,7 +1930,7 @@ validateModelCopy_RRIHM <- function () {
     
     paste0("RRIHM Folder Not Found\n\n",
            "A copy of the RRIHM model files should have been added ",
-           "to the \"ProcessedData\" folder in an earlier script. ",
+           "to the \"Output\" folder in an earlier script. ",
            "However, it was not found. ",
            "Please run the previous scripts before starting this one.\n\n",
            "The expected directory was \"", rrPath, "\"") |>
@@ -1949,7 +1949,7 @@ validateModelCopy_RRIHM <- function () {
   if (!file.exists(controlPath)) {
     
     paste0("Missing RRIHM Control File\n\n",
-           "When the RRIHM folder was copied into the \"ProcessedData\" ", 
+           "When the RRIHM folder was copied into the \"Output\" ", 
            "folder, a control file was present in the \"windows\" folder. ",
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", controlPath, "\")") |>
@@ -1968,7 +1968,7 @@ validateModelCopy_RRIHM <- function () {
   if (!file.exists(batPath)) {
     
     paste0("Missing RRIHM Batch File\n\n",
-           "When the RRIHM folder was copied into the \"ProcessedData\" ", 
+           "When the RRIHM folder was copied into the \"Output\" ", 
            "folder, a batch file was present in the \"windows\" folder. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", batPath, "\")") |>
@@ -1987,7 +1987,7 @@ validateModelCopy_RRIHM <- function () {
   if (!file.exists(markPath)) {
     
     paste0("Missing RRIHM DAT File\n\n",
-           "When the RRIHM folder was copied into the \"ProcessedData\" ", 
+           "When the RRIHM folder was copied into the \"Output\" ", 
            "folder, \"Mark_West_inflow.dat\" was present in the files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", markPath, "\")") |>
@@ -2005,7 +2005,7 @@ validateModelCopy_RRIHM <- function () {
   if (!file.exists(exePath)) {
     
     paste0("Missing GSFLOW EXE File\n\n",
-           "When the RRIHM folder was copied into the \"ProcessedData\" ", 
+           "When the RRIHM folder was copied into the \"Output\" ", 
            "folder, \"gsflow.exe\" was present among the model files. ", 
            "However, it cannot be found now. Please investigate.\n\n",
            "(This error occurred for \"", exePath, "\")") |>
@@ -2052,7 +2052,7 @@ checkForModelOutputs_RRIHM <- function (rrPath, modelOutput = NULL) {
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "ProcessedData/SRP_Output_Messages.txt")
+      writeOutput(modelOutput, "W2_Russian_River/Output/SRP_Output_Messages.txt")
       
     }
     

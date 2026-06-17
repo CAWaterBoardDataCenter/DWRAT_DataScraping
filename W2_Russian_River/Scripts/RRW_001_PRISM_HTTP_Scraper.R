@@ -16,7 +16,7 @@
 #  (3) STATION_ID
 
 
-# Four corresponding output CSV files are produced and stored in the "WebData" folder
+# Four corresponding output CSV files are produced and stored in the "Intermediate" folder
 #  (1) "PRISM_PRMS_Data_[startDate]_[endDate].csv"
 #  (2) "PRISM_SRP_Data_[startDate]_[endDate].csv"
 #  (3) "PRISM_PRMS_Domain_Data_[startDate]_[endDate].csv"
@@ -35,12 +35,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 # Allow greater time to download data from PRISM
@@ -58,7 +58,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # PRISM does not have data earlier than 1981-01-01
@@ -89,7 +89,8 @@ mainProcedure <- function () {
   
   # Prepare and submit a request for meteorological data
   scrapePRISM(stationDF, startDate, endDate, 
-              paste0("WebData/PRISM_PRMS_Data_", startDate, "_", endDate, ".csv"),
+              paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", 
+                     startDate, "_", endDate, ".csv"),
               useHighRes = TRUE, interpCells = TRUE,
               getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
   
@@ -121,7 +122,8 @@ mainProcedure <- function () {
   # Prepare and submit a POST request for data
   # The SRP stations require English units (inches and Fahrenheit)
   scrapePRISM(stationDF, startDate, endDate, 
-              paste0("WebData/PRISM_SRP_Data_", startDate, "_", endDate, ".csv"),
+              paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", 
+                     startDate, "_", endDate, ".csv"),
               useHighRes = TRUE, interpCells = TRUE,
               getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
   
@@ -153,8 +155,8 @@ mainProcedure <- function () {
   # Prepare the POST request for precipitation data
   # No grid cell interpolation will be performed for this request
   scrapePRISM(stationDF, wyStart, endDate, 
-              paste0("WebData/PRISM_PRMS_Domain_Data_", wyStart, "_", 
-                     endDate, ".csv"),
+              paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
+                     wyStart, "_", endDate, ".csv"),
               useHighRes = TRUE, interpCells = FALSE,
               getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
   
@@ -183,8 +185,8 @@ mainProcedure <- function () {
   # Prepare and submit POST requests
   # No grid cell interpolation will be performed for this request
   scrapePRISM(stationDF, wyStart, endDate, 
-              paste0("WebData/PRISM_SRP_Domain_Data_", wyStart, "_", 
-                     endDate, ".csv"),
+              paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
+                     wyStart, "_", endDate, ".csv"),
               useHighRes = TRUE, interpCells = FALSE,
               getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
   

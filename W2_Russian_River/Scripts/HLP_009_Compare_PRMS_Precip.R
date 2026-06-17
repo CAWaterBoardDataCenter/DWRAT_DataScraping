@@ -12,12 +12,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -29,7 +29,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Confirm that a proper directory exists for model input and output files
@@ -63,7 +63,7 @@ mainProcedure <- function () {
   # This procedure was completed in "HLP_011_Compare_SRP_Output_to_USGS_Gage.R"
   # Its functions can be reused here for PRMS
   c("gatherPrecipPRISM", "validateAndSummarizePRISM") |>
-    map(~ functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   
   # Gather precipitation data
@@ -74,7 +74,7 @@ mainProcedure <- function () {
   
   # Another function in "HLP_011_Compare_SRP_Output_to_USGS_Gage.R" 
   # can help with that
-  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+  functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
                   "gatherPrecipDAT")
   
   
@@ -106,7 +106,7 @@ mainProcedure <- function () {
   # Create a new folder in the PRMS "output" directory 
   # This will hold the data output from this analysis
   # (The required function appears in another script)
-  functionStealer("Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
+  functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", 
                   "prepNewDirectory")
   
   

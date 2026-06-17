@@ -41,13 +41,13 @@
 # ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
-# "ProcessedData" folder 
+# "Output" folder 
 
 # The PRISM PRMS dataset will be required as well
 # ("PRISM_PRMS_Data_1990-01-01_2025-12-31.csv")
 
 # This file must also be procured; however, it should be stored in the
-# "WebData" folder instead
+# "Intermediate" folder instead
 
 # Similarly, the list of PRISM PRMS stations is required as well
 
@@ -73,12 +73,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -103,7 +103,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-QAQC" meteorological CSV
-  meteorPath <- paste0("ProcessedData/PRMS_Meteorological_EX_QC_CIMIS_Intermediate_",
+  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_EX_QC_CIMIS_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -113,7 +113,7 @@ mainProcedure <- function () {
     paste0("Missing Required Meteorological File\n\n",
            "Please obtain the \"Intermediate QA/QC\" meteorological file that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
-           "it in the \"ProcessedData\" folder.\n\n",
+           "it in the \"Output\" folder.\n\n",
            "(\"", normalizePath(meteorPath, mustWork = FALSE), "\" does ",
            "not exist)") |>
       errWrap() |>
@@ -123,7 +123,7 @@ mainProcedure <- function () {
   
   
   # Get the PRISM PRMS CSV's path next
-  prismPath <- paste0("WebData/PRISM_PRMS_Data_",
+  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_",
                       startDate, "_", endDate, ".csv")
   
   
@@ -133,7 +133,7 @@ mainProcedure <- function () {
     paste0("Missing Required PRISM File\n\n",
            "Please obtain the PRISM CSV file for PRMS stations that ",
            "contains gage data from ", startDate, " to ", endDate, ". Place ",
-           "it in the \"WebData\" folder.\n\n",
+           "it in the \"Intermediate\" folder.\n\n",
            "(\"", normalizePath(prismPath, mustWork = FALSE), "\" does ",
            "not exist)") |>
       errWrap() |>
@@ -191,7 +191,7 @@ mainProcedure <- function () {
   
   
 # Get CDEC data for use in 'meteorDF'
-cdecDF <- getFile(paste0("WebData/CDEC_API_Data_", startDate, "_", endDate, ".csv")) |>
+cdecDF <- getFile(paste0("W2_Russian_River/Intermediate/CDEC_API_Data_", startDate, "_", endDate, ".csv")) |>
   filter(is.na(DATA_FLAG) | !(DATA_FLAG %in% c("A", "N", "v")))
 
 cdecRef <- "Admin + Management/1. Staff Folders/APrashar/2026-05-28_RR_PRMS_Precip_QAQC/Option_4_Additional_Nearby_Gages/Maps_and_New_Stations/PRMS_Precipitation_QAQC_Candidate_Stations.csv" |>
@@ -238,15 +238,15 @@ cdecDF <- cdecDF |> select(`DATE TIME`, VALUE, UNITS, PRMS_PRECIP_NAME) |>
   
   
   modelDF[[1]] |>
-    writeOutput("ProcessedData/RR_Workflow_PRMS_Gage_Regression.csv")
+    writeOutput("W2_Russian_River/Output/RR_Workflow_PRMS_Gage_Regression.csv")
   
   
   modelDF[[2]] |>
-    writeOutput("ProcessedData/RR_Workflow_PRMS_Best_Correlations.csv")
+    writeOutput("W2_Russian_River/Output/RR_Workflow_PRMS_Best_Correlations.csv")
   
   
   modelDF[[3]] |>
-    writeOutput("ProcessedData/RR_Workflow_PRMS_Remediation_Correlations.csv")
+    writeOutput("W2_Russian_River/Output/RR_Workflow_PRMS_Remediation_Correlations.csv")
   
   
   cat("\tDone!\n\n")

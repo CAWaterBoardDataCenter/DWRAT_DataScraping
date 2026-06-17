@@ -16,12 +16,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -37,7 +37,7 @@ mainProcedure <- function (gageID = "11466800") {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   cat("\n[1/3]\tGetting gag file and precipitation data...\n")
@@ -59,7 +59,7 @@ mainProcedure <- function (gageID = "11466800") {
   # Validate the contents of 'gagDF'
   # To do this, borrow the "validateGag" function from the Raw Flows script
   c("validateGag", "getColsFromMetadata") |>
-    map(~ functionStealer("Scripts/RRW_016_Generate_Raw_Flows.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_016_Generate_Raw_Flows.R", .))
   
   
   gagDF <- gagDF |>
@@ -265,14 +265,15 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   
   # Setup the filepath for the new dataset
-  extraPath <- paste0("WebData/PRISM_Precip_", model, "_Domain_Extra_QAQC_Data_",
+  extraPath <- paste0("W2_Russian_River/Intermediate/PRISM_Precip_", model, 
+                      "_Domain_Extra_QAQC_Data_",
                       Sys.Date() - 2, ".csv")
   
   
   # Then, import `runModifiedPRISM` from a prior script 
   # ('HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R')
   # This function can download PRISM data 
-  functionStealer("Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R",
+  functionStealer("W2_Russian_River/Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R",
                   "runModifiedPRISM")
   
   
@@ -444,7 +445,7 @@ checkForValidKey <- function () {
   
   
   # Borrow the API key validation function from the CIMIS script
-  functionStealer("Scripts/RRW_004_CIMIS_API_Scraper.R",
+  functionStealer("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R",
                   "validateAPI")
   
   

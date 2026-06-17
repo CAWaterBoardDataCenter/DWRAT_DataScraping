@@ -14,12 +14,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -31,7 +31,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Check for the directory that contains metadata and model input/output files
@@ -48,7 +48,7 @@ mainProcedure <- function () {
     checkForPreviousOutput()
   
   
-  # Also confirm that the "RRIHM" folder was copied to "ProcessedData"
+  # Also confirm that the "RRIHM" folder was copied to "Output"
   # Get the path to that folder
   rrPath <- validateModelCopy_RRIHM()
   
@@ -70,7 +70,7 @@ mainProcedure <- function () {
   # Validate the contents of 'gagDF'
   # To do this, borrow the "validateGag" function from the Raw Flows script
   c("validateGag", "getColsFromMetadata") |>
-    map(~ functionStealer("Scripts/RRW_016_Generate_Raw_Flows.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_016_Generate_Raw_Flows.R", .))
   
   
   gagDF <- gagDF |>
@@ -97,7 +97,7 @@ mainProcedure <- function () {
   dirPath <- validateHydroFolder(startDate, endDate)
   
   
-  # Also confirm that the "RR_PRMS" folder was copied to "ProcessedData"
+  # Also confirm that the "RR_PRMS" folder was copied to "Output"
   prmsPath <- validateModelCopy_PRMS()
   
   
@@ -113,7 +113,7 @@ mainProcedure <- function () {
   #  (*) The primary DAT file
   # (These files are used in all cases, regardless of the value for 'predictWY')
   filePaths <- tibble("METEOROLOGICAL" = 
-                        paste0("ProcessedData/PRMS_Meteorological_", startDate,
+                        paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate,
                                "_", endDate, ".csv"),
                       "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
   
@@ -685,7 +685,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   # PRISM data that was previously downloaded for PRMS is also required
   # Locate that file, confirm its existence, and validate the data
-  prismPath <- paste0("WebData/PRISM_PRMS_Domain_Data_",
+  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_",
                       getModeledWY(endDate)[1], "_", endDate, ".csv") |>
     checkForPreviousOutput()
   

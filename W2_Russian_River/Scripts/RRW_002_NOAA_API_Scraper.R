@@ -9,7 +9,7 @@
 # ("GHCND" stands for Global Historical Climatology Network Daily)
 
 
-# The raw output will be stored in the "WebData" folder as 
+# The raw output will be stored in the "Intermediate" folder as 
 # "NOAA_API_Data_[startDate]_[endDate].csv"
 
 # Note: PRMS requires SI units (mm and Celsius)
@@ -31,12 +31,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 # Allow greater time to download data from NOAA
@@ -54,7 +54,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   cat("\n[1/1]\tGetting climate data for GHCND stations on NOAA...\n")
@@ -82,11 +82,11 @@ mainProcedure <- function () {
   
   
   # Define the output file name as well
-  outFile <- paste0("WebData/NOAA_API_Data_", startDate, "_",
+  outFile <- paste0("W2_Russian_River/Intermediate/NOAA_API_Data_", startDate, "_",
                     endDate, ".csv")
   
   
-  # Download the file to the "WebData" folder
+  # Download the file to the "Intermediate" folder
   download.file(requestURL, outFile, mode = "w", quiet = TRUE)
   
   

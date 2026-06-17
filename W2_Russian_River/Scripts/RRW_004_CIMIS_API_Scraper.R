@@ -17,7 +17,7 @@
 # Note 2: To get a key, create an account on https://cimis.water.ca.gov/
 
 
-# The raw output will be stored in the "WebData" folder as 
+# The raw output will be stored in the "Intermediate" folder as 
 # "CIMIS_API_Data_[startDate]_[endDate].csv"
 
 # Note: SI units are used for the output (mm and Celsius)
@@ -30,12 +30,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -47,7 +47,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # CIMIS does not have data earlier than 1982-06-07 for many stations
@@ -89,11 +89,11 @@ mainProcedure <- function () {
   
   
   # Define the output file name as well
-  outFile <- paste0("WebData/CIMIS_API_Data_", startDate, "_",
-                    endDate, ".csv")
+  outFile <- paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_", 
+                    startDate, "_", endDate, ".csv")
   
   
-  # Write the file to the "WebData" folder
+  # Write the file to the "Intermediate" folder
   writeOutput(cimisDF, outFile)
   
   
@@ -1242,13 +1242,14 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   
   
   # If the final intended output file "daily_report.csv" is already present in the 
-  # "WebData" folder, remove it
-  outFile <- "WebData/daily_report.csv"
+  # "Intermediate" folder, remove it
+  outFile <- "W2_Russian_River/Intermediate/daily_report.csv"
   
   
   # Remove "daily_report.csv" and any numeric increment version of the name
   # (e.g., "daily_report (1).csv")
-  list.files("WebData", pattern = "^daily_report(\\s?\\([0-9]+\\))?\\.csv$", 
+  list.files("W2_Russian_River/Intermediate", 
+             pattern = "^daily_report(\\s?\\([0-9]+\\))?\\.csv$", 
              full.names = TRUE) |>
     unlink()
   
@@ -1262,18 +1263,20 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   
   # Prepare extra capabilities for the Selenium instance
   
-  # Set the default download folder location to be the "WebData" folder
+  # Set the default download folder location to be the "Intermediate" folder
   # The specified settings are as follows:
   #   - By default, don't allow popups
   #   - Don't open a prompt to ask where to download files
-  #   - The default download directory is the "WebData" folder
+  #   - The default download directory is the "Intermediate" folder
   # NOTE: The download directory must be specified using backslashes
   exCap <- list(chromeOptions = 
                   list(prefs = 
                          list("profile.default_content_settings.popups" = 0L,
                               "download.prompt_for_download" = FALSE,
                               "download.default_directory" = 
-                                paste0(getwd(), "/WebData") |> normalizePath())))
+                                paste0(getwd(), 
+                                       "/W2_Russian_River/Intermediate") |> 
+                                normalizePath())))
   
   
   # Open the server

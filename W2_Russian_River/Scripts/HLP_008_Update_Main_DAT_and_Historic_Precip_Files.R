@@ -14,12 +14,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -31,7 +31,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Check the input files for these fields:
@@ -302,7 +302,8 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   # Start by downloading PRISM data for this date range ('datStart' to 'datEnd')
   runModifiedPRISM("PRISM_PRMS_STATIONS_CSV", datStart, datEnd,
-                   paste0("WebData/PRISM_PRMS_Data_", datStart, "_", datEnd, ".csv"),
+                   paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", 
+                          datStart, "_", datEnd, ".csv"),
                    useHighRes = TRUE, interpCells = TRUE,
                    getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
   
@@ -327,19 +328,19 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   
   # Request NOAA data
-  toggleAndRunScript("Scripts/RRW_002_NOAA_API_Scraper.R")
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_002_NOAA_API_Scraper.R")
   
   
   # Run the RAWS script after that
-  toggleAndRunScript("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_003_RAWS_HTTP_Scraper.R")
   
   
   # Then, get CIMIS data
-  toggleAndRunScript("Scripts/RRW_004_CIMIS_API_Scraper.R")
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
   
   
   # Combine the downloaded weather data after that
-  toggleAndRunScript("Scripts/RRW_005_Process_PRMS_Weather_Data.R")
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_005_Process_PRMS_Weather_Data.R")
   
   
   # After running these scripts, revert the dates in the control script
@@ -350,7 +351,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   # Read in the processed weather file
   # Add columns for "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND"
-  newDAT <- paste0("ProcessedData/PRMS_Meteorological_", datStart, "_",
+  newDAT <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", datStart, "_",
                    datEnd, ".csv") |>
     getFile() |>
     mutate(YEAR = year(DATE),
@@ -434,8 +435,9 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
     as.Date(format = "%Y-%m-%d")
   
   
-  # Save the downloaded data to the "WebData" folder
-  pathRawPRISM <- paste0("WebData/PRISM_SRP_Data_", prismStart, "_", datEnd, ".csv")
+  # Save the downloaded data to the "Intermediate" folder
+  pathRawPRISM <- paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", 
+                         prismStart, "_", datEnd, ".csv")
   
   
   # Download data until 'datEnd'
@@ -485,7 +487,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
   
   # Extract functions from "RRW_011_Process_SRP_Weather_Data.R"
   c("validateInputs", "reformatClimateData") |>
-    map(~ functionStealer("Scripts/RRW_011_Process_SRP_Weather_Data.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_011_Process_SRP_Weather_Data.R", .))
   
   
   # Validate the inputs
@@ -621,7 +623,8 @@ createPrecipFile <- function (precipStart, precipEnd, model = "PRMS",
   
   
   # Define the path that will contain the downloaded PRISM data
-  prismPath <- paste0("WebData/PRISM_", model, "_Domain_Data_", precipStart, 
+  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_", model, 
+                      "_Domain_Data_", precipStart, 
                       "_", precipEnd, ".csv")
   
   
@@ -699,7 +702,7 @@ runModifiedPRISM <- function (sourceName, startDate, endDate, outFile,
   
   # Import functions from "RRW_001_PRISM_HTTP_Scraper.R" using `functionStealer`
   c("scrapePRISM", "validateReqResults", "splitRequest", "combineRawOutputs") |>
-    map(~ functionStealer("Scripts/RRW_001_PRISM_HTTP_Scraper.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_001_PRISM_HTTP_Scraper.R", .))
   
   
   # Read in a list of stations or grid cells for a particular model
@@ -738,7 +741,7 @@ updateControlScript <- function (newStart, newEnd) {
   
   
   # This is the path to the control script
-  scriptPath <- "Scripts/CTR_001_Set_Start_and_End_Dates.R"
+  scriptPath <- "W2_Russian_River/Scripts/CTR_001_Set_Start_and_End_Dates.R"
   
   
   # Read in the text of that file

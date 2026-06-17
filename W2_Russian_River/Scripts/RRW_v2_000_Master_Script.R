@@ -15,7 +15,7 @@ require(renv)
 
 restore()
 
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 #### Scripts ####
@@ -31,11 +31,11 @@ source("Scripts/HLP_000_Load_Packages.R")
 ##### Process Pre-Check #####
 
 # Check that the directory is correctly set
-source("Scripts/HLP_004_Check_Working_Directory.R")
+source("W2_Russian_River/Scripts/HLP_004_Check_Working_Directory.R")
 
 
 # Check if updates are required for the models' core DAT and Precipitation files
-source("Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R")
+source("W2_Russian_River/Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R")
 
 ##### Web Scraping #####
 
@@ -51,47 +51,47 @@ source("Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R")
 #   (*) CDEC
 
 
-source("Scripts/RRW_001_PRISM_HTTP_Scraper.R")
+source("W2_Russian_River/Scripts/RRW_001_PRISM_HTTP_Scraper.R")
 
-source("Scripts/RRW_002_NOAA_API_Scraper.R")
+source("W2_Russian_River/Scripts/RRW_002_NOAA_API_Scraper.R")
 
-source("Scripts/RRW_003_RAWS_HTTP_Scraper.R")
+source("W2_Russian_River/Scripts/RRW_003_RAWS_HTTP_Scraper.R")
 
-source("Scripts/RRW_004_CIMIS_API_Scraper.R")
+source("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
 
-source("Scripts/RRW_v2_005_CDEC_API_Scraper.R")
+source("W2_Russian_River/Scripts/RRW_v2_005_CDEC_API_Scraper.R")
 
 
 ##### SRP #####
 
 # Process PRISM data for SRP
-source("Scripts/RRW_v2_006_Process_SRP_Weather_Data.R")
+source("W2_Russian_River/Scripts/RRW_v2_006_Process_SRP_Weather_Data.R")
 
 
 # Setup the output directory for the workflow model runs
-source("Scripts/RRW_v2_007_Setup_Output_Directory.R")
+source("W2_Russian_River/Scripts/RRW_v2_007_Setup_Output_Directory.R")
 
 
 # Setup the temporary SRP model location
-source("Scripts/RRW_v2_008_Setup_SRP_Model.R")
+source("W2_Russian_River/Scripts/RRW_v2_008_Setup_SRP_Model.R")
 
 
 # Generate the input DAT file for SRP
-source("Scripts/RRW_v2_009_Finalize_SRP_Input.R")
+source("W2_Russian_River/Scripts/RRW_v2_009_Finalize_SRP_Input.R")
 
 
 # Run SRP
-source("Scripts/RRW_v2_010_Run_SRP.R")
+source("W2_Russian_River/Scripts/RRW_v2_010_Run_SRP.R")
 
 
 # Store key outputs and clear out the copied model files
-source("Scripts/RRW_v2_011_SRP_Cleanup.R")
+source("W2_Russian_River/Scripts/RRW_v2_011_SRP_Cleanup.R")
 
 
 #### RRIHM ####
 
 # Setup the temporary RRIHM model location
-source("Scripts/RRW_v2_012_Setup_RRIHM_Model.R")
+source("W2_Russian_River/Scripts/RRW_v2_012_Setup_RRIHM_Model.R")
 
 
 

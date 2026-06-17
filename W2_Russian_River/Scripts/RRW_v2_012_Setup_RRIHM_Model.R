@@ -1,7 +1,7 @@
 # Prepare the RRIHM files for a model run
 
 # The model files will be copied from another location
-# to the "ProcessedData" folder
+# to the "Output" folder
 
 # The source location is specified in the field "RRIHM_SOURCE_LOCATION" 
 # in "RR_Workflow_Control_File.xlsx"
@@ -14,12 +14,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -54,15 +54,15 @@ mainProcedure <- function () {
       "RRIHM_post_spinup_WY2021/windows/bin/gsflow.exe"))
   
   
-  cat("[1/1]\tCopying the RRIHM folder to \"ProcessedData/RRIHM\"...\n")
+  cat("[1/1]\tCopying the RRIHM folder to \"W2_Russian_River/Output/RRIHM\"...\n")
   
   
   # Import a function from the v1 workflow's PRMS model setup script
-  functionStealer("Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
   
   
-  # Copy the contents from 'sourceDir' to a new folder in "ProcessedData"
-  copyModel(sourceDir, "ProcessedData/RRIHM")
+  # Copy the contents from 'sourceDir' to a new folder in "Output"
+  copyModel(sourceDir, "W2_Russian_River/Output/RRIHM")
   
   
   cat("\tDone!\n\n")

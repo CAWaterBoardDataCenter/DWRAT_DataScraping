@@ -1,5 +1,5 @@
 # Run the PRMS model
-# Use the copy of the model files in the "ProcessedData" folder 
+# Use the copy of the model files in the "Output" folder 
 
 
 #### Setup ####
@@ -9,12 +9,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -25,7 +25,7 @@ mainProcedure <- function () {
   cat("Starting 'RRW_009_Run_PRMS.R'!\n")
   
   
-  # Confirm that the "RR_PRMS" folder was copied to "ProcessedData"
+  # Confirm that the "RR_PRMS" folder was copied to "Output"
   prmsPath <- validateModelCopy_PRMS()
   
   

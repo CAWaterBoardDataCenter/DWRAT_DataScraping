@@ -20,11 +20,11 @@
 
 # In addition to these files, the output of the PRISM web scraping script 
 # is required:
-#  (1) "WebData/PRISM_SRP_Data_[startDate]_[endDate].csv"
+#  (1) "W2_Russian_River/Intermediate/PRISM_SRP_Data_[startDate]_[endDate].csv"
 
 
 # These files will be combined into a single output file:
-#  (1) "ProcessedData/SRP_Meteorological_[startDate]_[endDate].csv"
+#  (1) "W2_Russian_River/Output/SRP_Meteorological_[startDate]_[endDate].csv"
 
 
 #### Setup ####
@@ -34,12 +34,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -51,7 +51,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Start with a vector containing every single required input file
@@ -59,7 +59,7 @@ mainProcedure <- function () {
                          getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
                          sharepointPathCheck(isFolder = FALSE),
                        "PRISM_OUTPUT" = 
-                         paste0("WebData/PRISM_SRP_Data_",
+                         paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_",
                                 startDate, "_", endDate, ".csv"))
   
   
@@ -122,7 +122,7 @@ mainProcedure <- function () {
   
   
   # Once this step is complete, write 'prismProcessed' to a file
-  outFile <- paste0("ProcessedData/SRP_Meteorological_", startDate, "_",
+  outFile <- paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate, "_",
                     endDate, ".csv")
   
   

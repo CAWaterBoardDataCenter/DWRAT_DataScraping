@@ -9,9 +9,9 @@ if (!grepl("DWRAT_DataScraping$",
            getwd() |> normalizePath(winslash = "/"))) {
   
   paste0("Working Directory Issue\n\n",
-         "The Russian River workflow is intended to be run through ",
-         "the Supply R Project in SDA's \"DWRAT_DataScraping\" repository. ",
-         "Please correct the working directory before proceeding.") |>
+         "The Russian River workflow is intended to be run through the ",
+         "\"DWRAT_DataScraping\" R Project file located at the root of the ",
+         "repository. Please correct the working directory before proceeding.") |>
     strwrap(width = 0.99 * getOption("width")) |>
     paste0(collapse = "\n") |>
     stop()

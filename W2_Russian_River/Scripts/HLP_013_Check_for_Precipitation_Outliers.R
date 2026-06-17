@@ -15,12 +15,12 @@ base::remove(list = ls())
 
 
 # Import packages
-source("Scripts/HLP_000_Load_Packages.R")
+source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Functions ####
@@ -32,7 +32,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Confirm that a proper directory exists for model input and output files
@@ -83,7 +83,7 @@ mainProcedure <- function () {
   
   
   outlierDF |>
-    writeOutput("ProcessedData/PRMS_Outlier_Bounds.csv")
+    writeOutput("W2_Russian_River/Output/PRMS_Outlier_Bounds.csv")
   
   
   cat("\tDone!\n\n")
