@@ -3,8 +3,8 @@
 
 # Ignore Various R files
 .Rproj.user
-**/.Rproj.user
-**/.Rhistory
+.Rhistory
+.Rprofile
 
 # Ignore any Python-related "pycache" directory too
 **/__pycache__/**
