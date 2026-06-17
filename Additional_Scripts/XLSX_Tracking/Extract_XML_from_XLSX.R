@@ -22,6 +22,14 @@ base::remove(list = ls())
 require(cli)
 require(stringr)
 require(fs)
+require(readxl)
+
+
+# By default, consider the content of the Master Control File to be secure information
+# Output an error message if its XML would be extracted
+options(sda_Protect_MasterControl = TRUE)
+
+# (Set this option to "FALSE" to disable it)
 
 
 #### Procedure ####
@@ -47,16 +55,28 @@ xlsxList <- list.files(pattern = "\\.xlsx$",
 # Exclude certain matches:
 # No spreadsheets contained within an "Archive" folder
 # No spreadsheets in a "Documentation" folder
+# No spreadsheets in an "renv" folder
+# No spreadsheets in a "Models" folder
+# No spreadsheets in an "Output" folder
 # Ignore "Russian_River_Database_2022.xlsx"
 xlsxList <- xlsxList |>
   str_subset("/Archive/", negate = TRUE) |>
   str_subset("/Documentation/", negate = TRUE) |>
+  str_subset("/renv/", negate = TRUE) |>
+  str_subset("/Models/", negate = TRUE) |>
+  str_subset("/Output/", negate = TRUE) |>
   str_subset("/RUSSIAN_RIVER_DATABASE_2022\\.xlsx$", negate = TRUE)
 
 
 # Make sure 'xlsxList' is NOT empty
 if (length(xlsxList) == 0) {
   stop("No spreadsheets detected")
+}
+
+
+# Make sure all spreadsheets are closed before proceeding
+if (any(grepl("^\\./~\\$", xlsxList))) {
+  stop("Please close all of the directory's spreadsheets first")
 }
 
 
@@ -67,6 +87,27 @@ for (i in 1:length(xlsxList)) {
   paste0("\n\n[", i, "/", length(xlsxList), "] Archiving \"",
          xlsxList[i], "\"...\n\n") |>
     cat()
+  
+  
+  # For the Master Control File, check it before proceeding
+  # (if the option "sda_Protect_MasterControl" is TRUE)
+  if (getOption("sda_Protect_MasterControl") == TRUE &&
+      grepl("[/\\\\]Master_Control_File\\.xlsx$", xlsxList[i])) {
+    
+    # Read in the file
+    masterDF <- read_xlsx(xlsxList[i])
+    
+    
+    # To prevent accidental commits of sensitive information 
+    # If any of the fields have a value in 'masterDF', output an error message 
+    if (!anyNA(masterDF$VALUE)) {
+      paste0("\"", xlsxList[i], "\" contains values.\n",
+             "While the option \"sda_Protect_MasterControl\" is \"TRUE\", ",
+             "this is not allowed.") |>
+        stop()
+    }
+    
+  } # End of "Master_Control_File.xlsx" check
   
   
   # Make a corresponding ZIP filename for the spreadsheet
@@ -97,6 +138,33 @@ for (i in 1:length(xlsxList)) {
   
   # Unzip the new ZIP folder and leaves its extracted contents as a new folder
   unzip(zipPath, exdir = newFolderPath, overwrite = TRUE)
+  
+  
+  # If the new folder contains "workbook.xml", make sure it does not contain 
+  # any specific filepath
+  wbPath <- paste0(newFolderPath, "/xl/workbook.xml")
+  
+  
+  if (file.exists(wbPath)) {
+    
+    # Read in "workbook.xml"
+    wbLines <- readLines(wbPath, warn = FALSE)
+    
+    
+    # If a "url" attribute appears within the file, edit it
+    if (any(grepl("url=\"", wbLines))) {
+      
+      # Remove any filepaths that may appear under a "url" attribute
+      wbLines <- wbLines |>
+        str_replace_all("url=\".+?\"", "url=\"\"")
+      
+      
+      # Write 'wbLines' back to 'wbPath'
+      writeLines(wbLines, wbPath)
+      
+    }
+    
+  } # End of 'workbook.xml' check
   
   
   # Finally, remove the ZIP folder
