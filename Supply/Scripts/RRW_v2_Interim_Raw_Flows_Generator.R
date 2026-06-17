@@ -104,7 +104,7 @@ for (i in 1:length(goPaths)) {
     mutate(MONTH = month(Date), YEAR = year(Date)) |>
     group_by(YEAR, MONTH) |>
     summarize(Flow = sum(Flow / 1233.48), .groups = "drop") |>
-    rename(!! as.character(i) := Flow)
+    rename(!! paste0("GO_", i) := Flow)
   
   
   # Combine flow values from each file into a single tibble
@@ -153,6 +153,31 @@ for (i in 1:length(gagPaths)) {
 
 
 # Calculate the subbasin flow values
+combinedDF <- combinedDF |>
+  mutate(`1` = GO_1,
+         `2` = GO_2,
+         `3` = GO_3 - GO_2,
+         `4` = GO_4 - GO_3 - GO_1,
+         `5` = GO_5 - GO_3,
+         `6` = GO_6 - GO_5,
+         `7` = GO_7,
+         `8` = GO_8 - GO_7,
+         `9` = GO_9 - GO_6 - GO_8,
+         `10` = GO_10 - GO_9,
+         `11` = GO_11,
+         `12` = GO_12 - GO_10 - GO_11,
+         `13` = GO_13 - GO_12,
+         `14` = GO_14 - GO_22,
+         `15` = GO_15 - GO_14,
+         `16` = GO_16 - GO_15,
+         `17` = GO_17 - GO_13 - GO_16,
+         `18` = GO_18 - GO_17,
+         `19` = GO_19 - GO_18,
+         `20` = GO_20,
+         `21` = GO_21 - GO_19 - GO_20,
+         `22` = GO_22) |>
+  select(YEAR, MONTH, as.character(1:length(goPaths)))
+
 gagDF <- gagDF |>
   mutate(`23` = `1`,
          `24` = `6` - `1` - `5`,
