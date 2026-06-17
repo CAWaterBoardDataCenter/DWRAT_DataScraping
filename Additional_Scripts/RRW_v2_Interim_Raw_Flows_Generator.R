@@ -10,9 +10,9 @@ base::remove(list = ls())
 
 # Please specify the folders where the RRIHM and SRPHM output files are stored
 
-prmsOutDir <- "C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/SOPs + Documentation/4. Hydro Models/RRIHM Model_Testing/Model_Outputs/FCorella/060426_baseline_postspinup_052626DAT/modflow/RRIHM_outputs_060426"
+prmsOutDir <- "C:/Users/.../060426_baseline_postspinup_052626DAT/modflow/RRIHM_outputs_060426"
 
-srpOutDir <- "C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/SOPs + Documentation/4. Hydro Models/SRPHM Model_Testing/Outputs/FCorella/FCorella_model_start_10-01-20_060326/modflow"
+srpOutDir <- "C:/Users/.../FCorella_model_start_10-01-20_060326/modflow"
 
 
 # Make sure the starting date of the files is specified correctly too
@@ -27,7 +27,7 @@ startDate <- "2020-10-01" |>
 #### Setup ####
 
 # Make sure the "Supply" RProj is active
-source("Scripts/HLP_004_Check_Working_Directory.R")
+source("W2_Russian_River/Scripts/HLP_004_Check_Working_Directory.R")
 
 
 # Import packages
@@ -48,8 +48,8 @@ require(jsonlite)
 
 
 # Import shared functions
-source("Scripts/HLP_001_Shared_Functions_Supply.R")
-source("Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("Shared_Scripts/!Shared_Functions_Importer.R")
+source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 
 #### Procedure ####
