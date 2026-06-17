@@ -434,7 +434,7 @@ getBasinConnectivity <- function () {
   
   
   # Use a validation function from another script
-  functionStealer("Scripts/RRW_018_Finalize_DWRAT_Inputs.R",
+  functionStealer("W2_Russian_River/Scripts/RRW_018_Finalize_DWRAT_Inputs.R",
                   "validateBasins")
   
   
