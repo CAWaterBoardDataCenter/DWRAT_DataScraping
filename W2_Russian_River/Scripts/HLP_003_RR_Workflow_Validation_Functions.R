@@ -4,14 +4,14 @@
 # This script contains functions that will be used by multiple scripts
 
 
-#### Dependencies ####
+#### Setup ####
 
 # Import packages
 source("Scripts/HLP_000_Load_Packages.R")
 
 
 # Import shared functions
-source("Scripts/HLP_001_Shared_Functions_Supply.R")
+source("Shared_Scripts/!Shared_Functions_Importer.R")
 
 
 #### Functions ####

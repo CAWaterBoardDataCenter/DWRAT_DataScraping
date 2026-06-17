@@ -5,7 +5,7 @@
 # Also, users input strings, but this script will turn those variables into dates
 
 
-#### Dependencies ####
+#### Setup ####
 
 require(tidyverse)
 
