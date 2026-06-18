@@ -25,12 +25,12 @@ mainProcedure <- function () {
   cat("Starting 'RRW_v2_010_Run_SRP.R'!\n")
   
   
-  # Confirm that the "SIR2024-5121_update" folder was copied to "ProcessedData"
+  # Confirm that the "SRPHM" folder was copied to "ProcessedData"
   srpPath <- validateModelCopy_SRP_2024()
   
   
   # Get the path to the batch file stored in the root directory
-  batPath <- paste0(srpPath, "/model/model1/SRPHM_full/run_SRPHM_full.bat") |>
+  batPath <- paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/run_SRPHM_spinup.bat") |>
     normalizePath(mustWork = TRUE)
   
   

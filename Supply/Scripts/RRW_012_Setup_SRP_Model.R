@@ -51,8 +51,12 @@ mainProcedure <- function () {
   cat("[1/1]\tCopying the SRP folder to \"ProcessedData/SRPHM_update_ag\"...\n")
   
   
+  # Borrow a function from the PRMS model setup script
+  functionStealer("Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  
+  
   # Copy the contents from 'sourceDir' to a new SRP folder in "ProcessedData"
-  copyModel(sourceDir)
+  copyModel(sourceDir, "ProcessedData/SRPHM_update_ag")
   
   
   cat("\tDone!\n\n")
@@ -60,45 +64,6 @@ mainProcedure <- function () {
   
   # Output a completion message
   cat(col_green("\n'RRW_012_Setup_SRP_Model.R' is complete!\n\n"))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyModel <- function (sourceDir) {
-  
-  # Copy the files from 'sourceDir' into a newly created "SRPHM_update_ag" folder
-  # in the "ProcessedData" folder
-  
-  
-  # 'newDir' will contain the new folder location 
-  # relative to the working directory
-  newDir <- "ProcessedData/SRPHM_update_ag"
-  
-  
-  # If the folder already exists, delete it and its contents
-  if (dir.exists(newDir)) {
-    
-    unlink(newDir, recursive = TRUE)
-    
-  }
-  
-  
-  # Next, create the "SRPHM_update_ag" folder
-  dir.create(newDir)
-  
-  
-  # Copy the entire contents of 'sourceDir' into this new folder
-  dir_copy(sourceDir, newDir, overwrite = TRUE)
-  
-  
-  # Side note: It doesn't matter if the source folder has a name that's 
-  # different from "SRPHM_update_ag"
-  # In "ProcessedData", the folder will still be called "SRPHM_update_ag"
   
   
   # Return nothing

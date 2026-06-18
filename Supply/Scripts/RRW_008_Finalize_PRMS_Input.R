@@ -119,7 +119,7 @@ mainProcedure <- function (predictWY = TRUE) {
     checkForPreviousOutput() |> 
     getDelim(",")
   
-  primaryDAT <- getFile(filePaths$MAIN_DAT[1], ",")
+  primaryDAT <- getFile(filePaths$MAIN_DAT[1], delim = ",")
   
   
   # Validate the primary DAT file next
@@ -623,11 +623,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # Copy 'currentPrecip' to the hydrology folder as well
-  copyFile(prismPath,
-           paste0(dirPath, "/PRMS/Input/",
-                  prismPath |> str_remove("^.+[/\\\\]")) |>
-             normalizePath(mustWork = FALSE))
+  # 'currentPrecip' shoul be archived too, but that was already accomplished
+  # in a prior script
   
   
   # Return 'finalDAT'
@@ -905,10 +902,8 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   #      under "PRMS > input > climate_scenarios" 
   
   
-  # The final filename of 'mergedDAT' will contain 'startDate', 'endDate', and
-  # the name of the user running this script
-  datName <- paste0("DAT_PRMS_", Sys.info()[["user"]], "_", startDate, 
-                    "_", endDate, ".dat")
+  # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
+  datName <- paste0("DAT_PRMS_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only

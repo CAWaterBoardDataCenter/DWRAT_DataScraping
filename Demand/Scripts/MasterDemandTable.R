@@ -660,6 +660,7 @@ ewrimsDF <- ewrimsDF %>%
   mutate(PERCENT_FACE = 
            TOTAL_EXPECTED_ANNUAL_DIVERSION / max(INI_REPORTED_DIV_AMOUNT_AF, FACE_VALUE_AMOUNT_AF, -Inf, na.rm = TRUE),
          ZERO_DEMAND = if_else(TOTAL_EXPECTED_ANNUAL_DIVERSION == 0, "Y", "N")) %>%
+  mutate(PERCENT_FACE = if_else(is.infinite(PERCENT_FACE), NA_real_, PERCENT_FACE)) |>
   ungroup()
 
 

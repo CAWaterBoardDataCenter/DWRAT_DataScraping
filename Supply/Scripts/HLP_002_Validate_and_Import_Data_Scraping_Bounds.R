@@ -90,16 +90,16 @@ if (is.na(startDate)) {
 }
 
 
-# Next, confirm that 'endDate' is at least two days prior to today
-# It should not be equal to yesterday or today (or any future date, for that matter)
-if (endDate >= Sys.Date() - 1) {
+# Next, confirm that 'endDate' is at least one day prior to today
+# It should not be equal to today (or any future date, for that matter)
+if (endDate >= Sys.Date()) {
   
   # This issue can be addressed automatically by the script
   # The user will only receive a warning message about the issue
   
   
-  # Set 'endDate' to two days prior to today
-  endDate <- Sys.Date() - 2
+  # Set 'endDate' to one day prior to today
+  endDate <- Sys.Date() - 1
   
   
   # Update "CTR_001_Set_Start_and_End_Dates.R" with this change
@@ -109,8 +109,8 @@ if (endDate >= Sys.Date() - 1) {
   
   
   message(paste0("Warning: End Date Value Issue\n\n",
-                 "The end date should be, at most, two days prior to today ",
-                 "(there is sometimes a lag in data being posted online)\n\n",
+                 "The end date should be, at most, one day prior to today ",
+                 "(there is a lag in data being posted online)\n\n",
                  "This script has automatically updated 'endDate' in '",
                  controlPath, "' to enforce this restriction.") |>
             strwrap(width = 0.99 * getOption("width")) |>
