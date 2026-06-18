@@ -9,25 +9,20 @@ base::remove(list = ls())
 
 
 # Check the working directory
-if (!grepl("/DWRAT_DataScraping$", getwd() |> normalizePath(winslash = "/"))) {
-  
-  paste0("Working Directory Issue\n\n",
-         "The Russian River workflow is intended to be run through the ",
-         "\"DWRAT_DataScraping\" R Project file located at the root of the ",
-         "repository. Please correct the working directory before proceeding.") |>
-    strwrap(width = 0.99 * getOption("width")) |>
-    paste0(collapse = "\n") |>
-    stop()
-  
+if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
+  stop("Please use \"DWRAT_DataScraping.Rproj\"")
 }
 
 
-# Import packages
+# Import packages next
+
+# Install 'renv' if it's not already present
 if (!("renv" %in% installed.packages()[, 1])) {
   install.packages("renv")
 }
 
 
+# Use 'renv' to restore the required environment
 require(renv)
 
 restore()
