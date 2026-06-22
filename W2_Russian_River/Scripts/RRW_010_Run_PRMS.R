@@ -22,7 +22,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_009_Run_PRMS.R'!\n")
+  cat("Starting 'RRW_010_Run_PRMS.R'!\n")
   
   
   # Confirm that the "RR_PRMS" folder was copied to "Output"
@@ -74,7 +74,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_009_Run_PRMS.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_010_Run_PRMS.R' is complete!\n\n"))
   
   
   # Return nothing

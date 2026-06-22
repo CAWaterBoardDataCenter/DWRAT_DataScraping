@@ -73,27 +73,27 @@ source("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
 ##### PRMS #####
 
 # Process the downloaded weather files
-source("W2_Russian_River/Scripts/RRW_005_Process_PRMS_Weather_Data.R")
+source("W2_Russian_River/Scripts/RRW_006_Process_PRMS_Weather_Data.R")
 
 
 # Setup the output directory for the PRMS and SRP model runs
-source("W2_Russian_River/Scripts/RRW_006_Setup_Output_Directory.R")
+source("W2_Russian_River/Scripts/RRW_007_Setup_Output_Directory.R")
 
 
 # Setup the temporary PRMS model location
-source("W2_Russian_River/Scripts/RRW_007_Setup_PRMS_Model.R")
+source("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R")
 
 
 # Generate the input DAT file for PRMS
-source("W2_Russian_River/Scripts/RRW_008_Finalize_PRMS_Input.R")
+source("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R")
 
 
 # Run PRMS
-source("W2_Russian_River/Scripts/RRW_009_Run_PRMS.R")
+source("W2_Russian_River/Scripts/RRW_010_Run_PRMS.R")
 
 
 # Store key outputs and clear out the copied model files
-source("W2_Russian_River/Scripts/RRW_010_PRMS_Cleanup.R")
+source("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R")
 
 
 # Before proceeding, compare the precipitation in PRMS's model output 
@@ -113,23 +113,23 @@ source("W2_Russian_River/Scripts/HLP_012_Compare_PRMS_Output_to_USGS_Gage.R")
 ##### SRP #####
 
 # Process the downloaded weather file for SRP
-source("W2_Russian_River/Scripts/RRW_011_Process_SRP_Weather_Data.R")
+source("W2_Russian_River/Scripts/RRW_012_Process_SRP_Weather_Data.R")
 
 
 # Setup the temporary SRP model location
-source("W2_Russian_River/Scripts/RRW_012_Setup_SRP_Model.R")
+source("W2_Russian_River/Scripts/RRW_013_Setup_SRP_Model.R")
 
 
 # Generate the input DAT file for SRP
-source("W2_Russian_River/Scripts/RRW_013_Finalize_SRP_Input.R")
+source("W2_Russian_River/Scripts/RRW_014_Finalize_SRP_Input.R")
 
 
 # Run SRP
-source("W2_Russian_River/Scripts/RRW_014_Run_SRP.R")
+source("W2_Russian_River/Scripts/RRW_015_Run_SRP.R")
 
 
 # Store key outputs and clear out the copied model files
-source("W2_Russian_River/Scripts/RRW_015_SRP_Cleanup.R")
+source("W2_Russian_River/Scripts/RRW_016_SRP_Cleanup.R")
 
 
 # Before proceeding, compare SRP's streamflow output to USGS gages' datasets
@@ -140,25 +140,25 @@ source("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R")
 
 # Process the PRMS and SRP model results into raw flows for each sub-basin
 # (This is the final result of the "supply" part of the process)
-source("W2_Russian_River/Scripts/RRW_016_Generate_Raw_Flows.R")
+source("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R")
 
 
 ##### DWRAT #####
 
 # Ensure that Anaconda and a "paradigm-dwrat" environment are present
-source("W2_Russian_River/Scripts/RRW_017_DWRAT_Precheck.R")
+source("W2_Russian_River/Scripts/RRW_018_DWRAT_Precheck.R")
 
 
 # Prepare the input files for DWRAT and setup the Paradigm DWRAT script
-source("W2_Russian_River/Scripts/RRW_018_Finalize_DWRAT_Inputs.R")
+source("W2_Russian_River/Scripts/RRW_019_Finalize_DWRAT_Inputs.R")
 
 
 # Run DWRAT
-source("W2_Russian_River/Scripts/RRW_019_Run_DWRAT.R")
+source("W2_Russian_River/Scripts/RRW_020_Run_DWRAT.R")
 
 
 # Perform final post-processing steps
-source("W2_Russian_River/Scripts/RRW_020_DWRAT_Cleanup.R")
+source("W2_Russian_River/Scripts/RRW_021_DWRAT_Cleanup.R")
 
 
 #### Extra Scripts ####

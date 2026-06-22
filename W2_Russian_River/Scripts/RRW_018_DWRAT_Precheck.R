@@ -22,7 +22,7 @@ source("Shared_Scripts/!Shared_Functions_Importer.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_017_DWRAT_Precheck.R'!\n")
+  cat("Starting 'RRW_018_DWRAT_Precheck.R'!\n")
   
   
   # Check for an installation of Anaconda
@@ -68,7 +68,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'RRW_017_DWRAT_Precheck.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_018_DWRAT_Precheck.R' is complete!\n\n"))
   
   
   # Return nothing

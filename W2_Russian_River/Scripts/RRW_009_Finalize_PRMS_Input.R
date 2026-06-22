@@ -67,7 +67,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function (predictWY = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRW_008_Finalize_PRMS_Input.R'!\n")
+  cat("Starting 'RRW_009_Finalize_PRMS_Input.R'!\n")
   
   
   # Import the start and end date
@@ -197,7 +197,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_008_Finalize_PRMS_Input.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_009_Finalize_PRMS_Input.R' is complete!\n\n"))
   
   
   # Return nothing

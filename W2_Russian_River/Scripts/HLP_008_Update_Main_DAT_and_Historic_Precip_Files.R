@@ -288,7 +288,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   #      Using "RRW_004_CIMIS_API_Scraper.R"
   
   #  (*) Combine the weather files
-  #      Using "RRW_005_Process_PRMS_Weather_Data.R"
+  #      Using "RRW_006_Process_PRMS_Weather_Data.R"
   
   # Except in PRISM's case, the entire scripts can be used
   # (The PRISM script would download extra data unnecessarily)
@@ -340,7 +340,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   
   # Combine the downloaded weather data after that
-  toggleAndRunScript("W2_Russian_River/Scripts/RRW_005_Process_PRMS_Weather_Data.R")
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_006_Process_PRMS_Weather_Data.R")
   
   
   # After running these scripts, revert the dates in the control script
@@ -422,7 +422,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
   #      Using pieces of "RRW_001_PRISM_HTTP_Scraper.R"
   
   #  (*) Process the weather file
-  #      Using pieces of "RRW_011_Process_SRP_Weather_Data.R"
+  #      Using pieces of "RRW_012_Process_SRP_Weather_Data.R"
   
   #  (*) Append data for WY1948 to the end of CY1980
   #      Using the data in 'latestPathSRP'
@@ -447,7 +447,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
                    getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
   
   
-  # The next step is to use a portion of "RRW_011_Process_SRP_Weather_Data.R"
+  # The next step is to use a portion of "RRW_012_Process_SRP_Weather_Data.R"
   # Gather the required inputs (including the previously downloaded PRISM data),
   # validate them, and then run the function `reformatClimateData`
   inputFiles <- tibble("PRISM_INPUT" = 
@@ -485,9 +485,9 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
   prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
   
   
-  # Extract functions from "RRW_011_Process_SRP_Weather_Data.R"
+  # Extract functions from "RRW_012_Process_SRP_Weather_Data.R"
   c("validateInputs", "reformatClimateData") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_011_Process_SRP_Weather_Data.R", .))
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_012_Process_SRP_Weather_Data.R", .))
   
   
   # Validate the inputs

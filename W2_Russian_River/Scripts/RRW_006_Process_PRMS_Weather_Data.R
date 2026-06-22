@@ -49,7 +49,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRW_005_Process_PRMS_Weather_Data.R'!\n")
+  cat("Starting 'RRW_006_Process_PRMS_Weather_Data.R'!\n")
   
   
   # Import the start and end date
@@ -198,7 +198,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_005_Process_PRMS_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_006_Process_PRMS_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing

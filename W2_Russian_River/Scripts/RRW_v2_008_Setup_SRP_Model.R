@@ -55,7 +55,7 @@ mainProcedure <- function () {
   
   
   # Borrow a function from the PRMS model setup script
-  functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", "copyModel")
   
   
   # Copy the contents from 'sourceDir' to a new SRP folder in "Output"

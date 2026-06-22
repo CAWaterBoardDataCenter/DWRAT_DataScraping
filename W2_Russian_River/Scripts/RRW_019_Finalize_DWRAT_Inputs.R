@@ -47,7 +47,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_018_Finalize_DWRAT_Inputs.R'!\n")
+  cat("Starting 'RRW_019_Finalize_DWRAT_Inputs.R'!\n")
   
   
   # Import the start and end date
@@ -249,7 +249,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'RRW_018_Finalize_DWRAT_Inputs.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_019_Finalize_DWRAT_Inputs.R' is complete!\n\n"))
   
   
   # Return nothing

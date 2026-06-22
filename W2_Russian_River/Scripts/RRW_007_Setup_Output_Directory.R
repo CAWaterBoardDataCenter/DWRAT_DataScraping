@@ -49,7 +49,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_006_Setup_Output_Directory.R'!\n")
+  cat("Starting 'RRW_007_Setup_Output_Directory.R'!\n")
   
   
   # Import the start and end date
@@ -134,7 +134,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_006_Setup_Output_Directory.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_007_Setup_Output_Directory.R' is complete!\n\n"))
   
   
   # Return nothing

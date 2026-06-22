@@ -28,7 +28,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_007_Setup_PRMS_Model.R'!\n\n")
+  cat("Starting 'RRW_008_Setup_PRMS_Model.R'!\n\n")
   
   
   # Get the location of the PRMS model files
@@ -59,7 +59,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_007_Setup_PRMS_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_008_Setup_PRMS_Model.R' is complete!\n\n"))
   
   
   # Return nothing

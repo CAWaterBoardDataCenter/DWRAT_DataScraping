@@ -58,7 +58,7 @@ mainProcedure <- function () {
   
   
   # Import a function from the v1 workflow's PRMS model setup script
-  functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", "copyModel")
   
   
   # Copy the contents from 'sourceDir' to a new folder in "Output"

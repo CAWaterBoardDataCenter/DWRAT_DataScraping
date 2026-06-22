@@ -22,7 +22,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_014_Run_SRP.R'!\n")
+  cat("Starting 'RRW_015_Run_SRP.R'!\n")
   
   
   # Confirm that the "SRPHM_update_ag" folder was copied to "Output"
@@ -67,7 +67,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_014_Run_SRP.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_015_Run_SRP.R' is complete!\n\n"))
   
   
   # Return nothing

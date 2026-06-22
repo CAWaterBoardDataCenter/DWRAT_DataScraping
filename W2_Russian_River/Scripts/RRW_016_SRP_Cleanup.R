@@ -24,7 +24,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_015_SRP_Cleanup.R'!\n")
+  cat("Starting 'RRW_016_SRP_Cleanup.R'!\n")
   
   
   # Import the start and end date
@@ -70,7 +70,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_015_SRP_Cleanup.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_016_SRP_Cleanup.R' is complete!\n\n"))
   
   
   # Return nothing

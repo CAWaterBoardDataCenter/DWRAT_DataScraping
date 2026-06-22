@@ -32,7 +32,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_016_Generate_Raw_Flows.R'!\n")
+  cat("Starting 'RRW_017_Generate_Raw_Flows.R'!\n")
   
   
   # Import the start and end date
@@ -195,7 +195,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_016_Generate_Raw_Flows.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_017_Generate_Raw_Flows.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -1118,7 +1118,7 @@ getBasinConnectivity <- function () {
   
   
   # Use a validation function from another script
-  functionStealer("W2_Russian_River/Scripts/RRW_018_Finalize_DWRAT_Inputs.R",
+  functionStealer("W2_Russian_River/Scripts/RRW_019_Finalize_DWRAT_Inputs.R",
                   "validateBasins")
   
   

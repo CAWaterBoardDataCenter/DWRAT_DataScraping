@@ -47,7 +47,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_011_Process_SRP_Weather_Data.R'!\n")
+  cat("Starting 'RRW_012_Process_SRP_Weather_Data.R'!\n")
   
   
   # Import the start and end date
@@ -143,7 +143,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_011_Process_SRP_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_012_Process_SRP_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing

@@ -28,7 +28,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_012_Setup_SRP_Model.R'!\n\n")
+  cat("Starting 'RRW_013_Setup_SRP_Model.R'!\n\n")
   
   
   # Get the location of the SRP model files
@@ -52,7 +52,7 @@ mainProcedure <- function () {
   
   
   # Borrow a function from the PRMS model setup script
-  functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_PRMS_Model.R", "copyModel")
+  functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", "copyModel")
   
   
   # Copy the contents from 'sourceDir' to a new SRP folder in "Output"
@@ -63,7 +63,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_012_Setup_SRP_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_013_Setup_SRP_Model.R' is complete!\n\n"))
   
   
   # Return nothing
