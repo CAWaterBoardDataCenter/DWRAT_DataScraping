@@ -107,8 +107,8 @@ mainProcedure <- function () {
                     GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
                     GIS_FILE_PATH = "SUBBASIN_POLYGONS_DATABASE_PATH",
                     GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME") %>%
-    st_transform(st_crs(assignedDF)) |>
-    st_make_valid()
+    st_make_valid() |>
+    st_transform(st_crs(assignedDF))
   
   
   
