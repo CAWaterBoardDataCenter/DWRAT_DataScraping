@@ -154,7 +154,7 @@ combinedDF <- combinedDF |>
          `2` = GO_2,
          `3` = GO_3 - GO_2,
          `4` = GO_4 - GO_3 - GO_1,
-         `5` = GO_5 - GO_3,
+         `5` = GO_5 - GO_4,
          `6` = GO_6 - GO_5,
          `7` = GO_7,
          `8` = GO_8 - GO_7,
