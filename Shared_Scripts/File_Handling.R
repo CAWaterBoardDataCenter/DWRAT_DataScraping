@@ -1208,7 +1208,7 @@ read_gag <- function (gagPath) {
 ##### File Writing #####
 
 writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
-                         col_names = TRUE, delim = NA_character_) {
+                         col_names = TRUE, delim = NA_character_, na = character()) {
   
   # Write a variable 'x' to 'outPath'
   
@@ -1288,11 +1288,11 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
   # Try to apply the file writing functions next
   if (writeFunction == "write_csv") {
     
-    writeRes <- try(write_csv(x, outPath, col_names = col_names))
+    writeRes <- try(write_csv(x, outPath, col_names = col_names, na = na))
     
   } else if (writeFunction == "write_lines") {
     
-    writeRes <- try(write_lines(x, outPath))
+    writeRes <- try(write_lines(x, outPath, na = na))
     
   } else if (writeFunction == "write_xlsx") {
     
@@ -1300,11 +1300,11 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
     
   } else if (writeFunction == "write_tsv") {
     
-    writeRes <- try(write_tsv(x, outPath, col_names = col_names))
+    writeRes <- try(write_tsv(x, outPath, col_names = col_names, na = na))
     
   } else if (writeFunction == "write_delim") {
     
-    writeRes <- try(write_delim(x, outPath, delim = delim, col_names = col_names))
+    writeRes <- try(write_delim(x, outPath, delim = delim, col_names = col_names, na = na))
     
   } else {
     
