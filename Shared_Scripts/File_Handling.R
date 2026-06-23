@@ -1208,7 +1208,7 @@ read_gag <- function (gagPath) {
 ##### File Writing #####
 
 writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
-                         col_names = TRUE, delim = NA_character_, na = character()) {
+                         col_names = TRUE, delim = NA_character_, na = "") {
   
   # Write a variable 'x' to 'outPath'
   
