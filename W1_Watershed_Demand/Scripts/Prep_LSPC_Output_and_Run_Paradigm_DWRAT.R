@@ -81,8 +81,17 @@ mainProcedure <- function (hucBased = TRUE) {
   
   
   # Get the Master Demand Table
-  mdtDF <- makeSharePointPath(ws$MASTER_DEMAND_TABLE_CSV_PATH) %>%
-    read_csv(show_col_types = FALSE)
+  if (file.exists(makeSharePointPath(ws$MASTER_DEMAND_TABLE_CSV_PATH))) {
+    
+    mdtDF <- makeSharePointPath(ws$MASTER_DEMAND_TABLE_CSV_PATH) %>%
+      read_csv(show_col_types = FALSE)
+    
+  } else {
+    
+    mdtDF <- ws$MASTER_DEMAND_TABLE_CSV_PATH %>%
+      read_csv(show_col_types = FALSE)
+    
+  }
   
   
   
@@ -119,8 +128,21 @@ mainProcedure <- function (hucBased = TRUE) {
   
   
   # Get the LSPC hydrology output as well
-  RO <- makeSharePointPath(ws$LSPC_STREAM_OUTPUT_CSV_PATH) %>%
-    read_csv(show_col_types = FALSE) %>%
+  if (file.exists(makeSharePointPath(ws$LSPC_STREAM_OUTPUT_CSV_PATH))) {
+    
+    RO <- makeSharePointPath(ws$LSPC_STREAM_OUTPUT_CSV_PATH) %>%
+      read_csv(show_col_types = FALSE)
+    
+  } else {
+    
+    RO <- ws$LSPC_STREAM_OUTPUT_CSV_PATH %>%
+      read_csv(show_col_types = FALSE)
+    
+  }
+  
+  
+  # Filter down the monthly stream data in 'RO'
+  RO <- RO %>%
     filter(parmname == "RO") %>%
     mutate(date = as.Date(date, "%m/%d/%Y"),
            value1_AF = value1 / 43559.9) # The CFS values are already using a monthly timestep
