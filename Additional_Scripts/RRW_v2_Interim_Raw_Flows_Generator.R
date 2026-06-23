@@ -96,14 +96,12 @@ for (i in 1:length(goPaths)) {
   dateVec <- seq(from = startDate, by = "days", length.out = nrow(tempDF))
   
   
-  # Convert the flow values from m^3/day to AF/day, and then wrap them up into AF/month
+  # Convert the flow values from m^3/day to AF/day
   # Rename "Flow" into the sub-basin number too
   tempDF <- tempDF |>
     mutate(Date = dateVec) |>
     select(Date, Flow) |>
-    mutate(MONTH = month(Date), YEAR = year(Date)) |>
-    group_by(YEAR, MONTH) |>
-    summarize(Flow = sum(Flow / 1233.48), .groups = "drop") |>
+    mutate(Flow = Flow / 1233.48) |>
     rename(!! paste0("GO_", i) := Flow)
   
   
@@ -112,7 +110,7 @@ for (i in 1:length(goPaths)) {
     combinedDF <- tempDF
   } else {
     combinedDF <- combinedDF |>
-      full_join(tempDF, by = c("YEAR", "MONTH"))
+      full_join(tempDF, by = c("Date"))
   }
   
   
@@ -131,14 +129,12 @@ for (i in 1:length(gagPaths)) {
   dateVec <- seq(from = startDate, by = "days", length.out = nrow(tempDF))
   
   
-  # Convert the flow values from cfd to AF/day, and then wrap them up into AF/month
+  # Convert the flow values from cfd to AF/day
   # Rename "Flow" into the sub-basin number too
   tempDF <- tempDF |>
     mutate(Date = dateVec) |>
     select(Date, Flow) |>
-    mutate(MONTH = month(Date), YEAR = year(Date)) |>
-    group_by(YEAR, MONTH) |>
-    summarize(Flow = sum(Flow / 43559.9), .groups = "drop") |>
+    mutate(Flow = Flow / 43559.9) |>
     rename(!! as.character(i) := Flow)
   
   
@@ -146,7 +142,7 @@ for (i in 1:length(gagPaths)) {
     gagDF <- tempDF
   } else {
     gagDF <- gagDF |>
-      full_join(tempDF, by = c("YEAR", "MONTH"))
+      full_join(tempDF, by = c("Date"))
   }
   
 }
@@ -176,7 +172,7 @@ combinedDF <- combinedDF |>
          `20` = GO_20,
          `21` = GO_21 - GO_19 - GO_20,
          `22` = GO_22) |>
-  select(YEAR, MONTH, as.character(1:length(goPaths)))
+  select(Date, as.character(1:length(goPaths)))
 
 gagDF <- gagDF |>
   mutate(`23` = `1`,
@@ -185,7 +181,7 @@ gagDF <- gagDF |>
          `26` = `4` - `2`,
          `27` = `2`,
          `28` = `3`) |>
-  select(YEAR, MONTH, as.character(23:(22 + length(gagPaths))))
+  select(Date, as.character(23:(22 + length(gagPaths))))
 
 
 # Append 'gagDF' to 'combinedDF'
@@ -197,7 +193,14 @@ if (nrow(gagDF) != nrow(combinedDF)) {
 # Bind the two tibbles together
 # (Exclude the "Time" column from them)
 combinedDF <- combinedDF |>
-  full_join(gagDF, by = c("YEAR", "MONTH"))
+  full_join(gagDF, by = c("Date"))
+
+
+# Convert the values from AF/day into AF/month
+combinedDF <- combinedDF |>
+  mutate(MONTH = month(Date), YEAR = year(Date)) |>
+  group_by(YEAR, MONTH) |>
+  summarize(across(where(is.numeric), sum), .groups = "drop")
 
 
 # Address negative flows next
@@ -434,7 +437,7 @@ getBasinConnectivity <- function () {
   
   
   # Use a validation function from another script
-  functionStealer("W2_Russian_River/Scripts/RRW_018_Finalize_DWRAT_Inputs.R",
+  functionStealer("W2_Russian_River/Scripts/RRW_019_Finalize_DWRAT_Inputs.R",
                   "validateBasins")
   
   
