@@ -1,6 +1,5 @@
-# Download streamflow data from CDEC at various locations 
+# Download precipitation data from CDEC at various locations 
 # in the Russian River watershed
-
 
 # The first required input is a CSV file with one column:
 #  (1) STATION_ID
@@ -11,9 +10,9 @@
 
 
 # The raw output will be stored in the "Intermediate" folder as 
-# "CDEC_API_Streamflow_Data_[startDate]_[endDate].csv"
+# "CDEC_API_Precip_Data_[startDate]_[endDate].csv"
 
-# Note: US Customary units are used for the output (cfs)
+# Note: US Customary units are used for the output (inches)
 
 
 #### Setup ####
@@ -36,7 +35,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_v2_005_CDEC_API_Scraper.R'!\n")
+  cat("Starting 'RRW_005_CDEC_API_Scraper.R'!\n")
   
   
   # Import the start and end date
@@ -44,24 +43,24 @@ mainProcedure <- function () {
   
   
   # Read in the list of stations 
-  stationDF <- getFromControl_RR("CDEC_STREAMFLOW_STATIONS_CSV") |>
+  stationDF <- getFromControl_RR("CDEC_PRECIPITATION_STATIONS_CSV") |>
     getFile() |>
     unique()
   
   
   # Perform data validation on 'stationDF' next
-  validateStationInputFile(stationDF, "CDEC_STREAMFLOW_STATIONS_CSV", "CDEC")
+  validateStationInputFile(stationDF, "CDEC_PRECIPITAITON_CSV", "CDEC")
   
   
   # Output a message
-  cat(paste0("\nGetting streamflow data for ", nrow(stationDF), " CDEC station",
+  cat(paste0("\nGetting precipitation data for ", nrow(stationDF), " CDEC station",
              if_else(nrow(stationDF) > 1, "s", ""),
              "...\n"))
   
   
   # Get data for all CDEC stations at once
-  cdecDF <- requestCDEC(stationDF$STATION_ID, startDate, endDate,
-                        sensorNum = 23)
+  cdecDF <- requestCDEC(stationDF$STATION_ID, startDate, endDate, 
+                        sensorNum = 45)
   
   
   # Add another message
@@ -69,7 +68,7 @@ mainProcedure <- function () {
   
   
   # Define the output file name as well
-  outFile <- paste0("W2_Russian_River/Intermediate/CDEC_API_Streamflow_Data_", 
+  outFile <- paste0("W2_Russian_River/Intermediate/CDEC_API_Precip_Data_", 
                     startDate, "_", endDate, ".csv")
   
   
@@ -78,7 +77,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_v2_005_CDEC_API_Scraper.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_005_CDEC_API_Scraper.R' is complete!\n\n"))
   
   
   # Return nothing

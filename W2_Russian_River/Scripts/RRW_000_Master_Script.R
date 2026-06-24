@@ -22,7 +22,7 @@ if (!("renv" %in% installed.packages()[, 1])) {
 }
 
 
-# Use 'renv' to restore the required environment
+# Use 'renv' to setup the required environment
 require(renv)
 
 restore()
@@ -59,6 +59,7 @@ source("W2_Russian_River/Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Fil
 #   (*) NOAA
 #   (*) RAWS
 #   (*) CIMIS
+#   (*) CDEC
 
 
 source("W2_Russian_River/Scripts/RRW_001_PRISM_HTTP_Scraper.R")
@@ -68,6 +69,8 @@ source("W2_Russian_River/Scripts/RRW_002_NOAA_API_Scraper.R")
 source("W2_Russian_River/Scripts/RRW_003_RAWS_HTTP_Scraper.R")
 
 source("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
+
+source("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
 
 
 ##### PRMS #####
