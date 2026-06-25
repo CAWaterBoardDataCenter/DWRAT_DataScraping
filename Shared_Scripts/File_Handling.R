@@ -8,7 +8,7 @@
 
 # This script DOES NOT call all required packages and dependencies
 
-# Please use "Shared_Functions_Importer.R"
+# Please use "!Shared_Functions_Importer.R"
 
 
 #### Functions ####
@@ -19,7 +19,8 @@
 getFile <- function (filePath, fileType = NULL, largeFile = FALSE, delim = NULL,
                      select = NULL, trim_ws = FALSE, 
                      worksheet = NULL, range = NULL, col_names = TRUE,
-                     col_types = NULL, skip = 0, n_max = Inf, guess_max = min(1000, n_max)) {
+                     col_types = NULL, skip = 0, n_max = Inf, 
+                     guess_max = min(10000, n_max)) {
   
   # Given the path to a file, read it into a tibble
   
@@ -103,19 +104,19 @@ getFile <- function (filePath, fileType = NULL, largeFile = FALSE, delim = NULL,
     
     return(getDelim(filePath, delim = ",", largeFile, select = select,
                     col_types = col_types, skip = skip, trim_ws = trim_ws,
-                    n_max = n_max, col_names = col_names))
+                    n_max = n_max, guess_max = guess_max, col_names = col_names))
     
   } else if (fileType == "TSV") {
     
     return(getDelim(filePath, delim = "\t", largeFile, select = select,
                     col_types = col_types, skip = skip, trim_ws = trim_ws,
-                    n_max = n_max, col_names = col_names))
+                    n_max = n_max, guess_max = guess_max, col_names = col_names))
     
   } else if (fileType == "DELIM") {
     
     return(getDelim(filePath, delim = delim, largeFile, select = select,
                     col_types = col_types, skip = skip, trim_ws = trim_ws,
-                    n_max = n_max, col_names = col_names))
+                    n_max = n_max, guess_max = guess_max, col_names = col_names))
     
   } else {
     
@@ -232,7 +233,8 @@ getXLSX <- function (filePath, worksheet = NULL,
 
 getDelim <- function (filePath, delim, largeFile = FALSE, 
                       select = NULL, col_types = NULL, skip = 0,
-                      trim_ws = FALSE, n_max = Inf, col_names = TRUE) {
+                      trim_ws = FALSE, n_max = Inf, guess_max = min(5000, n_max),
+                      col_names = TRUE) {
   
   # Use `read_delim` or `fread` to import a file as a data frame
   
@@ -273,14 +275,16 @@ getDelim <- function (filePath, delim, largeFile = FALSE,
       fileDF <- try(read_delim(filePath, delim = delim, 
                                col_types = col_types, show_col_types = FALSE,
                                skip = skip, trim_ws = trim_ws, n_max = n_max,
-                               col_names = col_names), silent = TRUE)
+                               guess_max = guess_max, col_names = col_names), 
+                    silent = TRUE)
       
     } else {
       
       fileDF <- try(read_delim(filePath, delim = delim, 
                                col_types = col_types, show_col_types = FALSE,
                                skip = skip, trim_ws = trim_ws, n_max = n_max,
-                               col_names = col_names, col_select = select), 
+                               col_names = col_names, guess_max = guess_max,
+                               col_select = select), 
                     silent = TRUE)
       
     }

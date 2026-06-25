@@ -22,7 +22,7 @@
 
 
 # In the LSPC model folder, ignore log files
-Models/LSPC/*.log
+Models/LSPC/**/*.log
 
 
 # In the Archive folder, ignore file download and processing contents

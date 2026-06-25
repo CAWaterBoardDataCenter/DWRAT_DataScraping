@@ -395,10 +395,10 @@ c	wstationid	wparmmult1...
 	88	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000
 c-----------------------------------------------------------------------------------------
 c30	output file path (a continuous string)	input (weather) file path (a continuous string)	tipping bucket size (inches) 
-	Gualala\Output\	Gualala\Input\Weather\	0.010000
+	Output\	Input\Weather\	0.010000
 c-----------------------------------------------------------------------------------------
 c31	point source file path	point source file name  (each must be a continuous string)
-	Gualala\Input\	Gualala.ps
+	Input\	Gualala.ps
 c-----------------------------------------------------------------------------------------
 c40 general watershed controls
 c

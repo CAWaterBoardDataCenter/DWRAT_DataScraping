@@ -11,7 +11,7 @@
 
 # This script DOES NOT call all required packages and dependencies
 
-# Please use "Shared_Functions_Importer.R"
+# Please use "!Shared_Functions_Importer.R"
 
 
 #### Functions ####
