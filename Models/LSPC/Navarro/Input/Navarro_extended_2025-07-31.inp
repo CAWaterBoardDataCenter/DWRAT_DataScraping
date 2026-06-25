@@ -364,10 +364,10 @@ c	wstationid	wparmmult1...
 	80	1.000000	1.000000
 c-----------------------------------------------------------------------------------------
 c30	output file path (a continuous string)	input (weather) file path (a continuous string)	tipping bucket size (inches) 
-	Navarro\Output\	Navarro\Input\Weather\	0.010000
+	Output\	Input\Weather\	0.010000
 c-----------------------------------------------------------------------------------------
 c31	point source file path	point source file name  (each must be a continuous string)
-	Navarro\Input\	Navarro_extended_2025-07-31.ps
+	Input\	Navarro_extended_2025-07-31.ps
 c-----------------------------------------------------------------------------------------
 c40 general watershed controls
 c
