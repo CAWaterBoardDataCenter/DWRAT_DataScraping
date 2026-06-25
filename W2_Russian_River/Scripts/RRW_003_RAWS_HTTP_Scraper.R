@@ -112,43 +112,68 @@ requestRAWS <- function (stationID, startDate, endDate) {
   adjDates <- adjustScrapingBounds(stationID, startDate, endDate)
   
   
+  # One self-imposed restriction is request splitting
+  # To avoid overwhelming RAWS's server, no more than three years of data 
+  # should be requested at a time
+  if (difftime(endDate, startDate, units = "days") > 365 * 3) {
+    return(splitRequest(stationID, startDate, endDate, maxDays = 365 * 3))
+  }
+  
+  
   # The next step is to submit a POST request to the WRCC server
-  req <- POST(url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl",
-              body = list("stn" = stationID,
-                          # Set the Start Date
-                          "smon" = twoDigitText(month(adjDates[1])),
-                          "sday" = twoDigitText(day(adjDates[1])),
-                          "syea" = format(adjDates[1], "%y"), # Last two digits of the year
-                          # Set the End Date
-                          "emon" = twoDigitText(month(adjDates[2])),
-                          "eday" = twoDigitText(day(adjDates[2])), 
-                          "eyea" = format(adjDates[2], "%y"),
-                          # Select "Air Temperature" and "Precipitation" data
-                          "qAT" = "ON",
-                          "qPR" = "ON",
-                          # Metric units
-                          "unit" = "M",
-                          # HTML output
-                          "Ofor" = "H",
-                          # Only Complete data
-                          "Datareq" = "C",
-                          # Apply physical limits QC to the data
-                          "qc" = "Y",
-                          # Missing values are "-999"
-                          "miss" = "07",
-                          # Don't include number of valid observations for each element
-                          "obs" = "N",
-                          # Subinterval start and end dates
-                          "WsMon" = "01",
-                          "WsDay" = "01",
-                          "WeMon" = "12",
-                          "WeDay" = "31"),
-              add_headers(`User-Agent` = sessionInfo()[["R.version"]][["version.string"]],
-                          `X-User-Contact` = "DWR-SDA@Waterboards.ca.gov"))
+  req <- try(POST(url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl",
+                  body = list("stn" = stationID,
+                              # Set the Start Date
+                              "smon" = twoDigitText(month(adjDates[1])),
+                              "sday" = twoDigitText(day(adjDates[1])),
+                              "syea" = format(adjDates[1], "%y"), # Last two digits of the year
+                              # Set the End Date
+                              "emon" = twoDigitText(month(adjDates[2])),
+                              "eday" = twoDigitText(day(adjDates[2])), 
+                              "eyea" = format(adjDates[2], "%y"),
+                              # Select "Air Temperature" and "Precipitation" data
+                              "qAT" = "ON",
+                              "qPR" = "ON",
+                              # Metric units
+                              "unit" = "M",
+                              # HTML output
+                              "Ofor" = "H",
+                              # Only Complete data
+                              "Datareq" = "C",
+                              # Apply physical limits QC to the data
+                              "qc" = "Y",
+                              # Missing values are "-999"
+                              "miss" = "07",
+                              # Don't include number of valid observations for each element
+                              "obs" = "N",
+                              # Subinterval start and end dates
+                              "WsMon" = "01",
+                              "WsDay" = "01",
+                              "WeMon" = "12",
+                              "WeDay" = "31"),
+                  add_headers(`User-Agent` = sessionInfo()[["R.version"]][["version.string"]],
+                              `X-User-Contact` = "DWR-SDA@Waterboards.ca.gov",
+                              `X-User-Name` = Sys.info()[["user"]])))
   
   
   # Wait a bit after receiving the response
-  Sys.sleep(runif(1, min = 1.1, max = 1.4))
+  Sys.sleep(runif(1, min = 1.4, max = 1.9))
+  
+  
+  if ("try-error" %in% class(req)) {
+    
+    cat("\n\n")
+    print(req)
+    cat("\n\n")
+    
+    stop(paste0("RAWS HTTP Request Failed\n\n",
+                "A request sent to RAWS's server failed to resolve successfully. ", 
+                "This could be a problem with the request and/or RAWS's server ",
+                "(the error message is posted above).\n\n",
+                "Please investigate this issue for station \"", stationID, "\"") |>
+           errWrap())
+    
+  }
   
   
   # Check if the response is valid
@@ -421,6 +446,98 @@ getDatasetBounds <- function (stationID) {
   
   # Return a vector containing 'startDateString' and 'endDateString'
   return(c(startDateString, endDateString))
+  
+}
+
+
+
+splitRequest <- function (stationID, startDate, endDate, maxDays) {
+  
+  # For data requests that cover a large date range, 
+  # split the range into chunks and perform several requests to RAWS
+  
+  # Combine the response tibbles into one and return that
+  
+  
+  # First, get intermediate dates between 'startDate' and 'endDate' 
+  # that satisfy the limitation set by 'maxDays'
+  
+  # Borrow a function from CIMIS API to do that task
+  functionStealer("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R", "splitDays")
+  
+  
+  dateVec <- splitDays(startDate, endDate, dayGap = maxDays)
+  
+  
+  # Output a message to the user to inform them of the split
+  cat(paste0("\n\tSplitting into ", length(dateVec) - 1, " API calls...\n"))
+  
+  
+  # Iterate through 'dateVec' and submit requests to RAWS
+  for (i in 2:length(dateVec)) {
+    
+    # Start with a status message
+    cat(paste0("\n\t[", i - 1, "/", length(dateVec) - 1, "]\tRequesting...\n"))
+    
+    
+    # Take two consecutive dates from 'dateVec' 
+    # and request the data between them
+    
+    
+    # However, RAWS's glitches must be considered too
+    # The server returns an error if the requested day is before the station's
+    # actual start date
+    
+    # In the very first iteration (i = 2), 'combinedDF' will be defined with 
+    # the earliest available data
+    
+    # If the end date in this iteration's split request is EARLIER than the 
+    # first date in 'combinedDF', skip it
+    if (i > 2 && dateVec[i] < min(combinedDF$DATE)) {
+      
+      cat("\n\t\tSkipping...\n")
+      next
+      
+    }
+    
+    
+    # If there are no issues (or if this is the first run), get data
+    # for a subset of the full date range
+    iterRes <- requestRAWS(stationID, dateVec[i - 1], dateVec[i])
+    
+    
+    # Combine 'iterRes' after each request
+    if (i == 2) {
+      
+      combinedDF <- iterRes
+      
+    } else {
+      
+      combinedDF <- bind_rows(combinedDF, 
+                              iterRes |> filter(!(DATE %in% combinedDF$DATE))) |>
+        unique()
+      
+      
+      # Because of the issues with RAWS, data from the day prior to 'dateVec[i - 1]'
+      # is present in 'iterRes' too 
+      # (That day's values are all -999 because of the bug)
+      # Exclude that data from 'combinedDF'
+      
+    }
+    
+    
+    # Output another message to the user at the end of the loop
+    cat("\n\t\tDone!\n")
+    
+    
+    # Wait a bit before proceeding to the next request
+    Sys.sleep(runif(1, min = 2.2, max = 3.8))
+    
+  }
+  
+  
+  # Finally, return 'combinedDF'
+  return(combinedDF)
   
 }
 
