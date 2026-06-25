@@ -1910,6 +1910,9 @@ checkForAnaconda <- function () {
   # Check if the batch file for Anaconda Prompt is present on the user's computer
   # DWRAT can only be run if Anaconda is present
   
+  # If Anaconda is installed, confirm the existence of the "paradigm-dwrat"
+  # environment too
+  
   # Return a boolean for whether DWRAT should be run by the script
   
   
@@ -1934,7 +1937,30 @@ checkForAnaconda <- function () {
     
   } else {
     
-    # Return TRUE (attempt to run DWRAT using this script)
+    # If 'batchPath' exists, confirm that the "paradigm-dwrat" environment is installed
+    # Get a list of environments and check for "paradigm-dwrat"
+    envList <- system(paste0(batchPath, " && conda env list"), intern = TRUE)
+    
+    
+    envDetected <- envList |>
+      str_subset("^paradigm-dwrat\\s+")
+    
+    
+    # If "paradigm-dwrat" is NOT present, do not run DWRAT
+    if (length(envDetected) == 0) {
+      
+      message(paste0("Could not find the Paradigm DWRAT environment among the ",
+                     "installed Anaconda environments. For that reason, DWRAT ",
+                     "cannot run automatically. Please use the 'yml' file ",  
+                     "included in the Paradigm DWRAT model files to setup ",
+                     "this environment."))
+      
+      return(FALSE)
+      
+    }
+    
+    
+    # Otherwise, return TRUE (attempt to run DWRAT using this script)
     return(TRUE)
     
   }
