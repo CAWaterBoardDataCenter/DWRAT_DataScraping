@@ -1,4 +1,4 @@
-# DWRAT DataScraping Repository Overview  
+# Repository Overview  
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
@@ -47,20 +47,20 @@ The scripts and procedures are primarily developed for use on computers with **W
   
 In addition, GIS software such as **ArcGIS Pro** or **QGIS** is not mandatory, but it may assist users with the workflows.  
   
-# Initial Setup  
-The scripts in this repository are mainly coded in R and Python. However, the primary orchestrators are generally R scripts. All of the repository's R scripts rely on the "DWRAT_DataScraping" [RStudio Project](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects), which can be activated using the file "DWRAT_DataScraping.Rproj". **Please ensure that this project is active when running any of the repository's R scripts.**  
+# Getting Started  
+The scripts in this repository are mainly coded in R and Python. However, the primary orchestrators are generally R scripts. All of the repository's R scripts rely on the "DWRAT_DataScraping" [RStudio Project](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects), which can be activated using the file [DWRAT_DataScraping.Rproj](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/DWRAT_DataScraping.Rproj). **Please ensure that this project is active when running any of the repository's R scripts.**  
   
 ## Dependencies  
 The required packages for this repository's R and Python scripts are tracked via [renv](https://rstudio.github.io/renv/index.html) and [Anaconda YAML files](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file), respectively.  
   
-Once `renv` has been installed, its `restore` function can help download all required R packages (assuming the "DWRAT_DataScraping" project is active). For Python, the two required Anaconda environments are detailed in [Paradigm_DWRAT_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml) and [LSPC_Climate_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W3_LSPC_Watershed/LSPC_Climate_Environment.yml). [Anaconda Prompt](https://www.anaconda.com/docs/reference/glossary#anaconda-prompt) can help setup these environments with the command `conda create --file [PATH_TO_YML]`.[^1]  
-  
-**NOTE**: For the "W2_Russian_River" workflow, dependency setup is performed **automatically** by the scripts. Eventually, the other workflows will be updated to do the same as well.  
+Once `renv` has been installed, its `restore` function can help download all required R packages (assuming the "DWRAT_DataScraping" project is active). For Python, the two required Anaconda environments are detailed in [Paradigm_DWRAT_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml) and [LSPC_Climate_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W3_LSPC_Watershed/LSPC_Climate_Environment.yml). To setup these environments, open [Anaconda Prompt](https://www.anaconda.com/docs/reference/glossary#anaconda-prompt) (or similar) and use the command `conda create --file [PATH_TO_YML]`.[^1]  
   
 [^1]: Please remember to encase the path name in quotation marks if it contains spaces.
   
-## Getting Started  
-The remaining setup steps depend on the chosen workflow. For more information, please consult the workflows' primary scripts and associated documentation.  
+**NOTE**: For the "W2_Russian_River" workflow, dependency setup is performed **automatically** by the scripts. Eventually, the other workflows will be updated to do the same as well.  
+  
+## Running a Workflow  
+The remaining setup requirements depend on the chosen workflow. For more information, please consult the workflows' primary scripts and associated documentation.  
   
 ### W1_Watershed_Demand  
 Please review the [Documentation](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/tree/main/W1_Watershed_Demand/Documentation) folder and [Demand_Master_Script.R](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W1_Watershed_Demand/Scripts/Demand_Master_Script.R).  
