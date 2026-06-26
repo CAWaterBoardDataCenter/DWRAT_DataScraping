@@ -219,6 +219,7 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
 }
 
 
+
 validateStationInputs <- function (inputDF, inputPath, 
                                    model = "PRMS", numPrecipFields = 15,
                                    numTempFields = 8) {
@@ -226,7 +227,7 @@ validateStationInputs <- function (inputDF, inputPath,
   # This function is used when producing meteorological datasets
   # (which will be integrated into a long-running DAT file)
   
-  # The station input files for PRISM, NOAA, RAWS, and CIMIS were previously 
+  # The station input files for PRISM, NOAA, RAWS, CIMIS, and CDEC were previously 
   # validated in their respective web scraping scripts
   
   # However, this script has additional requirements
@@ -259,6 +260,9 @@ validateStationInputs <- function (inputDF, inputPath,
   # Similarly, the maximum and minimum temperature fields can have values between 
   # "TMAX1"/"TMIN1" and "TMAX8"/"TMIN8" (inclusive)
   
+  # "_REV#" tags are allowed at the end of the precipitation station names
+  # Similarly, "SUP_" or "EX_" can precede "PRECIP" (for supplemental/extra gages)
+  
   
   # For this script's procedure to succeed, all input files must have these four columns:
   #    (*) STATION_ID
@@ -282,12 +286,12 @@ validateStationInputs <- function (inputDF, inputPath,
     paste0("Station Input File - Missing Column Issue\n\n", 
            "For this script to work, the ",
            if_else(model == "PRMS", 
-                   "PRISM, NOAA, RAWS, and CIMIS input files ",
+                   "PRISM, NOAA, RAWS, CIMIS, and CDEC input files ",
                    "PRISM input file "), "must contain ", 
            length(inputFieldNames), " key column",
            if_else(length(inputFieldNames) > 1, "s", ""), " (",
            vec2QuotedStr(inputFieldNames), ")\n\n",
-           "However, the \"", names(inputPath), "\" file is missing ",
+           "However, the file is missing ",
            if_else(length(missingFields) > 1, "fields", "a field"), ":\n\n",
            paste0("(*) ", inputFieldNames[missingFields], collapse = "\n\n"), 
            "\n\n",
@@ -302,10 +306,10 @@ validateStationInputs <- function (inputDF, inputPath,
   # The next focus will be the "PRMS"/"SRP" fields
   
   
-  # In the PRMS DAT file, there are 15 precipitation fields and 8 max/min
+  # In the revision 1 PRMS DAT file, there are 15 precipitation fields and 8 max/min
   # temperature fields
   
-  # In the SRP DAT file, there are 2 precipitation fields and 2 max/min
+  # In the revision 1 SRP DAT file, there are 2 precipitation fields and 2 max/min
   # temperature fields
   
   # The values that appear in the PRMS/SRP fields should be one of 
@@ -313,59 +317,102 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Start with the precipitation fields
-  # For PRMS, the values should be "NA", "EX_PRECIP_#", or something between "PRECIP1" and 
-  # "PRECIP15" (inclusive)--for SRP, it's up to "PRECIP2" only
-  if (anyFalse(inputDF[[inputFieldNames[2]]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)) |
+  # Separate out revision information
+  precipNames <- inputDF[[inputFieldNames[2]]] |>
+    extractRevisionInfo()
+  
+  # 'precipNames' will be a list with three different vectors:
+  #   (1) The precipitation names (without revision information)
+  #   (2) The revision strings
+  #   (3) The revision numbers
+  
+  
+  # For PRMS, the values should be "NA" or "PRECIP#" (from 1 up to 'numPrecipFields')
+  # (Supplemental gages with "SUP_" at the start of the name are valid as well,
+  #  as are extra gages, which start with "EX_")
+  
+  # For SRP, it's "NA" and "PRECIP#" only (until model revisions occur)
+  
+  # Note: "_REV#" is removed from 'precipNames' at this point
+  if (!all(precipNames[[1]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)) |
                (model %in% "PRMS" & 
-                grepl("^EX_PRECIP_[0-9]+$", inputDF[[inputFieldNames[2]]])))) {
+                grepl("^((SUP)|(EX))_PRECIP[0-9]+$", precipNames[[1]])))) { 
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value for the field \"", 
            inputFieldNames[2], "\" \n\n",
-           "Each row should either be blank, or it should contain a text ",
-           "string like \"PRECIP1\" (up to \"PRECIP", numPrecipFields, 
-           "\")\n\n", 
+           "Each row must satisfy one of these three conditions:\n\n",
+           "\t(*) It can be blank (i.e., \"NA\").\n\n",
+           "\t(*) It contains a text string like \"PRECIP1\" (up to \"PRECIP", 
+           numPrecipFields, "\"). Revision information can appear at the end ",
+           "of these strings too (e.g., \"PRECIP7_REV2\").\n\n", 
+           "\t(*) It can contain a text string for supplemental or extra gages ",
+           "(e.g., \"SUP_PRECIP3_REV2\" or \"EX_PRECIP70_REV2\").\n\n",
            "Please revise the input file (\"", inputPath, 
-           "\") accordingly") |>
+           "\") accordingly.") |>
       errWrap() |>
       stop()
     
   }
+  
+  
+  # Make sure only one type of revision appears in 'revInfo'
+  # (e.g., there shouldn't be both "REV2" and "REV3" in the same column)
+  validateRevisionInfo(precipNames[[2]], precipNames[[1]], model, inputFieldNames[2])
   
   
   # Use a similar check for the minimum temperature field next
   # For PRMS, the values should be "NA", or something between 
-  # "TMIN1" and "TMIN8" (inclusive)--for SRP, it's up to "TMIN2"s
-  if (anyFalse(inputDF[[inputFieldNames[3]]] %in% c(NA, paste0("TMIN", 1:numTempFields)))) {
+  # "TMIN1" and "TMIN8" (inclusive)--for SRP, it's up to "TMIN2"
+  # Revision information may appear in these strings as well
+  tminNames <- inputDF[[inputFieldNames[3]]] |>
+    extractRevisionInfo()
+  
+  
+  if (anyFalse(tminNames[[1]] %in% c(NA, paste0("TMIN", 1:numTempFields)))) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The \"", names(inputPath), "\" file contains an invalid value ",
+           "The file contains an invalid value ",
            "for the field \"", inputFieldNames[3], "\" \n\n",
            "Each row should either be blank, or it should contain a text ",
-           "string like \"TMIN1\" (up to \"TMIN", numTempFields, "\")\n\n", 
+           "string like \"TMIN1\" (up to \"TMIN", numTempFields, "\"), ",
+           "potentially with revision information attached (like \"_REV2\").\n\n",
            "Please revise the input file (\"", inputPath, 
            "\") accordingly") |>
       errWrap() |>
       stop()
     
   }
+  
+  
+  # Check for inconsistent revisions
+  validateRevisionInfo(tminNames[[2]], tminNames[[1]], model, inputFieldNames[3])
   
   
   # Repeat the check for the "TMAX" field
   # The values should be "NA", or something between "TMAX1" and "TMAX8" 
   # (inclusive) for PRMS--for SRP, it's up to "TMAX2"
-  if (anyFalse(inputDF[[inputFieldNames[4]]] %in% c(NA, paste0("TMAX", 1:numTempFields)))) {
+  tmaxNames <- inputDF[[inputFieldNames[4]]] |>
+    extractRevisionInfo()
+  
+  
+  if (anyFalse(tmaxNames[[1]] %in% c(NA, paste0("TMAX", 1:numTempFields)))) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The \"", names(inputPath), "\" file contains an invalid value for ",
+           "The file contains an invalid value for ",
            "the field \"", inputFieldNames[4], "\" \n\n",
            "Each row should either be blank, or it should contain a text string ",
-           "like \"TMAX1\" (up to \"TMAX", numTempFields, "\")\n\n", 
+           "like \"TMAX1\" (up to \"TMAX", numTempFields, "\"), potentially ",
+           "with revision information attached (like \"_REV2\").\n\n", 
            "Please revise the input file (\"", inputPath, "\") accordingly") |>
       errWrap() |>
       stop()
     
   }
+  
+  
+  # Check for multiple revisions in the same column
+  validateRevisionInfo(tmaxNames[[2]], tmaxNames[[1]], model, inputFieldNames[4])
   
   
   # Next, confirm that every row has at least one non-NA value for the 
@@ -386,7 +433,7 @@ validateStationInputs <- function (inputDF, inputPath,
   if (TRUE %in% inputDF$ALL_NA) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The \"", names(inputPath), "\" file contains a station without ",
+           "The file contains a station without ",
            "a corresponding ", model, " field identified\n\n",
            "Across the ", length(inputFieldNames) - 1, " ", model, 
            " columns, each row should contain a ", model, 
@@ -408,8 +455,8 @@ validateStationInputs <- function (inputDF, inputPath,
              (is.na(get(inputFieldNames[3])) & !is.na(get(inputFieldNames[4]))) |
              (!is.na(get(inputFieldNames[3])) & is.na(get(inputFieldNames[4]))) |
              (!is.na(get(inputFieldNames[3])) & !is.na(get(inputFieldNames[4])) &
-                as.numeric(str_extract(get(inputFieldNames[3]), "[0-9]+$")) != 
-                as.numeric(str_extract(get(inputFieldNames[4]), "[0-9]+$"))))
+                as.numeric(str_extract(tminNames[[1]], "[0-9]+$")) != 
+                as.numeric(str_extract(tmaxNames[[1]], "[0-9]+$"))))
   
   # There are three different "mismatch" conditions described in the above code
   # (1) The "TMIN" field is "NA", but the "TMAX" field is NOT "NA"
@@ -419,7 +466,7 @@ validateStationInputs <- function (inputDF, inputPath,
   if (TRUE %in% inputDF$TEMP_MISMATCH) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The \"", names(inputPath), "\" file contains ", 
+           "The file contains ", 
            sum(inputDF$TEMP_MISMATCH),
            " instance", if_else(sum(inputDF$TEMP_MISMATCH) > 1, "s", ""), " ",
            "where \"", inputFieldNames[3], "\" and \"", inputFieldNames[4], 
@@ -441,6 +488,117 @@ validateStationInputs <- function (inputDF, inputPath,
 
 
 
+extractRevisionInfo <- function (colVals) {
+  
+  # From the values of a column, extract revision information
+  
+  # For example, "PRECIP3_REV1" contains "REV1", while "TMIN7_REV2" contains "REV2"
+  
+  # This function will split the values and revision information, returning a
+  # list with three elements:
+  
+  #  (*) The names without revision information (e.g., "PRECIP3")
+  #  (*) The revision information (e.g., "REV2")
+  #  (*) The revision information as numbers (e.g., "2")
+  
+  
+  # Split the revision information into 'revInfo'
+  # Then, remove that data from 'colVals'
+  revInfo <- colVals |>
+    str_extract("_REV[0-9]+$")
+  
+  colVals <- colVals |>
+    str_remove("_REV[0-9]+$")
+  
+  
+  # Try to get the version numbers stored within 'revInfo' too
+  revNum <- revInfo |>
+    str_extract("[0-9]+") |>
+    as.numeric()
+  
+  
+  # Return a list of these three vectors
+  return(list(colVals, revInfo, revNum))
+  
+  # Note: If a column does not have any revision information, both 'revInfo'
+  #       and 'revNum' will just be vectors containing "NA"
+  #       'colVals' will be unchanged too
+  
+}
+
+
+
+validateRevisionInfo <- function (revInfo, colVals, model, colName) {
+  
+  # Given the extracted revision information from the names of model parameters,
+  # check for errors
+  
+  # For precipitation, minimum temperature, and maximum temperature parameters,
+  # different stations' roles are specified in their respective columns ('colVals')
+  
+  # Each station can be "NA" (meaning not used for that parameter), or they 
+  # can have an assigned number (like "PRECIP1" or "TMAX4")
+  
+  # These assignments can also mention the model revision version (like "REV4")
+  
+  
+  # 'revInfo' contains the extracted revision versions (or "NA" if there are none)
+  # For each station, it will contain either "NA" or something equivalent to "_REV#"
+  
+  
+  # One important check is whether multiple model revisions are stated in the 
+  # same model parameter column
+  
+  # This is not allowed because each revision of a model has different
+  # required stations
+  # Later scripts are agnostic to the revision, so stations would be mixed together
+  
+  
+  # Omit all entries in 'revInfo' where 'colVals' is NA
+  revInfo <- revInfo[!is.na(colVals)]
+  
+  # The revision information for all of these rows is NA because they have 
+  # no relevance to begin with
+  
+  # It is important to distinguish this case from another source of NA in 'revInfo'
+  # (i.e., stations can have names like "PRECIP1", which contain no revision information
+  #  to begin with). 
+  # The latter case is only a problem if it is mixed in with stations that *do* have
+  # revision information 
+  # (As discussed above, having multiple revisions in the same set of values is an issue)
+
+  
+  # Then, get all unique values in 'revInfo'
+  revInfo <- unique(revInfo)
+  
+  
+  # Output an error message if 'revInfo' has a length greater than one
+  # (That means that more than one revision type is specified)
+  if (length(revInfo) > 1) {
+    
+    paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
+           "The file contains an invalid value for the field \"", 
+           colName, "\" \n\n",
+           "Different revisions of the model (identified by \"_REV#\") ",
+           "cannot appear within the same column. That is, all strings must ",
+           "be for the same model version. Please revise the file.") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Note: If every entry in 'revInfo' is NA, 'revInfo' will contain `character(0)`,
+  #       which has a length of 0
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
 validateWebData <- function (climateDF, dataSource, inputPath, stationVec, 
                              siPRISM = TRUE) {
   
@@ -450,16 +608,26 @@ validateWebData <- function (climateDF, dataSource, inputPath, stationVec,
   
   
   # Make sure that procedure was successful
-  if (!(dataSource %in% c("PRISM", "NOAA", "CIMIS", "RAWS"))) {
+  if (!(dataSource %in% c("PRISM", "NOAA", "CIMIS", "RAWS", "CDEC"))) {
     
     paste0("Unexpected Data Source\n\n", 
            "The name \"", dataSource, "\" is not recognized; ",
            "please fix the script\n\n",
            "The function `validateWebData()` expects \"PRISM\", \"NOAA\", ",
-           "\"RAWS\", or \"CIMIS\" as acceptable values.") |>
+           "\"RAWS\", \"CIMIS\", or \"CDEC\" as acceptable values.") |>
       errWrap() |>
       stop()
     
+  }
+  
+  
+  # CDEC is only used for precipitation data, so its dataset requires 
+  # some slight modifications for this validation procedure
+  if (dataSource == "CDEC") {
+    
+    # Add dummy "TMAX" and "TMIN" columns called "NA_1" and "NA_2"
+    climateDF <- climateDF |>
+      mutate(NA_1 = NA, NA_2 = NA) 
   }
   
   
@@ -479,7 +647,7 @@ validateWebData <- function (climateDF, dataSource, inputPath, stationVec,
                    paste0(length(missingVals), " of the ", 
                           length(colVec), " expected columns"),
                    "The expected column "),
-           " could not be found in the \"", names(inputPath), "\" file (",
+           " could not be found in the \"", dataSource, "\" file (",
            vec2QuotedStr(colVec[missingVals]),
            ")\n\n",
            "The formatting of the data may have changed (this would require ",
@@ -508,7 +676,7 @@ validateWebData <- function (climateDF, dataSource, inputPath, stationVec,
     
     
     paste0("Web Data Output File - Unrecognized Station(s)\n\n",
-           "The \"", names(inputPath), "\" file has one or more stations ",
+           "The \"", dataSource, "\" file has one or more stations ",
            "that do not appear in its corresponding input file (",
            vec2QuotedStr(unique(climateDF$STATION_ID)[extraStations]), 
            ")\n\n", 
@@ -591,15 +759,23 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
                  "TMIN" = "TMIN",
                  "TMAX" = "TMAX")
     
+  } else if (dataSource == "CDEC") {
+    
+    nameVec <- c("STATION_ID" = "STATION_ID",
+                 "DATE" = "DATE TIME",
+                 "PRECIP" = "VALUE",
+                 "TMIN" = "NA_1",
+                 "TMAX" = "NA_2")
+    
   } else {
     
     # An error message will appear for any unrecognized input
-    paste0("Misuse of `expectedColumnNames()`\n\n", 
+    paste0("Misuse of `validateWebData_expectedColumnNames()`\n\n", 
            "The input \"", dataSource, "\" is not recognized; ",
            "please fix the script\n\n",
-           "The function `expectedColumnNames()` requires a data ",
+           "The function `validateWebData_expectedColumnNames()` requires a data ",
            "source's name as input (either \"PRISM\", \"NOAA\", ",
-           "\"RAWS\", or \"CIMIS\")\n\n") |>
+           "\"RAWS\", \"CIMIS\", or \"CDEC\")\n\n") |>
       errWrap() |>
       stop()
     
@@ -612,7 +788,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
       anyFalse(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX") %in% 
                names(nameVec))) {
     
-    paste0("Issue in `expectedColumnNames()`\n\n", 
+    paste0("Issue in `validateWebData_expectedColumnNames()`\n\n", 
            "The name vector for ", dataSource, " may contain an issue\n\n",
            "Regardless of source, 5 specific columns are expected (",
            vec2QuotedStr(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX")),

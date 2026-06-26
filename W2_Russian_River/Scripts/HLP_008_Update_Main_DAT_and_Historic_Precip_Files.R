@@ -287,6 +287,9 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   #  (*) Download CIMIS data
   #      Using "RRW_004_CIMIS_API_Scraper.R"
   
+  #  (*) Download CDEC data
+  #      Using "RRW_005_CDEC_API_Scraper.R"
+  
   #  (*) Combine the weather files
   #      Using "RRW_006_Process_PRMS_Weather_Data.R"
   
@@ -308,7 +311,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
                    getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
   
   
-  # The next four scripts can be run in their entirety 
+  # The next five scripts can be run in their entirety 
   
   # However, there are two important points:
   
@@ -337,6 +340,10 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   # Then, get CIMIS data
   toggleAndRunScript("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
+  
+  
+  # After that, get CDEC data
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
   
   
   # Combine the downloaded weather data after that

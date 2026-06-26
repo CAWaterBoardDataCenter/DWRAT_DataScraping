@@ -49,7 +49,7 @@ mainProcedure <- function () {
   
   
   # Perform data validation on 'stationDF' next
-  validateStationInputFile(stationDF, "CDEC_PRECIPITAITON_CSV", "CDEC")
+  validateStationInputFile(stationDF, "CDEC_PRECIPITATION_STATIONS_CSV", "CDEC")
   
   
   # Output a message

@@ -78,7 +78,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-QAQC" meteorological CSV
-  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_CIMIS_Intermediate_",
+  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -149,7 +149,7 @@ calcOutlierBounds <- function (meteorDF) {
   
   # First, identify all precipitation columns in 'meteorDF'
   precipCols <- names(meteorDF) |>
-    str_subset("^PRECIP[0-9]+$")
+    str_subset("PRECIP[0-9]+")
   
   
   # Prepare the final output variable as well
