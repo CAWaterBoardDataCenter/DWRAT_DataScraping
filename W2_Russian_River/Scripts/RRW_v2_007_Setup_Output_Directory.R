@@ -304,6 +304,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
                    METEOROLOGICAL_END = endDate,
+                   SRP_MODEL_REVISION = "REV1", 
                    SRP_METEOROLOGICAL_FILE_CREATED = 
                      file.info(meteorPath)[["ctime"]],
                    METADATA_DF_FIRST_DEFINED = Sys.time(),

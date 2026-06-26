@@ -2,9 +2,9 @@
 # Then, reformat the data into a structure suitable for the PRMS DAT file
 
 
-# This script has eight required input files:
+# This script has twelve required input files:
 
-# The station input files for each of the web scraping scripts are needed
+# The five station input files for each of the web scraping scripts are needed
 
 # This time, in addition to the "STATION_ID" column, the script requires 
 # columns that link these stations to specific columns in the PRMS DAT input file
@@ -16,17 +16,41 @@
 #  (4) PRMS_TMAX_NAME
 
 # Every station should be linked to at least one column among the 
-# 15 precipitation columns and 8 max/min temperature columns
+# 45 precipitation columns and 8 max/min temperature columns
 
 # In addition to these files, the outputs of the web scraping scripts are all required:
 #  (1) "W2_Russian_River/Intermediate/PRISM_PRMS_Data_[startDate]_[endDate].csv"
 #  (2) "W2_Russian_River/Intermediate/NOAA_API_Data_[startDate]_[endDate].csv"
 #  (3) "W2_Russian_River/Intermediate/RAWS_HTTP_Data_[startDate]_[endDate].csv"
 #  (4) "W2_Russian_River/Intermediate/CIMIS_API_Data_[startDate]_[endDate].csv"
+#  (5) "W2_Russian_River/Intermediate/CDEC_API_Precip_Data_[startDate]_[endDate].csv"
 
 
-# These files will be combined into a single output file:
+# The remaining two input files are related to QA/QC procedures 
+# for the precipitation stations
+
+# Both outlier thresholds and inter-gage correlations are required
+# for these processes
+
+# (The RRW "EX2" and "EX3" scripts contain documentation and procedures 
+#  related to the origin of these files)
+
+
+# The station data will be combined into a single output file:
 #  (1) "W2_Russian_River/Output/PRMS_Meteorological_[startDate]_[endDate].csv"
+
+# This file will contain the data after QA/QC and PRISM temperature substitution
+# procedures have been applied
+
+
+# Before that final result, two intermediate files will be saved as well
+
+# Before any QA/QC procedures are applied, the combined station data will be saved as:
+#  (1) "W2_Russian_River/Output/PRMS_Meteorological_No_QC_Intermediate_[startDate]_[endDate].csv"
+
+# Then, after the quality flags provided by CIMIS and CDEC are applied, the combined
+# file will be saved again as:
+#  (1) "W2_Russian_River/Output/PRMS_Meteorological_QC_Intermediate_[startDate]_[endDate].csv"
 
 
 #### Setup ####
@@ -69,6 +93,9 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
                        "CIMIS_INPUT" = getFromControl_RR("CIMIS_STATIONS_CSV") |>
                          sharepointPathCheck(isFolder = FALSE),
                        
+                       "CDEC_INPUT" = getFromControl_RR("CDEC_PRECIPITATION_STATIONS_CSV") |>
+                         sharepointPathCheck(isFolder = FALSE),
+                       
                        "PRECIP_OUTLIER_BOUNDS" = getFromControl_RR("PRMS_PRECIP_GAGE_OUTLIER_BOUNDS") |>
                          sharepointPathCheck(isFolder = FALSE),
                        
@@ -77,11 +104,18 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
                        
                        "PRISM_OUTPUT" = paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_",
                                                startDate, "_", endDate, ".csv"),
+                       
                        "NOAA_OUTPUT" = paste0("W2_Russian_River/Intermediate/NOAA_API_Data_",
                                               startDate, "_", endDate, ".csv"),
+                       
                        "RAWS_OUTPUT" = paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_",
                                               startDate, "_", endDate, ".csv"),
+                       
                        "CIMIS_OUTPUT" = paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_",
+                                               startDate, "_", endDate, ".csv"),
+                       
+                       "CDEC_OUTPUT" = paste0("W2_Russian_River/Intermediate/CDEC_API_",
+                                              "Precip_Data_",
                                                startDate, "_", endDate, ".csv"))
   
   
@@ -101,7 +135,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
     # Output the error message too
     stop(paste0("Missing Required Input File", 
                 if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-                "This script requires that the PRISM, NOAA, RAWS, and CIMIS ",
+                "This script requires that the PRISM, NOAA, RAWS, CIMIS, and CDEC ",
                 "web scraping scripts are run for the chosen date range (",
                 startDate, " to ", endDate, "). However, ", length(missingFiles),
                 " file", if_else(length(missingFiles) > 1, "s are", " is"), 
@@ -121,11 +155,13 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   noaaInput <- inputFiles$NOAA_INPUT[1] |> getFile() |> unique()
   rawsInput <- inputFiles$RAWS_INPUT[1] |> getFile() |> unique()
   cimisInput <- inputFiles$CIMIS_INPUT[1] |> getFile() |> unique()
+  cdecInput <- inputFiles$CDEC_INPUT[1] |> getFile() |> unique()
   
   prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
   noaaDF <- getDelim(inputFiles$NOAA_OUTPUT[1], delim = ",")
   rawsDF <- getDelim(inputFiles$RAWS_OUTPUT[1], delim = ",")
   cimisDF <- getDelim(inputFiles$CIMIS_OUTPUT[1], delim = ",")
+  cdecDF <- getDelim(inputFiles$CDEC_OUTPUT[1], delim = ",")
   
   outlierDF <- getFile(inputFiles$PRECIP_OUTLIER_BOUNDS[1])
   corrDF <- getFile(inputFiles$PRECIP_GAGE_CORRELATION[1])
@@ -136,16 +172,18 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Ensure that all eight primary files have the expected formatting
-  validateInputs(prismInput, noaaInput, rawsInput, cimisInput,
-                 prismDF, noaaDF, rawsDF, cimisDF, inputFiles)
+  validateInputs(prismInput, noaaInput, rawsInput, cimisInput, cdecInput,
+                 prismDF, noaaDF, rawsDF, cimisDF, cdecDF, inputFiles)
   
   
   # Check 'outlierDF' next too
-  validateOutlierFile(outlierDF, inputFiles$PRECIP_OUTLIER_BOUNDS[1])
+  validateOutlierFile(outlierDF, inputFiles$PRECIP_OUTLIER_BOUNDS[1],
+                      prismInput$PRMS_PRECIP_NAME |> na.omit())
   
   
   # Finally, check 'corrDF'
-  validateCorrFile(corrDF, inputFiles$PRECIP_GAGE_CORRELATION[1])
+  validateCorrFile(corrDF, inputFiles$PRECIP_GAGE_CORRELATION[1],
+                   prismInput$PRMS_PRECIP_NAME |> na.omit())
   
   
   cat("\tDone!\n\n")
@@ -157,9 +195,9 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   meteorDF <- combineMeteorologicalDatasets(noaaInput, rawsInput, cimisInput,
-                                            noaaDF, rawsDF, cimisDF,
-                                            startDate, endDate) |>
-    select(-starts_with("EX_PRECIP"))
+                                            cdecInput,
+                                            noaaDF, rawsDF, cimisDF, cdecDF,
+                                            startDate, endDate)
   
   
   # For archival purposes, save 'meteorDF' without any data substitution
@@ -174,15 +212,21 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # Then, fill in empty entries using other gages' data or PRISM values
   meteorDF <- datQAQC(meteorDF, outlierDF, corrDF, 
                       cimisInput, cimisDF, inputFiles$CIMIS_OUTPUT,
+                      cdecInput, cdecDF, inputFiles$CDEC_OUTPUT, 
                       prismDF, prismInput, allTempColumnsFromPRISM,
                       startDate, endDate, 
                       fullQAQC = TRUE)
   
   
-  # Missing entries in this dataset will be substituted with PRISM data
+  # Missing entries in this dataset will be substituted with gage and PRISM data
   # (And if 'allTempColumnsFromPRISM' is set to TRUE, all temperature data will 
   #  come from PRISM)
-  #meteorDF <- prismSub(meteorDF, prismDF, prismInput, allTempColumnsFromPRISM)
+  
+  
+  # Now that QA/QC procedures have been completed, 
+  # remove supplemental and extra gages from 'meteorDF'
+  meteorDF <- meteorDF |>
+    select(-starts_with("SUP_"), -starts_with("EX_"))
   
   
   cat("\tDone!\n\n")
@@ -208,26 +252,27 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
 
 
 
-validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
-                            prismDF, noaaDF, rawsDF, cimisDF, inputFiles) {
+validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput, cdecInput,
+                            prismDF, noaaDF, rawsDF, cimisDF, cdecDF, inputFiles) {
   
-  # Verify that all eight tibbles are formatted as expected
+  # Verify that all ten tibbles are formatted as expected
   
   
-  # The number of expected PRMS precipitation columns is hard-coded as 15
+  # The number of expected PRMS precipitation columns is hard-coded as 45
   # Similarly, the number of expected minimum/maximum temperature columns is 8
-  numPrecip <- 15
+  numPrecip <- 45
   numTemp <- 8
   
   
-  # First, check the four "INPUT" tibbles
+  # First, check the five "INPUT" tibbles
   validateStationInputs(prismInput, inputFiles$PRISM_INPUT[1], "PRMS", numPrecip, numTemp)
   validateStationInputs(noaaInput, inputFiles$NOAA_INPUT[1], "PRMS", numPrecip, numTemp)
   validateStationInputs(rawsInput, inputFiles$RAWS_INPUT[1], "PRMS", numPrecip, numTemp)
   validateStationInputs(cimisInput, inputFiles$CIMIS_INPUT[1], "PRMS", numPrecip, numTemp)
+  validateStationInputs(cimisInput, inputFiles$CDEC_INPUT[1], "PRMS", numPrecip, numTemp)
   
   
-  # Validate the four weather output tibbles next
+  # Validate the five weather output tibbles next
   
   # Each website returns data in a slightly different format
   # But the general expectations are similar in all cases
@@ -235,6 +280,7 @@ validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
   validateWebData(noaaDF, "NOAA", inputFiles$NOAA_OUTPUT[1], noaaInput$STATION_ID)
   validateWebData(rawsDF, "RAWS", inputFiles$RAWS_OUTPUT[1], rawsInput$STATION_ID)
   validateWebData(cimisDF, "CIMIS", inputFiles$CIMIS_OUTPUT[1], cimisInput$STATION_ID)
+  validateWebData(cdecDF, "CDEC", inputFiles$CDEC_OUTPUT[1], cdecInput$STATION_ID)
   
   
   # Return nothing
@@ -244,7 +290,7 @@ validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput,
 
 
 
-validateOutlierFile <- function (outlierDF, sourcePath, numPrecip = 15) {
+validateOutlierFile <- function (outlierDF, sourcePath, stationNames) {
   
   # Inspect 'outlierDF' and ensure that all PRMS precipitation gages have
   # outlier bounds for every month
@@ -264,16 +310,17 @@ validateOutlierFile <- function (outlierDF, sourcePath, numPrecip = 15) {
   
   # After that, confirm that one row is present in 'outlierDF' 
   # for every PRMS precipitation column
-  if (nrow(outlierDF) != numPrecip ||
-      anyFalse(paste0("PRECIP", 1:numPrecip) %in% outlierDF[["GAGE"]])) {
+  if (nrow(outlierDF) != length(stationNames) ||
+      anyFalse(stationNames %in% outlierDF[["GAGE"]])) {
     
     paste0("Incompatible Number of Rows\n\n",
            "The file containing outlier bounds for each PRMS precipitation ",
            "gage is expected to have exactly one row for each of the ", 
-           numPrecip, " precipitation stations. The \"GAGE\" column should only ",
-           "have \"PRECIP1\" through \"PRECIP", numPrecip, "\" as its values. ",
-           "However, this was not the case. Please investigate the file for ",
-           "issues.\n\n",
+           length(stationNames), " precipitation stations. The \"GAGE\" column ",
+           "should only have \"PRECIP#\" as its values (with optional revision, ",
+           "supplemental, and extra labels (e.g., \"_REV1\", \"SUP_\", or ",
+           "\"EX_\"). However, this was not the case. Please investigate the ",
+           "file for issues.\n\n",
            "(This error occurred for \"", sourcePath, "\")") |>
       errWrap() |>
       stop()
@@ -308,7 +355,7 @@ validateOutlierFile <- function (outlierDF, sourcePath, numPrecip = 15) {
 
 
 
-validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
+validateCorrFile <- function (corrDF, sourcePath, stationNames) {
   
   # Check the values in 'corrDF' 
   # Ensure that all PRMS precipitation gages have model values 
@@ -326,22 +373,47 @@ validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
                                      "parameters for PRMS precipitation gages"))
   
   
-  # After that, confirm that no missing values are present in 'corrDF'
-  if (anyNA(corrDF)) {
+  # After that, confirm that no missing values are present in the "PREDICTOR" 
+  # and "RESPONSE" columns of 'corrDF'
+  if (corrDF |> select(PREDICTOR, RESPONSE) |> anyNA()) {
     
     # Print to the console the location of these NA values
     cat("\n\n")
     cat("Missing Element(s):\n")
-    print(which(is.na(corrDF), arr.ind = TRUE))
+    print(which(is.na(corrDF[c("PREDICTOR", "RESPONSE")]), arr.ind = TRUE)[, 1] |>
+            unique())
     cat("\n\n")
     
     
     # Then output an error message
     paste0("Missing Values Detected\n\n",
            "The file containing linear regression models for PRMS precipitation ",
-           "gages should not have any \"NA\" values in any of its columns. ",
-           "However, at least one missing value was detected (see above). ",
-           "Please investigate the file for issues.\n\n",
+           "gages should not have any \"NA\" values in its \"PREDICTOR\" and ",
+           "\"RESPONSE\" columns. However, at least one missing value was ",
+           "detected (see above). Please investigate the file for issues.\n\n",
+           "(This error occurred for \"", sourcePath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  # A similar but slightly different check confirms that "SLOPE" and "INTERCEPT"
+  # are never NA when "R_SQUARED" has a value
+  } else if (corrDF |> filter(!is.na(R_SQUARED)) |> select(SLOPE, INTERCEPT) |> anyNA()) {
+    
+    # Print to the console the location of these NA values
+    cat("\n\n")
+    cat("Missing Element(s):\n")
+    print(which(!is.na(corrDF[["R_SQUARED"]]) & 
+                  is.na(corrDF[c("SLOPE", "INTERCEPT")]), arr.ind = TRUE)[, 1])
+    cat("\n\n")
+    
+    
+    # Then output an error message
+    paste0("Missing Values Detected\n\n",
+           "The file containing linear regression models for PRMS precipitation ",
+           "gages should not have any \"NA\" values in its \"SLOPE\" and ",
+           "\"INTERCEPT\" columns when \"R_SQUARED\" has a value. However, at ",
+           "least one missing value was detected (see above). Please ",
+           "investigate the file for issues.\n\n",
            "(This error occurred for \"", sourcePath, "\")") |>
       errWrap() |>
       stop()
@@ -349,25 +421,22 @@ validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
   }
   
   
-  # Iterate through every precipitation column ("PRECIP1" to 'numPrecip')
+  # Iterate through every precipitation column (contained in 'stationNames')
   # Make sure it appears in a model with all other precipitation columns
   # (There should be one with "PRISM" too)
-  precipCols <- paste0("PRECIP", 1:numPrecip)
-  
-  
-  for (i in 1:length(precipCols)) {
+  for (i in 1:length(stationNames)) {
     
     # Take a subset of 'corrDF'
-    # Get all models that involve this iteration's value from 'precipCols'
+    # Get all models that involve this iteration's value from 'stationNames'
     subsetDF <- corrDF |>
-      filter(PREDICTOR == precipCols[i] | RESPONSE == precipCols[i])
+      filter(PREDICTOR == stationNames[i] | RESPONSE == stationNames[i])
     
     
     # Extract all values in the "PREDICTOR" and "RESPONSE" columns
     colNames <- c(subsetDF$PREDICTOR, subsetDF$RESPONSE)
     
     
-    # Confirm that every value in 'precipCols' appears within 'colNames'
+    # Confirm that every value in 'stationNames' appears within 'colNames'
     # (That means that every PRMS precipitation column was modeled against
     #  this iteration's specific precipitation column)
     
@@ -375,22 +444,23 @@ validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
     # (This corresponds to the precipitation gage being modeled against 
     #  its PRISM counterpart)
     
-    if (anyFalse(precipCols %in% colNames) || !("PRISM" %in% colNames)) {
+    if (!all(stationNames %in% colNames) || !("PRISM" %in% colNames)) {
       
       cat("\n\n")
-      cat(paste0("Missing Model(s) for ", precipCols[i], ":\n"))
-      print(!(c(precipCols, "PRISM") %in% colNames))
+      cat(paste0("Missing Model(s) for ", stationNames[i], ":\n"))
+      print(!(c(stationNames, "PRISM") %in% colNames))
       cat("\n\n")
       
       
-      paste0("Missing Models for PRECIP", i, " (And Maybe More)\n\n",
+      paste0("Missing Models for ", stationNames[i], " (And Maybe More)\n\n",
              "The file containing linear regression models for PRMS precipitation ",
              "gages should have models between every gage. Each of the ", 
-             numPrecip, " gages should have a model between it and the other ", 
-             numPrecip - 1, " gages. In addition, there should be a model with ",
-             "the gage's PRISM counterpart. However, at least one gage does not ",
-             "have a complete set of models (one gage is shown above--there may ",
-             "be more). Please investigate the file for issues.\n\n",
+             length(stationNames), " gages should have a model between it and ",
+             "the other ", length(stationNames) - 1, " gages. In addition, ",
+             "there should be a model with the gage's PRISM counterpart. ",
+             "However, at least one gage does not have a complete set of ",
+             "models (one gage is shown above--there may be more). Please ",
+             "investigate the file for issues.\n\n",
              "(This error occurred for \"", sourcePath, "\")") |>
         errWrap() |>
         stop()
@@ -425,7 +495,8 @@ validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
   
   
   # Make sure "R_SQUARED" contains values between 0 and 1 (inclusive)
-  if (any(corrDF$R_SQUARED > 1 | corrDF$R_SQUARED < 0)) {
+  if (corrDF |> filter(!is.na(R_SQUARED) & (R_SQUARED < 0 | R_SQUARED > 1)) |>
+      nrow() > 0) {
     
     paste0("R^2 Column Error\n\n",
            "The file containing linear regression models for PRMS precipitation ",
@@ -433,6 +504,26 @@ validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
            "This column is expected to have values that range between 0 and 1 ",
            "(inclusive). However, that was not the case. Please investigate ",
            "the file for issues.\n\n",
+           "(This error occurred for \"", sourcePath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Make sure every precipitation gage has at least one non-NA model entry 
+  if (!all(stationNames %in% 
+           unlist(corrDF |> filter(!is.na(R_SQUARED)) |> 
+                  select(PREDICTOR, RESPONSE), use.names = FALSE))) {
+    
+    # Every gage should appear at least once among the predictor and response 
+    # variables for models that are valid and have both coefficients and an
+    # R^2 value
+    
+    paste0("No Models Found\n\n",
+           "At least one gage in the correlation CSV file lacks linear regression ",
+           "models with any other gage (even PRISM). This is a sign of an error ",
+           "in the correlation file. Please investigate it for issues.\n\n",
            "(This error occurred for \"", sourcePath, "\")") |>
       errWrap() |>
       stop()
@@ -448,7 +539,8 @@ validateCorrFile <- function (corrDF, sourcePath, numPrecip = 15) {
 
 
 combineMeteorologicalDatasets <- function (noaaInput, rawsInput, cimisInput,
-                                           noaaDF, rawsDF, cimisDF,
+                                           cdecInput, 
+                                           noaaDF, rawsDF, cimisDF, cdecDF,
                                            startDate, endDate) {
   
   # Format the data for easier integration into the PRMS DAT file
@@ -465,16 +557,18 @@ combineMeteorologicalDatasets <- function (noaaInput, rawsInput, cimisInput,
   # To help specify these column names (and get their ordering right),
   # make a data frame for the column names
   prmsColumnNames <- c(noaaInput$PRMS_PRECIP_NAME, rawsInput$PRMS_PRECIP_NAME, 
-                       cimisInput$PRMS_PRECIP_NAME,
+                       cimisInput$PRMS_PRECIP_NAME, cdecInput$PRMS_PRECIP_NAME,
+                       
                        noaaInput$PRMS_TMIN_NAME, rawsInput$PRMS_TMIN_NAME, 
-                       cimisInput$PRMS_TMIN_NAME,
+                       cimisInput$PRMS_TMIN_NAME, cdecInput$PRMS_TMIN_NAME,
+                       
                        noaaInput$PRMS_TMAX_NAME, rawsInput$PRMS_TMAX_NAME, 
-                       cimisInput$PRMS_TMAX_NAME) |>
+                       cimisInput$PRMS_TMAX_NAME, cdecInput$PRMS_TMAX_NAME) |>
     unique() |> sort() |>
     matrix(ncol = 1) |> data.frame() |> set_names("COLUMN") |>
     filter(!is.na(COLUMN)) |>
-    mutate(TYPE = str_remove(COLUMN, "[0-9]+$"),
-           NUMBER = str_extract(COLUMN, "[0-9]+$") |> as.numeric()) |>
+    mutate(TYPE = str_remove(COLUMN, "[0-9]+(_.+)?$"),
+           NUMBER = str_extract(COLUMN, "[0-9]+(?=(_|$))") |> as.numeric()) |>
     arrange(TYPE, NUMBER)
   
   # The above code pools together all PRMS-related field names into a vector, 
@@ -505,6 +599,9 @@ combineMeteorologicalDatasets <- function (noaaInput, rawsInput, cimisInput,
   cimisProcessed <- cimisDF |>
     reformatClimateData(cimisInput, "CIMIS")
   
+  cdecProcessed <- cdecDF |>
+    reformatClimateData(cdecInput, "CDEC")
+  
   
   # Bind these processed data frames to 'meteorDF'
   # (Other than "DATE", the columns in the processed tibbles should replace 
@@ -520,7 +617,10 @@ combineMeteorologicalDatasets <- function (noaaInput, rawsInput, cimisInput,
     left_join(rawsProcessed, by = "DATE", relationship = "one-to-one") |>
     # Repeat with CIMIS
     select(-all_of(names(cimisProcessed)[names(cimisProcessed) != "DATE"])) |>
-    left_join(cimisProcessed, by = "DATE", relationship = "one-to-one")
+    left_join(cimisProcessed, by = "DATE", relationship = "one-to-one") |>
+    # Repeat with CDEC
+    select(-all_of(names(cdecProcessed)[names(cdecProcessed) != "DATE"])) |>
+    left_join(cdecProcessed, by = "DATE", relationship = "one-to-one")
   
   
   # Return the revised 'meteorDF'
@@ -542,8 +642,8 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
   fieldNameVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = TRUE)
 
   
-  # Before performing that step, check if the input data is from NOAA
-  # That data has US customary units rather than metric units
+  # Before performing that step, check if the input data is from NOAA or CDEC
+  # These datasets have US customary units rather than metric units
   if (dataSource == "NOAA") {
     
     # Convert precipitation data from units of inches into millimeters
@@ -556,6 +656,16 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
       mutate(PRCP = PRCP * 25.4,
              TMAX = 5/9 * (TMAX - 32),
              TMIN = 5/9 * (TMIN - 32))
+    
+  } else if (dataSource == "CDEC") {
+    
+    # Convert units of inches into millimeters
+    # Also, add dummy columns for "TMIN" and "TMAX" 
+    # (only precipitation data is downloaded from CDEC)
+    climateDF <- climateDF |>
+      mutate(VALUE = VALUE * 25.4,
+             NA_1 = NA,
+             NA_2 = NA)
     
   }
   
@@ -610,7 +720,9 @@ reformatClimateData <- function (climateDF, climateInput, dataSource) {
 
 
 
-datQAQC <- function (meteorDF, outlierDF, corrDF, cimisInput, cimisDF, cimisPath, 
+datQAQC <- function (meteorDF, outlierDF, corrDF, 
+                     cimisInput, cimisDF, cimisPath,
+                     cdecInput, cdecDF, cdecPath, 
                      prismDF, prismInput, allTempSub, startDate, endDate, 
                      fullQAQC = TRUE) {
   
@@ -619,20 +731,21 @@ datQAQC <- function (meteorDF, outlierDF, corrDF, cimisInput, cimisDF, cimisPath
   # If 'allTempSub' is TRUE, all temperature data will come from PRISM
   
   
-  # Start by addressing CIMIS data
+  # Start by addressing CIMIS and CDEC data
   
   # Data from other stations is already modified with their own QA/QC procedures
   
-  # CIMIS has quality-control flags, but they are not applied by default
-  # Use a function to perform those edits now
+  # CIMIS and CDEC have quality-control flags, but they are not applied by default
+  # Use functions to perform those edits now
   meteorDF <- meteorDF |>
-    applyFlags_CIMIS(cimisInput, cimisDF, cimisPath)
+    applyFlags_CIMIS(cimisInput, cimisDF, cimisPath) |>
+    applyFlags_CDEC(cdecInput, cdecDF, cdecPath)
   
   
   # Save 'meteorDF' to an intermediate file
   # CIMIS flags are the only QA/QC applied at this point, and this 
   meteorDF |>
-    writeOutput(paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_CIMIS_Intermediate_",
+    writeOutput(paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_Intermediate_",
                        startDate, "_", endDate, ".csv"))
   
   
@@ -693,7 +806,7 @@ applyFlags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisPath) {
   # Keep only rows with values in "PRMS_PRECIP_NAME"
   # (These stations' precipitation values will be used in the model)
   cimisInput <- cimisInput |>
-    filter(!is.na(PRMS_PRECIP_NAME) & !grepl("^EX_PRECIP", PRMS_PRECIP_NAME))
+    filter(!is.na(PRMS_PRECIP_NAME))
   
   
   # Next, locate "PRECIP_QC" in 'cimisDF'
@@ -761,6 +874,97 @@ applyFlags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisPath) {
 
 
 
+applyFlags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecPath) {
+  
+  # The raw CDEC data in 'cdecDF' has QA/QC flags as columns in the data
+  # https://cdec.water.ca.gov/reportapp/javareports?name=FlagList
+  
+  # No corrections have been made, but these flags are present so that
+  # users can make corrections at their discretion
+  
+  # This function will remove records that have certain precipitation flags
+  
+  
+  # First, modify the column names in 'cdecDF' to be easier to work with
+  # 'fieldNameVec' can help convert the raw headers in 'cdecDF' 
+  fieldNameVec <- validateWebData_expectedColumnNames("CDEC", siPRISM = TRUE)
+  
+  
+  # Rename some columns in 'cdecDF'
+  cdecDF <- cdecDF |>
+    rename(any_of(fieldNameVec))
+  
+  
+  # For convenience, filter 'cdecInput' as well
+  # Keep only rows with values in "PRMS_PRECIP_NAME"
+  # (These stations' precipitation values will be used in the model)
+  cdecInput <- cdecInput |>
+    filter(!is.na(PRMS_PRECIP_NAME))
+  
+  
+  # Next, locate "DATA_FLAG" in 'cdecDF'
+  # If it is not present, output an error message
+  cdecDF |>
+    checkMissingCol(colNames = "DATA_FLAG", 
+                    msg = 
+                      paste0("Missing CDEC QC Column\n\n",
+                             "The raw data downloaded from CDEC should have ",
+                             "contained a column labeled \"DATA_FLAG\". ",
+                             "However, it could not be found. Please ",
+                             "investigate the file.\n\n",
+                             "(This error occurred for \"", cdecPath, "\""))
+  
+  
+  # Next, identify precipitation records in 'cdecDF' with problematic flags
+  
+  # Data with these flags will be removed:
+  #   (*) A Precipitation accumulation
+  #   (*) N Error in data
+  #   (*) v Out of Valid Range
+  
+  
+  # Record "DATE" and "STATION_ID" for entries that have suspect precipitation data
+  flaggedDF <- cdecDF |>
+    filter(STATION_ID %in% cdecInput$STATION_ID) |>
+    filter(DATA_FLAG %in% c("A", "N", "v")) |>
+    select(DATE, STATION_ID)
+  
+  
+  # Use 'cdecInput' to append PRMS precipitation information to 'flaggedDF'
+  # "PRMS_PRECIP_NAME" will identify the actual PRMS column names (as it appears
+  # in 'meteorDF') that correspond to CDEC precipitation data
+  flaggedDF <- flaggedDF |>
+    left_join(cdecInput |> select(STATION_ID, PRMS_PRECIP_NAME),
+              by = "STATION_ID", relationship = "many-to-one")
+  
+  
+  # Iterate through each of the stations in 'cdecInput'
+  for (i in 1:nrow(cdecInput)) {
+    
+    # Get the flagged dates associated with this specific CDEC station
+    errDates <- flaggedDF$DATE[flaggedDF$STATION_ID == cdecInput$STATION_ID[i]]
+    
+    
+    # If 'errDates' is empty, skip to the next precipitation station
+    if (length(errDates) == 0) {
+      next
+    }
+    
+    
+    # Otherwise, update entries in 'meteorDF' for this CIMIS station
+    # Flagged dates should have their precipitation values set to NA
+    meteorDF[[cdecInput$PRMS_PRECIP_NAME[i]]][meteorDF$DATE %in% errDates] <- NA_real_
+    
+  }
+  
+  
+  # Return 'meteorDF' afterwards
+  return(meteorDF)
+  
+}
+
+
+
 removeOutliers <- function (meteorDF, outlierDF) {
   
   # Given upper-limit bounds for each PRMS precipitation gage, 
@@ -769,21 +973,11 @@ removeOutliers <- function (meteorDF, outlierDF) {
   
   # Get a vector of precipitation columns that appear in 'meteorDF'
   precipNames <- names(meteorDF) |>
-    str_subset("^PRECIP[0-9]+$")
+    str_subset("PRECIP[0-9]+")
   
   
   # Iterate through each of the precipitation gages in 'meteorDF'
   for (i in 1:length(precipNames)) {
-    
-    # Note: This procedure will not be applied to several gages
-    if (precipNames[i] %in% c("PRECIP1", "PRECIP4", "PRECIP7", "PRECIP13")) {
-      
-      # Gages 1, 4, 7, and 13 are outside the watershed and correlate poorly with
-      # all other gages
-      
-      next
-    }
-    
     
     # Extract a subset of 'meteorDF' that contains "DATE" and the corresponding
     # precipitation column
@@ -795,7 +989,7 @@ removeOutliers <- function (meteorDF, outlierDF) {
     
     # To make the process simpler, rename the gage in 'subsetDF' to "PRECIP"
     subsetDF <- subsetDF |>
-      rename(PRECIP = all_of(outlierDF$GAGE[i]))
+      rename(PRECIP = all_of(precipNames[i]))
     
     
     # Then, set all negative precipitation values in 'subsetDF' to NA
@@ -882,20 +1076,20 @@ gageSub <- function (meteorDF, corrDF, prismDF, prismInput) {
   # Models that fill in missing data based on PRISM may also be used
   
   
+  # Make sure 'meteorDF' is sorted by date before proceeding
+  meteorDF <- meteorDF |>
+    arrange(DATE)
+  
+  
   # The exact procedure for each precipitation gage is this:
   
-  #  (1) Check if the gage has a strong model (R^2 > 0.90) with its PRISM data
+  #  (1) Find the gage with the highest correlation with this iteration's gage
   #
-  #      If yes, apply the corresponding linear model to fill in gaps
+  #  (2) Wherever the chosen gage has available data, apply the model to fill in
+  #      gaps within this iteration's gage data
   #
-  #  (2) Sort each gage in terms of best correlation to worst
-  #
-  #      Take the three* best available gages and average their values 
-  #      (The average precipitation values fill in the missing gaps)
-  #
-  #      If fewer than three gages have data available for that period, 
-  #      still use the average if at least two gages have a value
-  #      Otherwise, leave the entry as "missing"
+  #  (3) If there are still missing values in the gage dataset, find the next
+  #      best correlating gage and repeat Step 2
   
   
   # First, create a copy of 'meteorDF'
@@ -912,223 +1106,148 @@ gageSub <- function (meteorDF, corrDF, prismDF, prismInput) {
   
   
   # Get a list of precipitation columns in 'adjDF'
+  # (Exclude supplemental and extra gages from this)
   precipNames <- names(adjDF) |>
-    str_subset("^PRECIP[0-9]+$")
-  
-  
-  # Note: This procedure will not be applied to several gages
-  excludedGages <- c("PRECIP1", "PRECIP4", "PRECIP7",
-                     "PRECIP6", "PRECIP12")
+    str_subset("^PRECIP[0-9]+")
   
   
   # Next, iterate through each of the precipitation columns in 'adjDF'
   for (i in 1:length(precipNames)) {
     
-    # Skip the iterations for excluded gages
-    if (precipNames[i] %in% excludedGages) {
-      
-      # Gages 1, 4, and 7 are outside the watershed and correlate poorly with
-      # other precipitation gages
-      
-      # Gages 6 and 12 come from CIMIS, but they are raw and unsuitable for 
-      # this process
-      
-      next
-    }
-    
-    
-    # Otherwise, check for missing values in this column of 'adjDF' 
-    missingDates <- adjDF |>
-      filter(is.na(get(precipNames[i])) | get(precipNames[i]) < 0) |>
-      select(DATE)
-    
-    
-    # If 'missingDates' is empty, skip to the next precipitation gage
-    if (nrow(missingDates) == 0) {
-      next
-    }
-    
-    
-    # If there is missing data, extract a subset of 'corrDF' with models 
-    # related to the current iteration's gage
-    # (Still ignore excluded gages)
-    gageModels <- corrDF |>
+    # Extract model information from 'corrDF' related to this iteration's gage
+    gageCorr <- corrDF |>
       filter(PREDICTOR == precipNames[i] | RESPONSE == precipNames[i]) |>
-      filter(!(PREDICTOR %in% excludedGages) & !(RESPONSE %in% excludedGages))
+      filter(!is.na(R_SQUARED)) |> 
+      mutate(OTHER_GAGE = if_else(PREDICTOR == precipNames[i], RESPONSE, PREDICTOR)) |>
+      arrange(desc(R_SQUARED))
+    
+    # The above code looks for records in 'corrDF' where the iteration's gage
+    # appears as either the predictor variable (x) or the response variable (y)
+    #
+    # Then, it removes entries that lack a model and R^2 value
+    #
+    # After that, a column is added that identifies the name of the gage used
+    # by the model that is NOT this iteration's gage
+    #
+    # Finally, the result is sorted so that the largest R^2 value is present
+    # in the first row of 'gageCorr'
     
     
-    # REMEDIATION OPTION #1: PRISM REGRESSION MODEL
+    # Define a counter that tracks which well-correlated gage will be used
+    nthBest <- 0
     
     
-    # First, check if this gage has a strong correlation with PRISM data
-    # If so, that will be the source of data (but through a regression model)
-    if (gageModels |> filter(PREDICTOR == "PRISM" | RESPONSE == "PRISM") |>
-        filter(R_SQUARED > 0.90) |> nrow() > 0) {
+    # Check for missing values in this column of 'adjDF'
+    # Continuously loop until this issue is resolved
+    while (anyNA(adjDF[[precipNames[i]]]) && nthBest < nrow(gageCorr)) {
       
-      # Extract the model that correlates gage data and PRISM data
-      prismModel <- gageModels |> 
-        filter(PREDICTOR == "PRISM" | RESPONSE == "PRISM")
+      # Increment 'nthBest' (to use the next best gage)
+      nthBest <- nthBest + 1
       
       
-      # Get a modified version of the simulated gage data in 'prismProcessed'
-      prismSubset <- prismProcessed |>
-        select(DATE, all_of(precipNames[i]))
+      # Get the dates where 'adjDF' is missing data for this gage
+      missingDates <- adjDF$DATE[is.na(adjDF[[precipNames[i]]])]
       
       
-      # Apply the regression model to the PRISM data to convert it
-      # into suitable gage data
-      if (prismModel$PREDICTOR[1] == "PRISM") {
+      # Extract the nth best gage (as stated by 'nthBest')
+      chosenModel <- gageCorr[nthBest, ]
+      
+      
+      # If "OTHER_GAGE" is "PRISM", extract data from 'prismDF'
+      # Otherwise, retrieve data from 'meteorDF'
+      if (chosenModel$OTHER_GAGE[1] == "PRISM") {
         
-        # If PRISM data is the predictor (x), apply the model as:
-        # gage = m * prism + b
-        
-        prismSubset[[precipNames[i]]] <- 
-          prismSubset[[precipNames[i]]] * prismModel$SLOPE[1] + prismModel$INTERCEPT[1]
+        # In 'prismProcessed', a gage's PRISM counterpart uses the exact same 
+        # column name
+        modelDF <- prismProcessed |>
+          select(DATE, all_of(precipNames[i])) |>
+          rename(OTHER_GAGE = precipNames[i])
         
       } else {
         
-        # Otherwise, if PRISM is the response variable (y), apply the model as:
-        # gage = (prism - b) / m
-        prismSubset[[precipNames[i]]] <- 
-          (prismSubset[[precipNames[i]]] - prismModel$INTERCEPT[1]) / prismModel$SLOPE[1]
+        modelDF <- meteorDF |>
+          select(DATE, all_of(chosenModel$OTHER_GAGE)) |>
+          rename(OTHER_GAGE = chosenModel$OTHER_GAGE)
         
       }
       
-      
-      # Locate missing dates for this gage in 'adjDF'
-      missingDates <- adjDF |>
-        filter(is.na(get(precipNames[i])) | get(precipNames[i]) < 0) |>
-        select(DATE)
+      # (To make things tidier, the chosen gage's column is renamed to "OTHER_GAGE")
       
       
-      # Filter 'prismSubset' to the same dates
-      prismSubset <- prismSubset |>
-        filter(DATE %in% missingDates$DATE)
+      # Filter 'modelDF' to days in 'missingDates'
+      modelDF <- modelDF |>
+        filter(DATE %in% missingDates)
       
       
-      # The safer (but slower) approach would be to fill in these missing values
-      # in a for loop
-      if (nrow(prismSubset) > 0) {
-        
-        # Iterate through every missing date in 'adjDF' 
-        # that appears within 'prismSubset'
-        for (j in 1:nrow(prismSubset)) {
-          
-          # Locate the index in 'adjDF' that contains this date
-          matchIndex <- which(adjDF$DATE == prismSubset$DATE[j])
-          
-          
-          # Replace that date's missing entry with gage-equivalent data
-          adjDF[matchIndex, precipNames[i]] <- prismSubset[j, precipNames[i]]
-          
-        }
-        
-      }
-      
-      
-      # Skip to the next gage once this procedure is complete
-      next
-      
-    }
-    
-    
-    # REMEDIATION OPTION #2: AVERAGE PRECIPITATION OF OTHER GAGES
-    
-    
-    # An alternative option for filling in missing gage data is using the average
-    # precipitation values from the two or three best correlated gages
-    
-    
-    # Get the most similar non-PRISM gages for this iteration's gage
-    # Sort the table from greatest to least R^2 and keep only the gage names
-    similarGages <- gageModels |>
-      arrange(desc(R_SQUARED)) |>
-      select(PREDICTOR, RESPONSE) 
-    
-    # Note: In one column of each row, 'precipNames[i]' will appear
-    #       The other column will have the name of a different gage
-    
-    
-    # Flatten the two-column table of gage names into a single vector
-    # Remove the iteration's gage name and "PRISM" from this result
-    similarGages <- similarGages |>
-      t() |> as.vector()|> unique() |>
-      base::setdiff(precipNames[i]) |>
-      base::setdiff("PRISM")
-    
-    # NOTE
-    # Why do we transpose before unlisting the tibble? 
-    
-    # We do not know if 'precipNames[i]' appears in "PREDICTOR" or "RESPONSE"
-    # in each row of 'similarGages'
-    
-    # However, we want both gages in a row to appear in the vector BEFORE
-    # the two gages that appear in the next row 
-    # (the next row is a different model with a worse R^2 value)
-    
-    # But `unlist` extracts values by COLUMN first instead of by ROW first
-    
-    # For example, in this table:
-    
-    # PREDICTOR     RESPONSE        R^2 (this column is not in 'similarGages' 
-    # B             C               0.9  but the sorting is still in effect)
-    # A             B               0.7
-    # B             D               0.5
-    
-    # We want the final result to look like: "C", "A", "D"
-    
-    # However, if we apply `unlist` to the table, it unlists *by column* first
-    
-    # We get an intermediate result of "B", "A", "B", "C", "B", "D"
-    
-    # And the final result looks like: "A", "C", "D"
-    
-    
-    # If we apply `t` first and switch the rows/columns, `unlist` will give
-    # the desired result
-    
-    
-    # Once we have a list of similar gages, iterate through the missing dates
-    for (j in 1:nrow(missingDates)) {
-      
-      # Extract the values for these gages in 'meteorDF'
-      similarVals <- meteorDF |>
-        filter(DATE == missingDates$DATE[j]) |>
-        select(all_of(similarGages)) |>
-        unlist(use.names = FALSE)
-      
-      
-      # Remove NA and negative values from 'similarVals'
-      similarVals <- similarVals[!is.na(similarVals) & similarVals >= 0]
-      
-      
-      # If 'similarVals' contains one or fewer entries, leave this gage's value 
-      # as empty 
-      # (The fallback PRISM substitution method will be applied later)
-      if (length(similarVals) < 2) {
+      # If 'modelDF' is empty, skip to the next best gage
+      if (nrow(modelDF) == 0) {
         next
       }
       
       
-      # Otherwise, if 'similarVals' contains at least 3 values, 
-      # take the average of the three most similar gages' values
-      
-      # If there are only 2 available values, use their average instead
-      if (length(similarVals) > 2) {
+      # Otherwise, calculate a prediction for this iteration's gage
+      #
+      # If "OTHER_GAGE" is the x-variable, the gage's data can be calculated 
+      # using the formula: RES = x * SLOPE + INTERCEPT
+      #
+      # However, if "OTHER_GAGE" is the y-variable, the formula must be modified:
+      # RES = (y - INTERCEPT) / SLOPE
+      if (chosenModel$PREDICTOR == chosenModel$OTHER_GAGE) {
         
-        avgVal <- mean(similarVals[1:3])
+        # RES = m * OTHER_GAGE + b
+        modelDF <- modelDF |>
+          mutate(RES = chosenModel$SLOPE * OTHER_GAGE + chosenModel$INTERCEPT)
         
       } else {
         
-        avgVal <- mean(similarVals[1:2])
+        # RES = (OTHER_GAGE - b) / m
+        modelDF <- modelDF |>
+          mutate(RES = (OTHER_GAGE - chosenModel$INTERCEPT) / chosenModel$SLOPE)
         
       }
       
       
-      # Store 'avgVal' in 'adjDF' for this gage's missing entry
-      adjDF[adjDF$DATE == missingDates$DATE[j], precipNames[i]] <- avgVal
+      # Replace negative precipitation values in "RES" with 0
+      modelDF$RES[!is.na(modelDF$RES) & modelDF$RES < 0] <- 0
       
-    } # End of 'j' loop through missing dates for a gage in 'adjDF'
+      
+      # In addition, wherever "OTHER_GAGE" is 0, set "RES" to 0 too
+      # (The model may instead output a very small precipitation value for "RES"
+      #  because of the y-intercept; however, in these cases, 0 would be preferable)
+      modelDF$RES[!is.na(modelDF$RES) & modelDF$OTHER_GAGE == 0] <- 0
+      
+      
+      # Replace the missing entries in 'adjDF' for this iteration's precipitation
+      # gage using the predicted result from the nth best correlating gage 
+      adjDF[[precipNames[i]]][adjDF$DATE %in% missingDates] <- modelDF$RES
+      
+      
+      # It is possible that "OTHER_GAGE" is also missing data for dates
+      # within 'missingDates'
+      # 
+      # In that case, the missing values for this iteration's gage would be 
+      # replaced with NA (therefore remaining unchanged)
+      # 
+      # As a result, the next best gage would be considered
+      #
+      # (At worst, this process only continues until PRISM is the next best "gage" 
+      #  because PRISM will not have any missing values)
+      
+    } # End of 'while' loop for missing gage data
+    
+    
+    # If the precipitation gage still has missing values, the procedure failed
+    # (The loop would've ended due to 'nthBest' reaching the end of 'gageCorr')
+    if (anyNA(adjDF[[precipNames[i]]])) {
+      
+      paste0("The procedure failed to replace all missing values for ",
+             precipNames[i], ". If a model with PRISM is present in the gage ",
+             "correlations sheet, this should not happen. Please investigate.") |>
+        errWrap() |>
+        stop()
+      
+    }
+    
     
   } # End of 'i' loop through precipitation gages
   
@@ -1199,6 +1318,25 @@ prismSub <- function (meteorDF, prismDF, prismInput, allTempSub) {
     }
     
     
+    # Skip supplemental and extra gages too
+    if (grepl("^((SUP)|(EX))_", names(meteorDF)[j])) {
+      next
+    }
+    
+    
+    # If 'allTempSub' is TRUE, skip temperature columns too
+    # (All temperature data will be replaced with PRISM values anyways)
+    if (allTempSub && grepl("^((TMIN)|(TMAX))", names(meteorDF)[j])) {
+      next
+    }
+    
+    
+    cat("\n\n")
+    message(paste0("Direct PRISM substitution for missing values in ",
+                   names(meteorDF)[j], "!"))
+    cat("\n\n")
+    
+    
     # Wherever "NA" appears in 'meteorDF', use corresponding PRISM data
     missingRows <- is.na(meteorDF[, j])
     
@@ -1229,12 +1367,16 @@ prismSub <- function (meteorDF, prismDF, prismInput, allTempSub) {
   
   
   # As a final check, make sure there are no "NA" values left in 'meteorDF'
-  if (anyNA(meteorDF)) {
+  # (ignoring supplemental and extra gages)
+  if (anyNA(meteorDF |> select(-starts_with("SUP_"), -starts_with("EX_")))) {
     
     stop(paste0("Issue in `prismSub()`\n\n", 
                 "By the end of this function, there should be no missing values ",
                 "left in 'meteorDF'. However, \"NA\" ", 
-                if_else(sum(is.na(meteorDF)) > 1, "values were ", "was "),
+                if_else(sum(is.na(meteorDF |> 
+                                    select(-starts_with("SUP_"), 
+                                           -starts_with("EX_")))) > 1, 
+                            "values were ", "was "),
                 "detected by the script.\n\n",
                 "This could be a script issue, or a problem with the data. ",
                 "Please investigate.") |>

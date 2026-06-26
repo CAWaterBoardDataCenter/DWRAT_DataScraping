@@ -138,7 +138,8 @@ mainProcedure <- function () {
   
   # Finally, update the metadata file as well
   updateMetadataCSV(dirPath,
-                    list("SRP_METEOROLOGICAL_FILE_CREATED" =
+                    list("SRP_MODEL_REVISION" = "REV1",
+                         "SRP_METEOROLOGICAL_FILE_CREATED" =
                            file.info(outFile)[["ctime"]]))
   
   
