@@ -20,7 +20,7 @@ getFile <- function (filePath, fileType = NULL, largeFile = FALSE, delim = NULL,
                      select = NULL, trim_ws = FALSE, 
                      worksheet = NULL, range = NULL, col_names = TRUE,
                      col_types = NULL, skip = 0, n_max = Inf, 
-                     guess_max = min(10000, n_max)) {
+                     guess_max = min(10^6, n_max)) {
   
   # Given the path to a file, read it into a tibble
   
