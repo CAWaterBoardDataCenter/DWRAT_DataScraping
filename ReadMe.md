@@ -2,7 +2,7 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-06-25  
+**Last Updated On:** 2026-06-29  
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
