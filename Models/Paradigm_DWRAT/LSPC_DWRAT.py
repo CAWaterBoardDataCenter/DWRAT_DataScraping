@@ -7,13 +7,13 @@ from dwrat.modeling import dwrat
 
 outlet = None#'NC_001'
 # add your supply file name
-supply_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/NV_formatted_supply.csv'
+supply_file = 'GL_formatted_supply_43.csv'
 #os.path.join('examples','Mad_example','_inputs','formatted_supply.csv')
 # add the name of your demand file
-demand_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/NV_formatted_demand.csv'
+demand_file = 'GL_formatted_demand_43.csv'
 #os.path.join('examples','Mad_example','_inputs','formatted_demand.csv')
 # add the name of your basins file
-basin_file = 'C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Demand/OutputData/NV_generated_basins.csv'
+basin_file = 'GL_generated_basins_43.csv'
 #os.path.join('examples','Mad_example','_inputs','generated_basins.csv')
 
 #%%###########################################################################
@@ -52,8 +52,8 @@ model.run()
 # 3. POSTPROCESSING
 
 model.writeOutputs(
-    directoryPath='C:/Users/aprashar/Documents/Github/DWRAT_DataScraping/Paradigm_DWRAT/dwrat/output/'.format(model.name)
-    #'C:/Users/aprashar/Documents/GitHub/Paradigm_DWRAT/examples/Mad_example/{}'.format(model.name)
+    directoryPath='Paradigm_DWRAT/dwrat/output/'.format(model.name)
+    #'Paradigm_DWRAT/examples/Mad_example/{}'.format(model.name)
 )
 
 print(model.log)

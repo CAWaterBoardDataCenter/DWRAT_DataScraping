@@ -95,10 +95,22 @@ source("W1_Watershed_Demand/Scripts/Beneficial_Use_Return_Flow.R") # FLAGGING SC
 source("W1_Watershed_Demand/Scripts/Catchment_QAQC.R")
 
 
+# QA/QC Connectivity Matrix
+# Double-check that the connectivity matrix matches the catchments!
+source("W1_Watershed_Demand/Scripts/Conn_Mat_QAQC.R")
+
+
 # POD Sub-basin Assignment
 #source("Scripts/Assign_Subbasin_to_POD.R") # use this script for the Russian River watershed
 source("W1_Watershed_Demand/Scripts/Assign_Subbasin_via_Connectivity_Matrix.R")
 # ^ Alternative script that uses connectivity matrix for sub-basin assignment
+
+
+
+# STOP
+
+# PLEASE UPDATE "WATERSHED_DEMAND_DATASET_PATHS.XLSX" WITH THE PATH TO THE
+# SUBBASIN ASSIGNMENT TO THIS FILE BEFORE PROCEEDING
 
 
 

@@ -12,16 +12,16 @@ require(tidyverse)
 
 
 # Location of Weather Output Files
-generatedWeatherDir <- "C:/Users/aprashar/Documents/Github/lspc-climate-processing-restructure/test/test_outputs/projects/Navarro/curated/"
-  #"C:/GitHub/lspc-climate-processing-restructure/test/test_outputs/projects/Navarro/curated"
+generatedWeatherDir <- "projects/Navarro/curated/"
+  #"Navarro/curated"
 
 
 # Path to LSPC inp file
-inpFilePath <- "C:/Users/aprashar/Downloads/NV_LSPC_v0.0.1/NV_LSPC_v0.0.1/NV_LSPC_v0.0.1/LSPC/Navarro/Input/Navarro_extended_2025-07-31.inp"
+inpFilePath <- "LSPC/Navarro/Input/Navarro_extended_2025-07-31.inp"
 
 
 # Location of LSPC weather folder
-weatherFolder <- "C:/Users/aprashar/Downloads/NV_LSPC_v0.0.1/NV_LSPC_v0.0.1/NV_LSPC_v0.0.1/LSPC/Navarro/Input/Weather"
+weatherFolder <- "LSPC/Navarro/Input/Weather"
 
 
 # Click "Source" to run this script after setting the above paths!

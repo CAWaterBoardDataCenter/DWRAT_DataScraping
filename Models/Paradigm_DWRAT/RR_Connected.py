@@ -15,14 +15,14 @@ random.seed(10)
 
 
 # add the path to your supply file
-supply_file = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/Raw_Flows_2026-05-30.csv'
+supply_file = 'Raw_Flows_2026-05-30.csv'
 # add the path to your demand file
-demand_file = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/RR_2017_2024_MDT_2025-04-04.csv'
+demand_file = 'RR_2017_2024_MDT_2025-04-04.csv'
 # add the path to your basins file
-basin_file = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/basins.csv'
+basin_file = 'basins.csv'
 # add the path to your config files
-urr_config_file = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/urr_config_file_2.csv'
-lrr_config_file = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/lrr_config_file_2.csv'
+urr_config_file = 'urr_config_file_2.csv'
+lrr_config_file = 'lrr_config_file_2.csv'
 
 ##############################################################################
 #% PREPROCESSING for Upper RR
@@ -40,9 +40,9 @@ dates = urrFlows.columns[urrFlows.columns!='FLOWS_TO'].to_list()
 
 ##############################################################################
 # PVP preprocessing
-LakeMendoBalance_FileLocation = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/PVP_Transfers_Observed_WY1960_WY2023.xlsx'
+LakeMendoBalance_FileLocation = 'PVP_Transfers_Observed_WY1960_WY2023.xlsx'
 
-SCWAForecast_FileLocation = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/PotterValleyProjectProjection_DWRAT_20260320.xlsx'
+SCWAForecast_FileLocation = 'PotterValleyProjectProjection_DWRAT_20260320.xlsx'
 ### Set Forecast Type ###
 Variance = 'NoVar' # <- PVP Infrastructure Variance, 'Var' or 'NoVar'
 SimilarDry = 'Dry' # <- Similar WY or Dry WY, 'Similar' or 'Dry'; set to Dry if you're using 
@@ -132,7 +132,7 @@ lowerModel.run()
 
 # output upper and lower separately
 for model in [upperModel,lowerModel]:
-    outputPath = os.path.join('C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Output', model.name)
+    outputPath = os.path.join('Output', model.name)
     if not os.path.exists(outputPath):
         os.mkdir(outputPath)
     model.writeOutputs(directoryPath=outputPath)
@@ -141,7 +141,7 @@ for model in [upperModel,lowerModel]:
 RR.outputCombinedConnected(
     upperModel,
     lowerModel,
-    name = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Output')
+    name = 'Output')
 
 
 # %%

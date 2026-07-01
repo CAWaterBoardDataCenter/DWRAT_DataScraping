@@ -367,6 +367,23 @@ generateMap <- function (catchDF, fieldName, ws) {
                                        select(all_of(fieldName)) |>
                                        st_drop_geometry() |>
                                        unlist(use.names = FALSE))) |>
+      addLayer(catchDF |> 
+                 filter(DISCONNECTED_POLYGONS) |> 
+                 select(all_of(fieldName),
+                        NUM_POLYGONS, DISCONNECTED_POLYGONS) |> 
+                 st_cast("POLYGON", warn = FALSE) |>
+                 st_poi(), 
+               colPal = "pink", fillOpacity = 1.0, 
+               lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
+               group = layerDF$NAME[2], 
+               labelFormula = paste0("Catchment ", 
+                                     catchDF |> 
+                                       filter(DISCONNECTED_POLYGONS) |>
+                                       select(all_of(fieldName)) |> 
+                                       st_cast("POLYGON", warn = FALSE) |>
+                                       st_drop_geometry() |>
+                                       unlist(use.names = FALSE)), 
+               type = "point", radius = 5) |>
       addLegend(position = "topright", colors = "red",
                 title = paste0("QA/QC Issue #1"), 
                 labels = layerDF$NAME[2], 
