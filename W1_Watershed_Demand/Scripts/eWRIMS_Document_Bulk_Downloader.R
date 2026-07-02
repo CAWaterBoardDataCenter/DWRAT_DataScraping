@@ -4,15 +4,14 @@
 # timeframe. You don't have to download thousands of docs manually anymore; this script
 # dumps them all in the watershed's Reports folder. 
 
-#Last Updated by: Payman Alemi on 6/10/2025
+#Last Updated by: Aakash Prashar on 7/2/2026
 
 # Load libraries, hared functions, and ws dataframe----
 library(tidyverse)
-library(here)
 library(data.table)
 
 # Import 'ws'
-source("Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
 
 # Import eWRIMS PODs for your watershed----
 Application_Number <- getXLSX(
@@ -26,7 +25,7 @@ Application_Number <- Application_Number %>% select(APPLICATION_NUMBER) %>% uniq
 
 # Import water_use_report_extended_CSV
 # Just import the APPLICATION_NUMBER and WATER_RIGHT_TYPE
-ewrims_data <- fread(input = "RawData/water_use_report_extended.csv", 
+ewrims_data <- fread(input = "W1_Watershed_Demand/Intermediate/water_use_report_extended.csv", 
                      select = c("APPLICATION_NUMBER", "WATER_RIGHT_TYPE") # columns to load
 )
 
@@ -65,7 +64,7 @@ for (i in 1:nrow(eWRIMS_List)) {
     # Download the document (permit, license, statement, registration, etc.)
     download.file(url = paste0("https://ciwqs.waterboards.ca.gov/ciwqs/ewrims/DocumentRetriever.jsp?appNum=",
                                eWRIMS_List$APPLICATION_NUMBER[i], "&wrType=",eWRIMS_List$WATER_RIGHT_TYPE[i], "&docType=DOCS"),
-                  destfile = paste0(if_else(file.exists(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)), 
+                  destfile = paste0(if_else(dir.exists(makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH)), 
                                             makeSharePointPath(ws$EWRIMS_REPORTS_FOLDER_PATH), 
                                             ws$EWRIMS_REPORTS_FOLDER_PATH), "/", eWRIMS_List$APPLICATION_NUMBER[i], ".pdf"),
                   mode = "wb") # Resolves download issues on Windows
