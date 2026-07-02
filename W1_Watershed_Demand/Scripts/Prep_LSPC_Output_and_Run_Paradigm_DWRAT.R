@@ -619,7 +619,7 @@ getSubbasinConnectivity <- function (connMat, lastCatch) {
 
 getDownstreamSubbasins <- function (dwratConn, hucBased) {
   
-  # For each DWRAT sub-basin, identify the DWRAT sub-basin that is immediately downstream of 
+  # For each DWRAT sub-basin, identify the DWRAT sub-basin that is immediately downstream of it
   
   
   
