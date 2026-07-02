@@ -121,8 +121,8 @@ mainProcedure <- function () {
                     GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
                     GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
                     GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME") %>%
-    mutate(WATERSHED = ws$NAME) %>%
-    select(WATERSHED) %>%
+    mutate(WATERSHED = ws$NAME, SDA_ID = ws$ID) %>%
+    select(SDA_ID, WATERSHED) %>%
     st_transform(st_crs(assignedDF))
   
   
@@ -734,6 +734,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
                     HUC12, HUC12_NAME, NHD_CAT,
                     ASSIGNED_HUC12, ASSIGNED_HUC12_NAME,
                     ASSIGNED_NHD_CAT) |> 
+             mutate(WATERSHED = wsBound$WATERSHED[1],
+                    SDA_ID = wsBound$SDA_ID[1]) |>
              st_transform("WGS84"),
            paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Water_Rights",
@@ -742,9 +744,11 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   st_write(huc12 %>%
-             select(huc12, name) %>%
+             select(huc12, name) |> 
              rename(HUC12 = huc12,
-                    HUC12_NAME = name) |> 
+                    HUC12_NAME = name) |>
+             mutate(WATERSHED = wsBound$WATERSHED[1],
+                    SDA_ID = wsBound$SDA_ID[1]) %>%
              st_transform("WGS84"),
            paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "HUC12_Subbasins",
@@ -753,7 +757,9 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   st_write(catchDF %>%
-             select(NHD_CAT, HUC12, HUC12_NAME) |>
+             select(NHD_CAT, HUC12, HUC12_NAME) |> 
+             mutate(WATERSHED = wsBound$WATERSHED[1],
+                    SDA_ID = wsBound$SDA_ID[1]) |>
              st_transform("WGS84") |> 
              st_make_valid(),
            paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
@@ -763,6 +769,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   st_write(flowLines |> 
+             mutate(WATERSHED = wsBound$WATERSHED[1],
+                    SDA_ID = wsBound$SDA_ID[1]) |> 
              st_transform("WGS84"),
            paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Flowlines",
@@ -771,6 +779,8 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
   
   
   st_write(wsMask |> 
+             mutate(WATERSHED = wsBound$WATERSHED[1],
+                    SDA_ID = wsBound$SDA_ID[1]) |> 
              st_transform("WGS84"),
            paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Watershed_Mask",

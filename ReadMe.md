@@ -2,12 +2,12 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-06-25  
+**Last Updated On:** 2026-06-29  
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
 ## W1_Watershed_Demand (Demand Workflow)  
-For every watershed in California, water rightholders self-report monthly diversion data on an annual basis. These scripts can help users gather relevant water rights for a watershed and flag potential issues in their reporting data. In combination with several manual QA/QC processes, these scripts ultimately generate a *demand dataset* for the watershed that can be used to simulate withdrawals in various sub-basins of a watershed on a monthly timescale. This dataset has applications in both SDA's model development and water availability analysis procedures.  
+For every watershed in California, water rightholders self-report monthly diversion data to the Waterboards on an annual basis. These scripts can help users gather relevant water rights for a watershed and flag potential issues in their reporting data. In combination with several manual QA/QC processes, these scripts ultimately generate a *demand dataset* for the watershed that can be used to simulate withdrawals in various sub-basins of a watershed on a monthly timescale. This dataset has applications in both SDA's model development and water availability analysis procedures.  
   
 ## W2_Russian_River (Russian River Workflow)  
 Originally a process inherited from the Waterboards' Cannabis Instream Flows unit, this workflow integrates hydrologic modeling and water availability analysis—with exclusive focus on the Russian River watershed. It involves gathering weather data, applying QA/QC procedures to the gauge data, forecasting conditions for the remainder of the water year, and modeling flows via [PRMS](https://www.usgs.gov/software/precipitation-runoff-modeling-system-prms) and [SRP](https://github.com/andyrich/SRPHM_update_ag). This produces a *supply dataset* that the scripts use in conjunction with the *demand dataset* to perform a water availability analysis via **Paradigm DWRAT** (a modified version of the [Drought Water Rights Allocation Tool](https://github.com/CAWaterBoardDataCenter/DWRAT)).  
@@ -45,7 +45,7 @@ The scripts and procedures are primarily developed for use on computers with **W
   
 * [Google Chrome](https://www.google.com/chrome/) (only used in backup procedures that rely on RSelenium)  
   
-In addition, GIS software such as **ArcGIS Pro** or **QGIS** is not mandatory, but it may assist users with the workflows.  
+In addition, GIS software such as **ArcGIS Pro** or **QGIS** is not mandatory, but it may assist users with the geospatial components of these workflows.  
   
 # Getting Started  
 The scripts in this repository are mainly coded in R and Python. However, the primary orchestrators are generally R scripts. All of the repository's R scripts rely on the "DWRAT_DataScraping" [RStudio Project](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects), which can be activated using the file [DWRAT_DataScraping.Rproj](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/DWRAT_DataScraping.Rproj). **Please ensure that this project is active when running any of the repository's R scripts.**  

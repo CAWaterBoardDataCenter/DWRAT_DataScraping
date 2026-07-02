@@ -99,7 +99,7 @@ mainProcedure <- function () {
 
 
 
-requestRAWS <- function (stationID, startDate, endDate) {
+requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 15) {
   
   # Prepare a POST request and submit it to RAWS
   
@@ -160,7 +160,40 @@ requestRAWS <- function (stationID, startDate, endDate) {
   Sys.sleep(runif(1, min = 1.4, max = 1.9))
   
   
+  # Check for errors
   if ("try-error" %in% class(req)) {
+    
+    # If the error is "Failure when receiving data from the peer [wrcc.dri.edu]"
+    # "schannel: server closed abruptly (missing close_notify)", 
+    # consider retrying the request if 'counter' is less than 'maxTries'
+    if (grepl("server closed abruptly", req[1]) && counter < maxTries) {
+      
+      # Determine the number of seconds to wait before retrying
+      # (This value is related to the value of 'counter')
+      waitTime <- counter * runif(1, min = 10, max = 25)
+      
+      
+      # Notify the user about this
+      cat("\n\n")
+      paste0("The request failed! This was attempt ", counter, " of ",
+             maxTries, "! Retrying in ", round(waitTime), 
+             " seconds...") |>
+        errWrap() |>
+        message()
+      cat("\n\n")
+      
+      
+      # Wait for a bit
+      Sys.sleep(waitTime)
+      
+      
+      # Submit the request again
+      return(requestRAWS(stationID, startDate, endDate, counter = counter + 1))
+      
+    }
+    
+    # If a different error occurred, or if too many failed requests were received,
+    # output the error message and stop the script
     
     cat("\n\n")
     print(req)

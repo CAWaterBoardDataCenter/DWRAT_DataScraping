@@ -33,7 +33,7 @@ def downloadUSGSFlow(site, start_date, end_date):
 
 
     # Save the raw gage data to a file
-    writePath = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/Calpella_Gage_20260530.csv'
+    writePath = 'Calpella_Gage_20260530.csv'
 
     df.to_csv(writePath, index = False)
 
@@ -184,7 +184,7 @@ def makeConfigFiles(MonthlyACFT_df, dates):
     urr_configfile_df.loc[1] = MonthlyACFT_df['acft'].reindex(urr_configfile_df.columns, fill_value = 'PVP_FLOW')
 
     # Import ET Data and standardize the headers based on current WY, import URR ET data as final row of config file, replace empty forecasts with 0's
-    ET_xlsx_location = 'C:/Users/aprashar/Water Boards/Supply and Demand Assessment - Documents/DWRAT/SDU_Runs/Automated_Procedure/RR_Workflow_Test_Directory/2026-05-30/DWRAT/Input/ET.xlsx'
+    ET_xlsx_location = 'ET.xlsx'
     ET_df = makeMonthlyET(ET_xlsx_location, dates)
 
     urr_configfile_df.loc[2] = ['EVAP_LOSS'] + ET_df.iloc[0].tolist()
