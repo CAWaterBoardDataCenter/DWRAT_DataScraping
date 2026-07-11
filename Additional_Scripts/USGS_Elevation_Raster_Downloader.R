@@ -11,6 +11,12 @@
 # It is the latest 1/3 arc-second elevation rasters
 
 
+## WARNING ##
+
+# This script may require a lot of RAM!
+# (Especially if the watershed is as big as Trinity River)
+
+
 #### Setup ####
 
 # Clear the environment
@@ -125,10 +131,7 @@ cat("\t(This may take a while and a lot of RAM)")
 cat("\n\n")
 
 
-tempList <- vector(mode = "list", length = length(dlNames))
-
-
-# First check which rasters should be used 
+# Iterate through all of the rasters 
 for (i in 1:length(dlNames)) {
   
   # Read in the raster as a proxy first
@@ -160,14 +163,20 @@ for (i in 1:length(dlNames)) {
   
   
   # Crop 'tempDF' to the extent of the watershed boundaries
-  tempList[[i]] <- tempDF |>
+  tempDF <- tempDF |>
     st_crop(bboxCoords, as_points = FALSE)
   
   
-  # Bind these layers together using `st_mosaic`
+  # If 'elevDF' has not been defined yet, initialize it with 'tempDF'
   if (!exists("elevDF")) {
     elevDF <- tempDF
+    
+  # Otherwise, bind the layers together using `st_mosaic`
   } else {
+    
+    # `st_mosaic` will default to returning a proxy
+    # Use `read_stars` to read in the full raster instead
+    # Then, apply `st_crop` again to make sure that the raster fits the bounding box
     elevDF <- st_mosaic(elevDF, tempDF)[[1]] |>
       read_stars(proxy = FALSE) |>
       st_crop(bboxCoords, as_points = FALSE)
@@ -182,9 +191,18 @@ cat("\n\n")
 cat("[3/3]\tWriting watershed elevation data to a TIFF file...")
 cat("\n\n")
 
-stars::write_stars(elevDF, paste0("W1_Watershed_Demand/Output/", ws$ID[1], 
-                                  "_Elevation_", Sys.Date(), ".tif"),
-                   append = FALSE)
+
+outPath <- paste0("W1_Watershed_Demand/Output/", ws$ID[1], 
+                  "_Elevation_", Sys.Date(), ".tif")
+
+
+stars::write_stars(elevDF, outPath, append = FALSE)
+
+
+# Output a message about that
+cat("\n\n")
+message(paste0("Wrote raster to '", outPath, "'!"))
+cat("\n\n")
 
 
 cat("\n\n")
