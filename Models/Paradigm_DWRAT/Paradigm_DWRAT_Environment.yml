@@ -1,0 +1,14 @@
+name: paradigm-dwrat
+dependencies:
+  - python==3.10.*
+  - pip
+  - pip:
+    - numpy==2.1.1
+    - pandas==2.2.2
+    - pandera==0.20.4
+    - PuLP==2.9.0
+    - requests==2.32.3
+    - ipykernel==6.29.5
+    - matplotlib==3.10.1
+    - openpyxl==3.1.5
+    - typing

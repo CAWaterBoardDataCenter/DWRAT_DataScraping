@@ -1,0 +1,76 @@
+# Output a mapview plot of average annual demand (AF) in each sub-basin
+
+
+
+#### Setup ####
+
+require(tidyverse)
+require(sf)
+require(mapview)
+require(webshot)
+
+options(viewer = NULL)
+
+
+source("W1_Watershed_Demand/Scripts/Watershed_Selection.R")
+source("W1_Watershed_Demand/Scripts/Dataset_Year_Range.R")
+
+
+
+#### Procedure ####
+
+
+# Sub-basins
+subWS <- getGIS(ws = ws, 
+                GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
+                GIS_FILE_PATH = "SUBBASIN_POLYGONS_DATABASE_PATH",
+                GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME")
+
+
+
+# Master Demand Table
+mdt <- list.files("W1_Watershed_Demand/Output", 
+                  pattern = paste0(ws$ID, "_", yearRange[1], "_", yearRange[2], "_MDT_"),
+                  full.names = TRUE) %>%
+  str_subset(if_else(is.na(ws$EXCLUDED_REPORTING_YEARS),
+                     "_MDT_",
+                     paste0("_Excluded_",
+                            ws$EXCLUDED_REPORTING_YEARS %>%
+                              str_split(";") %>% unlist() %>%
+                              trimws() %>% 
+                              as.numeric() %>% sort() %>% unique() %>%
+                              paste0(collapse = "_")))) %>%
+  sort() %>% tail(1) %>%
+  read_csv(show_col_types = FALSE)
+
+
+
+# Calculate total annual demand by sub-basin
+subbasinTotals <- mdt %>%
+  select(BASIN, TOTAL_EXPECTED_ANNUAL_DIVERSION) %>%
+  group_by(BASIN) %>%
+  summarize(TOTAL_DIVERSION_AF = sum(TOTAL_EXPECTED_ANNUAL_DIVERSION, na.rm = TRUE)) %>%
+  rename(!! head(ws$SUBBASIN_FIELD_ID_NAMES %>%
+           str_split(";") %>% unlist() %>% trimws(), 1) := BASIN)
+
+
+
+# Append this data to 'subWS'
+subWS <- subWS %>%
+  left_join(subbasinTotals, 
+            by = head(ws$SUBBASIN_FIELD_ID_NAMES %>%
+                        str_split(";") %>% unlist() %>% trimws(), 1))
+
+
+
+# Output a plot of 'subWS'
+print(mapview(subWS, zcol = "TOTAL_DIVERSION_AF"))
+
+
+mapshot(mapview(subWS, zcol = "TOTAL_DIVERSION_AF"), 
+        url = paste0("W1_Watershed_Demand/Output/", ws$ID, 
+                     "_Average_Annual_Demand.html"))
+
+
+# Clear the environment
+base::remove(list = ls())
