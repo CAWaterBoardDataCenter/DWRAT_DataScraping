@@ -357,6 +357,27 @@ generateMap <- function (catchDF, fieldName, ws) {
   }
   
   
+  # Add the watershed boundary layer too
+  # It will be hidden by default
+  wsBound <- getGIS(ws = ws, 
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
+  
+  
+  boundaryLayerName <- "Watershed_Boundary"
+  
+  
+  leafMap <- leafMap |>
+    addLayer(wsBound, 
+             colPal = "darkgray", fillOpacity = 0.60, 
+             lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
+             group = boundaryLayerName, 
+             labelFormula = ws$NAME[1]) |>
+    hideGroup(boundaryLayerName)
+  
+  
+  
   # If there are issues with disconnected polygons, add a separate layer 
   # for that (along with a legend)
   if (layerDF$INCLUDE[2]) {
@@ -463,7 +484,7 @@ generateMap <- function (catchDF, fieldName, ws) {
                                     "CartoDB.DarkMatter", "OpenStreetMap",
                                     "Esri.WorldImagery",
                                     "OpenTopoMap"),
-                     overlayGroups = layerDF$NAME[layerDF$INCLUDE],
+                     overlayGroups = c(layerDF$NAME[layerDF$INCLUDE], boundaryLayerName),
                      position = "topleft")
   
   

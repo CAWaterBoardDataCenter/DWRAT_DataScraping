@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><ct:contentTypeSchema ct:_="" ma:_="" ma:contentTypeName="Document" ma:contentTypeID="0x010100AD1B9453B0FD26428396C40DDB69C7F0" ma:contentTypeVersion="16" ma:contentTypeDescription="Create a new document." ma:contentTypeScope="" ma:versionID="802f121d94e69ef52d0e517f320156b7" xmlns:ct="http://schemas.microsoft.com/office/2006/metadata/contentType" xmlns:ma="http://schemas.microsoft.com/office/2006/metadata/properties/metaAttributes">
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/2006/metadata/properties" ma:root="true" ma:fieldsID="52afc94f32e932e2c2aa5cc0dde246b5" ns2:_="" ns3:_="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:p="http://schemas.microsoft.com/office/2006/metadata/properties" xmlns:ns2="04ff8bd0-14ef-4472-a603-3a4b6f9fed19" xmlns:ns3="84c16208-172a-4eaa-b33e-1408ce0b909e">
-<xsd:import namespace="04ff8bd0-14ef-4472-a603-3a4b6f9fed19"/>
-<xsd:import namespace="84c16208-172a-4eaa-b33e-1408ce0b909e"/>
+<?xml version="1.0" encoding="utf-8"?><ct:contentTypeSchema ct:_="" ma:_="" ma:contentTypeName="Document" ma:contentTypeID="0x010100F312EB754F236045A0D3EDD082CC91AE" ma:contentTypeVersion="16" ma:contentTypeDescription="Create a new document." ma:contentTypeScope="" ma:versionID="e3883cbc254ec137d27422a2b14befbf" xmlns:ct="http://schemas.microsoft.com/office/2006/metadata/contentType" xmlns:ma="http://schemas.microsoft.com/office/2006/metadata/properties/metaAttributes">
+<xsd:schema targetNamespace="http://schemas.microsoft.com/office/2006/metadata/properties" ma:root="true" ma:fieldsID="1be2573fe1476a916a702a25e6de1105" ns2:_="" ns3:_="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:p="http://schemas.microsoft.com/office/2006/metadata/properties" xmlns:ns2="b2cf8adb-cf25-47fc-8c92-b53f2a7e7f06" xmlns:ns3="851dfaa3-aae8-4c03-b90c-7dd4a6526d0d">
+<xsd:import namespace="b2cf8adb-cf25-47fc-8c92-b53f2a7e7f06"/>
+<xsd:import namespace="851dfaa3-aae8-4c03-b90c-7dd4a6526d0d"/>
 <xsd:element name="properties">
 <xsd:complexType>
 <xsd:sequence>
@@ -10,18 +10,19 @@
 <xsd:all>
 <xsd:element ref="ns2:MediaServiceMetadata" minOccurs="0"/>
 <xsd:element ref="ns2:MediaServiceFastMetadata" minOccurs="0"/>
-<xsd:element ref="ns2:MediaServiceSearchProperties" minOccurs="0"/>
+<xsd:element ref="ns3:SharedWithUsers" minOccurs="0"/>
+<xsd:element ref="ns3:SharedWithDetails" minOccurs="0"/>
+<xsd:element ref="ns2:MediaServiceDateTaken" minOccurs="0"/>
+<xsd:element ref="ns2:MediaLengthInSeconds" minOccurs="0"/>
 <xsd:element ref="ns2:lcf76f155ced4ddcb4097134ff3c332f" minOccurs="0"/>
 <xsd:element ref="ns3:TaxCatchAll" minOccurs="0"/>
-<xsd:element ref="ns2:MediaServiceDateTaken" minOccurs="0"/>
+<xsd:element ref="ns2:MediaServiceOCR" minOccurs="0"/>
 <xsd:element ref="ns2:MediaServiceGenerationTime" minOccurs="0"/>
 <xsd:element ref="ns2:MediaServiceEventHashCode" minOccurs="0"/>
-<xsd:element ref="ns2:MediaServiceOCR" minOccurs="0"/>
-<xsd:element ref="ns2:MediaLengthInSeconds" minOccurs="0"/>
+<xsd:element ref="ns2:MediaServiceObjectDetectorVersions" minOccurs="0"/>
 <xsd:element ref="ns2:MediaServiceLocation" minOccurs="0"/>
+<xsd:element ref="ns2:MediaServiceSearchProperties" minOccurs="0"/>
 <xsd:element ref="ns2:MediaServiceBillingMetadata" minOccurs="0"/>
-<xsd:element ref="ns2:LastModifiedOn" minOccurs="0"/>
-<xsd:element ref="ns2:LastModifiedBy" minOccurs="0"/>
 </xsd:all>
 </xsd:complexType>
 </xsd:element>
@@ -29,7 +30,7 @@
 </xsd:complexType>
 </xsd:element>
 </xsd:schema>
-<xsd:schema targetNamespace="04ff8bd0-14ef-4472-a603-3a4b6f9fed19" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dms="http://schemas.microsoft.com/office/2006/documentManagement/types" xmlns:pc="http://schemas.microsoft.com/office/infopath/2007/PartnerControls">
+<xsd:schema targetNamespace="b2cf8adb-cf25-47fc-8c92-b53f2a7e7f06" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dms="http://schemas.microsoft.com/office/2006/documentManagement/types" xmlns:pc="http://schemas.microsoft.com/office/infopath/2007/PartnerControls">
 <xsd:import namespace="http://schemas.microsoft.com/office/2006/documentManagement/types"/>
 <xsd:import namespace="http://schemas.microsoft.com/office/infopath/2007/PartnerControls"/>
 <xsd:element name="MediaServiceMetadata" ma:index="8" nillable="true" ma:displayName="MediaServiceMetadata" ma:hidden="true" ma:internalName="MediaServiceMetadata" ma:readOnly="true">
@@ -42,32 +43,22 @@
 <xsd:restriction base="dms:Note"/>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="MediaServiceSearchProperties" ma:index="10" nillable="true" ma:displayName="MediaServiceSearchProperties" ma:hidden="true" ma:internalName="MediaServiceSearchProperties" ma:readOnly="true">
+<xsd:element name="MediaServiceDateTaken" ma:index="12" nillable="true" ma:displayName="MediaServiceDateTaken" ma:hidden="true" ma:indexed="true" ma:internalName="MediaServiceDateTaken" ma:readOnly="true">
 <xsd:simpleType>
-<xsd:restriction base="dms:Note"/>
+<xsd:restriction base="dms:Text"/>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="lcf76f155ced4ddcb4097134ff3c332f" ma:index="12" nillable="true" ma:taxonomy="true" ma:internalName="lcf76f155ced4ddcb4097134ff3c332f" ma:taxonomyFieldName="MediaServiceImageTags" ma:displayName="Image Tags" ma:readOnly="false" ma:fieldId="{5cf76f15-5ced-4ddc-b409-7134ff3c332f}" ma:taxonomyMulti="true" ma:sspId="8f0c58ad-47d5-4687-b2ae-0bf7855d5fae" ma:termSetId="09814cd3-568e-fe90-9814-8d621ff8fb84" ma:anchorId="fba54fb3-c3e1-fe81-a776-ca4b69148c4d" ma:open="true" ma:isKeyword="false">
+<xsd:element name="MediaLengthInSeconds" ma:index="13" nillable="true" ma:displayName="MediaLengthInSeconds" ma:hidden="true" ma:internalName="MediaLengthInSeconds" ma:readOnly="true">
+<xsd:simpleType>
+<xsd:restriction base="dms:Unknown"/>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="lcf76f155ced4ddcb4097134ff3c332f" ma:index="15" nillable="true" ma:taxonomy="true" ma:internalName="lcf76f155ced4ddcb4097134ff3c332f" ma:taxonomyFieldName="MediaServiceImageTags" ma:displayName="Image Tags" ma:readOnly="false" ma:fieldId="{5cf76f15-5ced-4ddc-b409-7134ff3c332f}" ma:taxonomyMulti="true" ma:sspId="1cfdcae8-6a83-4c52-b891-75b08cbe23e4" ma:termSetId="09814cd3-568e-fe90-9814-8d621ff8fb84" ma:anchorId="fba54fb3-c3e1-fe81-a776-ca4b69148c4d" ma:open="true" ma:isKeyword="false">
 <xsd:complexType>
 <xsd:sequence>
 <xsd:element ref="pc:Terms" minOccurs="0" maxOccurs="1"></xsd:element>
 </xsd:sequence>
 </xsd:complexType>
-</xsd:element>
-<xsd:element name="MediaServiceDateTaken" ma:index="14" nillable="true" ma:displayName="MediaServiceDateTaken" ma:hidden="true" ma:indexed="true" ma:internalName="MediaServiceDateTaken" ma:readOnly="true">
-<xsd:simpleType>
-<xsd:restriction base="dms:Text"/>
-</xsd:simpleType>
-</xsd:element>
-<xsd:element name="MediaServiceGenerationTime" ma:index="15" nillable="true" ma:displayName="MediaServiceGenerationTime" ma:hidden="true" ma:internalName="MediaServiceGenerationTime" ma:readOnly="true">
-<xsd:simpleType>
-<xsd:restriction base="dms:Text"/>
-</xsd:simpleType>
-</xsd:element>
-<xsd:element name="MediaServiceEventHashCode" ma:index="16" nillable="true" ma:displayName="MediaServiceEventHashCode" ma:hidden="true" ma:internalName="MediaServiceEventHashCode" ma:readOnly="true">
-<xsd:simpleType>
-<xsd:restriction base="dms:Text"/>
-</xsd:simpleType>
 </xsd:element>
 <xsd:element name="MediaServiceOCR" ma:index="17" nillable="true" ma:displayName="Extracted Text" ma:internalName="MediaServiceOCR" ma:readOnly="true">
 <xsd:simpleType>
@@ -76,30 +67,44 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="MediaLengthInSeconds" ma:index="18" nillable="true" ma:displayName="MediaLengthInSeconds" ma:hidden="true" ma:internalName="MediaLengthInSeconds" ma:readOnly="true">
-<xsd:simpleType>
-<xsd:restriction base="dms:Unknown"/>
-</xsd:simpleType>
-</xsd:element>
-<xsd:element name="MediaServiceLocation" ma:index="19" nillable="true" ma:displayName="Location" ma:description="" ma:indexed="true" ma:internalName="MediaServiceLocation" ma:readOnly="true">
+<xsd:element name="MediaServiceGenerationTime" ma:index="18" nillable="true" ma:displayName="MediaServiceGenerationTime" ma:hidden="true" ma:internalName="MediaServiceGenerationTime" ma:readOnly="true">
 <xsd:simpleType>
 <xsd:restriction base="dms:Text"/>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="MediaServiceBillingMetadata" ma:index="20" nillable="true" ma:displayName="MediaServiceBillingMetadata" ma:hidden="true" ma:internalName="MediaServiceBillingMetadata" ma:readOnly="true">
+<xsd:element name="MediaServiceEventHashCode" ma:index="19" nillable="true" ma:displayName="MediaServiceEventHashCode" ma:hidden="true" ma:internalName="MediaServiceEventHashCode" ma:readOnly="true">
+<xsd:simpleType>
+<xsd:restriction base="dms:Text"/>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="MediaServiceObjectDetectorVersions" ma:index="20" nillable="true" ma:displayName="MediaServiceObjectDetectorVersions" ma:hidden="true" ma:indexed="true" ma:internalName="MediaServiceObjectDetectorVersions" ma:readOnly="true">
+<xsd:simpleType>
+<xsd:restriction base="dms:Text"/>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="MediaServiceLocation" ma:index="21" nillable="true" ma:displayName="Location" ma:indexed="true" ma:internalName="MediaServiceLocation" ma:readOnly="true">
+<xsd:simpleType>
+<xsd:restriction base="dms:Text"/>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="MediaServiceSearchProperties" ma:index="22" nillable="true" ma:displayName="MediaServiceSearchProperties" ma:hidden="true" ma:internalName="MediaServiceSearchProperties" ma:readOnly="true">
 <xsd:simpleType>
 <xsd:restriction base="dms:Note"/>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="LastModifiedOn" ma:index="21" nillable="true" ma:displayName="Last Modified On" ma:format="DateTime" ma:internalName="LastModifiedOn">
+<xsd:element name="MediaServiceBillingMetadata" ma:index="23" nillable="true" ma:displayName="MediaServiceBillingMetadata" ma:hidden="true" ma:internalName="MediaServiceBillingMetadata" ma:readOnly="true">
 <xsd:simpleType>
-<xsd:restriction base="dms:DateTime"/>
+<xsd:restriction base="dms:Note"/>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="LastModifiedBy" ma:index="22" nillable="true" ma:displayName="Last Modified By" ma:format="Dropdown" ma:list="UserInfo" ma:SharePointGroup="0" ma:internalName="LastModifiedBy">
+</xsd:schema>
+<xsd:schema targetNamespace="851dfaa3-aae8-4c03-b90c-7dd4a6526d0d" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dms="http://schemas.microsoft.com/office/2006/documentManagement/types" xmlns:pc="http://schemas.microsoft.com/office/infopath/2007/PartnerControls">
+<xsd:import namespace="http://schemas.microsoft.com/office/2006/documentManagement/types"/>
+<xsd:import namespace="http://schemas.microsoft.com/office/infopath/2007/PartnerControls"/>
+<xsd:element name="SharedWithUsers" ma:index="10" nillable="true" ma:displayName="Shared With" ma:internalName="SharedWithUsers" ma:readOnly="true">
 <xsd:complexType>
 <xsd:complexContent>
-<xsd:extension base="dms:User">
+<xsd:extension base="dms:UserMulti">
 <xsd:sequence>
 <xsd:element name="UserInfo" minOccurs="0" maxOccurs="unbounded">
 <xsd:complexType>
@@ -115,11 +120,14 @@
 </xsd:complexContent>
 </xsd:complexType>
 </xsd:element>
-</xsd:schema>
-<xsd:schema targetNamespace="84c16208-172a-4eaa-b33e-1408ce0b909e" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dms="http://schemas.microsoft.com/office/2006/documentManagement/types" xmlns:pc="http://schemas.microsoft.com/office/infopath/2007/PartnerControls">
-<xsd:import namespace="http://schemas.microsoft.com/office/2006/documentManagement/types"/>
-<xsd:import namespace="http://schemas.microsoft.com/office/infopath/2007/PartnerControls"/>
-<xsd:element name="TaxCatchAll" ma:index="13" nillable="true" ma:displayName="Taxonomy Catch All Column" ma:hidden="true" ma:list="{ecce4406-a493-43e2-826b-30f75fa2b3e0}" ma:internalName="TaxCatchAll" ma:showField="CatchAllData" ma:web="84c16208-172a-4eaa-b33e-1408ce0b909e">
+<xsd:element name="SharedWithDetails" ma:index="11" nillable="true" ma:displayName="Shared With Details" ma:internalName="SharedWithDetails" ma:readOnly="true">
+<xsd:simpleType>
+<xsd:restriction base="dms:Note">
+<xsd:maxLength value="255"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="TaxCatchAll" ma:index="16" nillable="true" ma:displayName="Taxonomy Catch All Column" ma:hidden="true" ma:list="{3bde447f-9c6c-4421-af29-e30b317a6074}" ma:internalName="TaxCatchAll" ma:showField="CatchAllData" ma:web="851dfaa3-aae8-4c03-b90c-7dd4a6526d0d">
 <xsd:complexType>
 <xsd:complexContent>
 <xsd:extension base="dms:MultiChoiceLookup">
