@@ -24,6 +24,7 @@ require(leaflet)
 require(leafem)
 require(mapview)
 require(webshot)
+require(polylabelr)
 
 
 #### FUNCTIONS ####
@@ -349,36 +350,68 @@ generateMap <- function (catchDF, fieldName, ws) {
                     st_bbox())
   
   
+  # If there will be other QAQC layers in the map, hide the main layer by default
+  if (sum(layerDF$INCLUDE) > 1) {
+    leafMap <- leafMap |>
+      hideGroup(layerDF$NAME[1])
+  }
+  
+  
+  # Add the watershed boundary layer too
+  # It will be hidden by default
+  wsBound <- getGIS(ws = ws, 
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
+  
+  
+  boundaryLayerName <- "Watershed_Boundary"
+  
+  
+  leafMap <- leafMap |>
+    addLayer(wsBound, 
+             colPal = "darkgray", fillOpacity = 0.60, 
+             lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
+             group = boundaryLayerName, 
+             labelFormula = ws$NAME[1]) |>
+    hideGroup(boundaryLayerName)
+  
+  
+  
   # If there are issues with disconnected polygons, add a separate layer 
   # for that (along with a legend)
   if (layerDF$INCLUDE[2]) {
     
+    filteredCatch <- catchDF |> 
+      filter(DISCONNECTED_POLYGONS) |> 
+      select(all_of(fieldName),
+             NUM_POLYGONS, DISCONNECTED_POLYGONS)
+    
+    
     leafMap <- leafMap |>
-      addLayer(catchDF |> 
-                 filter(DISCONNECTED_POLYGONS) |> 
-                 select(all_of(fieldName),
-                        NUM_POLYGONS, DISCONNECTED_POLYGONS), 
-               colPal = "red", fillOpacity = 1.0, 
-               lineOpacity = 1.0, lineWeight = 2.0, lineCol = "red", 
+      addLayer(filteredCatch, 
+               colPal = qualitative_hcl(n = nrow(filteredCatch)) |> sample(), 
+               fillOpacity = 1.0, 
+               lineOpacity = 1.0, lineWeight = 3.0, lineCol = "red", 
                group = layerDF$NAME[2], 
                labelFormula = paste0("Catchment ", 
-                                     catchDF |> 
-                                       filter(DISCONNECTED_POLYGONS) |>
+                                     filteredCatch |>
                                        select(all_of(fieldName)) |>
                                        st_drop_geometry() |>
                                        unlist(use.names = FALSE))) |>
-      addLayer(catchDF |> 
-                 filter(DISCONNECTED_POLYGONS) |> 
-                 select(all_of(fieldName),
-                        NUM_POLYGONS, DISCONNECTED_POLYGONS) |> 
+      addLayer(filteredCatch |> 
                  st_cast("POLYGON", warn = FALSE) |>
-                 st_poi(), 
-               colPal = "pink", fillOpacity = 1.0, 
+                 st_poi() |>
+                 mutate(!!fieldName := filteredCatch |>
+                          select(all_of(fieldName)) |> 
+                          st_cast("POLYGON", warn = FALSE) |>
+                          st_drop_geometry() |>
+                          unlist(use.names = FALSE)), 
+               colPal = "red", fillOpacity = 1.0, 
                lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
                group = layerDF$NAME[2], 
                labelFormula = paste0("Catchment ", 
-                                     catchDF |> 
-                                       filter(DISCONNECTED_POLYGONS) |>
+                                     filteredCatch |>
                                        select(all_of(fieldName)) |> 
                                        st_cast("POLYGON", warn = FALSE) |>
                                        st_drop_geometry() |>
@@ -451,7 +484,7 @@ generateMap <- function (catchDF, fieldName, ws) {
                                     "CartoDB.DarkMatter", "OpenStreetMap",
                                     "Esri.WorldImagery",
                                     "OpenTopoMap"),
-                     overlayGroups = layerDF$NAME[layerDF$INCLUDE],
+                     overlayGroups = c(layerDF$NAME[layerDF$INCLUDE], boundaryLayerName),
                      position = "topleft")
   
   

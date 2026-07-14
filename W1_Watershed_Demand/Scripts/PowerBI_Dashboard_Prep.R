@@ -1,7 +1,7 @@
 # Prepare several spreadsheets for the watershed's PowerBI dashboard
 
 
-remove(list = ls())
+base::remove(list = ls())
 
 
 require(tidyverse)
