@@ -7,6 +7,7 @@
 # This script checks for:
 #  (*) Catchments with disconnected polygons
 #  (*) Very small catchments
+#  (*) Differences from the watershed boundary layer (e.g., gaps)
 
 
 
@@ -16,6 +17,7 @@
 base::remove(list = ls())
 
 
+# Load packages
 require(tidyverse)
 require(sf)
 require(units)
@@ -44,7 +46,8 @@ mainProcedure <- function() {
   catchDF <- getGIS(ws = ws, 
                     GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
                     GIS_FILE_PATH = "SUBBASIN_POLYGONS_DATABASE_PATH",
-                    GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME")
+                    GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME") |>
+    st_transform("epsg:3488")
   
   
   # Get the name of the column that contains the catchment IDs too
@@ -70,6 +73,15 @@ mainProcedure <- function() {
   }
   
   
+  # Get the watershed boundaries too
+  wsBound <- getGIS(ws = ws, 
+                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
+                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
+                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME") |>
+    st_transform(st_crs(catchDF)) |>
+    st_zm()
+  
+  
   cat("\n[1/2]\tChecking for issues...\n")
   
   
@@ -83,6 +95,11 @@ mainProcedure <- function() {
     checkArea()
   
   
+  # After that, check for differences with the watershed boundary
+  # catchMismatch <- catchDF |>
+  #   checkGaps(wsBound, fieldName)
+  # 
+  
   cat("\tDone!\n\n")
   
   
@@ -91,7 +108,7 @@ mainProcedure <- function() {
   
   # Finally, produce maps for the user to view
   catchDF |>
-    generateMap(fieldName, ws)
+    generateMap(fieldName, wsBound, ws)
   
   
   cat("\tDone!\n\n")
@@ -204,15 +221,13 @@ checkArea <- function (catchDF) {
   
   # Watershed-specific thresholds could be set like this: 
   
-  # if (ws$ID[1] == "NV") {
+  # if (grepl("Navarro", ws$NAME)) {
   #   smallThreshold <- set_units(1, "m2")
   # }
   
   
-  # Also, make sure 'catchDF' is using a coordinate reference system (CRS) 
-  # that also uses meters (https://epsg.io/3488)
-  catchDF <- catchDF |>
-    st_transform("epsg:3488")
+  # NOTE: 'catchDF' is using a coordinate reference system (CRS) that 
+  # also uses meters (https://epsg.io/3488)
   
   
   # After that, calculate the area of each catchment in 'catchDF'
@@ -248,7 +263,72 @@ checkArea <- function (catchDF) {
 
 
 
-generateMap <- function (catchDF, fieldName, ws) {
+checkGaps <- function (catchDF, wsBound, fieldName) {
+  
+  # Check if there are non-intersecting sections between 'catchDF' and 'wsBound'
+  
+  
+  # Combine all of the catchments in 'catchDF' into a single layer
+  combinedDF <- catchDF |>
+    st_union() |>
+    st_make_valid()
+  
+  
+  # Get the differences between the catchments and the watershed boundary
+  catchMismatch_1 <- st_difference(catchDF, wsBound |> select())
+  catchMismatch_2 <- st_difference(wsBound |> select(), combinedDF) |>
+    st_cast("POLYGON")
+  
+  
+  # 'catchMismatch_1' has the portions of 'catchDF' that 'wsBound' does not contain
+  # 'catchMismatch_2' has the portions of 'wsBound' that 'combinedDF' lacks
+  
+  # The first check uses the catchment layer, while the second one uses 'combinedDF'
+  # In the first check, each individual catchment may have portions that extend
+  # past the watershed boundaries; 'catchMismatch_1' gathers these components
+  # and, importantly, retains the information of the catchment that it originated from
+  # (That is why 'catchDF' was used)
+  
+  # The second check is a little different
+  # It contains the portions of the watershed boundary that extend further than
+  # any catchment (i.e, portions of land that the catchments lack)
+  # For this comparison, the full extent of the catchment layers (as one whole)
+  # is needed; that is why 'combinedDF' is used in this comparison
+  
+  # However, there is a problem with the second check
+  # These polygons are not associated with any particular catchment
+  
+  
+  # To assign a catchment to each polygon, calculate the distances
+  # Assign the nearest catchment's field value to the polygons in 'catchMismatch_2'
+  distDF <- catchMismatch_2 |>
+    st_distance(catchDF)
+  
+  
+  
+  # Bind both mismatch objects together
+  catchMismatch <- rbind(catchMismatch_1, catchMismatch_2)
+  
+  
+  # If 'catchMismatch' is empty (i.e., no rows), there are no overlap issues
+  if (nrow(catchMismatch) > 0) {
+    paste0("The catchment layer and watershed boundary do not overlap in ",
+           nrow(catchMismatch), " location",
+           if_else(nrow(catchMismatch) > 1, "s", ""),
+           "!") |>
+      message()
+  }
+  
+  
+  
+  # Either way, return 'catchMismatch' 
+  return(catchMismatch)
+  
+}
+
+
+
+generateMap <- function (catchDF, fieldName, wsBound, ws) {
   
   # Generate a map of the catchments for visual inspection
   
@@ -359,12 +439,6 @@ generateMap <- function (catchDF, fieldName, ws) {
   
   # Add the watershed boundary layer too
   # It will be hidden by default
-  wsBound <- getGIS(ws = ws, 
-                    GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
-                    GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
-                    GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME")
-  
-  
   boundaryLayerName <- "Watershed_Boundary"
   
   
