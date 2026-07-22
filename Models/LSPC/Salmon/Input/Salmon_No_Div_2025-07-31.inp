@@ -4390,7 +4390,7 @@ c    petfg     if = 1 use constant PET rather than time series from the air file
 c    monVaryIrrig   if = 1 use monthly varying ET coefficient
 c
 c	irrigfg	petfg	monVaryIrrig
-	1	0	1
+	0	0	1
 c-----------------------------------------------------------------------------------------
 c202 Irrigation PET Value
 c   defid        Group ID number.
