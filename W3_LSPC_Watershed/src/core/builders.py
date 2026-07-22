@@ -245,7 +245,7 @@ class MasterControlBuilder:
         project.storage.nldas.staged.mkdir(parents=True, exist_ok=True)
         
         # Gage directories
-        agencies = ['noaa','cdec','lcd','raws']
+        agencies = ['noaa','cdec','lcd','raws','other']
         for agency in agencies:
             gage_storage_registry = getattr(project.storage.gage, agency)
             gage_storage_registry.raw.mkdir(parents=True, exist_ok=True)
