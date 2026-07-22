@@ -82,6 +82,19 @@ mainProcedure <- function() {
     st_zm()
   
   
+  # Confirm that the watershed boundary does not have any gaps
+  if (wsBound |> st_cast("POLYGON") |> nrow() != 1) {
+    
+    print(mapview(wsBound |> st_cast("POLYGON") |> 
+                    mutate(ROW_ID = row_number()) |> select(ROW_ID),
+                  zcol = "ROW_ID"))
+    
+    stop("The watershed boundary layer seems to contain gaps. Please investigate!")
+    
+  }
+  
+  
+  
   cat("\n[1/2]\tChecking for issues...\n")
   
   
@@ -96,9 +109,18 @@ mainProcedure <- function() {
   
   
   # After that, check for differences with the watershed boundary
-  # catchMismatch <- catchDF |>
-  #   checkGaps(wsBound, fieldName)
-  # 
+  
+  
+  # First, look for portions of catchments that extend past the watershed boundaries
+  catchDF <- catchDF |>
+    checkExceedence(wsBound, fieldName)
+  
+  
+  # Then, check for gaps in the catchment polygons
+  # Identify portions of the watershed boundary that should be covered by that layer
+  catchDF <- catchDF |>
+    checkGaps(wsBound, fieldName)
+  
   
   cat("\tDone!\n\n")
   
@@ -263,65 +285,145 @@ checkArea <- function (catchDF) {
 
 
 
+checkExceedence <- function (catchDF, wsBound, fieldName) {
+  
+  # Check for portions of the catchments that extend past the watershed boundaries
+  
+  
+  # Use `st_difference` to identify portions of catchments 
+  # that pass the watershed boundary
+  beyondBound <- catchDF |>
+    st_difference(wsBound |> select())
+  
+  
+  # Add a column to 'catchDF'
+  # Catchments that appear in 'beyondBound' have portions that exceed the 
+  # watershed boundaries
+  catchDF <- catchDF |>
+    mutate(BOUNDARY_EXCEEDENCE = get(fieldName) %in% beyondBound[[fieldName]])
+  
+  
+  # Notify the user if issues were found
+  if (TRUE %in% catchDF$BOUNDARY_EXCEEDENCE) {
+    
+    paste0(sum(catchDF$BOUNDARY_EXCEEDENCE), " catchment",
+           if_else(sum(catchDF$BOUNDARY_EXCEEDENCE) > 1,
+                   "s extend ", 
+                   " extends "),
+           "past the watershed boundaries!") |>
+      message()
+    
+  }
+  
+  
+  # Return 'catchDF'
+  return(catchDF)
+  
+}
+
+
+
 checkGaps <- function (catchDF, wsBound, fieldName) {
   
   # Check if there are non-intersecting sections between 'catchDF' and 'wsBound'
+  # This function flags portions of the watershed boundary that all catchments
+  # fail to overlap with
   
   
-  # Combine all of the catchments in 'catchDF' into a single layer
+  # Create a new layer called 'catchMismatch'
+  # It will contain polygons from the watershed boundary with the IDs of their
+  # nearest catchment assigned
+  # These will be areas of land that are covered by the watershed boundary,
+  # BUT NOT by the catchments
+  catchMismatch <- calcMismatch(catchDF, wsBound, fieldName)
+  
+  
+  # Add a field to 'catchDF'
+  # It indicates whether its ID appears in 'catchMismatch'
+  catchDF <- catchDF |>
+    mutate(CATCHMENT_GAPS = get(fieldName) %in% catchMismatch[[fieldName]])
+  
+  
+  # Notify the user if issues were found
+  if (TRUE %in% catchDF$CATCHMENT_GAPS) {
+    
+    paste0(sum(catchDF$CATCHMENT_GAPS), " catchment",
+           if_else(sum(catchDF$CATCHMENT_GAPS) > 1,
+                   "s have ", 
+                   " has "),
+           "gaps!") |>
+      message()
+    
+  }
+  
+  
+  # Return 'catchDF' 
+  return(catchDF)
+  
+}
+
+
+
+calcMismatch <- function (catchDF, wsBound, fieldName) {
+  
+  # Find the sections of 'wsBound' that are not covered by 'catchDF'
+  # (these are gaps in the catchment layer)
+  
+  
+  # To find this issue, first combine all catchments into a single polygon
   combinedDF <- catchDF |>
     st_union() |>
     st_make_valid()
   
   
   # Get the differences between the catchments and the watershed boundary
-  catchMismatch_1 <- st_difference(catchDF, wsBound |> select())
-  catchMismatch_2 <- st_difference(wsBound |> select(), combinedDF) |>
+  catchMismatch <- st_difference(wsBound |> select(), combinedDF) |>
     st_cast("POLYGON")
   
   
-  # 'catchMismatch_1' has the portions of 'catchDF' that 'wsBound' does not contain
-  # 'catchMismatch_2' has the portions of 'wsBound' that 'combinedDF' lacks
-  
-  # The first check uses the catchment layer, while the second one uses 'combinedDF'
-  # In the first check, each individual catchment may have portions that extend
-  # past the watershed boundaries; 'catchMismatch_1' gathers these components
-  # and, importantly, retains the information of the catchment that it originated from
-  # (That is why 'catchDF' was used)
-  
-  # The second check is a little different
-  # It contains the portions of the watershed boundary that extend further than
-  # any catchment (i.e, portions of land that the catchments lack)
-  # For this comparison, the full extent of the catchment layers (as one whole)
-  # is needed; that is why 'combinedDF' is used in this comparison
-  
-  # However, there is a problem with the second check
+  # 'catchMismatch' has the portions of 'wsBound' that 'combinedDF' lacks
+  # However, there is a problem
   # These polygons are not associated with any particular catchment
   
   
   # To assign a catchment to each polygon, calculate the distances
-  # Assign the nearest catchment's field value to the polygons in 'catchMismatch_2'
-  distDF <- catchMismatch_2 |>
+  # Assign the nearest catchment's field value to the polygons in 'catchMismatch'
+  distDF <- catchMismatch |>
     st_distance(catchDF)
   
+  # Each row in 'distDF' corresponds to a polygon in 'catchMismatch'
+  # Each column is the average distance from that polygon to a catchment
+  
+  # Convert 'distDF' back into a matrix
+  # Then, transpose it, so that every column corresponds to a polygon, 
+  # and every row corresponds to a catchment
+  
+  # Make this transposed matrix into a data frame with columns corresponding
+  # to each polygon
+  
+  # Then, use `summarize` across every column and determine which row contains 
+  # the shortest distance for each polygon column
+  nearestCatch <- distDF |> drop_units() |>
+    t() |>
+    data.frame() |>
+    set_names(paste0("POLYGON_", 1:nrow(catchMismatch))) |>
+    summarize(across(everything(), ~ which.min(.)[1]))
   
   
-  # Bind both mismatch objects together
-  catchMismatch <- rbind(catchMismatch_1, catchMismatch_2)
+  # The indices identified by this procedure will correspond to rows in 'catchDF'
   
   
-  # If 'catchMismatch' is empty (i.e., no rows), there are no overlap issues
-  if (nrow(catchMismatch) > 0) {
-    paste0("The catchment layer and watershed boundary do not overlap in ",
-           nrow(catchMismatch), " location",
-           if_else(nrow(catchMismatch) > 1, "s", ""),
-           "!") |>
-      message()
-  }
+  # Update 'nearestCatch' to replace the `which.min` index values with their
+  # corresponding catchment IDs
+  nearestCatch <- catchDF[[fieldName]][unlist(nearestCatch)]
   
   
+  # Append these catchment assignments to 'catchMismatch'
+  catchMismatch <- catchMismatch |>
+    mutate(!! fieldName := nearestCatch)
   
-  # Either way, return 'catchMismatch' 
+  
+  # Return 'catchMismatch'
   return(catchMismatch)
   
 }
@@ -338,10 +440,13 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   
   # Get a variable with all layers that will appear in the map
   layerDF <- tibble(NAME = c("Catchment_QAQC", "Disconnected_Polygons",
+                             "Boundary_Exceedence", "Catchment_Gaps", 
                              "Small_Catchments"),
-                    INCLUDE = c(TRUE, FALSE, FALSE))
+                    INCLUDE = c(TRUE, FALSE, FALSE, FALSE, FALSE))
   
   
+  # A layer will only be included if at least one "TRUE" appears in its
+  # corresponding QA/QC column
   if (TRUE %in% catchDF$DISCONNECTED_POLYGONS) {
     
     layerDF$INCLUDE[2] <- TRUE
@@ -349,9 +454,23 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   }
   
   
-  if (TRUE %in% catchDF$SMALL_CATCHMENT) {
+  if (TRUE %in% catchDF$BOUNDARY_EXCEEDENCE) {
     
     layerDF$INCLUDE[3] <- TRUE
+    
+  }
+  
+  
+  if (TRUE %in% catchDF$CATCHMENT_GAPS) {
+    
+    layerDF$INCLUDE[4] <- TRUE
+    
+  }
+  
+  
+  if (TRUE %in% catchDF$SMALL_CATCHMENT) {
+    
+    layerDF$INCLUDE[5] <- TRUE
     
   }
   
@@ -385,6 +504,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
       addLayer(catchDF |> 
                  select(all_of(fieldName), 
                         NUM_POLYGONS, DISCONNECTED_POLYGONS,
+                        BOUNDARY_EXCEEDENCE, CATCHMENT_GAPS, 
                         AREA, SMALL_CATCHMENT) |>
                  mutate(AREA = round(AREA)) |>
                  rename(!! paste0("AREA (", 
@@ -398,7 +518,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   }
   
   
-  # After that, proceed to setting up the main layer of the map
+  # After that, proceed to setting up the main catchment layer of the map
   
   
   # Choose a color palette with a variety of colors
@@ -415,6 +535,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
     addLayer(catchDF |> 
                select(all_of(fieldName), 
                       NUM_POLYGONS, DISCONNECTED_POLYGONS,
+                      BOUNDARY_EXCEEDENCE, CATCHMENT_GAPS, 
                       AREA, SMALL_CATCHMENT) |>
                mutate(AREA = round(AREA)) |>
                rename(!! paste0("AREA (", 
@@ -443,7 +564,8 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   
   
   leafMap <- leafMap |>
-    addLayer(wsBound, 
+    addLayer(wsBound |> 
+               mutate(NAME = ws$NAME[1]) |> select(NAME), 
              colPal = "darkgray", fillOpacity = 0.60, 
              lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
              group = boundaryLayerName, 
@@ -451,17 +573,20 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
     hideGroup(boundaryLayerName)
   
   
-  
   # If there are issues with disconnected polygons, add a separate layer 
   # for that (along with a legend)
   if (layerDF$INCLUDE[2]) {
     
+    # Create a filtered version of 'catchDF' with just the ones that
+    # have disconnected polygons
     filteredCatch <- catchDF |> 
       filter(DISCONNECTED_POLYGONS) |> 
       select(all_of(fieldName),
              NUM_POLYGONS, DISCONNECTED_POLYGONS)
     
     
+    # Highlight every catchment in 'filteredCatch' (with different colors)
+    # Also include a point at the POI of each disconnected polygon
     leafMap <- leafMap |>
       addLayer(filteredCatch, 
                colPal = qualitative_hcl(n = nrow(filteredCatch)) |> sample(), 
@@ -504,10 +629,122 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   }
   
   
-  # Similarly, if there are small catchments detected, add a separate layer 
-  # for that (along with a legend)
+  # If any catchments exceed the watershed boundary, add a layer for that too
   if (layerDF$INCLUDE[3]) {
     
+    # Create a version of 'catchDF' with just the portions that extend past
+    # the watershed boundary
+    filteredCatch <- catchDF |>
+      st_difference(wsBound |> select()) |>
+      select(all_of(fieldName), BOUNDARY_EXCEEDENCE)
+    
+    # Note: `st_difference` may leave some objects as "MULTIPOLYGON" and some
+    #       as just "POLYGON"
+    
+    
+    # Highlight every catchment in 'filteredCatch'
+    # Also include a point at the POI of each polygon
+    leafMap <- leafMap |>
+      addLayer(filteredCatch, 
+               colPal = "blue", 
+               fillOpacity = 1.0, 
+               lineOpacity = 1.0, lineWeight = 3.0, lineCol = "blue", 
+               group = layerDF$NAME[3], 
+               labelFormula = paste0("Catchment ", 
+                                     filteredCatch |>
+                                       select(all_of(fieldName)) |>
+                                       st_drop_geometry() |>
+                                       unlist(use.names = FALSE))) |>
+      addLayer(filteredCatch |> 
+                 st_cast("MULTIPOLYGON", warn = FALSE) |> 
+                 st_cast("POLYGON", warn = FALSE) |>
+                 st_poi() |>
+                 mutate(!!fieldName := filteredCatch |>
+                          select(all_of(fieldName)) |> 
+                          st_cast("MULTIPOLYGON", warn = FALSE) |> 
+                          st_cast("POLYGON", warn = FALSE) |> 
+                          st_drop_geometry() |>
+                          unlist(use.names = FALSE)), 
+               colPal = "blue", fillOpacity = 1.0, 
+               lineOpacity = 1.0, lineWeight = 2.0, lineCol = "white", 
+               group = layerDF$NAME[3], 
+               labelFormula = paste0("Catchment ", 
+                                     filteredCatch |>
+                                       select(all_of(fieldName)) |> 
+                                       st_cast("MULTIPOLYGON", warn = FALSE) |> 
+                                       st_cast("POLYGON", warn = FALSE) |> 
+                                       st_drop_geometry() |>
+                                       unlist(use.names = FALSE)), 
+               type = "point", radius = 5) |>
+      addLegend(position = "topright", colors = "blue",
+                title = paste0("QA/QC Issue #", 1 + layerDF$INCLUDE[2]), 
+                labels = layerDF$NAME[3], 
+                group = layerDF$NAME[3], opacity = 0.80) |>
+      addHomeButton(group = layerDF$NAME[3], position = "bottomleft",
+                    ext = filteredCatch |>
+                      st_transform("+proj=longlat +datum=WGS84") |>
+                      st_bbox())
+    
+  }
+  
+  
+  # If any catchments have gaps, add a layer for that too
+  if (layerDF$INCLUDE[4]) {
+    
+    # Create a version of 'catchDF' with just any gaps in its polygons
+    filteredCatch <- catchDF |>
+      calcMismatch(wsBound, fieldName)
+    
+    
+    # Highlight every catchment in 'filteredCatch'
+    # Also include a point at the POI of each polygon
+    leafMap <- leafMap |>
+      addLayer(filteredCatch, 
+               colPal = "#D000FF", 
+               fillOpacity = 1.0, 
+               lineOpacity = 1.0, lineWeight = 3.0, lineCol = "#D000FF", 
+               group = layerDF$NAME[4], 
+               labelFormula = paste0("Catchment ", 
+                                     filteredCatch |>
+                                       select(all_of(fieldName)) |>
+                                       st_drop_geometry() |>
+                                       unlist(use.names = FALSE))) |>
+      addLayer(filteredCatch |> 
+                 st_poi() |>
+                 mutate(!!fieldName := filteredCatch |>
+                          select(all_of(fieldName)) |> 
+                          st_drop_geometry() |>
+                          unlist(use.names = FALSE)), 
+               colPal = "#D000FF", fillOpacity = 1.0, 
+               lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
+               group = layerDF$NAME[4], 
+               labelFormula = paste0("Catchment ", 
+                                     filteredCatch |>
+                                       select(all_of(fieldName)) |> 
+                                       st_drop_geometry() |>
+                                       unlist(use.names = FALSE)), 
+               type = "point", radius = 5) |>
+      addLegend(position = "topright", colors = "#D000FF",
+                title = paste0("QA/QC Issue #", 
+                               1 + layerDF$INCLUDE[2] + layerDF$INCLUDE[3]), 
+                labels = layerDF$NAME[4], 
+                group = layerDF$NAME[4], opacity = 0.80) |>
+      addHomeButton(group = layerDF$NAME[4], position = "bottomleft",
+                    ext = catchDF |>
+                      filter(CATCHMENT_GAPS) |>
+                      st_transform("+proj=longlat +datum=WGS84") |>
+                      st_bbox())
+    
+  }
+  
+  
+  # Finally, if there are small catchments detected, add a separate layer 
+  # for that (along with a legend)
+  if (layerDF$INCLUDE[5]) {
+    
+    # Add a layer with only small catchments
+    # To help spot them, add a layer of points with their respective
+    # poles of inaccessibility
     leafMap <- leafMap |>
       addLayer(catchDF |> 
                  filter(SMALL_CATCHMENT) |> 
@@ -518,7 +755,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
                                   ")") := AREA), 
                colPal = "orange", fillOpacity = 1.0, 
                lineOpacity = 1.0, lineWeight = 2.0, lineCol = "orange", 
-               group = layerDF$NAME[3], 
+               group = layerDF$NAME[5], 
                labelFormula = paste0("Catchment ", 
                                      catchDF |> 
                                        filter(SMALL_CATCHMENT) |>
@@ -532,7 +769,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
                           catchDF[[fieldName]][catchDF$SMALL_CATCHMENT]), 
                colPal = "orange", fillOpacity = 1.0, 
                lineOpacity = 1.0, lineWeight = 2.0, lineCol = "black", 
-               group = layerDF$NAME[3], 
+               group = layerDF$NAME[5], 
                labelFormula = paste0("Catchment ", catchDF |> 
                                        filter(SMALL_CATCHMENT) |>
                                        select(all_of(fieldName)) |>
@@ -541,10 +778,10 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
                type = "point", radius = 5) |>
       addLegend(position = "topright", colors = "orange",
                 title = paste0("QA/QC Issue #",
-                               sum(layerDF$INCLUDE[1:3]) - 1), 
-                labels = layerDF$NAME[3], 
-                group = layerDF$NAME[3], opacity = 0.80) |>
-      addHomeButton(group = layerDF$NAME[3], position = "bottomleft",
+                               sum(layerDF$INCLUDE[1:5]) - 1), 
+                labels = layerDF$NAME[5], 
+                group = layerDF$NAME[5], opacity = 0.80) |>
+      addHomeButton(group = layerDF$NAME[5], position = "bottomleft",
                     ext = catchDF |>
                       filter(SMALL_CATCHMENT) |>
                       st_transform("+proj=longlat +datum=WGS84") |>
@@ -553,6 +790,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   }
   
   
+  # Add basemaps and layer groups to 'leafMap'
   leafMap <- leafMap |>
     addLayersControl(baseGroups = c("CartoDB.Positron",
                                     "CartoDB.DarkMatter", "OpenStreetMap",
