@@ -12,11 +12,19 @@
 base::remove(list = ls())
 
 
-# Import packages
-require(renv)
+# Check the working directory
+if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
+  stop("Please use \"DWRAT_DataScraping.Rproj\"")
+}
 
-restore()
 
+# Import packages next
+
+# Install and activate 'renv' if it's not already setup
+source("Shared_Scripts/Project_Setup.R")
+
+
+# Load in packages
 source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
