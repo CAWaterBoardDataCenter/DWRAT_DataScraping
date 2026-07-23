@@ -10,15 +10,26 @@
 **/__pycache__/**
 
 
-# In the workflow folders, ignore files in the "Intermediate", "Output", and "Workflow_Bin" folders
+# In the workflow folders, ignore files in the "Intermediate", "Output", "Workflow_Bin", "data", and "logs" folders
 **/Intermediate/**
 **/Output/**
 **/Workflow_Bin/**
+**/data/**
+**/logs/**
 
 # However, do not ignore the actual folders themselves
 !**/Intermediate
 !**/Output
 !**/Workflow_Bin
+!**/data
+!**/logs
+
+
+# For the LSPC "data" folder, do not ignore its immediate contents either
+# (Include the second level folders after "data" too)
+!**/data/*
+!**/data/projects/*
+!**/data/shared/*
 
 
 # In the LSPC model folder, ignore log files
