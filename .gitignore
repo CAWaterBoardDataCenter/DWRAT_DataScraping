@@ -25,6 +25,13 @@
 !**/logs
 
 
+# For the LSPC "data" folder, do not ignore its immediate contents either
+# (Include the second level folders after "data" too)
+!**/data/*
+!**/data/projects/*
+!**/data/shared/*
+
+
 # In the LSPC model folder, ignore log files
 Models/LSPC/**/*.log
 
