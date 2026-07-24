@@ -1,21 +1,30 @@
-# Currently, the Russian River workflow does not have any QA/QC procedures for 
-# precipitation data
+# In the initial revision of the SDA workflow for the Russian River, 
+# we did not have any QA/QC procedures for precipitation data
 
-# We have only relied on the procedures applied by the original data sources 
+# We had only relied on the procedures applied by the original data sources 
 # (i.e., NOAA and RAWS--CIMIS includes flags but the data is raw)
 
-# This procedure attempts to develop upper bounds for extremely high values
+# As part of the "REV2" updates to the workflow, we made a few changes:
 
-# These bounds will be specific to each month
+#  (1) For data sources like CIMIS and CDEC, if data flags are provided,
+#      problematic data is removed (see "RRW_006_Process_PRMS_Weather_Data.R")
+#
+#  (2) Upper bounds for extremely high values were developed
+
+# This script contains the code that developed the thresholds used in the
+# REV2 model of the Russian River
+
+
+# These bounds are specific to each month and gage
 
 # This allows for the variability between dry and wet months to be factored in 
 # when determining what counts as an outlier
 
-# Therefore, each of the 15 precipitation gages will have 12 separate upper 
+# Therefore, each of the precipitation gages have 12 separate upper 
 # outlier bounds
 
 
-# The boundary will be calculated using the Interquartile Range (IQR)
+# The boundary is calculated using the Interquartile Range (IQR)
 # and this formula:
 
 # Upper Bound = Quartile_3 + 3.5 * IQR
@@ -24,8 +33,14 @@
 # precipitation events from time to time, so some apparent outliers may be
 # cases of legitimate variability 
 
+# Note: The quartile and IQR calculations rely on non-NA precipitation values 
+#       greater than 1 inch (otherwise, more than 75% of the dataset is 0)
 
-# The automated workflow for the Russian River will rely on the output of this
+# Note 2: If the gage-month combination has no precipitation data above 1 inch,
+#         its outlier bound is arbitrarily set to 3.5 inches
+
+
+# The automated workflow for the Russian River relies on the output of this
 # procedure, but this script will not be run regularly 
 
 # Its purpose is to document the process that determined these outlier bounds
@@ -34,11 +49,22 @@
 # Gage data was downloaded on May 21, 2026 for the period between 
 # January 1, 1990 and December 31, 2025
 
-# The intermediate QAQC meteorological CSV will be required for this script
-# ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
+# The intermediate QAQC meteorological CSV from this date is required 
+# to recreate the REV2 bounds output by this script
+# ("PRMS_Meteorological_QC_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
 # "Output" folder 
+
+# This script will generate the bounds and write them to the "Output" folder as
+# "RR_Workflow_PRMS_Gage_Outlier_Bounds.csv"
+
+
+# For future revisions of the model, this script can be adjusted to run for
+# other date ranges 
+
+# Outliers are calculated for any column that contains "PRECIP" followed by 
+# a number
 
 
 #### Setup ####
