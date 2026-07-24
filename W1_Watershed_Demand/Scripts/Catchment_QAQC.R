@@ -384,7 +384,7 @@ calcMismatch <- function (catchDF, wsBound, fieldName) {
   
   # To find this issue, first combine all catchments into a single polygon
   combinedDF <- catchDF |>
-    st_union() |>
+    summarize() |>
     st_make_valid()
   
   
