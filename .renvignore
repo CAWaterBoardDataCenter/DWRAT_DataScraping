@@ -3,7 +3,9 @@
 Additional_Scripts/Archive
 Models
 
-# Ignore "Output" folders
+# Ignore any "Input", "Intermediate", and "Output" folders
+**/Input
+**/Intermediate
 **/Output
 
 # Ignore the "data" folder for the LSPC workflow 

@@ -7,38 +7,39 @@
 # In the Russian River's case, precipitation is often overestimated by PRISM
 
 # This script seeks to develop a different approach:
-# Let's consider using data from other gages within the watershed
+# Let's consider using data from other gages in and around the watershed
 
 # If we can establish the correlation between precipitation data among different
 # gages in the watershed, we can use linear regression models with well-correlated 
 # gages to replace missing and extreme values in a gage's dataset
 
-# Or, we could take the average of values from well-correlated gages and use that
-
-# PRISM would be the fallback option if no well-correlated gages are available
-
-# Even in that situation, rather than directly substituting in PRISM values,
-# having a regression model that "corrects" the PRISM values for the gage 
-# may give better results
+# We could even consider PRISM again (instead of direct substitution,
+# we would use these models to "correct" the PRISM data)
 
 
-# For each of the 15 precipitation gages used by PRMS, we will develop linear 
-# regression models between each gage 
+# Thus, for each of the precipitation gages used by PRMS, this script develops 
+# linear regression models between each gage 
 
-# In addition, each gage will be modeled against its counterpart PRISM dataset
+# In addition, each gage is modeled against its counterpart PRISM dataset
+
+# Note: A pair of gages is modeled only if the number of non-empty overlapping 
+#       data points is greater than 365, and they have at least one
+#       value on the same date in every month
+#       (This excludes gages that are too new or only seasonally active)
 
 
-# The automated workflow for the Russian River will rely on the output of this
+# The automated workflow for the Russian River relies on the output of this
 # procedure, but this particular script will not be run regularly 
 
-# Its purpose is to document the process that developed these models
+# Its purpose is to document the process that developed the "REV2" version
+# of this workflow
 
 
 # Gage data was downloaded on May 21, 2026 for the period between 
 # January 1, 1990 and December 31, 2025
 
-# The intermediate QA/QC meteorological CSV will be required for this script
-# ("PRMS_Meteorological_QC_CIMIS_Intermediate_1990-01-01_2025-12-31.csv")
+# The intermediate QA/QC meteorological CSV is required for this script
+# ("PRMS_Meteorological_QC_Intermediate_1990-01-01_2025-12-31.csv")
 
 # Obtain this file from the appropriate SDA staff and add it to the 
 # "Output" folder 
@@ -65,6 +66,15 @@
 #  in this procedure)
 
 
+# NOTE 2
+
+# This script could be adapted for future revisions of the workflow by changing
+# the dates and filenames
+
+# Models are generated for any gage that contains "PRECIP" followed by a number
+# in its column name
+
+# The PRISM input CSV must also contain references for these candidate gages!
 
 #### Setup ####
 

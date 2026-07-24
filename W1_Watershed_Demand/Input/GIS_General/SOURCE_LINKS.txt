@@ -19,6 +19,7 @@ https://catalog.data.gov/dataset/united-states-stateplane-zones-nad83
 
 
 "NHD_H_California_State_WBDHU12"
+	Obtained on 2026-03-25
 https://www.usgs.gov/national-hydrography/access-national-hydrography-products
 https://prd-tnm.s3.amazonaws.com/index.html?prefix=StagedProducts/Hydrography/NHD/State/GPKG/
 
@@ -31,3 +32,10 @@ https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServ
 
 "Public_Land_Survey_System_(PLSS)%3A_Sections"
 https://data.ca.gov/dataset/public-land-survey-system-plss-sections
+
+
+
+"State_of_California_Boundary_with_Bay_Cuts.geojson"
+	Obtained on 2026-07-23
+https://gis.data.ca.gov/datasets/c309fd16ec1049f9babc70f7558187a6_1/explore
+

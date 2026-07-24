@@ -65,6 +65,7 @@ xlsxList <- xlsxList |>
   str_subset("/renv/", negate = TRUE) |>
   str_subset("/Models/", negate = TRUE) |>
   str_subset("/Output/", negate = TRUE) |>
+  str_subset("/candidate/", negate = TRUE) |>
   str_subset("/RUSSIAN_RIVER_DATABASE_2022\\.xlsx$", negate = TRUE)
 
 
