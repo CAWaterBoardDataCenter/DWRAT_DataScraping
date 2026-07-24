@@ -9,6 +9,7 @@ require(readxl)
 require(writexl)
 require(sf)
 require(polylabelr)
+require(units)
 
 
 
@@ -193,9 +194,58 @@ mainProcedure <- function () {
   
   
   # Assign HUC12 sub-basins to 'catchDF' as well
-  catchDF[["HUC12"]] <- huc12$huc12[st_intersects(st_poi(catchDF), huc12) %>% 
-                                      unlist()]
+  # Check for overlaps between HUC-12 sub-basins and a central point in each
+  # of the catchments
+  catchOverlap <- st_intersects(st_poi(catchDF), huc12)
   
+  
+  # Output an error if a catchment's central point overlaps with more than one
+  # HUC-12 sub-basin
+  if (lengths(catchOverlap) |> max() > 1) {
+    stop("One or more catchments overlap with multiple HUC-12 boundaries")
+  }
+  
+  
+  # Check if any intersection points fail to overlap with any sub-basin
+  if (lengths(catchOverlap) |> min() == 0) {
+    
+    paste0("One or more catchments do not intersect well with ",
+           "the watershed boundary and HUC-12 sub-basins!") |>
+      strwrap(width = 0.99 * getOption("width")) |>
+      paste0(collapse = "\n") |>
+      message()
+    
+    
+    # In that case, use `st_distance` to determine the nearest HUC-12 sub-basin
+    # for every catchment with this issue
+    nearestCatch <- st_distance(catchDF[lengths(catchOverlap) == 0, ], huc12) |>
+      drop_units() |>
+      t() |> data.frame() |>
+      summarize(across(everything(), ~ which.min(.)[1])) |>
+      unlist(use.names = FALSE)
+    
+    # `st_distance` returns a "units" matrix with one row for every problematic
+    # catchment and one column for every HUC-12 sub-basin
+    #
+    # The "units" object is converted into a simple matrix and then a data frame
+    # It is transposed so that each column corresponds to one catchment
+    #
+    # Then, using `summarize`, the HUC-12 sub-basin with the shortest distance 
+    # to each catchment is found
+    
+    
+    # Then, for each problematic catchment, assign its nearest HUC-12 sub-basin
+    for (i in 1:length(nearestCatch)) {
+      
+      catchOverlap[[which(lengths(catchOverlap) == 0)[i]]] <- nearestCatch[i]
+      
+    }
+    
+  }
+  
+  
+  # Assign the IDs of the overlapping HUC-12 sub-basins to each catchment
+  catchDF[["HUC12"]] <- huc12$huc12[unlist(catchOverlap)]
   
   
   catchDF[["HUC12_NAME"]] <- huc12$name[catchDF$HUC12 %>%
