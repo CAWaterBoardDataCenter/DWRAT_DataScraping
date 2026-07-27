@@ -2,7 +2,7 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-06-29  
+**Last Updated On:** 2026-07-27  
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
@@ -66,7 +66,7 @@ The remaining setup requirements depend on the chosen workflow. For more informa
 Please review the [Documentation](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/tree/main/W1_Watershed_Demand/Documentation) folder and [Demand_Master_Script.R](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W1_Watershed_Demand/Scripts/Demand_Master_Script.R).  
   
 ### W2_Russian_River  
-Formal documentation is still pending. Please review [ReadMe.txt](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W2_Russian_River) and [RRW_000_Master_Script.R](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W2_Russian_River/Scripts/RRW_000_Master_Script.R).  
+Formal documentation is still pending. Please review [ReadMe.txt](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W2_Russian_River) and [MSTR_v1_RRW.R](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W2_Russian_River/Scripts/MSTR_v1_RRW.R).  
   
 ### W3_LSPC_Watershed  
 Formal documentation is still pending.  

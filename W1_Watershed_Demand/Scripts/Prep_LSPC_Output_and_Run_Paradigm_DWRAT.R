@@ -7,7 +7,7 @@
 #### Setup ####
 
 
-remove(list = ls())
+base::remove(list = ls())
 
 
 
