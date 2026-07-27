@@ -5,7 +5,7 @@
 # The required weather files are specified in the "inp" file of the LSPC model files
 
 
-remove(list = ls())
+base::remove(list = ls())
 
 
 require(tidyverse)

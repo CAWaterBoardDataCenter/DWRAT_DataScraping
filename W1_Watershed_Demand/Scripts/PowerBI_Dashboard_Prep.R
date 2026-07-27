@@ -1091,4 +1091,4 @@ mainProcedure()
 
 
 # Cleanup
-remove(list = ls())
+base::remove(list = ls())
