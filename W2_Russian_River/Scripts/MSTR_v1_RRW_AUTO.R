@@ -109,4 +109,4 @@ base::remove(list = ls())
 
 
 # Finally, run the master script and begin the RR Workflow process
-source("W2_Russian_River/Scripts/RRW_000_Master_Script.R")
+source("W2_Russian_River/Scripts/MSTR_v1_RRW.R")
