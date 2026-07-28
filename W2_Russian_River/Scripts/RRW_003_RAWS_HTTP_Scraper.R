@@ -261,7 +261,7 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   
   
   # Check if any of the expected columns are missing in 'htmlTable'
-  if (anyFalse(c(expectedCols) %in% names(htmlTable))) {
+  if (!all(expectedCols %in% names(htmlTable))) {
     
     stop(paste0("Could Not Parse RAWS Output\n\n",
                 "The data returned by RAWS could not be interpreted correctly (",

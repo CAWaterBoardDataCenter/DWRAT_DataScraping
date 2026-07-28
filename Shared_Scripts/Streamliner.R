@@ -16,7 +16,7 @@
 
 #### Functions ####
 
-anyFalse <- function (logVec) {
+notAll <- function (logVec) {
   
   # Given a logical vector, return TRUE if any of these elements are FALSE
   # (This works with single element logical variables too)
@@ -571,7 +571,7 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   
   # In addition, every entry in 'newCols' should only have one element each
   # (One value for each new column)
-  if (anyFalse(lengths(newCols) == 1)) {
+  if (!all(lengths(newCols) == 1)) {
     
     cat("\n\nNumber of Elements per Entry in 'newCols':\n")
     print(lengths(newCols))

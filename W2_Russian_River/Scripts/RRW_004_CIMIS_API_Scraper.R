@@ -425,7 +425,7 @@ formatResponse <- function (res, startDate, endDate, stationVec, isSplit) {
     length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0 ||
     # [2] Every entry in "Records" should contain elements for "Date",  
     #     "Station", and the parameters listed in 'varNames'
-    anyFalse(c("Date", "Station", varNames) %in% 
+    !all(c("Date", "Station", varNames) %in% 
              names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]])) ||
     # [3] The parameters in 'varNames' should be lists too
     #     They should each have an element called "Value"
@@ -1027,7 +1027,7 @@ checkChromeDriver <- function (chromeVersion) {
   
   # Make sure 'driverVersions' arrived in the expected format
   if (length(driverVersions) != 2 || 
-      anyFalse(c("timestamp", "versions") %in% names(driverVersions)) ||
+      !all(c("timestamp", "versions") %in% names(driverVersions)) ||
       length(driverVersions[["versions"]][[1]][["downloads"]]) == 0) {
     
     paste0("Could Not Get Driver Information\n\n",

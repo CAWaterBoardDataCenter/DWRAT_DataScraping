@@ -230,7 +230,7 @@ generateFolders <- function (saveDirectory) {
   
   # Ensure that all folders were created successfully
   # If not, output an error
-  if (anyFalse(dir.exists(newDirectories))) {
+  if (!all(dir.exists(newDirectories))) {
     
     missingDirectories <- which(!dir.exists(newDirectories))
     

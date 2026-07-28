@@ -465,7 +465,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
   
   
   # Check if any required input files are missing
-  if (anyFalse(map_lgl(inputFiles, file.exists))) {
+  if (!all(map_lgl(inputFiles, file.exists))) {
     
     # Get the names of the missing files before sending a message
     missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]

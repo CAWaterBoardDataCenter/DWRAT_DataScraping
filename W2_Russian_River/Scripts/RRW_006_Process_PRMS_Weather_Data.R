@@ -120,7 +120,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Check if any required input files are missing
-  if (anyFalse(map_lgl(inputFiles, file.exists))) {
+  if (!all(map_lgl(inputFiles, file.exists))) {
     
     # Output the names of the missing files before sending a message
     missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
@@ -311,7 +311,7 @@ validateOutlierFile <- function (outlierDF, sourcePath, stationNames) {
   # After that, confirm that one row is present in 'outlierDF' 
   # for every PRMS precipitation column
   if (nrow(outlierDF) != length(stationNames) ||
-      anyFalse(stationNames %in% outlierDF[["GAGE"]])) {
+      !all(stationNames %in% outlierDF[["GAGE"]])) {
     
     paste0("Incompatible Number of Rows\n\n",
            "The file containing outlier bounds for each PRMS precipitation ",
@@ -331,7 +331,7 @@ validateOutlierFile <- function (outlierDF, sourcePath, stationNames) {
   # Next, confirm that every "OUTLIER_LIMIT" column is numeric
   # These values should be either NA or a positive number
   if (outlierDF[toupper(paste0(month.abb, "_OUTLIER_LIMIT_MM"))] |>
-      map_lgl(is.numeric) |> anyFalse() ||
+      map_lgl(is.numeric) |> notAll() ||
       any(!is.na(outlierDF[toupper(paste0(month.abb, "_OUTLIER_LIMIT_MM"))]) & 
           outlierDF[toupper(paste0(month.abb, "_OUTLIER_LIMIT_MM"))] < 0)) {
     
@@ -472,7 +472,7 @@ validateCorrFile <- function (corrDF, sourcePath, stationNames) {
   
   # Next, confirm that "SLOPE", "INTERCEPT", and "R_SQUARED" are all numeric values
   if (corrDF |> select(SLOPE, INTERCEPT, R_SQUARED) |> 
-      map_lgl(is.numeric) |> anyFalse()) {
+      map_lgl(is.numeric) |> notAll()) {
     
     cat("\n\n")
     cat("Non-Numeric Column(s):\n")
