@@ -27,6 +27,7 @@ require(leafem)
 require(mapview)
 require(webshot)
 require(polylabelr)
+require(lwgeom)
 
 
 #### FUNCTIONS ####
@@ -47,7 +48,19 @@ mainProcedure <- function() {
                     GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_SUBBASIN_POLYGONS",
                     GIS_FILE_PATH = "SUBBASIN_POLYGONS_DATABASE_PATH",
                     GIS_FILE_LAYER_NAME ="SUBBASIN_POLYGONS_LAYER_NAME") |>
-    st_transform("epsg:3488")
+    st_make_valid() |>
+    st_transform("epsg:3488")# |>
+    #st_cast("MULTIPOLYGON") |>
+    #st_buffer(0)
+  
+  
+  if (!all(catchDF |> st_is_valid())) {
+    
+    catchDF[!st_is_valid(catchDF), ] <- catchDF[!st_is_valid(catchDF), ] |>
+      st_buffer(0) |>
+      st_make_valid()
+    
+  }
   
   
   # Get the name of the column that contains the catchment IDs too
@@ -94,7 +107,6 @@ mainProcedure <- function() {
   }
   
   
-  
   cat("\n[1/2]\tChecking for issues...\n")
   
   
@@ -113,7 +125,7 @@ mainProcedure <- function() {
   
   # First, look for portions of catchments that extend past the watershed boundaries
   catchDF <- catchDF |>
-    checkExceedence(wsBound, fieldName)
+    checkExceedance(wsBound, fieldName)
   
   
   # Then, check for gaps in the catchment polygons
@@ -285,7 +297,7 @@ checkArea <- function (catchDF) {
 
 
 
-checkExceedence <- function (catchDF, wsBound, fieldName) {
+checkExceedance <- function (catchDF, wsBound, fieldName) {
   
   # Check for portions of the catchments that extend past the watershed boundaries
   
@@ -300,14 +312,14 @@ checkExceedence <- function (catchDF, wsBound, fieldName) {
   # Catchments that appear in 'beyondBound' have portions that exceed the 
   # watershed boundaries
   catchDF <- catchDF |>
-    mutate(BOUNDARY_EXCEEDENCE = get(fieldName) %in% beyondBound[[fieldName]])
+    mutate(BOUNDARY_EXCEEDANCE = get(fieldName) %in% beyondBound[[fieldName]])
   
   
   # Notify the user if issues were found
-  if (TRUE %in% catchDF$BOUNDARY_EXCEEDENCE) {
+  if (TRUE %in% catchDF$BOUNDARY_EXCEEDANCE) {
     
-    paste0(sum(catchDF$BOUNDARY_EXCEEDENCE), " catchment",
-           if_else(sum(catchDF$BOUNDARY_EXCEEDENCE) > 1,
+    paste0(sum(catchDF$BOUNDARY_EXCEEDANCE), " catchment",
+           if_else(sum(catchDF$BOUNDARY_EXCEEDANCE) > 1,
                    "s extend ", 
                    " extends "),
            "past the watershed boundaries!") |>
@@ -372,7 +384,7 @@ calcMismatch <- function (catchDF, wsBound, fieldName) {
   
   # To find this issue, first combine all catchments into a single polygon
   combinedDF <- catchDF |>
-    st_union() |>
+    summarize() |>
     st_make_valid()
   
   
@@ -388,26 +400,74 @@ calcMismatch <- function (catchDF, wsBound, fieldName) {
   
   # To assign a catchment to each polygon, calculate the distances
   # Assign the nearest catchment's field value to the polygons in 'catchMismatch'
-  distDF <- catchMismatch |>
-    st_distance(catchDF)
   
-  # Each row in 'distDF' corresponds to a polygon in 'catchMismatch'
-  # Each column is the average distance from that polygon to a catchment
   
-  # Convert 'distDF' back into a matrix
-  # Then, transpose it, so that every column corresponds to a polygon, 
-  # and every row corresponds to a catchment
-  
-  # Make this transposed matrix into a data frame with columns corresponding
-  # to each polygon
-  
-  # Then, use `summarize` across every column and determine which row contains 
-  # the shortest distance for each polygon column
-  nearestCatch <- distDF |> drop_units() |>
-    t() |>
-    data.frame() |>
-    set_names(paste0("POLYGON_", 1:nrow(catchMismatch))) |>
-    summarize(across(everything(), ~ which.min(.)[1]))
+  # For large groups of catchments and polygons, the procedure must be modified
+  # slightly to improve performance
+  if (nrow(catchMismatch) * nrow(catchDF) > 10^8) {
+    
+    message("\nUsing an alternate procedure for a large number of catchments and polygons!\n")
+    
+    
+    nearestCatch <- vector(mode = "list", length = nrow(catchMismatch))
+    
+    
+    # Iterate through every unmatched polygon
+    for (i in 1:nrow(catchMismatch)) {
+      
+      # Use the centroid of the polygon to find the 100 nearest catchments
+      centroidDist <- st_distance(st_centroid(catchMismatch[i, ]),
+                                  catchDF)
+      
+      
+      # Get the distances associated with these nearest catchments
+      # Take the smallest 100 values
+      sortedDist <- sort(centroidDist) |>
+        head(100)
+      
+      
+      # Get the indices in 'catchDF' that correspond to these nearest catchments
+      subsetIDs <- which(centroidDist %in% sortedDist)
+      
+      
+      # Find which of the catchments are closest to the polygon
+      nearestSubsetCatch <- st_distance(catchMismatch[i, ], catchDF[subsetIDs, ]) |>
+        which.min()
+      
+      
+      # Save the 'fieldName' value of this catchment in 'catchDF' to 'nearestCatch'
+      nearestCatch[[i]] <- catchDF[[fieldName]][subsetIDs[nearestSubsetCatch]]
+      
+    }
+    
+    
+  # If the number of catchments and polygons is not as sizable, 
+  # a more streamlined procedure can be used
+  } else {
+    
+    # Calculate the distances between every catchment and unassigned polygon
+    distDF <- catchMismatch |>
+      st_distance(catchDF)
+    
+    # Each row in 'distDF' corresponds to a polygon in 'catchMismatch'
+    # Each column is the average distance from that polygon to a catchment
+    
+    # Convert 'distDF' back into a matrix
+    # Then, transpose it, so that every column corresponds to a polygon, 
+    # and every row corresponds to a catchment
+    
+    # Make this transposed matrix into a data frame with columns corresponding
+    # to each polygon
+    
+    # Then, use `summarize` across every column and determine which row contains 
+    # the shortest distance for each polygon column
+    nearestCatch <- distDF |> drop_units() |>
+      t() |>
+      data.frame() |>
+      set_names(paste0("POLYGON_", 1:nrow(catchMismatch))) |>
+      summarize(across(everything(), ~ which.min(.)[1]))
+    
+  }
   
   
   # The indices identified by this procedure will correspond to rows in 'catchDF'
@@ -440,7 +500,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   
   # Get a variable with all layers that will appear in the map
   layerDF <- tibble(NAME = c("Catchment_QAQC", "Disconnected_Polygons",
-                             "Boundary_Exceedence", "Catchment_Gaps", 
+                             "Boundary_Exceedance", "Catchment_Gaps", 
                              "Small_Catchments"),
                     INCLUDE = c(TRUE, FALSE, FALSE, FALSE, FALSE))
   
@@ -454,7 +514,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   }
   
   
-  if (TRUE %in% catchDF$BOUNDARY_EXCEEDENCE) {
+  if (TRUE %in% catchDF$BOUNDARY_EXCEEDANCE) {
     
     layerDF$INCLUDE[3] <- TRUE
     
@@ -504,7 +564,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
       addLayer(catchDF |> 
                  select(all_of(fieldName), 
                         NUM_POLYGONS, DISCONNECTED_POLYGONS,
-                        BOUNDARY_EXCEEDENCE, CATCHMENT_GAPS, 
+                        BOUNDARY_EXCEEDANCE, CATCHMENT_GAPS, 
                         AREA, SMALL_CATCHMENT) |>
                  mutate(AREA = round(AREA)) |>
                  rename(!! paste0("AREA (", 
@@ -535,7 +595,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
     addLayer(catchDF |> 
                select(all_of(fieldName), 
                       NUM_POLYGONS, DISCONNECTED_POLYGONS,
-                      BOUNDARY_EXCEEDENCE, CATCHMENT_GAPS, 
+                      BOUNDARY_EXCEEDANCE, CATCHMENT_GAPS, 
                       AREA, SMALL_CATCHMENT) |>
                mutate(AREA = round(AREA)) |>
                rename(!! paste0("AREA (", 
@@ -636,7 +696,7 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
     # the watershed boundary
     filteredCatch <- catchDF |>
       st_difference(wsBound |> select()) |>
-      select(all_of(fieldName), BOUNDARY_EXCEEDENCE)
+      select(all_of(fieldName), BOUNDARY_EXCEEDANCE)
     
     # Note: `st_difference` may leave some objects as "MULTIPOLYGON" and some
     #       as just "POLYGON"

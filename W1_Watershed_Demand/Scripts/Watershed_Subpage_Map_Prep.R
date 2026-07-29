@@ -1,6 +1,6 @@
 
 
-remove(list = ls())
+base::remove(list = ls())
 
 
 require(tidyverse)
