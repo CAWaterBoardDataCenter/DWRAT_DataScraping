@@ -318,7 +318,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   #  (1) 'startDate' and 'endDate' must be temporarily modified
   #      in "CTR_001_Set_Start_and_End_Dates.R"
   
-  #  (2) The environment clearing function calls (using `remove`) must be
+  #  (2) The environment-clearing function calls (using `remove`) must be
   #      temporarily disabled
   
   
