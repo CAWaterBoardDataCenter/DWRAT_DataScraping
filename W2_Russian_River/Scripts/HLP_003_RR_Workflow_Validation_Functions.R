@@ -276,7 +276,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Start by confirming that the field names appear in 'inputDF'
-  if (anyFalse(inputFieldNames %in% names(inputDF))) {
+  if (!all(inputFieldNames %in% names(inputDF))) {
     
     # Identify which fields are missing
     missingFields <- which(!(inputFieldNames %in% names(inputDF)))
@@ -369,7 +369,7 @@ validateStationInputs <- function (inputDF, inputPath,
     extractRevisionInfo()
   
   
-  if (anyFalse(tminNames[[1]] %in% c(NA, paste0("TMIN", 1:numTempFields)))) {
+  if (!all(tminNames[[1]] %in% c(NA, paste0("TMIN", 1:numTempFields)))) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value ",
@@ -396,7 +396,7 @@ validateStationInputs <- function (inputDF, inputPath,
     extractRevisionInfo()
   
   
-  if (anyFalse(tmaxNames[[1]] %in% c(NA, paste0("TMAX", 1:numTempFields)))) {
+  if (!all(tmaxNames[[1]] %in% c(NA, paste0("TMAX", 1:numTempFields)))) {
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value for ",
@@ -636,7 +636,7 @@ validateWebData <- function (climateDF, dataSource, inputPath, stationVec,
   
   
   # Confirm that all of these column names appear in 'climateDF'
-  if (anyFalse(colVec %in% names(climateDF))) {
+  if (!all(colVec %in% names(climateDF))) {
     
     # Identify which columns are missing
     missingVals <- which(!(colVec %in% names(climateDF)))
@@ -669,7 +669,7 @@ validateWebData <- function (climateDF, dataSource, inputPath, stationVec,
   
   # After that, confirm that every station that appears in 'climateDF' 
   # has a corresponding entry in the input list of stations ('stationVec')
-  if (anyFalse(unique(climateDF$STATION_ID) %in% stationVec)) {
+  if (!all(unique(climateDF$STATION_ID) %in% stationVec)) {
     
     # Identify the unexpected stations
     extraStations <- which(!(unique(climateDF$STATION_ID) %in% stationVec))
@@ -785,7 +785,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
   # Check that the developer coded this vector correctly
   # (All vectors should have the same length and the same replacement names)
   if (length(nameVec) != 5 ||
-      anyFalse(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX") %in% 
+      !all(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX") %in% 
                names(nameVec))) {
     
     paste0("Issue in `validateWebData_expectedColumnNames()`\n\n", 
@@ -872,7 +872,7 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
   datetimeCols <- c("YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND")
   
   
-  if (anyFalse(datetimeCols %in% names(datFile))) {
+  if (!all(datetimeCols %in% names(datFile))) {
     
     # Identify the missing columns
     missingCols <- which(!(datetimeCols %in% names(datFile)))
@@ -895,7 +895,7 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
   
   
   # After that, perform a similar check for the model-specific columns
-  if (anyFalse(modelCols %in% names(datFile))) {
+  if (!all(modelCols %in% names(datFile))) {
     
     # Identify the missing columns
     missingCols <- which(!(modelCols %in% names(datFile)))
@@ -918,7 +918,7 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
   
   
   # Make sure all fields are numeric next ("DATE" is an allowable exception)
-  if (anyFalse(map_lgl(datFile[names(datFile) != "DATE"], is.numeric))) {
+  if (!all(map_lgl(datFile[names(datFile) != "DATE"], is.numeric))) {
     
     # Identify the non-numeric columns
     nonNumCols <- which(!map_lgl(datFile, is.numeric))
@@ -968,7 +968,7 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
   
   
   # Check for missing dates
-  if (anyFalse(expectedDates %in% datFile$DATE)) {
+  if (!all(expectedDates %in% datFile$DATE)) {
     
     # Identify the missing dates
     missingDates <- which(!(expectedDates %in% datFile$DATE))
@@ -1140,7 +1140,7 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   expectedCols <- c("Date", "ppt (mm)")
   
   
-  if (anyFalse(expectedCols %in% names(precipDF))) {
+  if (!all(expectedCols %in% names(precipDF))) {
     
     # Identify the missing column(s)
     missingFields <- which(!(expectedCols %in% names(precipDF)))
@@ -1279,7 +1279,7 @@ checkForPreviousOutput <- function (filePath) {
   # 'filePath' can be a single string or a vector of paths
   
   
-  if (anyFalse(file.exists(filePath))) {
+  if (!all(file.exists(filePath))) {
     
     # Identify which files in 'filePath' are missing
     missingFiles <- which(!file.exists(filePath))
@@ -1365,7 +1365,7 @@ validateSourceModelDirectory <- function (sourceDir, sourceField, model,
     dir.exists()
   
   
-  if (anyFalse(folderExists)) {
+  if (!all(folderExists)) {
     
     paste0("Missing Components in the ", model, " Model Folder\n\n",
            "In the RR Supply Control File, the location of the ", model, 
@@ -1388,7 +1388,7 @@ validateSourceModelDirectory <- function (sourceDir, sourceField, model,
     file.exists()
   
   
-  if (anyFalse(fileExists)) {
+  if (!all(fileExists)) {
     
     paste0("Missing Components in the ", model, " Model Folder\n\n",
            "In the RR Supply Control File, the location of the ", model, 

@@ -64,7 +64,7 @@ mainProcedure <- function () {
   
   
   # Check if any required input files are missing
-  if (anyFalse(map_lgl(inputFiles, file.exists))) {
+  if (!all(map_lgl(inputFiles, file.exists))) {
     
     # Get the names of the missing files before sending a message
     missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
@@ -93,6 +93,12 @@ mainProcedure <- function () {
   # Read in the files next
   prismInput <- inputFiles$PRISM_INPUT[1] |> getFile() |> unique()
   prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
+  
+  
+  # Next, import functions from "RRW_012_Process_SRP_Weather_Data.R"
+  c("validateInputs", "reformatClimateData") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_012_Process_SRP_Weather_Data.R",
+                          .))
   
   
   # Validate the variables next
@@ -134,97 +140,6 @@ mainProcedure <- function () {
   return(invisible(NULL))
   
 }
-
-
-
-validateInputs <- function (prismInput, prismDF, inputFiles) {
-  
-  # Verify that all input tibbles are formatted as expected
-  
-  
-  # The number of expected SRP precipitation columns is hard-coded as 2
-  # Similarly, the number of expected minimum/maximum temperature columns is 2
-  numPrecip <- 2
-  numTemp <- 2
-  
-  
-  # First, check the input PRISM tibble
-  validateStationInputs(prismInput, inputFiles$PRISM_INPUT[1], "SRP", 
-                        numPrecip, numTemp)
-  
-  
-  # Validate the weather output tibble next
-  
-  # Using a general function for all weather sources, check 'prismDF'
-  validateWebData(prismDF, "PRISM", inputFiles$PRISM_OUTPUT[1], 
-                  prismInput$STATION_ID, siPRISM = FALSE)
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-reformatClimateData <- function (climateDF, climateInput, dataSource) {
-  
-  # The 'climateDF' data frames need to be widened 
-  # (so that each station's data is in its own separate column)
-  
-  # The "SRP" column names in 'climateInput' will then be used to switch 
-  # from the station IDs to the SRP field names
-  fieldNameVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = FALSE)
-  
-  
-  # Start by renaming the columns in 'climateDF' to be consistent 
-  # Then, pivot the dataset into a wider format (where each station has 
-  # three of its own columns--one for each SRP field)
-  widerDF <- climateDF |>
-    select(all_of(fieldNameVec)) |>
-    pivot_wider(names_from = STATION_ID,
-                values_from = c(PRECIP, TMIN, TMAX),
-                names_sep = "_")
-  
-  
-  # After that, prepare the SRP-equivalent names using 'climateInput'
-  # Appending the station IDs to "PRECIP"/"TMAX"/"TMIN" gives the 
-  # column names that appear in 'widerDF'
-  # The values in "SRP_PRECIP_NAME", "SRP_TMAX_NAME", and "SRP_TMIN_NAME" 
-  # are the intended replacements for these column names
-  equivalentNames <- climateInput |>
-    mutate(NAME_1 = paste0("PRECIP_", STATION_ID),
-           NAME_2 = paste0("TMAX_", STATION_ID),
-           NAME_3 = paste0("TMIN_", STATION_ID)) |>
-    select(NAME_1, NAME_2, NAME_3, 
-           SRP_PRECIP_NAME, SRP_TMAX_NAME, SRP_TMIN_NAME)
-  
-  
-  # Create a vector from 'equivalentNames' that can be used with rename()
-  renameVec <- c(equivalentNames$NAME_1, equivalentNames$NAME_2,
-                 equivalentNames$NAME_3) |>
-    set_names(c(equivalentNames$SRP_PRECIP_NAME, equivalentNames$SRP_TMAX_NAME, 
-                equivalentNames$SRP_TMIN_NAME))
-  
-  
-  # Not every station will be used for precipitation and max/min temperature
-  # In those cases, the names will be "NA"
-  # Remove them from 'renameVec'
-  renameVec <- renameVec[!is.na(names(renameVec)) & renameVec != "NA"]
-  
-  
-  # After that, apply 'renameVec' to 'widerDF'
-  # Then, keep DATE and the renamed variables only
-  processedDF <- widerDF |>
-    rename(any_of(renameVec)) |>
-    select(DATE, any_of(names(renameVec)))
-  
-  
-  # Return 'processedDF'
-  return(processedDF)
-  
-}
-
 
 
 #### Script Execution ####

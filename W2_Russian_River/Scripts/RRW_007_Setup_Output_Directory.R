@@ -160,11 +160,8 @@ validateInput <- function (saveDirectory, sourceField) {
   
   # Start by checking if the directory is a SharePoint fragment
   # If it exists on SharePoint, convert 'saveDirectory' into a SharePoint path
-  if (dir.exists(makeSharePointPath(saveDirectory))) {
-    
-    saveDirectory <- makeSharePointPath(saveDirectory)
-    
-  }
+  saveDirectory <- saveDirectory |>
+    sharepointPathCheck(isFolder = TRUE)
   
   
   # If the directory cannot be found, notify the user
@@ -195,7 +192,8 @@ validateInput <- function (saveDirectory, sourceField) {
 
 
 
-generateFolders <- function (saveDirectory) {
+generateFolders <- function (saveDirectory,
+                             models = c("PRMS", "SRP")) {
   
   # In 'saveDirectory', a new folder will be created for the imminent 
   # model runs of PRMS, SRP, and DWRAT
@@ -212,10 +210,10 @@ generateFolders <- function (saveDirectory) {
   
   # In addition, create sub-folders for "PRMS", "SRP", and "DWRAT"
   # In each of these folders, create "Input" and "Output" folders
-  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/PRMS/Input"),
-                      paste0(saveDirectory, "/", mainName, "/PRMS/Output"),
-                      paste0(saveDirectory, "/", mainName, "/SRP/Input"),
-                      paste0(saveDirectory, "/", mainName, "/SRP/Output"),
+  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/", models[1], "/Input"),
+                      paste0(saveDirectory, "/", mainName, "/", models[1], "/Output"),
+                      paste0(saveDirectory, "/", mainName, "/", models[2], "/Input"),
+                      paste0(saveDirectory, "/", mainName, "/", models[2], "/Output"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
                       paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
@@ -230,7 +228,7 @@ generateFolders <- function (saveDirectory) {
   
   # Ensure that all folders were created successfully
   # If not, output an error
-  if (anyFalse(dir.exists(newDirectories))) {
+  if (!all(dir.exists(newDirectories))) {
     
     missingDirectories <- which(!dir.exists(newDirectories))
     
@@ -337,7 +335,7 @@ addFiles <- function (outputDirectory, meteorPath, preQC_Meteor, intermediateMet
   
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
-                   WORKFLOW_VERSION = "RRW",
+                   WORKFLOW_VERSION = "RRW_v1",
                    MODELER_NAME = Sys.info()[["user"]],
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,

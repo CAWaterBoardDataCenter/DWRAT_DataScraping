@@ -583,7 +583,7 @@ validateUSGS <- function (usgsDF) {
   
   
   # Check for the exact column names too
-  if (anyFalse(requiredCols$NAME %in% names(usgsDF))) {
+  if (!all(requiredCols$NAME %in% names(usgsDF))) {
     
     missingColumns <- which(!(requiredCols$NAME %in% names(usgsDF)))
     
@@ -1166,7 +1166,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   
   
   # Make sure 'yCol' matches names in 'streamDF'
-  if (anyFalse(yCol %in% names(streamDF))) {
+  if (!all(yCol %in% names(streamDF))) {
     
     cat("\n\n")
     cat("Missing Column(s):\n")
@@ -1181,7 +1181,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
       stop()
     
   # The streamflow columns in 'yCol' must be numeric or integer variables
-  } else if (anyFalse(streamDF[yCol] |> 
+  } else if (!all(streamDF[yCol] |> 
                       map_lgl(~ class(.) %in% c("numeric", "integer")))) {
     
     cat("\n\n")

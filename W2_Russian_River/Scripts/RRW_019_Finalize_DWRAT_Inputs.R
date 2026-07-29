@@ -168,7 +168,7 @@ mainProcedure <- function () {
   # Perform one final extra check for 'mdtDF' using 'basinDF' next
   # Every value in the "BASIN" column of 'mdtDF' should appear in 
   # the "BASIN" column of 'basinDF'
-  if (anyFalse(mdtDF$BASIN %in% basinDF$BASIN)) {
+  if (!all(mdtDF$BASIN %in% basinDF$BASIN)) {
     
     paste0("Master Demand Table - Basin Column Issue\n\n", 
            "All values in the \"BASIN\" column of the Master Demand Table ",
@@ -404,7 +404,7 @@ validateMDT <- function (mdtDF, mdtPath) {
   
   # Next, confirm that each diversion column is numeric
   if (mdtDF |> select(contains("_MEAN_DIV")) |>
-      map_lgl(is.numeric) |> anyFalse()) {
+      map_lgl(is.numeric) |> notAll()) {
     
     # Get the names of the diversion columns that are not numeric
     nonNumericDiv <- mdtDF |>
@@ -461,7 +461,7 @@ validateMDT <- function (mdtDF, mdtPath) {
   
   # Check the "RIPARIAN" column next
   # It should contain only "Y" or "N"
-  if (anyFalse(mdtDF$RIPARIAN %in% c("Y", "N"))) {
+  if (!all(mdtDF$RIPARIAN %in% c("Y", "N"))) {
     
     paste0("Master Demand Table - Riparian Column Issue\n\n", 
            "The \"RIPARIAN\" column should contain either \"Y\" or \"N\" ",
@@ -562,7 +562,7 @@ validateET <- function (etDF, etPath) {
   
   
   # Next, confirm that each month's column is numeric
-  if (etDF |> select(all_of(month.abb)) |> map_lgl(is.numeric) |> anyFalse()) {
+  if (etDF |> select(all_of(month.abb)) |> map_lgl(is.numeric) |> notAll()) {
     
     # Get the names of the month columns that are not numeric
     nonNumericDiv <- etDF |>
@@ -589,7 +589,7 @@ validateET <- function (etDF, etPath) {
   
   # Check the "Watershed" column next
   # It should contain only "URR" or "LRR"
-  if (nrow(etDF) != 2 || anyFalse(etDF$Watershed %in% c("URR", "LRR"))) {
+  if (nrow(etDF) != 2 || !all(etDF$Watershed %in% c("URR", "LRR"))) {
     
     paste0("Evapotranspiration Table - Watershed Column Issue\n\n", 
            "The \"Watershed\" column should contain either \"URR\" or \"LRR\" ",
@@ -699,7 +699,7 @@ validateBasins <- function (basinDF, basinPath, numBasins = 28) {
     unique()
   
   
-  if (anyFalse(basinNums %in% 1:numBasins)) {
+  if (!all(basinNums %in% 1:numBasins)) {
     
     paste0("Basin Connectivity Table - Basin Columns Issue\n\n", 
            "All values in the \"BASIN\" and \"FLOWS_TO\" columns ",
@@ -714,7 +714,7 @@ validateBasins <- function (basinDF, basinPath, numBasins = 28) {
   
   
   # Every basin in "FLOWS_TO" should also appear in "BASIN"
-  if (anyFalse(basinDF$FLOWS_TO %in% basinDF$BASIN)) {
+  if (!all(basinDF$FLOWS_TO %in% basinDF$BASIN)) {
     
     paste0("Basin Connectivity Table - Basin Columns Issue\n\n", 
            "All values in the \"FLOWS_TO\" column should also appear ",
@@ -731,7 +731,7 @@ validateBasins <- function (basinDF, basinPath, numBasins = 28) {
   # They should contain only "Y" and "N" as values
   
   # Start with "MAINSTEM"
-  if (anyFalse(basinDF$MAINSTEM %in% c("Y", "N"))) {
+  if (!all(basinDF$MAINSTEM %in% c("Y", "N"))) {
     
     paste0("Basin Connectivity Table - Mainstem Column Issue\n\n", 
            "The \"MAINSTEM\" column should only contain \"Y\" or \"N\" ",
@@ -751,7 +751,7 @@ validateBasins <- function (basinDF, basinPath, numBasins = 28) {
   
   
   # Check "UPPER_RUSSIAN" next
-  if (anyFalse(basinDF$UPPER_RUSSIAN %in% c("Y", "N"))) {
+  if (!all(basinDF$UPPER_RUSSIAN %in% c("Y", "N"))) {
     
     paste0("Basin Connectivity Table - Mainstem Column Issue\n\n", 
            "The \"UPPER_RUSSIAN\" column should only contain \"Y\" or \"N\" ",
@@ -1213,7 +1213,7 @@ updateScripts <- function (dirPath, rawFlowsPath, inputDF, newPathDF) {
     mutate(across(everything(), ~ normalizePath(., mustWork = FALSE)))
   
   
-  if (scriptPaths |> unlist(use.names = FALSE) |> file.exists() |> anyFalse()) {
+  if (scriptPaths |> unlist(use.names = FALSE) |> file.exists() |> notAll()) {
     
     paste0("Paradigm DWRAT Scripts - Missing Scripts Issue\n\n", 
            "The SDA DWRAT_DataScraping repository should contain a ",

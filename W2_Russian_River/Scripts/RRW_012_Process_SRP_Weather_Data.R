@@ -64,7 +64,7 @@ mainProcedure <- function () {
   
   
   # Check if any required input files are missing
-  if (anyFalse(map_lgl(inputFiles, file.exists))) {
+  if (!all(map_lgl(inputFiles, file.exists))) {
     
     # Get the names of the missing files before sending a message
     missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
@@ -154,15 +154,13 @@ mainProcedure <- function () {
 
 
 
-validateInputs <- function (prismInput, prismDF, inputFiles) {
+validateInputs <- function (prismInput, prismDF, inputFiles,
+                            numPrecip = 2, numTemp = 2) {
   
   # Verify that all input tibbles are formatted as expected
   
-  
   # The number of expected SRP precipitation columns is hard-coded as 2
   # Similarly, the number of expected minimum/maximum temperature columns is 2
-  numPrecip <- 2
-  numTemp <- 2
   
   
   # First, check the input PRISM tibble

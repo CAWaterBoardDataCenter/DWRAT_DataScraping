@@ -101,7 +101,7 @@ formatResponse_CDEC <- function (res, sensorNum) {
   expectedCols <- c("STATION_ID", "DATE TIME", "VALUE", "UNITS", "DATA_FLAG")
   
   
-  if (anyFalse(expectedCols %in% names(cdecDF))) {
+  if (!all(expectedCols %in% names(cdecDF))) {
     
     paste0("Could Not Parse CDEC Data\n\n",
            "The script failed to locate key columns in the table returned by ",

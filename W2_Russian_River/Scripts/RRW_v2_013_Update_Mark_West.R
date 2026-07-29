@@ -237,7 +237,7 @@ validateMark <- function (markDF, markPath) {
   
   
   # Check if any columns are missing
-  if (anyFalse(expectedCols %in% names(markDF))) {
+  if (!all(expectedCols %in% names(markDF))) {
     
     paste0("DAT File - Column Issue\n\n",
            "The Mark West DAT file for RRIHM does not have all ", 
@@ -283,7 +283,7 @@ validateMark <- function (markDF, markPath) {
   
   # The "Time" column should contain integers that increment from 0 onwards
   # The final number should be one less than the total number of rows in 'markDF'
-  if (anyFalse(0:(nrow(markDF) - 1) == markDF[["Time"]]) ||
+  if (!all(0:(nrow(markDF) - 1) == markDF[["Time"]]) ||
       !is.numeric(markDF[["Time"]])) {
     
     paste0("DAT File - Time Increment Issue\n\n",
