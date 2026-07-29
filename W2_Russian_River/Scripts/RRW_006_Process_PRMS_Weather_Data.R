@@ -253,16 +253,14 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
 
 
 validateInputs <- function (prismInput, noaaInput, rawsInput, cimisInput, cdecInput,
-                            prismDF, noaaDF, rawsDF, cimisDF, cdecDF, inputFiles) {
+                            prismDF, noaaDF, rawsDF, cimisDF, cdecDF, inputFiles,
+                            numPrecip = 45, numTemp = 8) {
   
   # Verify that all ten tibbles are formatted as expected
   
-  
   # The number of expected PRMS precipitation columns is hard-coded as 45
   # Similarly, the number of expected minimum/maximum temperature columns is 8
-  numPrecip <- 45
-  numTemp <- 8
-  
+
   
   # First, check the five "INPUT" tibbles
   validateStationInputs(prismInput, inputFiles$PRISM_INPUT[1], "PRMS", numPrecip, numTemp)

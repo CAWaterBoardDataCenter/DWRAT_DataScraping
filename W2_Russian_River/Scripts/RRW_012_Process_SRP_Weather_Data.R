@@ -154,15 +154,13 @@ mainProcedure <- function () {
 
 
 
-validateInputs <- function (prismInput, prismDF, inputFiles) {
+validateInputs <- function (prismInput, prismDF, inputFiles,
+                            numPrecip = 2, numTemp = 2) {
   
   # Verify that all input tibbles are formatted as expected
   
-  
   # The number of expected SRP precipitation columns is hard-coded as 2
   # Similarly, the number of expected minimum/maximum temperature columns is 2
-  numPrecip <- 2
-  numTemp <- 2
   
   
   # First, check the input PRISM tibble
