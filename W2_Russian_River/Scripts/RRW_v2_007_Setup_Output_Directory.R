@@ -127,6 +127,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
                    WORKFLOW_VERSION = "RRW_v2",
+                   R_VERSION = sessionInfo()[["R.version"]][["version.string"]],
                    MODELER_NAME = Sys.info()[["user"]],
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
