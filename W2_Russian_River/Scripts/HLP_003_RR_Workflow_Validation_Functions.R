@@ -1932,7 +1932,7 @@ validateModelCopy_SRP_2024 <- function () {
   
   # Also confirm that the control file for SRP exists
   controlPath <- paste0(srpPath, 
-                        "/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control") |> 
+                        "/SRPHM_spinup.control") |> 
     normalizePath(mustWork = FALSE)
   
   
@@ -1951,7 +1951,7 @@ validateModelCopy_SRP_2024 <- function () {
   
   # A batch file should be present in the model files too
   # Check for that as well
-  batPath <- paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/run_SRPHM_spinup.bat") |>
+  batPath <- paste0(srpPath, "/run_SRPHM_spinup.bat") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -1969,7 +1969,7 @@ validateModelCopy_SRP_2024 <- function () {
   
   
   # Finally, check for the main executable file
-  exePath <- paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe") |>
+  exePath <- paste0(srpPath, "/bin/gsflow.exe") |>
     normalizePath(mustWork = FALSE)
   
   
@@ -2072,14 +2072,13 @@ getModelOutputs_SRP_2024 <- function (srpPath) {
   
   # Append the model path to these filenames
   outFiles <- paste0(srpPath, 
-                     "/model1/SRPHM_post_spinup_WY2021/output/", 
+                     "/output/", 
                      outFiles)
   
   
   # "gsflow.log" is also an important file, but it is not stored in "output"
   outFiles <- c(outFiles,
-                paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/",
-                       "gsflow.log"))
+                paste0(srpPath, "/gsflow.log"))
   
   
   # Return 'outFiles'

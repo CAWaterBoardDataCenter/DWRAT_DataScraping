@@ -42,13 +42,12 @@ mainProcedure <- function () {
     sourceDir, 
     "SRPHM_SOURCE_LOCATION",
     "SRP", 
-    c("external_files", "model1", "model1/SRPHM_post_spinup_WY2021",
-      "model1/SRPHM_post_spinup_WY2021/bin", 
-      "model1/SRPHM_post_spinup_WY2021/output"),
-    c("model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe",
-      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
-      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
-      "external_files/restartdata_2020.out"))
+    c("external_files", "bin", "output"),
+    c("bin/gsflow.exe",
+      "SRPHM_spinup.control",
+      "SRPHM_spinup.nam",
+      "external_files/prms_ic_WY1975_toWY2021.out",
+      "external_files/restartdata_WY1975_to_WY2021.out"))
   
   
   cat("[1/1]\tCopying the SRP folder to \"W2_Russian_River/Output/SRPHM\"...\n")
