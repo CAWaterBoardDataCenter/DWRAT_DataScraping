@@ -63,7 +63,11 @@ mainProcedure <- function () {
   cat("[3/3]\tDeleting the model files...\n")
   
   
-  deleteFiles(srpPath)
+  # Import the model deletion function from the PRMS script
+  functionStealer("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R", "deleteFiles")
+  
+  
+  deleteFiles(srpPath, "SRP")
   
   
   cat("\tDone!\n\n")
@@ -127,33 +131,6 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
 }
 
-
-
-deleteFiles <- function (srpPath) {
-  
-  # Delete the "SRPHM_update_ag" directory in the "Output" folder
-  
-  # Start by deleting that folder
-  dir_delete(srpPath)
-  
-  
-  # Confirm that it was deleted
-  if (dir.exists(srpPath)) {
-    
-    stop(paste0("Failed to Delete SRP Directory\n\n",
-                "The script attempted to delete the SRP model files that ",
-                "were located in the \"Output\" folder. However, it ",
-                "was unsuccessful for an unknown reason. Please investigate.\n\n",
-                "(This error occurred for \"", srpPath, "\")") |>
-           errWrap())
-    
-  }
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
 
 
 #### Script Execution ####

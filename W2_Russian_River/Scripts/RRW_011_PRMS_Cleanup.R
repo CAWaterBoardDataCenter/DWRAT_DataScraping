@@ -63,7 +63,7 @@ mainProcedure <- function () {
   cat("[3/3]\tDeleting the model files...\n")
   
   
-  deleteFiles(prmsPath)
+  deleteFiles(prmsPath, "PRMS")
   
   
   cat("\tDone!\n\n")
@@ -145,22 +145,22 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
 
 
 
-deleteFiles <- function (prmsPath) {
+deleteFiles <- function (modelPath, model) {
   
-  # Delete the "RR_PRMS" directory in the "Output" folder
+  # Delete the model's directory in the "Output" folder
   
   # Start by deleting that folder
-  dir_delete(prmsPath)
+  dir_delete(modelPath)
   
   
   # Confirm that it was deleted
-  if (dir.exists(prmsPath)) {
+  if (dir.exists(modelPath)) {
     
-    stop(paste0("Failed to Delete PRMS Directory\n\n",
-                "The script attempted to delete the PRMS model files that ",
+    stop(paste0("Failed to Delete ", model, " Directory\n\n",
+                "The script attempted to delete the ", model, " model files that ",
                 "were located in the \"Output\" folder. However, it ",
                 "was unsuccessful for an unknown reason. Please investigate.\n\n",
-                "(This error occurred for \"", prmsPath, "\")") |>
+                "(This error occurred for \"", modelPath, "\")") |>
            errWrap())
     
   }
