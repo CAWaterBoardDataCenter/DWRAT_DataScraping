@@ -262,153 +262,156 @@ adjustNegativeFlows <- function (flowDF) {
         
         # For this iteration's sub-basin,
         # Identify which sub-basin is upstream of it
-        upstreamBasin <- connDF$BASIN_NUM[connDF$FLOWS_TO_NUM == basinNum[j]]
+        #upstreamBasin <- connDF$BASIN_NUM[connDF$FLOWS_TO_NUM == basinNum[j]]
         
         
-        # If no sub-basin is upstream of this negative flow sub-basin,
-        if (length(upstreamBasin) == 0) {
-          
-          # Just zero out the sub-basin's flow
-          flowDF[i, colIndex[j]] <- 0
-          
-          
-          # Otherwise, if exactly one sub-basin is upstream of the basin
-        } else if (length(upstreamBasin) == 1) {
-          
-          # Get the index in 'flowDF' where this upstream sub-basin is located
-          upstreamIndex <- which(names(flowDF) == upstreamBasin)
-          
-          
-          # Double-check that the index is valid
-          if (length(upstreamIndex) == 0) {
-            
-            paste0("Sub-Basin ID Not Present in Raw Flows\n\n",
-                   "For ", flowDF$Date[i], ", the script attempted to extract ",
-                   "data related to Sub-Basin \"", upstreamBasin, "\". ",
-                   "However, the procedure failed to find a matching column ",
-                   "in the flow dataset.\n\n",
-                   "This could be an error in the flow data or in the ",
-                   "sub-basin connectivity table. Please investigate.") |>
-              errWrap() |>
-              stop()
-            
-          } else if (length(upstreamIndex) > 1) {
-            
-            paste0("Sub-Basin ID Not Present More Than Once In Raw Flows\n\n",
-                   "For ", flowDF$Date[i], ", the script attempted to extract ",
-                   "data related to Sub-Basin \"", upstreamBasin, "\". ",
-                   "However, the procedure encountered multiple columns with ",
-                   "this name in the flow dataset.\n\n",
-                   "This is likely a script error. Please investigate.") |>
-              errWrap() |>
-              stop()
-            
-          }
-          
-          
-          # Add the negative flow value to the upstream basin's value
-          # (This is like "borrowing" flow from upstream 
-          #  to zero out the negative flow)
-          flowDF[i, upstreamIndex] <- 
-            flowDF[i, upstreamIndex] + flowDF[i, colIndex[j]]
-          
-          
-          # Then, set the negative flow to zero in the flagged basin
-          flowDF[i, colIndex[j]] <- 0
-          
-          
-          # If a sub-basin has multiple direct upstream sub-basins
-        } else {
-          
-          # Split the negative flow between all upstream sub-basins
-          # (i.e., "borrow" some flow from every sub-basin)
-          
-          # For each upstream sub-basin, get the TOTAL flow available in 
-          # those sub-basins (including their respective upstream sub-basins)
-          
-          # Then calculate a ratio for each upstream sub-basin and use that 
-          # to determine the flow contribution from each sub-basin in 
-          # 'upstreamBasin' (i.e., the amount of flow from each sub-basin that
-          # will offset the negative flow value)
-          totalAvailability <- upstreamBasin |>
-            map_dbl(~ calcTotalAvailableFlow(connDF, flowDF[i, ], .))
-          
-          
-          # If the total available upstream flow is zero, just set the 
-          # negative flow entry in 'flowDF' to zero
-          if (all(totalAvailability == 0)) {
-            
-            # (This applies only if every upstream sub-basin has zero flow available)
-            flowDF[i, colIndex[j]] <- 0
-            
-          } else {
-            
-            # Otherwise, calculate ratios based on 'totalAvailability'
-            contributionRatios <- totalAvailability / sum(totalAvailability)
-            
-            
-            # From each of the sub-basins that are upstream of 'basinNum',
-            # take flow based on its corresponding ratio
-            for (k in 1:length(upstreamBasin)) {
-              
-              # Locate one of the immediately upstream sub-basins in 'flowDF'
-              upstreamIndex <- which(names(flowDF) == upstreamBasin[k])
-              
-              
-              # Double-check that the index is valid
-              if (length(upstreamIndex) == 0) {
-                
-                paste0("Sub-Basin ID Not Present in Raw Flows\n\n",
-                       "For ", flowDF$Date[i], ", the script attempted to extract ",
-                       "data related to Sub-Basin \"", upstreamBasin[k], "\". ",
-                       "However, the procedure failed to find a matching column ",
-                       "in the flow dataset.\n\n",
-                       "This could be an error in the flow data or in the ",
-                       "sub-basin connectivity table. Please investigate.") |>
-                  errWrap() |>
-                  stop()
-                
-              } else if (length(upstreamIndex) > 1) {
-                
-                paste0("Sub-Basin ID Not Present More Than Once In Raw Flows\n\n",
-                       "For ", flowDF$Date[i], ", the script attempted to extract ",
-                       "data related to Sub-Basin \"", upstreamBasin[k], "\". ",
-                       "However, the procedure encountered multiple columns with ",
-                       "this name in the flow dataset.\n\n",
-                       "This is likely a script error. Please investigate.") |>
-                  errWrap() |>
-                  stop()
-                
-              }
-              
-              
-              # Adjust the upstream sub-basin and "borrow" some flow to offset
-              # the negative value in that sub-basin
-              flowDF[i, upstreamIndex] <- 
-                flowDF[i, upstreamIndex] + 
-                contributionRatios[k] * flowDF[i, colIndex[j]]
-              
-              
-              # The contribution ratios consider the flow available in the 
-              # entire upstream path for each immediately upstream sub-basin
-              
-              # So, it is possible that the immediately upstream sub-basin will
-              # get a negative flow value after this operation
-              
-              # That's okay though, because the "while" loop will keep going
-              # as long as there are any negative flows
-              
-            }
-            
-            
-            # After "borrowing" flow from each of the immediately upstream
-            # sub-basins, set the negative flow in the flagged basin to zero 
-            flowDF[i, colIndex[j]] <- 0
-            
-          } 
-          
-        } # End of conditional for multiple upstream sub-basins
-        
+        # Just zero out the sub-basin's flow
+        flowDF[i, colIndex[j]] <- 0
+        # 
+        # # If no sub-basin is upstream of this negative flow sub-basin,
+        # if (length(upstreamBasin) == 0) {
+        #   
+        #   # Just zero out the sub-basin's flow
+        #   flowDF[i, colIndex[j]] <- 0
+        #   
+        #   
+        #   # Otherwise, if exactly one sub-basin is upstream of the basin
+        # } else if (length(upstreamBasin) == 1) {
+        #   
+        #   # Get the index in 'flowDF' where this upstream sub-basin is located
+        #   upstreamIndex <- which(names(flowDF) == upstreamBasin)
+        #   
+        #   
+        #   # Double-check that the index is valid
+        #   if (length(upstreamIndex) == 0) {
+        #     
+        #     paste0("Sub-Basin ID Not Present in Raw Flows\n\n",
+        #            "For ", flowDF$Date[i], ", the script attempted to extract ",
+        #            "data related to Sub-Basin \"", upstreamBasin, "\". ",
+        #            "However, the procedure failed to find a matching column ",
+        #            "in the flow dataset.\n\n",
+        #            "This could be an error in the flow data or in the ",
+        #            "sub-basin connectivity table. Please investigate.") |>
+        #       errWrap() |>
+        #       stop()
+        #     
+        #   } else if (length(upstreamIndex) > 1) {
+        #     
+        #     paste0("Sub-Basin ID Not Present More Than Once In Raw Flows\n\n",
+        #            "For ", flowDF$Date[i], ", the script attempted to extract ",
+        #            "data related to Sub-Basin \"", upstreamBasin, "\". ",
+        #            "However, the procedure encountered multiple columns with ",
+        #            "this name in the flow dataset.\n\n",
+        #            "This is likely a script error. Please investigate.") |>
+        #       errWrap() |>
+        #       stop()
+        #     
+        #   }
+        #   
+        #   
+        #   # Add the negative flow value to the upstream basin's value
+        #   # (This is like "borrowing" flow from upstream 
+        #   #  to zero out the negative flow)
+        #   flowDF[i, upstreamIndex] <- 
+        #     flowDF[i, upstreamIndex] + flowDF[i, colIndex[j]]
+        #   
+        #   
+        #   # Then, set the negative flow to zero in the flagged basin
+        #   flowDF[i, colIndex[j]] <- 0
+        #   
+        #   
+        #   # If a sub-basin has multiple direct upstream sub-basins
+        # } else {
+        #   
+        #   # Split the negative flow between all upstream sub-basins
+        #   # (i.e., "borrow" some flow from every sub-basin)
+        #   
+        #   # For each upstream sub-basin, get the TOTAL flow available in 
+        #   # those sub-basins (including their respective upstream sub-basins)
+        #   
+        #   # Then calculate a ratio for each upstream sub-basin and use that 
+        #   # to determine the flow contribution from each sub-basin in 
+        #   # 'upstreamBasin' (i.e., the amount of flow from each sub-basin that
+        #   # will offset the negative flow value)
+        #   totalAvailability <- upstreamBasin |>
+        #     map_dbl(~ calcTotalAvailableFlow(connDF, flowDF[i, ], .))
+        #   
+        #   
+        #   # If the total available upstream flow is zero, just set the 
+        #   # negative flow entry in 'flowDF' to zero
+        #   if (all(totalAvailability == 0)) {
+        #     
+        #     # (This applies only if every upstream sub-basin has zero flow available)
+        #     flowDF[i, colIndex[j]] <- 0
+        #     
+        #   } else {
+        #     
+        #     # Otherwise, calculate ratios based on 'totalAvailability'
+        #     contributionRatios <- totalAvailability / sum(totalAvailability)
+        #     
+        #     
+        #     # From each of the sub-basins that are upstream of 'basinNum',
+        #     # take flow based on its corresponding ratio
+        #     for (k in 1:length(upstreamBasin)) {
+        #       
+        #       # Locate one of the immediately upstream sub-basins in 'flowDF'
+        #       upstreamIndex <- which(names(flowDF) == upstreamBasin[k])
+        #       
+        #       
+        #       # Double-check that the index is valid
+        #       if (length(upstreamIndex) == 0) {
+        #         
+        #         paste0("Sub-Basin ID Not Present in Raw Flows\n\n",
+        #                "For ", flowDF$Date[i], ", the script attempted to extract ",
+        #                "data related to Sub-Basin \"", upstreamBasin[k], "\". ",
+        #                "However, the procedure failed to find a matching column ",
+        #                "in the flow dataset.\n\n",
+        #                "This could be an error in the flow data or in the ",
+        #                "sub-basin connectivity table. Please investigate.") |>
+        #           errWrap() |>
+        #           stop()
+        #         
+        #       } else if (length(upstreamIndex) > 1) {
+        #         
+        #         paste0("Sub-Basin ID Not Present More Than Once In Raw Flows\n\n",
+        #                "For ", flowDF$Date[i], ", the script attempted to extract ",
+        #                "data related to Sub-Basin \"", upstreamBasin[k], "\". ",
+        #                "However, the procedure encountered multiple columns with ",
+        #                "this name in the flow dataset.\n\n",
+        #                "This is likely a script error. Please investigate.") |>
+        #           errWrap() |>
+        #           stop()
+        #         
+        #       }
+        #       
+        #       
+        #       # Adjust the upstream sub-basin and "borrow" some flow to offset
+        #       # the negative value in that sub-basin
+        #       flowDF[i, upstreamIndex] <- 
+        #         flowDF[i, upstreamIndex] + 
+        #         contributionRatios[k] * flowDF[i, colIndex[j]]
+        #       
+        #       
+        #       # The contribution ratios consider the flow available in the 
+        #       # entire upstream path for each immediately upstream sub-basin
+        #       
+        #       # So, it is possible that the immediately upstream sub-basin will
+        #       # get a negative flow value after this operation
+        #       
+        #       # That's okay though, because the "while" loop will keep going
+        #       # as long as there are any negative flows
+        #       
+        #     }
+        #     
+        #     
+        #     # After "borrowing" flow from each of the immediately upstream
+        #     # sub-basins, set the negative flow in the flagged basin to zero 
+        #     flowDF[i, colIndex[j]] <- 0
+        #     
+        #   } 
+        #   
+        # } # End of conditional for multiple upstream sub-basins
+        # 
       } # End of loop through negative sub-basins
       
     } # End of while loop for negative flows in a row of 'flowDF'
