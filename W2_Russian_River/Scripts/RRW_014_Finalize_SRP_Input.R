@@ -75,6 +75,12 @@ mainProcedure <- function (predictWY = TRUE) {
   source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
+  # Import functions from the PRMS counterpart script
+  c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
+    "similarWY_findWY", "similarWY_appendDAT") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
+  
+  
   # Confirm that a proper directory exists for model input and output files
   # The actual SRP model files should have been successfully copied to
   # the "Output" folder too
@@ -88,12 +94,6 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Also confirm that the SRP model folder was copied to "Output"
   srpPath <- validateModelCopy_SRP()
-  
-  
-  # Import functions from the PRMS counterpart script
-  c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
-    "similarWY_findWY", "similarWY_appendDAT") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
   
   
   cat("\tDone!\n\n")
@@ -261,7 +261,63 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   genericName <- "RR_SRP_Input.dat"
   
   
-  # Create a finalized version of 'mergedDAT':
+  # Create a finalized version of 'mergedDAT'
+  # This will be a vector of lines that will be written directly into a file
+  finalDAT <- mergedDAT |>
+    finalizeDAT()
+  
+  
+  # Write 'finalDAT' to the hydrology folder first
+  finalDAT |>
+    writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
+                  normalizePath(mustWork = FALSE),
+                writeFunction = "write_lines", quietly = quietly)
+  
+  
+  # Write 'finalDAT' to the SRP model folder next
+  # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
+  finalDAT |>
+    writeOutput(paste0(srpPath, "/", genericName) |> 
+                  normalizePath(mustWork = FALSE),
+                writeFunction = "write_lines", quietly = quietly)
+  
+  
+  # Update the SRP control file next
+  # (Its presence was already confirmed at the beginning of the script in 
+  #  `validateModelCopy_SRP`)
+  updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
+  
+  
+  # Update the SRP batch file
+  updateBatchFileSRP(srpPath)
+  
+  
+  # Finally, add metadata containing 'datName'
+  updateMetadataCSV(dirPath,
+                    list("SRP_FINAL_DAT_FILE_NAME" = datName))
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+finalizeDAT <- function (mergedDAT) {
+  
+  # Reformat the DAT file into a structure suitable for writing it to a file
+  
+  # Right now, 'mergedDAT' is a tibble
+  # However, it will be converted into a vector 
+  # (with each element corresponding to a line in the eventual output file)
+  
+  # Thus, the columns must be bound together in a format that matches the
+  # inconsistently fixed spacing of the SRP DAT files
+  
+  
+  # Start with the following edits:
+  
   #  (1) Remove the "DATE" column
   #  (2) Round every numeric value to four decimal places (exact)
   #  (3) Convert every column to character (needed for the next step)
@@ -290,13 +346,13 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
     # Add another column that combines "DATETIME_MERGED" with "PRECIP1"
     # (this time, there are five spaces of separation)
     unite(col = "DATETIME_PRECIP1_APPENDED",
-          c("DATETIME_MERGED", "PRECIP1"),
+          c("DATETIME_MERGED", matches("^PRECIP1(_REV[0-9]+)?$")),
           sep = str_dup(" ", 5), remove = FALSE) |>
     # Then, merge together the precipitation and temperature columns 
     # (ignoring "PRECIP1", which was already merged with the datetime values)
     # (There are four spaces of separation between these climate columns)
     unite(col = "OTHER_CLIMATE_COLS",
-          matches("^(PRE)|(TM)") & !matches("^PRECIP1$"),
+          matches("^(PRE)|(TM)") & !matches("^PRECIP1(_REV[0-9]+)?$"),
           sep = str_dup(" ", 4), remove = FALSE) |>
     # Finally, merge together "DATETIME_PRECIP1_APPENDED" and
     # "OTHER_CLIMATE_COLS"
@@ -338,38 +394,8 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
     select(FINAL)
   
   
-  # Write 'finalDAT' to the hydrology folder first
-  finalDAT$FINAL |>
-    writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
-                  normalizePath(mustWork = FALSE),
-                writeFunction = "write_lines", quietly = quietly)
-  
-  
-  # Write 'finalDAT' to the SRP model folder next
-  # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
-  finalDAT$FINAL |>
-    writeOutput(paste0(srpPath, "/", genericName) |> 
-                  normalizePath(mustWork = FALSE),
-                writeFunction = "write_lines", quietly = quietly)
-  
-  
-  # Update the SRP control file next
-  # (Its presence was already confirmed at the beginning of the script in 
-  #  `validateModelCopy_SRP`)
-  updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
-  
-  
-  # Update the SRP batch file
-  updateBatchFileSRP(srpPath)
-  
-  
-  # Finally, add metadata containing 'datName'
-  updateMetadataCSV(dirPath,
-                    list("SRP_FINAL_DAT_FILE_NAME" = datName))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
+  # Return the "FINAL" column in 'finalDAT' (as a vector)
+  return(finalDAT$FINAL)
   
 }
 
