@@ -101,7 +101,7 @@ for (i in 1:length(watershedList)) {
   
   
   # Write 'inpVec' back to a file
-  write_lines(inpVec, inpPath)
+  writeLines(inpVec, inpPath)
   
 }
 
