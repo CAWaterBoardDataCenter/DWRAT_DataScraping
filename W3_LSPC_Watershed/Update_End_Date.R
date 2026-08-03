@@ -103,6 +103,14 @@ for (i in 1:length(watershedList)) {
   # Write 'inpVec' back to a file
   write_lines(inpVec, inpPath, sep = "\r\n")
   
+  # Note: "\r\n" is the full expression for a new line marker in Windows
+  
+  # On Unix systems, it's just "\n", and that's the default separator  
+  # used by `write_lines` (since it typically renders as expected on Windows)
+  
+  # However, the LSPC executable file explicitly requires "\r\n"
+  # Otherwise, the inp file will fail to parse (without any error message)
+  
 }
 
 
