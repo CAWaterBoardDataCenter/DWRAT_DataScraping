@@ -77,7 +77,7 @@ mainProcedure <- function () {
   
   
   # Next, generate the directory and its sub-folders
-  outputDirectory <- generateFolders(saveDirectory)
+  outputDirectory <- generateFolders(saveDirectory, models = c("RRIHM", "SRP"))
   
   
   cat("\tDone!\n\n")
@@ -192,7 +192,8 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "RRIHM")
-  copyStationInputFile("CDEC_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_PRECIPITATION_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_STREAMFLOW_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "RRIHM")
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")

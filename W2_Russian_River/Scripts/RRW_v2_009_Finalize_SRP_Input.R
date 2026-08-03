@@ -382,7 +382,7 @@ updateBatchFileSRP <- function (srpPath) {
   # Write these commands to "run_SRPHM_spinup.bat"
   batchCommands |>
     writeOutput(paste0(srpPath, 
-                       "run_SRPHM_spinup.bat") |> 
+                       "/run_SRPHM_spinup.bat") |> 
                   normalizePath(mustWork = FALSE),
                 quietly = TRUE)
   
