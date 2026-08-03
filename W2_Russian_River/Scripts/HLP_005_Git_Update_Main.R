@@ -12,12 +12,8 @@
 base::remove(list = ls())
 
 
-# Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
-
-
-# Import shared functions
-source("Shared_Scripts/!Shared_Functions_Importer.R")
+# No shared functions or packages are imported by this script
+# (This is intentional as the script may be run before `renv` is setup)
 
 
 #### Functions ####
@@ -50,7 +46,7 @@ mainProcedure <- function () {
     
     # (*) Call "exit" to ensure that git closes properly
     "exit") |>
-    writeOutput(tempBat, writeFunction = "write_lines", quietly = TRUE)
+    writeLines(tempBat)
   
   
   # Use `system` to execute the batch file
@@ -75,7 +71,6 @@ mainProcedure <- function () {
     paste0("Could Not Execute Git Commands\n\n",
            "The procedure failed. Please investigate the messages ",
            "shown above.") |>
-      errWrap() |>
       stop()
     
   }
@@ -85,7 +80,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'HLP_005_Git_Update_Main.R' is complete!\n\n"))
+  cat("\n'HLP_005_Git_Update_Main.R' is complete!\n\n")
   
   
   # Return nothing
