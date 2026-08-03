@@ -35,12 +35,23 @@ for (i in 1:length(watershedList)) {
   # Check one of the .air weather files for this watershed
   # Identify the end date based on the contents of this file
   airPath <- list.files(paste0("Models/LSPC/", watershedList[i], "/Input/Weather/"),
-                        pattern = "\\.air$", full.names = TRUE)[1]
+                        pattern = "\\.air$", full.names = TRUE)
   
   
   if (length(airPath) == 0) {
     stop(paste0(watershedList[i], " has no .air weather files?"))
   }
+  
+  
+  # Choose the air file with the most recent "mtime" in `file.info`
+  # (That's the file that was most recently adjusted)
+  airSelection <- airPath |>
+    file.info() |>
+    pluck("mtime") |>
+    which.max()
+  
+  
+  airPath <- airPath[airSelection]
   
   
   # Read in 'airPath' (keep the last line only)
