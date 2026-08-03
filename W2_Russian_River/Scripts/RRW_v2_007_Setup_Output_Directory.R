@@ -61,7 +61,7 @@ mainProcedure <- function () {
   
   # Import functions from the v1 workflow's corresponding script
   c("validateInput", "generateFolders", "chooseFolderName",
-    "copyStationInputFile") |>
+    "copyStationInputFile", "copyStationFile") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_Output_Directory.R", .))
   
   
@@ -77,7 +77,7 @@ mainProcedure <- function () {
   
   
   # Next, generate the directory and its sub-folders
-  outputDirectory <- generateFolders(saveDirectory)
+  outputDirectory <- generateFolders(saveDirectory, models = c("RRIHM", "SRP"))
   
   
   cat("\tDone!\n\n")
@@ -192,11 +192,47 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "RRIHM")
-  copyStationInputFile("CDEC_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_PRECIPITATION_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_STREAMFLOW_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "RRIHM")
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
+  
+  
+  # Save the raw downloaded station data too
+  
+  # Some stations have extra gages' data to help with QA/QC
+  
+  # In CIMIS and CDEC's cases, too, their quality control flags are not applied by default, 
+  # so a record of what data was flagged is worth preserving
+  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/NOAA_API_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CDEC_API_Precip_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CDEC_API_Streamflow_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "SRP")
   
   
   # Finally, copy the "renv.lock" file located in the root "Supply" directory
