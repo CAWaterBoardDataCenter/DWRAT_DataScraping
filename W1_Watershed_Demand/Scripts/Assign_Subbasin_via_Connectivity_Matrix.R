@@ -161,7 +161,7 @@ checkOverlap <- function (POD, subWS) {
                       GIS_SHAREPOINT_BOOL = "IS_SHAREPOINT_PATH_WATERSHED_BOUNDARY",
                       GIS_FILE_PATH = "WATERSHED_BOUNDARY_DATABASE_PATH",
                       GIS_FILE_LAYER_NAME = "WATERSHED_BOUNDARY_LAYER_NAME") |>
-      st_transform("epsg:3488")
+      st_transform(st_crs(subWS))
     
     
     
