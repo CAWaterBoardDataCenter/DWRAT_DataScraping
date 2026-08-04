@@ -87,7 +87,35 @@ copyModel <- function (sourceDir, newDir) {
   
   
   # Copy the entire contents of 'sourceDir' into this new folder
-  dir_copy(sourceDir, newDir, overwrite = TRUE)
+  tryRes <- try(dir_copy(sourceDir, newDir, overwrite = TRUE),
+                silent = TRUE)
+  
+  
+  # If copying the files fails for some reason, try a second time before quitting
+  if ("try-error" %in% class(tryRes)) {
+    
+    # Output the error message that was received
+    cat("\n\n")
+    print(tryRes)
+    cat("\n\n")
+    
+    
+    # Notify the user that the script will try again
+    cat("Copying the files failed!\n")
+    cat("(Reason shown above)")
+    cat("\n\n")
+    cat("Trying one more time!")
+    cat("\n\n")
+    
+    
+    # Wait a bit before retrying
+    Sys.sleep(runif(1, min = 2, max = 5))
+    
+    
+    # Try again to copy the directory over
+    dir_copy(sourceDir, newDir, overwrite = TRUE)
+    
+  }
   
   
   # Return nothing
