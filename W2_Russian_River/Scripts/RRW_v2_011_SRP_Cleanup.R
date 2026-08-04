@@ -118,7 +118,8 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   otherFiles <- c("/SRPHM_spinup.control",
                   "/SRPHM_spinup.nam",
                   "/external_files/prms_ic_WY1975_toWY2021.out",
-                  "/external_files/restartdata_WY1975_to_WY2021.out")
+                  "/external_files/restartdata_WY1975_to_WY2021.out",
+                  "/external_files/srphm.params")
   
   
   sourcePaths <- c(sourcePaths,
