@@ -30,7 +30,7 @@ checkMissingCol <- function (df, colNames, sourcePath = NA_character_,
   
   
   # Check if any values in 'colNames' are missing in the names of 'df'
-  if (anyFalse(colNames %in% names(df))) {
+  if (!all(colNames %in% names(df))) {
     
     # Get the names of missing values
     missingVals <- colNames[!(colNames %in% names(df))]

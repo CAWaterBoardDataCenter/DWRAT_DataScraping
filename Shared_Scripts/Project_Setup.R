@@ -7,7 +7,7 @@
 
 # Install 'renv' if it's not already present
 if (!("renv" %in% installed.packages()[, 1])) {
-  install.packages("renv")
+  install.packages("renv", repos = "http://cran.us.r-project.org")
 }
 
 
@@ -15,10 +15,14 @@ if (!("renv" %in% installed.packages()[, 1])) {
 require(renv)
 
 
-# Configure 'renv' to use the default download method
+# Configure 'renv' to use "libcurl" instead of "curl" as its default download method
 # https://rstudio.github.io/renv/articles/package-install.html#alternative-downloaders
-#options(renv.download.override = utils::download.file)
-Sys.setenv(RENV_DOWNLOAD_METHOD = getOption("download.file.method"))
+Sys.setenv(RENV_DOWNLOAD_METHOD = "libcurl")
+
+# "libcurl" is the default for `download.file` 
+# (see the details about the "method" argument of this function)
+
+# Also, "libcurl" is bundled with R on Windows (4.2.0 onwards), so it is a safe option
 
 
 # Setup the R environment

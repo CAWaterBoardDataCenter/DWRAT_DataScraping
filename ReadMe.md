@@ -2,7 +2,7 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-07-27  
+**Last Updated On:** 2026-07-29  
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
@@ -53,7 +53,7 @@ The scripts in this repository are mainly coded in R and Python. However, the pr
 ## Dependencies  
 The required packages for this repository's R and Python scripts are tracked via [renv](https://rstudio.github.io/renv/index.html) and [Anaconda YAML files](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file), respectively.  
   
-Once `renv` has been installed, its `restore` function can help download all required R packages (assuming the "DWRAT_DataScraping" project is active). For Python, the two required Anaconda environments are detailed in [Paradigm_DWRAT_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml) and [LSPC_Climate_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W3_LSPC_Watershed/LSPC_Climate_Environment.yml). To setup these environments, open [Anaconda Prompt](https://www.anaconda.com/docs/reference/glossary#anaconda-prompt) (or similar) and use the command `conda create --file [PATH_TO_YML]`.[^1]  
+Assuming the "DWRAT_DataScraping" project is active, the shared script **Project_Setup.R** can install `renv` and all required R packages. In the console of RStudio, the command `source("Shared_Scripts/Project_Setup.R")` can execute this process. For Python, the two required Anaconda environments are detailed in [Paradigm_DWRAT_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml) and [LSPC_Climate_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W3_LSPC_Watershed/LSPC_Climate_Environment.yml). To setup these environments, open [Anaconda Prompt](https://www.anaconda.com/docs/reference/glossary#anaconda-prompt) (or similar) and use the command `conda create --file [PATH_TO_YML]`.[^1]  
   
 [^1]: Please remember to encase the path name in quotation marks if it contains spaces.
   

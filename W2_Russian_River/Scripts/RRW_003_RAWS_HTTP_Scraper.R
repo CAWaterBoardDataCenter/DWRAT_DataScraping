@@ -116,7 +116,7 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   # To avoid overwhelming RAWS's server, no more than three years of data 
   # should be requested at a time
   if (difftime(endDate, startDate, units = "days") > 365 * 3) {
-    return(splitRequest(stationID, startDate, endDate, maxDays = 365 * 3))
+    return(splitRequest(stationID, startDate, endDate, maxDays = 365 * 3, maxTries = maxTries))
   }
   
   
@@ -166,7 +166,9 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
     # If the error is "Failure when receiving data from the peer [wrcc.dri.edu]"
     # "schannel: server closed abruptly (missing close_notify)", 
     # consider retrying the request if 'counter' is less than 'maxTries'
-    if (grepl("server closed abruptly", req[1]) && counter < maxTries) {
+    if (counter < maxTries &&
+        any(grepl("server closed abruptly", req[1]), 
+            grepl("Connection was reset", req[1]))) {
       
       # Determine the number of seconds to wait before retrying
       # (This value is related to the value of 'counter')
@@ -188,7 +190,7 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
       
       
       # Submit the request again
-      return(requestRAWS(stationID, startDate, endDate, counter = counter + 1))
+      return(requestRAWS(stationID, startDate, endDate, counter = counter + 1, maxTries = maxTries))
       
     }
     
@@ -261,7 +263,7 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   
   
   # Check if any of the expected columns are missing in 'htmlTable'
-  if (anyFalse(c(expectedCols) %in% names(htmlTable))) {
+  if (!all(expectedCols %in% names(htmlTable))) {
     
     stop(paste0("Could Not Parse RAWS Output\n\n",
                 "The data returned by RAWS could not be interpreted correctly (",
@@ -484,7 +486,7 @@ getDatasetBounds <- function (stationID) {
 
 
 
-splitRequest <- function (stationID, startDate, endDate, maxDays) {
+splitRequest <- function (stationID, startDate, endDate, maxDays, maxTries) {
   
   # For data requests that cover a large date range, 
   # split the range into chunks and perform several requests to RAWS
@@ -536,7 +538,7 @@ splitRequest <- function (stationID, startDate, endDate, maxDays) {
     
     # If there are no issues (or if this is the first run), get data
     # for a subset of the full date range
-    iterRes <- requestRAWS(stationID, dateVec[i - 1], dateVec[i])
+    iterRes <- requestRAWS(stationID, dateVec[i - 1], dateVec[i], maxTries = maxTries)
     
     
     # Combine 'iterRes' after each request

@@ -1,12 +1,28 @@
 
 # Ignore the "Archive" and "Models" folders
-Additional_Scripts/Archive
-Models
+**/Additional_Scripts/Archive/**
+**/Models/**
+
+# Ignore any "Documentation" folders
+**/Documentation/**
 
 # Ignore any "Input", "Intermediate", and "Output" folders
-**/Input
-**/Intermediate
-**/Output
+**/Input/**
+**/Intermediate/**
+**/Output/**
 
-# Ignore the "data" folder for the LSPC workflow 
-W3_LSPC_Watershed/data
+# Ignore folders for the LSPC workflow 
+**/W3_LSPC_Watershed/data/**
+**/W3_LSPC_Watershed/inputs/**
+**/W3_LSPC_Watershed/notebooks/**
+**/W3_LSPC_Watershed/src/**
+
+
+# Ignore the "XLSX_Tracking" folder
+# (But not the R script within it)
+**/XLSX_Tracking/**
+!**/XLSX_Tracking/*.R
+
+# Ignore the .git and RProj folders
+**/.git/**
+**/.Rproj.user/**

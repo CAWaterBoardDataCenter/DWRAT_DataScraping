@@ -318,7 +318,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   #  (1) 'startDate' and 'endDate' must be temporarily modified
   #      in "CTR_001_Set_Start_and_End_Dates.R"
   
-  #  (2) The environment clearing function calls (using `remove`) must be
+  #  (2) The environment-clearing function calls (using `remove`) must be
   #      temporarily disabled
   
   
@@ -465,7 +465,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
   
   
   # Check if any required input files are missing
-  if (anyFalse(map_lgl(inputFiles, file.exists))) {
+  if (!all(map_lgl(inputFiles, file.exists))) {
     
     # Get the names of the missing files before sending a message
     missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]

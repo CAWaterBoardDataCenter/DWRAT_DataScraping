@@ -30,7 +30,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the batch file stored in the root directory
-  batPath <- paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/run_SRPHM_spinup.bat") |>
+  batPath <- paste0(srpPath, "/run_SRPHM_spinup.bat") |>
     normalizePath(mustWork = TRUE)
   
   

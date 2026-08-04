@@ -59,6 +59,12 @@ mainProcedure <- function () {
     checkForPreviousOutput()
   
   
+  # Import functions from the v1 workflow's corresponding script
+  c("validateInput", "generateFolders", "chooseFolderName",
+    "copyStationInputFile", "copyStationFile") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_Output_Directory.R", .))
+  
+  
   cat("[1/3]\tCreating new folders...\n")
   
   
@@ -71,7 +77,7 @@ mainProcedure <- function () {
   
   
   # Next, generate the directory and its sub-folders
-  outputDirectory <- generateFolders(saveDirectory)
+  outputDirectory <- generateFolders(saveDirectory, models = c("RRIHM", "SRP"))
   
   
   cat("\tDone!\n\n")
@@ -111,185 +117,6 @@ mainProcedure <- function () {
 
 
 
-validateInput <- function (saveDirectory, sourceField) {
-  
-  # Ensure that the directory provided by the user is valid
-  
-  # Also, 'saveDirectory' could contain either a local path or 
-  # a partial SharePoint path
-  # This function will help clarify which type of path it is
-  
-  
-  # Start by checking if the directory is a SharePoint fragment
-  # If it exists on SharePoint, convert 'saveDirectory' into a SharePoint path
-  if (dir.exists(makeSharePointPath(saveDirectory))) {
-    
-    saveDirectory <- makeSharePointPath(saveDirectory)
-    
-  }
-  
-  
-  # If the directory cannot be found, notify the user
-  if (!dir.exists(saveDirectory)) {
-    
-    stop(paste0("Cannot Find the Specified Directory\n\n",
-                "In the RR Workflow Control File, the desired location ",
-                "to store the model outputs was specified to be \"",
-                saveDirectory, "\"\n\n",
-                "However, this location does not appear to exist. ",
-                if_else(grepl("\\.", saveDirectory), 
-                        paste0("A folder directory (not a filename) should ",
-                               "be the input. "), 
-                        ""),
-                "Please update the value specified for \"", sourceField,
-                "\" in the control spreadsheet.") |>
-           errWrap())
-    
-  }
-  
-  
-  # Return 'saveDirectory' if there are no issues
-  # (If 'saveDirectory' points to a SharePoint location, it has been updated 
-  #  in this function to reflect that)
-  return(saveDirectory)
-  
-}
-
-
-
-generateFolders <- function (saveDirectory) {
-  
-  # In 'saveDirectory', a new folder will be created for the imminent 
-  # model runs of SRP, RRIHM, and DWRAT
-  
-  # By default, the folder's name will be the current date
-  
-  
-  # However, checks will be necessary to ensure that 
-  # this name is not already in use
-  mainName <- chooseFolderName(saveDirectory)
-  
-  
-  # Create the directory 'mainName'
-  
-  # In addition, create sub-folders for SRP", "RRIHM", and "DWRAT"
-  # In each of these folders, create "Input" and "Output" folders
-  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/SRP/Input"),
-                      paste0(saveDirectory, "/", mainName, "/SRP/Output"),
-                      paste0(saveDirectory, "/", mainName, "/RRIHM/Input"),
-                      paste0(saveDirectory, "/", mainName, "/RRIHM/Output"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected")) |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  # Create the folders
-  newDirectories |>
-    map_lgl(~ dir.create(., recursive = TRUE))
-  
-  
-  # Ensure that all folders were created successfully
-  # If not, output an error
-  if (anyFalse(dir.exists(newDirectories))) {
-    
-    missingDirectories <- which(!dir.exists(newDirectories))
-    
-    
-    stop(paste0("Could Not Create Folder",
-                if_else(length(missingDirectories) > 1, "s", ""),
-                "\n\n",
-                "The script failed to create ", length(missingDirectories),
-                " folder", if_else(length(missingDirectories) > 1, "s", ""),
-                ". The cause of this issue is unknown (maybe a permission ",
-                "issue). Please investigate.\n\n",
-                "The missing folder",
-                if_else(length(missingDirectories) > 1, "s are:", " is:"),
-                "\n\n",
-                vec2QuotedStr(newDirectories[missingDirectories]) |>
-                  paste0(collapse = "\n\n")) |>
-           errWrap())
-    
-  }
-  
-  
-  # Return the normalized path to 'mainName'
-  return(paste0(saveDirectory, "/", mainName) |>
-           normalizePath())
-  
-}
-
-
-
-chooseFolderName <- function (saveDirectory) {
-  
-  # Decide on the primary folder name that will be added to 'saveDirectory'
-  # It should not conflict with existing folders
-  
-  
-  # The default preferred name is the run date (today)
-  folderName <- Sys.Date() |> as.character()
-  
-  
-  # Get the current contents of 'saveDirectory'
-  dirContents <- list.files(saveDirectory)
-  
-  
-  # If 'folderName' does NOT appear in 'dirContents', return it without any edits
-  if (!(folderName %in% dirContents)) {
-    return(folderName)
-  }
-  
-  
-  # However, if that name is already in use, 'folderName' must be modified
-  # A suffix will be appended to the name: "_(#[INDEX])"
-  
-  # The value of "INDEX" will depend on how many existing folders there are 
-  # with this suffix attached
-  if (sum(grepl(paste0(folderName, "_\\("), dirContents)) > 0) {
-    
-    # If this code block is executed, there are at least two folders  
-    # that have been created today in this directory
-    
-    # One would have the standard name (e.g., "2026-03-04"), and the second 
-    # folder (as well as any subsequent folders) would have the suffix attached
-    # (e.g., "2026-03-04_(#2)")
-    
-    # Among these options, find the maximum number in 
-    # their names in 'dirContents'
-    # (Note: This is specifically among the folders that contain today's date)
-    index <- dirContents |>
-      str_subset(paste0(folderName, "_\\(")) |>
-      str_extract("(?<=\\(#)[0-9]+") |> 
-      as.numeric() |>
-      max()
-    
-    # The regex in str_extract() looks for "(#" before the number, but  
-    # does not include "(#" in the actual extracted string (that will only
-    # contain the numeric digits)
-    
-    
-    # This new folder that will be created will contain the next number up
-    index <- index + 1
-    
-    
-    # If this is the first folder with a suffix, append the number 2 to its name
-    # (not 1 because the folder that lacks this suffix is the first instance)
-  } else {
-    
-    index <- 2
-    
-  }
-  
-  
-  # Return 'folderName' with the suffix attached
-  return(paste0(folderName, "_(#", index, ")"))
-  
-}
-
-
-
 addFiles <- function (outputDirectory, meteorPath, prePrismMeteor, 
                       startDate, endDate) {
   
@@ -300,6 +127,7 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
                    WORKFLOW_VERSION = "RRW_v2",
+                   R_VERSION = sessionInfo()[["R.version"]][["version.string"]],
                    MODELER_NAME = Sys.info()[["user"]],
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
@@ -364,47 +192,53 @@ addFiles <- function (outputDirectory, meteorPath, prePrismMeteor,
   copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "RRIHM")
-  copyStationInputFile("CDEC_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_PRECIPITATION_STATIONS_CSV", outputDirectory, "RRIHM")
+  copyStationInputFile("CDEC_STREAMFLOW_STATIONS_CSV", outputDirectory, "RRIHM")
   copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "RRIHM")
   
   copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
   copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
   
   
+  # Save the raw downloaded station data too
+  
+  # Some stations have extra gages' data to help with QA/QC
+  
+  # In CIMIS and CDEC's cases, too, their quality control flags are not applied by default, 
+  # so a record of what data was flagged is worth preserving
+  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/NOAA_API_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CDEC_API_Precip_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/CDEC_API_Streamflow_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "RRIHM")
+  
+  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", startDate, "_",
+                         endDate, ".csv"),
+                  outputDirectory, model = "SRP")
+  
+  
   # Finally, copy the "renv.lock" file located in the root "Supply" directory
   # Store it in the same location as the metadata file
   copyFile(from = "renv.lock",
            to = paste0(outputDirectory, "/renv.lock"))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyStationInputFile <- function (sourceField, outputDirectory, model = "PRMS") {
-  
-  # Get the station input file's path from the control file
-  
-  # Then copy it into the new hydrology folder
-  
-  
-  # Read in the path from the control file
-  inputPath <- getFromControl_RR(sourceField) |>
-    sharepointPathCheck(isFolder = FALSE)
-  
-  
-  # Set the output path next
-  # The filename will be the same as in 'inputPath'
-  # (But any earlier folders in the path are replaced)
-  outputPath <- paste0(outputDirectory, "/", model, "/Input/",
-                       inputPath |> str_remove("^.+[/\\\\]"))
-  
-  
-  # Copy the file
-  copyFile(inputPath, outputPath, quietly = TRUE)
   
   
   # Return nothing

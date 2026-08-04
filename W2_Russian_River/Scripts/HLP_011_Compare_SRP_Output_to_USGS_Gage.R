@@ -583,7 +583,7 @@ validateUSGS <- function (usgsDF) {
   
   
   # Check for the exact column names too
-  if (anyFalse(requiredCols$NAME %in% names(usgsDF))) {
+  if (!all(requiredCols$NAME %in% names(usgsDF))) {
     
     missingColumns <- which(!(requiredCols$NAME %in% names(usgsDF)))
     
@@ -937,7 +937,8 @@ prepNewDirectory <- function (dirPath, newDir) {
 
 
 
-generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
+generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
+                                   dryMonths = 6:9) {
   
   # For the input timescale, produce plots and a table
   
@@ -1064,33 +1065,80 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   # After that, create a tibble that contains different statistical metrics
   statDF <- tibble("TIMESCALE" = timescale, 
                    "METRIC" = c("Nash-Sutcliffe Efficiency",
+                                "Dry-Month Nash-Sutcliffe Efficiency",
+                                "Wet-Month Nash-Sutcliffe Efficiency",
                                 "P-Bias",
+                                "Dry-Month P-Bias",
+                                "Wet-Month P-Bias",
                                 paste0("Root Mean Square Error to ",
                                        "Standard Deviation Ratio"),
+                                paste0("Dry-Month Root Mean Square Error to ",
+                                       "Standard Deviation Ratio"),
+                                paste0("Wet-Month Root Mean Square Error to ",
+                                       "Standard Deviation Ratio"),
                                 "Modified Kling-Gupta Efficiency",
-                                "R Squared"),
+                                "Dry-Month Modified Kling-Gupta Efficiency",
+                                "Wet-Month Modified Kling-Gupta Efficiency",
+                                "R Squared",
+                                "Dry-Month R Squared",
+                                "Wet-Month R Squared"),
                    "DAILY_RESULT" = NA_real_,
                    "DAILY_NOTES" = "--",
                    "MONTHLY_RESULT" = NA_real_,
                    "MONTHLY_NOTES" = "--")
   
   
+  # For the statistical metrics, prepare "dry-month" and "wet-month" versions
+  # of both 'dailyDF' and 'monthlyDF'
+  dryDaily <- dailyDF |>
+    filter(month(DATE) %in% dryMonths)
+  
+  wetDaily <- dailyDF |>
+    filter(month(DATE) %notin% dryMonths)
+  
+  dryMonthly <- monthlyDF |>
+    filter(month(YEAR_MONTH) %in% dryMonths)
+  
+  wetMonthly <- monthlyDF |>
+    filter(month(YEAR_MONTH) %notin% dryMonths)
+  
+  
   statDF <- statDF |>
     mutate(DAILY_RESULT = 
              case_when(
                grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^Dry.+Nash", METRIC) ~ calcNSE(dryDaily$GAGE, dryDaily$MODEL),
+               grepl("^Wet.+Nash", METRIC) ~ calcNSE(wetDaily$GAGE, wetDaily$MODEL),
+               grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^Dry.+Bias$", METRIC) ~ calcPBias(dryDaily$GAGE, dryDaily$MODEL),
+               grepl("^Wet.+Bias$", METRIC) ~ calcPBias(wetDaily$GAGE, wetDaily$MODEL),
                grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^Dry.+Root", METRIC) ~ calcRSR(dryDaily$GAGE, dryDaily$MODEL),
+               grepl("^Wet.+Root", METRIC) ~ calcRSR(wetDaily$GAGE, wetDaily$MODEL),
                grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL)
+               grepl("^Dry.+Modif", METRIC) ~ calcMKGE(dryDaily$GAGE, dryDaily$MODEL),
+               grepl("^Wet.+Modif", METRIC) ~ calcMKGE(wetDaily$GAGE, wetDaily$MODEL),
+               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^Dry.+R Sq", METRIC) ~ calcRSqrd(dryDaily$GAGE, dryDaily$MODEL),
+               grepl("^Wet.+R Sq", METRIC) ~ calcRSqrd(wetDaily$GAGE, wetDaily$MODEL)
              )) |>
     mutate(MONTHLY_RESULT = 
              case_when(
                grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^Dry.+Nash", METRIC) ~ calcNSE(dryMonthly$GAGE, dryMonthly$MODEL),
+               grepl("^Wet.+Nash", METRIC) ~ calcNSE(wetMonthly$GAGE, wetMonthly$MODEL),
+               grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^Dry.+Bias$", METRIC) ~ calcPBias(dryMonthly$GAGE, dryMonthly$MODEL),
+               grepl("^Wet.+Bias$", METRIC) ~ calcPBias(wetMonthly$GAGE, wetMonthly$MODEL),
                grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^Dry.+Root", METRIC) ~ calcRSR(dryMonthly$GAGE, dryMonthly$MODEL),
+               grepl("^Wet.+Root", METRIC) ~ calcRSR(wetMonthly$GAGE, wetMonthly$MODEL),
                grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL)
+               grepl("^Dry.+Modif", METRIC) ~ calcMKGE(dryMonthly$GAGE, dryMonthly$MODEL),
+               grepl("^Wet.+Modif", METRIC) ~ calcMKGE(wetMonthly$GAGE, wetMonthly$MODEL),
+               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^Dry.+R Sq", METRIC) ~ calcRSqrd(dryMonthly$GAGE, dryMonthly$MODEL),
+               grepl("^Wet.+R Sq", METRIC) ~ calcRSqrd(wetMonthly$GAGE, wetMonthly$MODEL)
              ))
   
   
@@ -1105,6 +1153,45 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF) {
   statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
     calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
     attributes() |> pluck(1)
+  
+  
+  # Similarly, for "dry-month" and "wet-month" metrics, clarify which months 
+  # are considered "dry" and "wet"
+  statDF$DAILY_NOTES[grepl("^Dry-Month", statDF$METRIC)] <-
+    month.abb[dryMonths] |> paste0(collapse = "; ")
+  
+  statDF$DAILY_NOTES[grepl("^Wet-Month", statDF$METRIC)] <-
+    month.abb[-dryMonths] |> paste0(collapse = "; ")
+  
+  
+  statDF$MONTHLY_NOTES[grepl("^Dry-Month", statDF$METRIC)] <-
+    month.abb[dryMonths] |> paste0(collapse = "; ")
+  
+  statDF$MONTHLY_NOTES[grepl("^Wet-Month", statDF$METRIC)] <-
+    month.abb[-dryMonths] |> paste0(collapse = "; ")
+  
+  
+  # Both sets of notes are required for dry-month and wet-month P-Bias values
+  statDF$DAILY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)] <- 
+    paste0(calcPBias(dryDaily$GAGE, dryDaily$MODEL) |> 
+             attributes() |> pluck(1),
+           "; ", statDF$DAILY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)])
+  
+  statDF$DAILY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)] <- 
+    paste0(calcPBias(wetDaily$GAGE, wetDaily$MODEL) |> 
+             attributes() |> pluck(1),
+           "; ", statDF$DAILY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)])
+  
+  
+  statDF$MONTHLY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)] <- 
+    paste0(calcPBias(dryMonthly$GAGE, dryMonthly$MODEL) |> 
+             attributes() |> pluck(1),
+           "; ", statDF$MONTHLY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)])
+  
+  statDF$MONTHLY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)] <- 
+    paste0(calcPBias(wetMonthly$GAGE, wetMonthly$MODEL) |> 
+             attributes() |> pluck(1),
+           "; ", statDF$MONTHLY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)])
   
   
   # Return 'statDF'
@@ -1166,7 +1253,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   
   
   # Make sure 'yCol' matches names in 'streamDF'
-  if (anyFalse(yCol %in% names(streamDF))) {
+  if (!all(yCol %in% names(streamDF))) {
     
     cat("\n\n")
     cat("Missing Column(s):\n")
@@ -1181,7 +1268,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
       stop()
     
   # The streamflow columns in 'yCol' must be numeric or integer variables
-  } else if (anyFalse(streamDF[yCol] |> 
+  } else if (!all(streamDF[yCol] |> 
                       map_lgl(~ class(.) %in% c("numeric", "integer")))) {
     
     cat("\n\n")

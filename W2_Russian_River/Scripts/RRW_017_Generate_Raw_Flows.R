@@ -233,7 +233,7 @@ validateSubCSV <- function (subDF, subPath, dirPath, type = "inq", nsub = 22) {
   
   
   # Check for the exact column names too
-  if (anyFalse(c("Date" %in% names(subDF), 1:nsub %in% names(subDF)))) {
+  if (!all(c("Date" %in% names(subDF), 1:nsub %in% names(subDF)))) {
     
     paste0("Unexpected Columns in sub_", type, " CSV\n\n",
            "The PRMS output file (\"", subPath, "\") should contain a \"Date\" ",
@@ -250,7 +250,7 @@ validateSubCSV <- function (subDF, subPath, dirPath, type = "inq", nsub = 22) {
   
   
   # Confirm that the sub-basin flow columns are numeric
-  if (anyFalse(map_lgl(subDF[names(subDF) != "Date"], is.numeric))) {
+  if (!all(map_lgl(subDF[names(subDF) != "Date"], is.numeric))) {
     
     # Identify the non-numeric columns (ignoring "Date")
     nonNumCols <- which(!map_lgl(subDF, is.numeric)) |>
@@ -346,7 +346,7 @@ getColsFromMetadata <- function (dirPath, colNames) {
   
   
   # Confirm that the desired columns are in 'metaDF'
-  if (anyFalse(colNames %in% names(metaDF))) {
+  if (!all(colNames %in% names(metaDF))) {
     
     missingNames <- which(!(colNames %in% names(metaDF)))
     
@@ -386,7 +386,7 @@ validateGag <- function (gagDF, gagPath, dirPath) {
   
   
   # Check for the exact column names too
-  if (anyFalse(requiredCols %in% names(gagDF))) {
+  if (!all(requiredCols %in% names(gagDF))) {
     
     missingColumns <- which(!(requiredCols %in% names(gagDF)))
     
@@ -404,7 +404,7 @@ validateGag <- function (gagDF, gagPath, dirPath) {
   
   
   # Confirm that the "Time" and "Flow" columns are numeric
-  if (anyFalse(map_lgl(gagDF[requiredCols], is.numeric))) {
+  if (!all(map_lgl(gagDF[requiredCols], is.numeric))) {
     
     # Identify the non-numeric columns
     nonNumCols <- which(!map_lgl(gagDF[requiredCols], is.numeric))
@@ -516,7 +516,7 @@ validateReductionFactors <- function (reductionDF, reductPath, numGag) {
   
   
   # Check for the exact column names too
-  if (anyFalse(c("Month" %in% names(reductionDF), 
+  if (!all(c("Month" %in% names(reductionDF), 
                  1:numGag %in% names(reductionDF)))) {
     
     paste0("Unexpected Columns in SRP Reduction Factors CSV\n\n",
@@ -534,7 +534,7 @@ validateReductionFactors <- function (reductionDF, reductPath, numGag) {
   
   
   # Confirm that all columns are numeric
-  if (anyFalse(map_lgl(reductionDF, is.numeric))) {
+  if (!all(map_lgl(reductionDF, is.numeric))) {
     
     # Identify the non-numeric columns
     nonNumCols <- which(!map_lgl(reductionDF, is.numeric))
@@ -557,7 +557,7 @@ validateReductionFactors <- function (reductionDF, reductPath, numGag) {
   
   
   # Confirm that "Month" has a value for all months of the year
-  if (anyFalse(1:12 %in% reductionDF$Month) || nrow(reductionDF) != 12) {
+  if (!all(1:12 %in% reductionDF$Month) || nrow(reductionDF) != 12) {
     
     paste0("SRP Reduction Factors CSV File - Incomplete Data Issue\n\n",
            "The Reduction Factors CSV file (\"", reductPath, "\") should ",
@@ -757,8 +757,8 @@ mergeAndValidateFlows <- function (inqDF, gagDF, numBasins = 28) {
   
   
   # Also, check that both variables contain "YEAR" and "MONTH"
-  if (anyFalse(c("YEAR", "MONTH") %in% names(inqDF)) ||
-      anyFalse(c("YEAR", "MONTH") %in% names(gagDF))) {
+  if (!all(c("YEAR", "MONTH") %in% names(inqDF)) ||
+      !all(c("YEAR", "MONTH") %in% names(gagDF))) {
     
     paste0("'inqDF' and 'gagDF' - Missing Column Issue\n\n",
            "This procedure expects 'inqDF' and 'gagDF' to contain both a ",
@@ -792,7 +792,7 @@ mergeAndValidateFlows <- function (inqDF, gagDF, numBasins = 28) {
   
   
   # Sub-basins 1 through 28 should be represented among them (with no repeats)
-  if (anyFalse(1:numBasins %in% names(flowDF))) {
+  if (!all(1:numBasins %in% names(flowDF))) {
     
     paste0("Missing Sub-Basin Column(s)\n\n",
            "The combination of the PRMS \"sub_inq\" file and the SRP GAG ",

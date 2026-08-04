@@ -163,7 +163,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     
     mergedDAT <- predictCurrentWY(mergedDAT,
-                                  startDate, endDate, 
+                                  startDate, endDate, "PRMS",
                                   names(meteorDF)[names(meteorDF) != "DATE"],
                                   dirPath, filePaths$MAIN_DAT[1])
     
@@ -207,8 +207,8 @@ mainProcedure <- function (predictWY = TRUE) {
 
 
 
-predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
-                              dirPath, pathMainDAT) {
+predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
+                              modelCols, dirPath, pathMainDAT) {
   
   # Based on 'endDate', apply different methods to select predictions 
   # to append to 'mergedDAT'
@@ -241,10 +241,11 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     # the PRMS model domain
     
     # Get the path to that file
-    pastPrecipPath <- getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_FOLDER") |>
-      getLatestFile(paste0("^RR_Workflow_PRISM_PRMS_Avg_Historic_Precip_",
+    pastPrecipPath <- paste0("PRISM_", model, "_HISTORIC_PRECIP_FOLDER") |>
+      getFromControl_RR() |>
+      getLatestFile(paste0("^RR_Workflow_PRISM_", model, "_Avg_Historic_Precip_",
                            "CY1981_to_WY[0-9]{4}\\.csv$"),
-                    "PRMS Historic Precip File")
+                    paste0(model, " Historic Precip File"))
     
     
     # Read in the file and validate it
@@ -263,7 +264,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       # Then, choose months with the driest conditions and use them 
       # as predictions for the remaining months of the current water year
       finalDAT <- spiPrediction(mergedDAT, pastPrecip, 
-                                startDate, endDate, prmsCols)
+                                startDate, endDate, 
+                                model, modelCols)
       
       
       # Update the metadata file next
@@ -281,7 +283,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
       # using a linear regression model and data downloaded from PRISM in a 
       # previous script
       finalDAT <- similarWYPrediction(mergedDAT, pastPrecip,
-                                      endDate, dirPath, pathMainDAT,
+                                      endDate, model, dirPath, pathMainDAT,
                                       pastPrecipPath)
       
       # The metadata will be updated in that function too
@@ -291,7 +293,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
     
     # For both the SPI and Similar Water Year methods, archive 'pastPrecipPath'
     copyFile(pastPrecipPath, 
-             paste0(dirPath, "/PRMS/Input/",
+             paste0(dirPath, "/", model, "/Input/",
                     pastPrecipPath |> str_remove("^.+[/\\\\]")) |>
                normalizePath(mustWork = FALSE), 
              quietly = TRUE)
@@ -302,12 +304,16 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
   # Make sure the "Runoff" columns all contain "1" for every row
   # (The meteorological dataset does not have these columns, and that causes
   #  "NA" entries to appear)
-  finalDAT <- finalDAT |>
-    mutate(across(starts_with("RUNOFF"), ~replace_na(., 1)))
+  if (model == "PRMS") {
+    
+    finalDAT <- finalDAT |>
+      mutate(across(starts_with("RUNOFF"), ~replace_na(., 1)))
+    
+  }
   
   
   # Perform a few checks on 'finalDAT'
-  validateInputDAT(finalDAT, sourcePath = NA_character_, "PRMS", prmsCols,
+  validateInputDAT(finalDAT, sourcePath = NA_character_, model, modelCols,
                    startDate, endDate, datType = "Final")
   
   
@@ -318,7 +324,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, prmsCols,
 
 
 
-spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) {
+spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols) {
   
   # Use the 12-month Standard Precipitation Index (SPI) to predict precipitation
   # and temperature for the rest of the water year
@@ -470,7 +476,7 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, prmsCols) 
   
   
   # Validate the DAT file before continuing
-  spiDAT <- validateInputDAT(spiDAT, NA_character_, "PRMS", prmsCols, 
+  spiDAT <- validateInputDAT(spiDAT, NA_character_, model, modelCols, 
                              startDate, endDate, datType = "SPI")
   
   
@@ -520,7 +526,7 @@ updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate,
 
 
 
-similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, 
+similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, model, 
                                  dirPath, pathMainDAT, pathPastPrecip) {
   
   # Use data downloaded from PRISM for the PRMS model bounds
@@ -538,10 +544,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   #  (*) "October - April" will be used in May - September
   
   
-  # The hard-coded model coefficients are here:
-  linModel <- list("FEB" = list(m = 1.17609533458122, b = 179.674010163306),
-                   "MAR" = list(m = 1.10546021129827, b = 25.5273627224535),
-                   "APR" = list(m = 1.00852388216750, b = 47.0563971511456))
+  # The hard-coded model coefficients are stored in another function
+  linModel <- importLinModels(model)
   
   
   # The model to use depends on the current month in 'endDate'
@@ -569,9 +573,9 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   }
   
   
-  # PRISM data that was previously downloaded for PRMS is also required
+  # PRISM data that was previously downloaded for the model is also required
   # Locate that file, confirm its existence, and validate the data
-  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_",
+  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_", model, "_Domain_Data_",
                       getModeledWY(endDate)[1], "_", endDate, ".csv") |>
     checkForPreviousOutput()
   
@@ -606,7 +610,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
   
   # Use 'pastPrecip' and 'currentPrecip' in conjunction with the linear model
   # Identify the most similar water year for the current water year
-  similarWY <- similarWY_findWY(endDate, pastPrecip, currentPrecip, 
+  similarWY <- similarWY_findWY(endDate, model, pastPrecip, currentPrecip, 
                                 dirPath, selectedMonth, linModel)
   
   
@@ -623,7 +627,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # 'currentPrecip' shoul be archived too, but that was already accomplished
+  # 'currentPrecip' should be archived too, but that was already accomplished
   # in a prior script
   
   
@@ -634,7 +638,41 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate,
 
 
 
-similarWY_findWY <- function (endDate, pastPrecip, currentPrecip, 
+importLinModels <- function (model) {
+  
+  # This function contains the linear regression model coefficients for PRMS and SRP
+  # These models were developed using the procedure described in "RRW_EX1_Similar_Water_Year_Models.R"
+  
+  # Depending on the specified model, the corresponding "October to February", 
+  # "October to March", and "October to April" coefficients are returned 
+  
+  
+  if (model == "PRMS") {
+    
+    return(list("FEB" = list(m = 1.17609533458122, b = 179.674010163306),
+                "MAR" = list(m = 1.10546021129827, b = 25.5273627224535),
+                "APR" = list(m = 1.00852388216750, b = 47.0563971511456)))
+    
+  } else if (model == "SRP") {
+    
+    return(list("FEB" = list(m = 1.18889417583887, b = 127.497807635486),
+                "MAR" = list(m = 1.09263349165030, b = 28.1349370455440),
+                "APR" = list(m = 1.01611885039427, b = 33.7042053778413)))
+    
+  } else {
+    
+    paste0("Unknown 'model' value (expected \"PRMS\" or \"SRP\")\n\n",
+           "Please revise the script!") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+}
+
+
+
+similarWY_findWY <- function (endDate, model, pastPrecip, currentPrecip, 
                               dirPath, endMonth, linModel) {
   
   # In March 2026, SDA staff developed three calibrated and validated linear 
@@ -809,7 +847,7 @@ similarWY_findWY <- function (endDate, pastPrecip, currentPrecip,
   
   # Write 'precipDF' as a CSV file to 'dirPath' next
   precipDF |>
-    writeOutput(paste0(dirPath, "/PRMS/Input/SimilarWY_Analysis.csv") |>
+    writeOutput(paste0(dirPath, "/", model, "/Input/SimilarWY_Analysis.csv") |>
                   normalizePath(mustWork = FALSE))
   
   

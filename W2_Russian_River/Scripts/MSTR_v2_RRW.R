@@ -1,7 +1,8 @@
 # This script contains the fully automated procedure for the supply and demand
 # components of the Russian River watershed's modeling workflow
 
-# This is the "v2" process that relies on the newer SRP and RRIHM models
+# This is the "v2" process that relies on the updated RRIHM and SRPHM models
+# SDA transitioned to using these models for the Russian River in 2026
 
 
 #### Setup ####
@@ -10,32 +11,34 @@
 base::remove(list = ls())
 
 
-# Import packages
-require(renv)
+# Check the working directory
+if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
+  stop("Please use \"DWRAT_DataScraping.Rproj\"")
+}
 
-restore()
+
+# Import packages next
+
+# Install 'renv' if it's not already present
+source("Shared_Scripts/Project_Setup.R")
+
 
 source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
-
 
 #### Scripts ####
 
 
-
 ##### User Inputs #####
 
-# Please open the following scripts and update them:
+# Please open the following script and update it:
 "CTR_001_Set_Start_and_End_Dates.R"
 
 
 ##### Process Pre-Check #####
 
-# Check that the directory is correctly set
-source("W2_Russian_River/Scripts/HLP_004_Check_Working_Directory.R")
-
-
 # Check if updates are required for the models' core DAT and Precipitation files
 source("W2_Russian_River/Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Files.R")
+
 
 ##### Web Scraping #####
 
@@ -48,7 +51,8 @@ source("W2_Russian_River/Scripts/HLP_008_Update_Main_DAT_and_Historic_Precip_Fil
 #   (*) NOAA
 #   (*) RAWS
 #   (*) CIMIS
-#   (*) CDEC
+#   (*) CDEC (precipitation)
+#   (*) CDEC (streamflow)
 
 
 source("W2_Russian_River/Scripts/RRW_001_PRISM_HTTP_Scraper.R")
@@ -58,6 +62,8 @@ source("W2_Russian_River/Scripts/RRW_002_NOAA_API_Scraper.R")
 source("W2_Russian_River/Scripts/RRW_003_RAWS_HTTP_Scraper.R")
 
 source("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
+
+source("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
 
 source("W2_Russian_River/Scripts/RRW_v2_005_CDEC_API_Scraper.R")
 
