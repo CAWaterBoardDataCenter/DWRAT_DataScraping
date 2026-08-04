@@ -27,7 +27,7 @@ col_widths <- (c(20,16,16,16,16,16,16,16,16,16,16,16,16))
 # Set the source folder path for importing .gag files
   # Change the source folder path to wherever you've stored your SRP model, e.g.
   # E:/SRPHSM_update_ag for example
-source_folder <- "C:/GitHub/DWRAT_DataScraping/Supply/InputData"
+source_folder <- "C:/SRPHM_update_ag"
 
 # Now import the files directly from the source folder
 gag_list <- list()  # create an empty list to store the imported dataframes

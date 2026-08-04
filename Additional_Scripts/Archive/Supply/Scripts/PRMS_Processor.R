@@ -21,7 +21,7 @@ require(tidyverse) #required for %>% operator
 #RR_PRMS_Processor----
 #Process the output CSV of the Russian River PRMS model
 ##Import RR PRMS CSV----
-PRMS_Output_Folder = "C:/GitHub/DWRAT_DataScraping/Supply/InputData"
+PRMS_Output_Folder = "C:/RR_PRMS/PRMS/output"
 
 PRMS_Output_File_Path = list.files(PRMS_Output_Folder, 
                                    pattern = "inq.csv$", 
