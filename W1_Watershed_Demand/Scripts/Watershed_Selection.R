@@ -36,7 +36,7 @@ if (file.exists(makeSharePointPath(getFromMasterControl("SHAREPOINT_DEMAND_CONTR
 
 
 # Select the row index of the chosen watershed
-ws <- ws[index, ] 
+ws <- ws[which(ws$INDEX == index)[1], ] 
 
 
 
