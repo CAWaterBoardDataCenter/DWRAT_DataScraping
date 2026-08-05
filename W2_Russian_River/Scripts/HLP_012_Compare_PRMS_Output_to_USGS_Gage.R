@@ -153,7 +153,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   # Import the required functions from "HLP_011_Compare_SRP_Output_to_USGS_Gage.R"
   c("compareGageAndModel", "prepNewDirectory", "generatePlotsAndTable",
     "generateStreamflowPlot", "getNiceAxisBreaks", "setPrecipColumnWidths",
-    "generateComparisonScatterplot") |>
+    "generateComparisonScatterplot", "calcMetrics") |>
     map(~ functionStealer("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R", .))
   
   compareGageAndModel(usgsDF, subDF, dirPath, gageID, subPath, prismDF, datDF,
