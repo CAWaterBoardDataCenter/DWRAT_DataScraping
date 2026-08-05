@@ -856,8 +856,8 @@ compareGageAndModel <- function (usgsDF, gagDF, dirPath, gageID, gagPath,
   # if the monthly streamflow NSE value is below 0.5, 
   # stop the script and flag it as an error
   # (Exceptions are made for PRMS streamflow gages)
-  if (statDF$MONTHLY_RESULT[grepl("Nash", statDF$METRIC) & 
-                            statDF$TIMESCALE == "All"] < 0.50 &&
+  if (statDF$MONTHLY_RESULT[grepl("^Nash", statDF$METRIC) & 
+                            statDF$TIMESCALE == "All" & statDF$SEASON == "All"] < 0.50 &&
       !(gageID %in% c("11461500", "11464000"))) {
     
     paste0("Unexpectedly Low Nash-Sutcliffe Result for Monthly Streamflow\n\n",
@@ -1063,33 +1063,37 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
   
   
   # After that, create a tibble that contains different statistical metrics
-  statDF <- tibble("TIMESCALE" = timescale, 
+  statDF <- tibble("TIMESCALE" = timescale,
+                   "SEASON" = "All", 
                    "METRIC" = c("Nash-Sutcliffe Efficiency",
-                                "Dry-Month Nash-Sutcliffe Efficiency",
-                                "Wet-Month Nash-Sutcliffe Efficiency",
                                 "P-Bias",
-                                "Dry-Month P-Bias",
-                                "Wet-Month P-Bias",
                                 paste0("Root Mean Square Error to ",
                                        "Standard Deviation Ratio"),
-                                paste0("Dry-Month Root Mean Square Error to ",
-                                       "Standard Deviation Ratio"),
-                                paste0("Wet-Month Root Mean Square Error to ",
-                                       "Standard Deviation Ratio"),
                                 "Modified Kling-Gupta Efficiency",
-                                "Dry-Month Modified Kling-Gupta Efficiency",
-                                "Wet-Month Modified Kling-Gupta Efficiency",
-                                "R Squared",
-                                "Dry-Month R Squared",
-                                "Wet-Month R Squared"),
+                                "R Squared"),
                    "DAILY_RESULT" = NA_real_,
                    "DAILY_NOTES" = "--",
                    "MONTHLY_RESULT" = NA_real_,
                    "MONTHLY_NOTES" = "--")
   
   
-  # For the statistical metrics, prepare "dry-month" and "wet-month" versions
-  # of both 'dailyDF' and 'monthlyDF'
+  # Calculate statistical summaries for daily and monthly timescales
+  statDF <- statDF |>
+    calcMetrics(dailyDF, monthlyDF)
+    
+  
+  # Prepare two additional versions of 'statDF'
+  # There will be "dry-month" and "wet-month" versions based on the
+  # months selected in 'dryMonths'
+  statDF_Dry <- statDF |>
+    mutate(SEASON = "Dry")
+  
+  
+  statDF_Wet <- statDF |>
+    mutate(SEASON = "Wet")
+  
+  
+  # Create different versions of both 'dailyDF' and 'monthlyDF' too
   dryDaily <- dailyDF |>
     filter(month(DATE) %in% dryMonths)
   
@@ -1103,95 +1107,40 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
     filter(month(YEAR_MONTH) %notin% dryMonths)
   
   
+  # Calculate the metrics in the dry and wet versions of 'statDF'
+  statDF_Dry <- statDF_Dry |>
+    calcMetrics(dryDaily, dryMonthly)
+  
+  statDF_Wet <- statDF_Wet |>
+    calcMetrics(wetDaily, wetMonthly)
+  
+  
+  # Similarly, for "dry-month" and "wet-month" metrics,  
+  # add notes that specify which months are considered "dry" and "wet"
+  dryStr <- month.abb[dryMonths] |> paste0(collapse = "; ")
+  wetStr <- month.abb[-dryMonths] |> paste0(collapse = "; ")
+  
+  
+  statDF_Dry <- statDF_Dry |>
+    mutate(DAILY_NOTES = if_else(DAILY_NOTES == "--",
+                                 dryStr,
+                                 paste0(DAILY_NOTES, "; ", dryStr))) |>
+    mutate(MONTHLY_NOTES = if_else(MONTHLY_NOTES == "--",
+                                   dryStr,
+                                   paste0(MONTHLY_NOTES, "; ", dryStr)))
+  
+  statDF_Wet <- statDF_Wet |>
+    mutate(DAILY_NOTES = if_else(DAILY_NOTES == "--",
+                                 wetStr,
+                                 paste0(DAILY_NOTES, "; ", wetStr))) |>
+    mutate(MONTHLY_NOTES = if_else(MONTHLY_NOTES == "--",
+                                   wetStr,
+                                   paste0(MONTHLY_NOTES, "; ", wetStr)))
+  
+  
+  # Finally, combine 'statDF', 'statDF_Dry', and 'statDF_Wet'
   statDF <- statDF |>
-    mutate(DAILY_RESULT = 
-             case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Dry.+Nash", METRIC) ~ calcNSE(dryDaily$GAGE, dryDaily$MODEL),
-               grepl("^Wet.+Nash", METRIC) ~ calcNSE(wetDaily$GAGE, wetDaily$MODEL),
-               grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Dry.+Bias$", METRIC) ~ calcPBias(dryDaily$GAGE, dryDaily$MODEL),
-               grepl("^Wet.+Bias$", METRIC) ~ calcPBias(wetDaily$GAGE, wetDaily$MODEL),
-               grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Dry.+Root", METRIC) ~ calcRSR(dryDaily$GAGE, dryDaily$MODEL),
-               grepl("^Wet.+Root", METRIC) ~ calcRSR(wetDaily$GAGE, wetDaily$MODEL),
-               grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Dry.+Modif", METRIC) ~ calcMKGE(dryDaily$GAGE, dryDaily$MODEL),
-               grepl("^Wet.+Modif", METRIC) ~ calcMKGE(wetDaily$GAGE, wetDaily$MODEL),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Dry.+R Sq", METRIC) ~ calcRSqrd(dryDaily$GAGE, dryDaily$MODEL),
-               grepl("^Wet.+R Sq", METRIC) ~ calcRSqrd(wetDaily$GAGE, wetDaily$MODEL)
-             )) |>
-    mutate(MONTHLY_RESULT = 
-             case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Dry.+Nash", METRIC) ~ calcNSE(dryMonthly$GAGE, dryMonthly$MODEL),
-               grepl("^Wet.+Nash", METRIC) ~ calcNSE(wetMonthly$GAGE, wetMonthly$MODEL),
-               grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Dry.+Bias$", METRIC) ~ calcPBias(dryMonthly$GAGE, dryMonthly$MODEL),
-               grepl("^Wet.+Bias$", METRIC) ~ calcPBias(wetMonthly$GAGE, wetMonthly$MODEL),
-               grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Dry.+Root", METRIC) ~ calcRSR(dryMonthly$GAGE, dryMonthly$MODEL),
-               grepl("^Wet.+Root", METRIC) ~ calcRSR(wetMonthly$GAGE, wetMonthly$MODEL),
-               grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Dry.+Modif", METRIC) ~ calcMKGE(dryMonthly$GAGE, dryMonthly$MODEL),
-               grepl("^Wet.+Modif", METRIC) ~ calcMKGE(wetMonthly$GAGE, wetMonthly$MODEL),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Dry.+R Sq", METRIC) ~ calcRSqrd(dryMonthly$GAGE, dryMonthly$MODEL),
-               grepl("^Wet.+R Sq", METRIC) ~ calcRSqrd(wetMonthly$GAGE, wetMonthly$MODEL)
-             ))
-  
-  
-  # For P-Bias, add to the "NOTES" columns whether the result is an
-  # overprediction or underprediction (this interpretation varies depending 
-  # on the exact formula used)
-  statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
-    calcPBias(dailyDF$GAGE, dailyDF$MODEL) |> 
-    attributes() |> pluck(1)
-  
-  
-  statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
-    calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
-    attributes() |> pluck(1)
-  
-  
-  # Similarly, for "dry-month" and "wet-month" metrics, clarify which months 
-  # are considered "dry" and "wet"
-  statDF$DAILY_NOTES[grepl("^Dry-Month", statDF$METRIC)] <-
-    month.abb[dryMonths] |> paste0(collapse = "; ")
-  
-  statDF$DAILY_NOTES[grepl("^Wet-Month", statDF$METRIC)] <-
-    month.abb[-dryMonths] |> paste0(collapse = "; ")
-  
-  
-  statDF$MONTHLY_NOTES[grepl("^Dry-Month", statDF$METRIC)] <-
-    month.abb[dryMonths] |> paste0(collapse = "; ")
-  
-  statDF$MONTHLY_NOTES[grepl("^Wet-Month", statDF$METRIC)] <-
-    month.abb[-dryMonths] |> paste0(collapse = "; ")
-  
-  
-  # Both sets of notes are required for dry-month and wet-month P-Bias values
-  statDF$DAILY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)] <- 
-    paste0(calcPBias(dryDaily$GAGE, dryDaily$MODEL) |> 
-             attributes() |> pluck(1),
-           "; ", statDF$DAILY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)])
-  
-  statDF$DAILY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)] <- 
-    paste0(calcPBias(wetDaily$GAGE, wetDaily$MODEL) |> 
-             attributes() |> pluck(1),
-           "; ", statDF$DAILY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)])
-  
-  
-  statDF$MONTHLY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)] <- 
-    paste0(calcPBias(dryMonthly$GAGE, dryMonthly$MODEL) |> 
-             attributes() |> pluck(1),
-           "; ", statDF$MONTHLY_NOTES[grepl("^Dry.+Bias$", statDF$METRIC)])
-  
-  statDF$MONTHLY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)] <- 
-    paste0(calcPBias(wetMonthly$GAGE, wetMonthly$MODEL) |> 
-             attributes() |> pluck(1),
-           "; ", statDF$MONTHLY_NOTES[grepl("^Wet.+Bias$", statDF$METRIC)])
+    bind_rows(statDF_Dry, statDF_Wet)
   
   
   # Return 'statDF'
@@ -2090,6 +2039,66 @@ generateComparisonScatterplot <- function (monthlyDF, writePath, xCol, yCol,
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+calcMetrics <- function (statDF, dailyDF, monthlyDF) {
+  
+  # Calculate five different statistical metrics on daily and monthly timescales
+  
+  # There should be a "METRIC" column in 'statDF' that identifies different measures
+  # (Nash-Sutcliffe, P-Bias, etc.)
+  
+  # The "DAILY_RESULT" and "MONTHLY_RESULT" columns will be updated with calculations
+  # based on the value present in "METRIC" for each row
+  
+  # "DAILY_NOTES" and "MONTHLY_NOTES" columns are required too for P-Bias 
+  # (to help clarify "overestimation" and "underestimation")
+  
+  
+  # Calculate the daily and monthly results first
+  statDF <- statDF |>
+    mutate(DAILY_RESULT = 
+             case_when(
+               grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
+               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
+               .default = NA_real_
+             )) |>
+    mutate(MONTHLY_RESULT = 
+             case_when(
+               grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
+               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
+               .default = NA_real_
+             ))
+  
+  
+  # For P-Bias, add to the two "NOTES" columns whether the result is an
+  # overprediction or underprediction 
+  # (this interpretation varies depending on the exact P-Bias formula used)
+  if ("P-Bias" %in% statDF$METRIC) {
+    
+    statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
+      calcPBias(dailyDF$GAGE, dailyDF$MODEL) |> 
+      attributes() |> pluck(1)
+    
+    
+    statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
+      calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
+      attributes() |> pluck(1)
+    
+  }
+  
+  
+  # Return 'statDF'
+  return(statDF)
   
 }
 
