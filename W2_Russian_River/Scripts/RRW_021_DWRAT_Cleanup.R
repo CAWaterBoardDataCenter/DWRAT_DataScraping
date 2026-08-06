@@ -66,21 +66,27 @@ mainProcedure <- function () {
                    intern = TRUE)
   
   
-  # 'ymlRes' should be empty
+  # 'ymlRes' should be empty or only contain warning messages
   # Otherwise, an error may have occurred
   if (length(ymlRes) > 0) {
     
     # Include the output message in the console 
-    cat("\n\nOutput Message(s):\n\n")
+    cat("\n\nOutput Message(s) from Export Operation:\n\n")
     print(ymlRes)
     
     
-    paste0("Anaconda Export Error\n\n",
-           "An error was encountered while exporting the \"paradigm-dwrat\" ",
-           "environment to a file. Please investigate the model's output ",
-           "messages above.") |>
-      errWrap() |>
-      stop()
+    # Check if the word "error" appears anywhere in 'ymlRes'
+    if (any(grepl("Error", ymlRes, ignore.case = TRUE))) {
+      
+      # If yes, output an error message too
+      paste0("Anaconda Export Error\n\n",
+             "An error was encountered while exporting the \"paradigm-dwrat\" ",
+             "environment to a file. Please investigate the model's output ",
+             "messages above.") |>
+        errWrap() |>
+        stop()
+      
+    }
     
   }
   
@@ -297,7 +303,7 @@ updateMetadataCompilation <- function (dirPath) {
       bind_rows(metaDF)
     
     
-  # If the file does NOT exist yet, use 'metaDF' to establish it
+    # If the file does NOT exist yet, use 'metaDF' to establish it
   } else {
     
     compiledDF <- metaDF
@@ -323,5 +329,3 @@ mainProcedure()
 
 # Clean up
 base::remove(list = ls())
-
-
