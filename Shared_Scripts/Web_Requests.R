@@ -24,6 +24,7 @@ requestCDEC <- function (stationVec, startDate, endDate,
   
   # Sensor 23 is "Reservoir Outflow" (cfs)
   # Sensor 45 is "Incremental Precipitation" (in)
+  # Sensor 76 is "Reservoir Inflow" (cfs) 
   
   # "Dur Code" set to "D" means "daily" data
   
