@@ -169,7 +169,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # (In that case, there would be only one source for precipitation data)
   
- 
+  
   # First check if the "Input" SRP folder contains a single CSV for these 
   # PRISM precipitation averages
   compiledPath <- paste0(dirPath, "/", model, "/Input/",
@@ -963,7 +963,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
     dailyDF <- dailyDF |>
       filter(DATE > cutoff)
     
-  # This filter is for the last five years
+    # This filter is for the last five years
   } else if (timescale == "5_yr") {
     
     cutoff <- max(dailyDF$DATE) - years(5)
@@ -972,7 +972,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
     dailyDF <- dailyDF |>
       filter(DATE > cutoff)
     
-  # This filter applies to the last ten years
+    # This filter applies to the last ten years
   } else if (timescale == "10_yr") {
     
     cutoff <- max(dailyDF$DATE) - years(10)
@@ -986,7 +986,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
   
   # Next, create a monthly version of 'dailyDF' too
   # Use only complete months and rely on "YEAR_MONTH" to help group data
-
+  
   # With data in acre-feet per day, summing the data by month will 
   # result in units of acre-feet per month
   monthlyDF <- dailyDF |>
@@ -1080,7 +1080,7 @@ generatePlotsAndTable <- function (dailyDF, newDir, timescale, prismDF, datDF,
   # Calculate statistical summaries for daily and monthly timescales
   statDF <- statDF |>
     calcMetrics(dailyDF, monthlyDF)
-    
+  
   
   # Prepare two additional versions of 'statDF'
   # There will be "dry-month" and "wet-month" versions based on the
@@ -1216,9 +1216,9 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
       errWrap() |>
       stop()
     
-  # The streamflow columns in 'yCol' must be numeric or integer variables
+    # The streamflow columns in 'yCol' must be numeric or integer variables
   } else if (!all(streamDF[yCol] |> 
-                      map_lgl(~ class(.) %in% c("numeric", "integer")))) {
+                  map_lgl(~ class(.) %in% c("numeric", "integer")))) {
     
     cat("\n\n")
     cat("Is a Numeric Column?\n")
@@ -1342,7 +1342,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
                                    by = "days")) |>
       filter(!(DATE %in% streamDF$DATE))
     
-  # For monthly streamflow charts, get the missing "YEAR_MONTH" pairs instead
+    # For monthly streamflow charts, get the missing "YEAR_MONTH" pairs instead
   } else {
     
     missingDF <- tibble(DATE = seq(from = min(streamDF$YEAR_MONTH),
@@ -1385,7 +1385,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
     # Limit the chart's y-axis to the values in 'yBounds'
     
     theme_gray(base_size = 20)
-    # Set the default font size to "20" units instead of "11"
+  # Set the default font size to "20" units instead of "11"
   
   
   # The x-axis labels use either "Year-Month" or "Year" depending on the size
@@ -1418,10 +1418,10 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   if (length(yCol) > 1) {
     
     # Set the colors of the streamflow lines (plus the name of their legend)
-     streamPlot <- streamPlot +
+    streamPlot <- streamPlot +
       guides(color = guide_legend(title = "Flow Type")) +
       scale_color_manual(values = colOptions |> set_names(yColLegendName))
-      
+    
   }
   
   
@@ -1605,72 +1605,72 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
                       sec.axis = 
                         sec_axis(~ . * diff(precipRange) / diff(yBounds), 
                                  name = yLabel2))
-      # This is what actually flips the y-axis to come down from the top
-      # 
-      # The breaks are set using 'breakVals' (described earlier)
-      # 
-      # The labels have a transformation applied so that they reflect the
-      # bottom-up streamflow data correctly (and their numbers are actually 
-      # nice thanks to the efforts in creating 'breakVals')
-      # 
-      # The secondary y-axis for precipitation is also setup here
-      # 
-      # Its values *should* come from the top down, so the default axis values
-      # will already be nice numbers
-      # 
-      # The only requirement is specifying the transformation correctly 
-      # (since all secondary y-axes are purely decorative, and the data is 
-      #  actually still plotted relative to the streamflow axis)
-      # 
-      # This is why a transformation was applied to the precipitation data in
-      # the `geom_col` call
-      # 
-      # The data was rescaled to follow the reversed streamflow axis properly
-      # 
-      # The secondary axis has the opposite of this transformation so that 
-      # the streamflow y-axis values can be rescaled in the secondary y-axis and 
-      # properly reflect the original precipitation values
-      # 
-      
-     
-      # ...Who knew the plotting would get so complicated? (>.<)
-      
-      # To summarize, the streamflow and precipitation values are a lie
-      # As are both y-axes' labels
-    
-      # The streamflow lines and precipitation columns get their values 
-      # by assuming that y = 0 is at the top of the graph
-    
-      # This is still true
-    
-      # However, their values have been rescaled to create the illusion that: 
-      # (1) the streamflow data is coming from the bottom
-      # (2) the precipitation data is relative to the secondary axis
+    # This is what actually flips the y-axis to come down from the top
+    # 
+    # The breaks are set using 'breakVals' (described earlier)
+    # 
+    # The labels have a transformation applied so that they reflect the
+    # bottom-up streamflow data correctly (and their numbers are actually 
+    # nice thanks to the efforts in creating 'breakVals')
+    # 
+    # The secondary y-axis for precipitation is also setup here
+    # 
+    # Its values *should* come from the top down, so the default axis values
+    # will already be nice numbers
+    # 
+    # The only requirement is specifying the transformation correctly 
+    # (since all secondary y-axes are purely decorative, and the data is 
+    #  actually still plotted relative to the streamflow axis)
+    # 
+    # This is why a transformation was applied to the precipitation data in
+    # the `geom_col` call
+    # 
+    # The data was rescaled to follow the reversed streamflow axis properly
+    # 
+    # The secondary axis has the opposite of this transformation so that 
+    # the streamflow y-axis values can be rescaled in the secondary y-axis and 
+    # properly reflect the original precipitation values
+    # 
     
     
-      # The formula applied to the streamflow data made it so that the values we 
-      # want to show are indeed scaled correctly (and relative to the bottom of 
-      # the graph--as if y = 0 was at the bottom of the plot!)
+    # ...Who knew the plotting would get so complicated? (>.<)
     
-      # Meanwhile, the main y-axis labels are also reversing the y-axis reverse, 
-      # with breaks in the graph set at "nice numbers" when considered from the 
-      # bottom-up (i.e., y = 0 at the bottom of the plot)
+    # To summarize, the streamflow and precipitation values are a lie
+    # As are both y-axes' labels
     
-      # These breaks are likely ugly if we consider their "true" top-down values
+    # The streamflow lines and precipitation columns get their values 
+    # by assuming that y = 0 is at the top of the graph
     
-      # And the precipitation data is intended to be top-down, but it is plotted
-      # against the streamflow data's y-axis, which has a different scaling
-      
-      # So the precipitation data is transformed (mapping its extremes to the 
-      # extremes of the streamflow data)
+    # This is still true
     
-      # Then, to support this illusion, the labels have the reverse of that 
-      # transformation applied (scaling the streamflow y-axis values to the  
-      # precipitation values' actual range)
+    # However, their values have been rescaled to create the illusion that: 
+    # (1) the streamflow data is coming from the bottom
+    # (2) the precipitation data is relative to the secondary axis
     
-      # In this case, since we are maintaining the top-down axis labeling, the
-      # breaks set by `ggplot` end up being nice numbers for the precipitation
-      # values
+    
+    # The formula applied to the streamflow data made it so that the values we 
+    # want to show are indeed scaled correctly (and relative to the bottom of 
+    # the graph--as if y = 0 was at the bottom of the plot!)
+    
+    # Meanwhile, the main y-axis labels are also reversing the y-axis reverse, 
+    # with breaks in the graph set at "nice numbers" when considered from the 
+    # bottom-up (i.e., y = 0 at the bottom of the plot)
+    
+    # These breaks are likely ugly if we consider their "true" top-down values
+    
+    # And the precipitation data is intended to be top-down, but it is plotted
+    # against the streamflow data's y-axis, which has a different scaling
+    
+    # So the precipitation data is transformed (mapping its extremes to the 
+    # extremes of the streamflow data)
+    
+    # Then, to support this illusion, the labels have the reverse of that 
+    # transformation applied (scaling the streamflow y-axis values to the  
+    # precipitation values' actual range)
+    
+    # In this case, since we are maintaining the top-down axis labeling, the
+    # breaks set by `ggplot` end up being nice numbers for the precipitation
+    # values
     
   }
   
@@ -1690,7 +1690,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
       
       scale_alpha_manual(values = 0.2) + 
       guides(alpha = guide_legend(title = "Missing Data"))
-      # Use the transparency "alpha" parameter and create a legend for missing data
+    # Use the transparency "alpha" parameter and create a legend for missing data
     
   }
   
@@ -1708,7 +1708,7 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
     widthFactor <- 10
     heightFactor <- 8
     
-  # Otherwise, a smaller dataset can use a smaller chart area
+    # Otherwise, a smaller dataset can use a smaller chart area
   } else {
     
     widthFactor <- 8
@@ -1795,7 +1795,7 @@ getNiceAxisBreaks <- function (yMax, yMin = 0) {
     # Use one increment lower for 'maxNiceBound'
     maxNiceBound <- maxNiceBound - 10^(numDigits - 1)
     
-  # If 'yMax' is closer to the halfway point to 'maxNiceBound'
+    # If 'yMax' is closer to the halfway point to 'maxNiceBound'
   } else if (yMax < maxNiceBound - 4 * 10^(numDigits - 2)) {
     
     # Use half an increment lower for 'maxNiceBound'
@@ -1906,24 +1906,24 @@ setPrecipColumnWidths <- function (isDaily, numRecords) {
       
       return(1)
       
-    # 5 years or less of data
+      # 5 years or less of data
     } else if (numRecords <= 365 * 5) {
       
       return(1.5)
       
-    # 10 years or less of data
+      # 10 years or less of data
     } else if (numRecords <= 365 * 10) {
       
       return(2.8)
       
-    # More than 10 years of data
+      # More than 10 years of data
     } else {
       
       return(3.8)
       
     }
     
-  # Otherwise, for monthly precipitation,
+    # Otherwise, for monthly precipitation,
   } else {
     
     # 2 years of data or less
@@ -1931,17 +1931,17 @@ setPrecipColumnWidths <- function (isDaily, numRecords) {
       
       return(1.5)
       
-    # 5 years of data or less
+      # 5 years of data or less
     } else if (numRecords <= 12 * 5) {
       
       return(3)
       
-    # 10 years of data or less
+      # 10 years of data or less
     } else if (numRecords <= 12 * 10) {
       
       return(4.5)
       
-    # More than 10 years of data
+      # More than 10 years of data
     } else {
       
       return(5.5)
@@ -2007,7 +2007,7 @@ generateComparisonScatterplot <- function (monthlyDF, writePath, xCol, yCol,
     # Apply 'xLab' and 'yLab' as the axis labels
     
     theme_gray(base_size = 20)
-    # Set the base font size to 20 units
+  # Set the base font size to 20 units
   
   
   # 'comparisonPlot' now contains the desired chart specifications
@@ -2058,41 +2058,70 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
   # (to help clarify "overestimation" and "underestimation")
   
   
-  # Calculate the daily and monthly results first
-  statDF <- statDF |>
-    mutate(DAILY_RESULT = 
-             case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
-               .default = NA_real_
-             )) |>
-    mutate(MONTHLY_RESULT = 
-             case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
-               .default = NA_real_
-             ))
+  # Calculate the daily results first
+  if (nrow(dailyDF) > 0) {
+    
+    statDF <- statDF |>
+      mutate(DAILY_RESULT = 
+               case_when(
+                 grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
+                 .default = NA_real_
+               ))
+    
+    
+    # For P-Bias, add to the "DAILY_NOTES" column whether the result is an
+    # overprediction or underprediction 
+    # (this interpretation varies depending on the exact P-Bias formula used)
+    if ("P-Bias" %in% statDF$METRIC) {
+      
+      statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
+        calcPBias(dailyDF$GAGE, dailyDF$MODEL) |> 
+        attributes() |> pluck(1)
+      
+    }
+    
+    # If no data is available, simply set the result values to "NA"
+  } else {
+    
+    statDF$DAILY_RESULT <- NA_real_
+    
+  }
   
   
-  # For P-Bias, add to the two "NOTES" columns whether the result is an
-  # overprediction or underprediction 
-  # (this interpretation varies depending on the exact P-Bias formula used)
-  if ("P-Bias" %in% statDF$METRIC) {
+  # Do a similar procedure with the monthly values
+  if (nrow(monthlyDF) > 0) {
     
-    statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
-      calcPBias(dailyDF$GAGE, dailyDF$MODEL) |> 
-      attributes() |> pluck(1)
+    statDF <- statDF |>
+      mutate(MONTHLY_RESULT = 
+               case_when(
+                 grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
+                 .default = NA_real_
+               ))
     
     
-    statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
-      calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
-      attributes() |> pluck(1)
+    # Once again, for P-Bias, specify in the "MONTHLY_NOTES" column whether 
+    # the result is an overprediction or underprediction 
+    # (this interpretation varies depending on the exact P-Bias formula used)
+    if ("P-Bias" %in% statDF$METRIC) {
+      
+      statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
+        calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
+        attributes() |> pluck(1)
+      
+    }
+    
+  # If no data is available, all metrics should be "NA"
+  } else {
+    
+    statDF$MONTHLY_RESULT <- NA_real_
     
   }
   
