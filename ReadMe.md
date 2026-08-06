@@ -2,7 +2,7 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-07-29  
+**Last Updated On:** 2026-08-06  
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
@@ -58,6 +58,11 @@ Assuming the "DWRAT_DataScraping" project is active, the shared script **Project
 [^1]: Please remember to encase the path name in quotation marks if it contains spaces.
   
 **NOTE**: For the "W2_Russian_River" workflow, dependency setup is performed **automatically** by the scripts. Eventually, the other workflows will be updated to do the same as well.  
+  
+## Master Control File  
+Updating [Master_Control_File.xlsx](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Master_Control_File.xlsx) is optional for most users. Each workflow has its own specific control file(s) that must be filled in, but this spreadsheet specifically is only relevant for supplemental project-level features. Most notably, this file enables the scripts to check locally synced cloud repositories like SharePoint.  
+  
+If this file is left blank, there is one warning that may appear for users when running some of the workflow scripts. Once per session per day, users will receive a warning message if the "INITIAL_SHAREPOINT_FILE_PORTION" field has no associated value. If cloud-based repositories will *not* be used, this message can be silenced permanently by inputting any value into Cell C10 of the spreadsheet (e.g., typing in "NA").  
   
 ## Running a Workflow  
 The remaining setup requirements depend on the chosen workflow. For more information, please consult the workflows' primary scripts and associated documentation.  
