@@ -67,8 +67,7 @@ error_if <- function (condition, message) {
   if (condition == TRUE) {
     
     message |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -116,8 +115,7 @@ functionStealer <- function (scriptPath, functionName) {
            "\"", scriptPath, "\" does not point to a valid location. ",
            "`functionStealer` requires a valid target script as input for ",
            "'scriptPath'. Please investigate.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   } else if (!grepl("\\.R$", scriptPath, ignore.case = TRUE)) {
     
@@ -125,8 +123,7 @@ functionStealer <- function (scriptPath, functionName) {
            "\"", scriptPath, "\" is not an R script (i.e., it does not have the ",
            ".R extension). `functionStealer` requires a valid R script ",
            "as input for 'scriptPath'. Please investigate.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -159,8 +156,7 @@ functionStealer <- function (scriptPath, functionName) {
            "function with the name \"", functionName, "\". However, it could ",
            "not be located. This input name gave ", length(functionStart), " ",
            "matches. Please investigate.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -326,8 +322,7 @@ functionStealer <- function (scriptPath, functionName) {
                "case. Please investigate the procedure for excluding comments ",
                "(denoted by \"#\") from extracting functions via ",
                "`functionStealer`. (The line was \"", tempLine, "\").") |>
-          errWrap() |>
-          stop()
+          stop_script()
         
       }
       
@@ -389,8 +384,7 @@ functionStealer <- function (scriptPath, functionName) {
              "failed. From Line ", functionStart, " to Line ", checkLine, ", ",
              "there appear to be more closing braces overall than open braces. ",
              "Please investigate.") |>
-        errWrap() |>
-        stop()
+        stop_script()
       
     }
     
@@ -419,8 +413,7 @@ functionStealer <- function (scriptPath, functionName) {
            "`functionStealer` uses the curly braces (\"{\" and \"}\") to ",
            "identify the bounds of the function. However, this procedure ",
            "failed. Please investigate.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -566,6 +559,20 @@ spaceSplit <- function (str) {
 
 
 
+stop_script <- function (message) {
+  
+  # Stop running a script
+  
+  # For a given string 'mesage', adjust its formatting before displaying the error
+  
+  message |>
+    errWrap() |>
+    stop()
+  
+}
+
+
+
 twoDigitText <- function (num) {
   
   # This function is called when a number is being written to a string
@@ -644,8 +651,7 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
            "columns to add to the metadata table. However, the input 'newCols' ",
            "does not have names for each element in the list.\n\n",
            "Please correct this issue and try again.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -664,8 +670,7 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
            "should have only one value. However, the input 'newCols' does not ",
            "abide by this requirement.\n\n",
            "Please correct this issue and try again.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
