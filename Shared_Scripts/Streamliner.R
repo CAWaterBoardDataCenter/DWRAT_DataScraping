@@ -16,12 +16,65 @@
 
 #### Functions ####
 
-notAll <- function (logVec) {
+
+all_null <- function (...) {
   
-  # Given a logical vector, return TRUE if any of these elements are FALSE
-  # (This works with single element logical variables too)
+  # This function returns TRUE if all inputs are NULL
+  # If any input is not NULL, or no input is NULL, the function returns FALSE
   
-  return(!all(logVec))
+  
+  # All inputs as separate elements in a list
+  args <- list(...)
+  
+  
+  # Use `sapply` to evaluate each argument
+  nullRes <- sapply(args, is.null, simplify = TRUE)
+  
+  
+  # Return TRUE if all values are TRUE in 'nullRes'
+  return(all(nullRes))
+  
+}
+
+
+
+any_null <- function (...) {
+  
+  # This function returns TRUE if any inputs are NULL
+  # If all inputs are not NULL, or no input is NULL, the function returns FALSE
+  
+  
+  # All inputs as separate elements in a list
+  args <- list(...)
+  
+  
+  # Use `sapply` to evaluate each argument
+  nullRes <- sapply(args, is.null, simplify = TRUE)
+  
+  
+  # Return TRUE if any values are TRUE in 'nullRes'
+  return(any(nullRes))
+  
+}
+
+
+
+error_if <- function (condition, message) {
+  
+  # If a 'condition' resolves to TRUE, 
+  # output an error message (contained in 'message')
+  
+  if (condition == TRUE) {
+    
+    message |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Return nothing otherwise
+  return(invisible(NULL))
   
 }
 
@@ -446,6 +499,34 @@ getModeledWY <- function (endDate) {
                          paste0(year(endDate), "-09-30"),
                          paste0(year(endDate) + 1, "-09-30"))) |>
            as.Date(format = "%Y-%m-%d"))
+  
+}
+
+
+
+is_consistent_null <- function (...) {
+  
+  # For every argument provided, check if they have consistent states
+  
+  # This function returns TRUE if every argument is NULL or every argument
+  # is not NULL
+  
+  # Otherwise, FALSE is returned
+  
+  
+  # Either all arguments should be NULL, or none of the arguments should be NULL
+  return(all_null(...) || !any_null(...))
+  
+}
+
+
+
+notAll <- function (logVec) {
+  
+  # Given a logical vector, return TRUE if any of these elements are FALSE
+  # (This works with single element logical variables too)
+  
+  return(!all(logVec))
   
 }
 
