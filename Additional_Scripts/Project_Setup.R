@@ -27,3 +27,7 @@ Sys.setenv(RENV_DOWNLOAD_METHOD = "libcurl")
 
 # Setup the R environment
 restore(prompt = FALSE)
+
+
+# Setup the custom "SDA" package too
+source("Additional_Scripts/Custom_Package_Setup.R")
