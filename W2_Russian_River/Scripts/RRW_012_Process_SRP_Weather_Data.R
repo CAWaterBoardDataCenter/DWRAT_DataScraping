@@ -40,11 +40,12 @@ source("Additional_Scripts/Load_Packages.R")
 # Import shared functions
 source("Shared_Scripts/!Shared_Functions_Importer.R")
 source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
+source("W2_Russian_River/Scripts/HLP_014_Generate_Metorological_Dataset.R")
 
 
 #### Functions ####
 
-mainProcedure <- function () {
+mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   cat("\n\n")
   cat("Starting 'RRW_012_Process_SRP_Weather_Data.R'!\n")
@@ -54,91 +55,61 @@ mainProcedure <- function () {
   source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  # Start with a vector containing every single required input file
-  inputFiles <- tibble("PRISM_INPUT" = 
-                         getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
-                         sharepointPathCheck(isFolder = FALSE),
-                       "PRISM_OUTPUT" = 
-                         paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_",
-                                startDate, "_", endDate, ".csv"))
+  # Use the functions in 'HLP_014_Generate_Metorological_Dataset.R' 
+  # to complete this procedure
   
+  # This function requires several different inputs
+  # Input model information, the paths to meteorological input and output files,
+  # and QA/QC filepaths 
   
-  # Check if any required input files are missing
-  if (!all(map_lgl(inputFiles, file.exists))) {
-    
-    # Get the names of the missing files before sending a message
-    missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
-    
-    
-    # Output the error
-    stop(paste0("Missing Required Input File", 
-                if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-                "This script requires that the PRISM web scraping script ",
-                "was run for the chosen date range (",
-                startDate, " to ", endDate, ")\n\n",
-                "However, the following file", 
-                if_else(length(missingFiles) > 1, "s are", " is"), 
-                " missing:\n\n",
-                paste0(" (*) ", names(missingFiles), ": \"", 
-                       missingFiles, "\"", collapse = "\n\n"), "\n\n",
-                "Please prepare any required input files and then run ",
-                "the corresponding script", 
-                if_else(length(missingFiles) > 1, "s", ""),
-                " first") |>
-           errWrap())
-    
-  }
-  
-  
-  # Check that the model hydrology folder was setup correctly too
-  dirPath <- validateHydroFolder(startDate, endDate)
-  
-  
-  # Read in the files next
-  prismInput <- inputFiles$PRISM_INPUT[1] |> getFile() |> unique()
-  prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
-  
-  
-  # Validate the variables next
-  cat("[1/2]\tChecking input files...\n")
-  
-  
-  # Ensure that they have the expected formatting
-  validateInputs(prismInput, prismDF, inputFiles)
-  
-  
-  cat("\tDone!\n\n")
-  
-  
-  # After all validation requirements have been cleared, prepare a single
-  # properly formatted meteorological dataset using PRISM data
-  cat("[2/2]\tPreparing final meteorological dataset...\n")
-  
-  
-  prismProcessed <- reformatClimateData(prismDF, prismInput, "PRISM")
-  
-  
-  cat("\tDone!\n\n")
-  
-  
-  # Once this step is complete, write 'prismProcessed' to a file
-  outFile <- paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate, "_",
-                    endDate, ".csv")
-  
-  
-  prismProcessed |>
-    writeOutput(outFile)
-  
-  
-  # Save 'prismProcessed' to the hydrology folder as well
-  prismProcessed |>
-    writeOutput(paste0(dirPath, "/SRP/Input/SRP_Meteorological_", startDate, 
-                       "_", endDate, ".csv"), quietly = TRUE)
+  # Several meteorological files will be added to the "Output" folder
+  meteorDF <- merge_weather_data(startDate, endDate, "SRP", 
+                                 
+                                 prismInputPath = getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
+                                   sharepointPathCheck(isFolder = FALSE), 
+                                 prismOutputPath = paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_",
+                                                          startDate, "_", endDate, ".csv"), 
+                                 
+                                 allTempColumnsFromPRISM = allTempColumnsFromPRISM, 
+                                 siPRISM = FALSE,
+                                 numPrecip = 45, numTemp = 2, 
+                                 
+                                 noaaInputPath = getFromControl_RR("NOAA_STATIONS_CSV") |>
+                                   sharepointPathCheck(isFolder = FALSE), 
+                                 noaaOutputPath = paste0("W2_Russian_River/Intermediate/NOAA_API_Data_",
+                                                         startDate, "_", endDate, ".csv"),
+                                 
+                                 rawsInputPath = getFromControl_RR("RAWS_STATIONS_CSV") |>
+                                   sharepointPathCheck(isFolder = FALSE), 
+                                 rawsOutputPath = paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_",
+                                                         startDate, "_", endDate, ".csv"),
+                                 
+                                 cimisInputPath = getFromControl_RR("CIMIS_STATIONS_CSV") |>
+                                   sharepointPathCheck(isFolder = FALSE), 
+                                 cimisOutputPath = paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_",
+                                                          startDate, "_", endDate, ".csv"),
+                                 
+                                 cdecInputPath = getFromControl_RR("CDEC_PRECIPITATION_STATIONS_CSV") |>
+                                   sharepointPathCheck(isFolder = FALSE), 
+                                 cdecOutputPath = paste0("W2_Russian_River/Intermediate/CDEC_API_",
+                                                         "Precip_Data_",
+                                                         startDate, "_", endDate, ".csv"),
+                                 
+                                 precipOutliersPath = getFromControl_RR("SRP_PRECIP_GAGE_OUTLIER_BOUNDS") |>
+                                   sharepointPathCheck(isFolder = FALSE), 
+                                 
+                                 precipCorrPath = getFromControl_RR("SRP_PRECIP_GAGE_CORRELATION_TABLE") |>
+                                   sharepointPathCheck(isFolder = FALSE))
   
   
   # Finally, update the metadata file as well
+  
+  # For model revision information, borrow a function from another script
+  functionStealer("W2_Russian_River/Scripts/RRW_007_Setup_Output_Directory.R", "getModelRevision")
+  
+  
   updateMetadataCSV(dirPath,
-                    list("SRP_MODEL_REVISION" = "REV1",
+                    list("SRP_MODEL_REVISION" = getModelRevision(meteorDF),
                          "SRP_METEOROLOGICAL_FILE_CREATED" =
                            file.info(outFile)[["ctime"]]))
   
@@ -149,94 +120,6 @@ mainProcedure <- function () {
   
   # Return nothing
   return(invisible(NULL))
-  
-}
-
-
-
-validateInputs <- function (prismInput, prismDF, inputFiles,
-                            numPrecip = 2, numTemp = 2) {
-  
-  # Verify that all input tibbles are formatted as expected
-  
-  # The number of expected SRP precipitation columns is hard-coded as 2
-  # Similarly, the number of expected minimum/maximum temperature columns is 2
-  
-  
-  # First, check the input PRISM tibble
-  validateStationInputs(prismInput, inputFiles$PRISM_INPUT[1], "SRP", 
-                        numPrecip, numTemp)
-  
-  
-  # Validate the weather output tibble next
-  
-  # Using a general function for all weather sources, check 'prismDF'
-  validateWebData(prismDF, "PRISM", inputFiles$PRISM_OUTPUT[1], 
-                  prismInput$STATION_ID, siPRISM = FALSE)
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-reformatClimateData <- function (climateDF, climateInput, dataSource) {
-  
-  # The 'climateDF' data frames need to be widened 
-  # (so that each station's data is in its own separate column)
-  
-  # The "SRP" column names in 'climateInput' will then be used to switch 
-  # from the station IDs to the SRP field names
-  fieldNameVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = FALSE)
-  
-  
-  # Start by renaming the columns in 'climateDF' to be consistent 
-  # Then, pivot the dataset into a wider format (where each station has 
-  # three of its own columns--one for each SRP field)
-  widerDF <- climateDF |>
-    select(all_of(fieldNameVec)) |>
-    pivot_wider(names_from = STATION_ID,
-                values_from = c(PRECIP, TMIN, TMAX),
-                names_sep = "_")
-  
-  
-  # After that, prepare the SRP-equivalent names using 'climateInput'
-  # Appending the station IDs to "PRECIP"/"TMAX"/"TMIN" gives the 
-  # column names that appear in 'widerDF'
-  # The values in "SRP_PRECIP_NAME", "SRP_TMAX_NAME", and "SRP_TMIN_NAME" 
-  # are the intended replacements for these column names
-  equivalentNames <- climateInput |>
-    mutate(NAME_1 = paste0("PRECIP_", STATION_ID),
-           NAME_2 = paste0("TMAX_", STATION_ID),
-           NAME_3 = paste0("TMIN_", STATION_ID)) |>
-    select(NAME_1, NAME_2, NAME_3, 
-           SRP_PRECIP_NAME, SRP_TMAX_NAME, SRP_TMIN_NAME)
-  
-  
-  # Create a vector from 'equivalentNames' that can be used with rename()
-  renameVec <- c(equivalentNames$NAME_1, equivalentNames$NAME_2,
-                 equivalentNames$NAME_3) |>
-    set_names(c(equivalentNames$SRP_PRECIP_NAME, equivalentNames$SRP_TMAX_NAME, 
-                equivalentNames$SRP_TMIN_NAME))
-  
-  
-  # Not every station will be used for precipitation and max/min temperature
-  # In those cases, the names will be "NA"
-  # Remove them from 'renameVec'
-  renameVec <- renameVec[!is.na(names(renameVec)) & renameVec != "NA"]
-  
-  
-  # After that, apply 'renameVec' to 'widerDF'
-  # Then, keep DATE and the renamed variables only
-  processedDF <- widerDF |>
-    rename(any_of(renameVec)) |>
-    select(DATE, any_of(names(renameVec)))
-  
-  
-  # Return 'processedDF'
-  return(processedDF)
   
 }
 

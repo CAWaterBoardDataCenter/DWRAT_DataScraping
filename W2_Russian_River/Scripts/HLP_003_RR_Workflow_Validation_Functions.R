@@ -245,8 +245,7 @@ validateStationInputs <- function (inputDF, inputPath,
            "Therefore, the input variable 'model' should be either \"PRMS\" ",
            "or \"SRP\". However, it was input as \"", model, "\" instead.\n\n", 
            "Please correct the script and try again.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -260,7 +259,7 @@ validateStationInputs <- function (inputDF, inputPath,
   # Similarly, the maximum and minimum temperature fields can have values between 
   # "TMAX1"/"TMIN1" and "TMAX8"/"TMIN8" (inclusive)
   
-  # "_REV#" tags are allowed at the end of the precipitation station names
+  # "_REV#" tags are allowed at the end of these names
   # Similarly, "SUP_" or "EX_" can precede "PRECIP" (for supplemental/extra gages)
   
   
@@ -284,10 +283,7 @@ validateStationInputs <- function (inputDF, inputPath,
     
     # Output an error message
     paste0("Station Input File - Missing Column Issue\n\n", 
-           "For this script to work, the ",
-           if_else(model == "PRMS", 
-                   "PRISM, NOAA, RAWS, CIMIS, and CDEC input files ",
-                   "PRISM input file "), "must contain ", 
+           "For this script to work, the weather input files must contain ", 
            length(inputFieldNames), " key column",
            if_else(length(inputFieldNames) > 1, "s", ""), " (",
            vec2QuotedStr(inputFieldNames), ")\n\n",
@@ -327,16 +323,14 @@ validateStationInputs <- function (inputDF, inputPath,
   #   (3) The revision numbers
   
   
-  # For PRMS, the values should be "NA" or "PRECIP#" (from 1 up to 'numPrecipFields')
+  # For both models, the values should be "NA" or "PRECIP#" (from 1 up to 
+  # 'numPrecipFields')
   # (Supplemental gages with "SUP_" at the start of the name are valid as well,
   #  as are extra gages, which start with "EX_")
   
-  # For SRP, it's "NA" and "PRECIP#" only (until model revisions occur)
-  
   # Note: "_REV#" is removed from 'precipNames' at this point
   if (!all(precipNames[[1]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)) |
-           (model %in% "PRMS" & 
-            grepl("^((SUP)|(EX))_PRECIP[0-9]+$", precipNames[[1]])))) { 
+           grepl("^((SUP)|(EX))_PRECIP[0-9]+$", precipNames[[1]]))) { 
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value for the field \"", 
@@ -362,7 +356,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Use a similar check for the minimum temperature field next
-  # For PRMS, the values should be "NA", or something between 
+  # For PRMS REV1, the values should be "NA", or something between 
   # "TMIN1" and "TMIN8" (inclusive)--for SRP, it's up to "TMIN2"
   # Revision information may appear in these strings as well
   tminNames <- inputDF[[inputFieldNames[3]]] |>
@@ -390,7 +384,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Repeat the check for the "TMAX" field
-  # The values should be "NA", or something between "TMAX1" and "TMAX8" 
+  # In "REV1", the values should be "NA", or something between "TMAX1" and "TMAX8" 
   # (inclusive) for PRMS--for SRP, it's up to "TMAX2"
   tmaxNames <- inputDF[[inputFieldNames[4]]] |>
     extractRevisionInfo()
@@ -473,10 +467,9 @@ validateStationInputs <- function (inputDF, inputPath,
            "\" do not contain matching values\n\n",
            "Either both ", model, " temperature columns should be empty, or ",
            "they should have corresponding values (e.g., \"TMIN3\" and ",
-           "\"TMAX3\"  in the same row)\n\n",
+           "\"TMAX3\" in the same row)\n\n",
            "Please revise the input file (\"", inputPath, "\") accordingly") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
