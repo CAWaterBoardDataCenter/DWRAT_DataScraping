@@ -109,8 +109,6 @@ mainProcedure <- function () {
                      hucPath, statePath, pacificPath)
   
   
-  
-  
   # Return nothing
   return(invisible(NULL))
   
@@ -227,17 +225,17 @@ generateBoundaries <- function (ctrlDF, huc12, caState, pacific, metaDF,
     # extend out into the Pacific Ocean
     
     # There are some small islands off the coast of California
-    # There are no water rights that, but just in case, to future-proof this
+    # There are no water rights there, but just in case, to future-proof this
     # procedure and avoid any potential flagging of water rights in those isolated areas,
     # we will remove the portion of the boundaries that extend into the ocean
     
     # There is no huge risk of this happening (and it's not a big deal if it does), 
-    # but perhaps having cleaner boundaries will be useful in some other applications)
+    # but perhaps having cleaner boundaries will be useful in some other applications
     hucSubset <- hucSubset |>
       removeOceanOverlap(caState, pacific, ctrlDF$NAME[i])
     
     
-    # Check if any sub-basin layers do not completely overlap with 'combinedSub'
+    # Check if any sub-basin polygons do not completely overlap with 'combinedSub'
     # The sub-basin may need to be trimmed in this case
     hucSubset <- hucSubset |>
       trimSubbasins(combinedSub)
@@ -248,7 +246,7 @@ generateBoundaries <- function (ctrlDF, huc12, caState, pacific, metaDF,
       mergeSubbasins()
     
     
-    # Before writing 'newBound' to a file, add some fields to it
+    # Before writing 'newBound' to a file, add some metadata fields to it
     newBound <- newBound |>
       addFields(ctrlDF[i, ], metaDF, hucPath, statePath, pacificPath)
     
