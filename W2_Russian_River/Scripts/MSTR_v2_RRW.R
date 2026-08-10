@@ -20,7 +20,7 @@ if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
 # Import packages next
 
 # Install 'renv' if it's not already present
-source("Shared_Scripts/Project_Setup.R")
+source("Additional_Scripts/Project_Setup.R")
 
 
 source("Additional_Scripts/Load_Packages.R")
@@ -92,6 +92,10 @@ source("W2_Russian_River/Scripts/RRW_v2_010_Run_SRP.R")
 
 # Store key outputs and clear out the copied model files
 source("W2_Russian_River/Scripts/RRW_v2_011_SRP_Cleanup.R")
+
+
+# 
+source("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R")
 
 
 #### RRIHM ####

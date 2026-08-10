@@ -17,7 +17,7 @@ if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
 # Import packages next
 
 # Install 'renv' if it's not already present
-source("Shared_Scripts/Project_Setup.R")
+source("Additional_Scripts/Project_Setup.R")
 
 
 source("Additional_Scripts/Load_Packages.R")
