@@ -2,7 +2,7 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-07-29  
+**Last Updated On:** 2026-08-10  
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
@@ -21,11 +21,17 @@ This repository contains several additional folders that support the three main 
 ### Shared_Scripts  
 Several processes are shared between different workflows. This folder contains scripts whose functions can be imported by any procedure to perform these overlapping actions.  
   
+#### Package
+An **SDA** package is currently under development. All shared scripts will gradually be compiled into a package with proper documentation for easier access. 
+  
 ### Models  
 Tools such as **LSPC** and **Paradigm DWRAT** are stored here.  
   
+### Scripts/Extra
+The Demand and Russian River Workflow "Scripts" folders both contain a sub-folder called **Extra**. The scripts in these locations are not formally integrated into their respective workflows, but they may be useful complements. 
+  
 ### Additional_Scripts (Miscellaneous Scripts)  
-The scripts in this folder are not integrated into a formal workflow, but they may contain useful supplemental or one-off procedures. The **Archive** sub-folder also contains files from obsolete workflows and scripts. Another particularly important directory is the **XLSX_Tracking** folder (discussed in the next section).  
+The scripts in this folder are not specific to any workflow, but they may contain useful supplemental or one-off procedures. The **Archive** sub-folder also contains files from obsolete workflows and scripts. Another particularly important directory is the **XLSX_Tracking** folder (discussed in the next section).  
   
 ### Additional_Scripts/XLSX_Tracking  
 To improve the structure and usability of the workflows' control files, they are primarily shared as spreadsheets. However, the downside is that they are binary files, which are not tracked well by git. The imperfect workaround to this is an R script that extracts the underlying XML of these spreadsheets and stores them in this folder. These XML files are text-based and can be tracked by git. In addition, by compressing these files together and changing the "zip" extension to "xlsx", the spreadsheet can be recovered.  
@@ -53,11 +59,16 @@ The scripts in this repository are mainly coded in R and Python. However, the pr
 ## Dependencies  
 The required packages for this repository's R and Python scripts are tracked via [renv](https://rstudio.github.io/renv/index.html) and [Anaconda YAML files](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file), respectively.  
   
-Assuming the "DWRAT_DataScraping" project is active, the shared script **Project_Setup.R** can install `renv` and all required R packages. In the console of RStudio, the command `source("Shared_Scripts/Project_Setup.R")` can execute this process. For Python, the two required Anaconda environments are detailed in [Paradigm_DWRAT_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml) and [LSPC_Climate_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W3_LSPC_Watershed/LSPC_Climate_Environment.yml). To setup these environments, open [Anaconda Prompt](https://www.anaconda.com/docs/reference/glossary#anaconda-prompt) (or similar) and use the command `conda create --file [PATH_TO_YML]`.[^1]  
+Assuming the "DWRAT_DataScraping" project is active, the supplemental script **Project_Setup.R** can install `renv` and all required R packages. In the console of RStudio, the command `source("Additional_Scripts/Project_Setup.R")` can execute this process. For Python, the two required Anaconda environments are detailed in [Paradigm_DWRAT_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Models/Paradigm_DWRAT/Paradigm_DWRAT_Environment.yml) and [LSPC_Climate_Environment.yml](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/W3_LSPC_Watershed/LSPC_Climate_Environment.yml). To setup these environments, open [Anaconda Prompt](https://www.anaconda.com/docs/reference/glossary#anaconda-prompt) (or similar) and use the command `conda create --file [PATH_TO_YML]`.[^1]  
   
 [^1]: Please remember to encase the path name in quotation marks if it contains spaces.
   
 **NOTE**: For the "W2_Russian_River" workflow, dependency setup is performed **automatically** by the scripts. Eventually, the other workflows will be updated to do the same as well.  
+  
+## Master Control File  
+Updating [Master_Control_File.xlsx](https://github.com/CAWaterBoardDataCenter/DWRAT_DataScraping/blob/main/Master_Control_File.xlsx) is optional for most users. Each workflow has its own specific control file(s) that must be filled in, but this spreadsheet specifically is only relevant for supplemental project-level features. Most notably, this file enables the scripts to check locally synced cloud repositories like SharePoint.  
+  
+If this file is left blank, there is one warning that may appear for users when running some of the workflow scripts. Once per session per day, users will receive a warning message if the "INITIAL_SHAREPOINT_FILE_PORTION" field has no associated value. If cloud-based repositories will *not* be used, this message can be silenced permanently by inputting any value into Cell C10 of the spreadsheet (e.g., typing in "NA").  
   
 ## Running a Workflow  
 The remaining setup requirements depend on the chosen workflow. For more information, please consult the workflows' primary scripts and associated documentation.  

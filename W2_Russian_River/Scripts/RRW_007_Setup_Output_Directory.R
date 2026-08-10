@@ -41,7 +41,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -341,7 +341,7 @@ addFiles <- function (outputDirectory, meteorPath, preQC_Meteor, intermediateMet
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
                    METEOROLOGICAL_END = endDate,
-                   PRMS_MODEL_REVISION = getModelRevision(meteorPath),
+                   PRMS_MODEL_REVISION = meteorPath |> getFile() |> getModelRevision(),
                    PRMS_METEOROLOGICAL_FILE_CREATED = 
                      file.info(meteorPath)[["ctime"]],
                    METADATA_DF_FIRST_DEFINED = Sys.time(),
@@ -485,18 +485,15 @@ addFiles <- function (outputDirectory, meteorPath, preQC_Meteor, intermediateMet
 
 
 
-getModelRevision <- function (meteorPath, model = "PRMS") {
+getModelRevision <- function (meteorDF, model = "PRMS") {
   
   # Get the revision number of the model being used
+  # for a meteorological dataset
   
   # The column names of the precipitation and temperature stations may
   # contain a "_REV#" string at the end (e.g., "PRECIP17_REV2")
   
   # Use that to fill out the metadata field about the model revision number
-  
-  
-  # First, read in the meteorological dataset
-  meteorDF <- getFile(meteorPath)
   
   
   # Extract revision information from the precipitation and temperature columns

@@ -73,3 +73,62 @@ checkMissingCol <- function (df, colNames, sourcePath = NA_character_,
   return(invisible(NULL))
   
 }
+
+
+
+check_if_missing_file <- function (fileVec, message = NA_character_) {
+  
+  # 'fileVec' should be a character vector containing one or more file paths
+  
+  # This function will check if any of these files are missing
+  
+  # If any file is missing, an error message will be displayed
+  # There is a generic message that is used by default (when 'message' is NA)
+  # Alternatively, a custom message can be input into the function
+  
+  
+  # First, check whether the path(s) in 'fileVec' are SharePoint paths
+  fileVec <- fileVec |>
+    sharepointPathCheck(isFolder = FALSE)
+  
+  
+  # Then, use `file.exists` to check every file in 'fileVec'
+  checkRes <- file.exists(fileVec)
+  
+  
+  # If not all files exist, output an error message
+  if (!all(checkRes)) {
+    
+    # Identify the missing file(s)
+    missingNames <- fileVec[!checkRes]
+    
+    
+    # Paste this list to the console
+    cat("\n\n")
+    cat(paste0("Missing File", if_else(length(missingNames) > 1, "s", ""), ":\n"))
+    print(missingNames)
+    cat("\n\n")
+    
+    
+    if (is.na(message)) {
+      
+      paste0("Missing File", if_else(length(missingNames) > 1, "s", ""), " Error\n\n",
+             "Please review the list above. ", length(missingNames), " required ",
+             "file", if_else(length(missingNames) > 1, "s", ""), " could not be ",
+             "found. Please investigate.") |>
+        stop_script()
+      
+    } else {
+      
+      message |>
+        stop_script()
+      
+    }
+    
+  }
+  
+  
+  # If there are no errors, return nothing
+  return(invisible(NULL))
+  
+}
