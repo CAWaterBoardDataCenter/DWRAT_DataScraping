@@ -62,14 +62,14 @@ mainProcedure <- function () {
   
   
   # PRISM does not have data earlier than 1981-01-01
-  # If 'startDate' is earlier than this date, output an error message
+  # If 'startDate' is earlier than this date, output a warning message
   if (startDate < "1981-01-01") {
     
-    stop(paste0("Requested Date Range - Start Date Issue\n\n",
-                "The earliest date for which PRISM has data available is ",
-                "1981-01-01. The input start date (\"", startDate, "\") is ",
-                "too early. Please revise this input.") |>
-           errWrap())
+    paste0("The earliest date for which PRISM has data available is ",
+           "1981-01-01. The input start date (\"", startDate, "\") is ",
+           "too early.") |>
+      errWrap() |>
+      warning()
     
   }
   
@@ -227,7 +227,14 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   # The remaining options customize the request
   
   
-  # To start, check if the request is too large 
+  # To start, ensure that 'startDate' is not greater than 1981-01-01
+  # If it is, update the value of 'startDate'
+  if (startDate < "1981-01-01") {
+    startDate <- "1981-01-01" |> as.Date(format = "%Y-%m-%d")
+  }
+  
+  
+  # After that, check if the request is too large 
   if (nrow(stationDF) > 300) {
     
     # If data for more than 300 locations is requested, split up the request
