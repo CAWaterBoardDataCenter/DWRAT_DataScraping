@@ -59,7 +59,7 @@ mainProcedure <- function () {
   
   
   # Get data for all CDEC stations at once
-  cdecDF <- requestCDEC(stationDF$STATION_ID, startDate, endDate, 
+  cdecDF <- request_CDEC(stationDF$STATION_ID, startDate, endDate, 
                         sensorNum = 45)
   
   
