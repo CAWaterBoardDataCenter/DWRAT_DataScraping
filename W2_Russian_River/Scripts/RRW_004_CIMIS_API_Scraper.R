@@ -451,22 +451,25 @@ formatResponse <- function (res, startDate, endDate, stationVec, isSplit) {
     # In this instance, no data is available for the requested date range
     if (length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0) {
       
-      stop(paste0("Empty CIMIS Response\n\n",
-                  "CIMIS returned zero records for the requested date ",
-                  "range (\"", startDate, "\" to \"", endDate, "\"). Please ",
-                  "revise the input date range.") |>
+      # Output a warning instead of an error in this case
+      paste0("Empty CIMIS Response\n\n",
+             "CIMIS returned zero records for the requested date ",
+             "range (\"", startDate, "\" to \"", endDate, "\").") |>
+        errWrap() |>
+        message()
+      
+      # For all other cases, use an error message instead
+    } else {
+      
+      stop(paste0("Could Not Parse CIMIS Response\n\n",
+                  "The information returned by CIMIS could not be interpreted ",
+                  " correctly. The response text was not in the expected format.\n\n", 
+                  "Please investigate this issue further. Either this script ",
+                  "requires revisions, or CIMIS must be contacted about a ",
+                  "server issue.\n\n") |>
              errWrap())
       
     }
-    
-    
-    stop(paste0("Could Not Parse CIMIS Response\n\n",
-                "The information returned by CIMIS could not be interpreted ",
-                " correctly. The response text was not in the expected format.\n\n", 
-                "Please investigate this issue further. Either this script ",
-                "requires revisions, or CIMIS must be contacted about a ",
-                "server issue.\n\n") |>
-           errWrap())
     
   }
   
