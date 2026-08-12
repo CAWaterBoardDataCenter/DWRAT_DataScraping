@@ -192,8 +192,8 @@ merge_weather_data <- function (startDate, endDate, model,
   cat("\tDone!\n\n")
   
   
-  # End the procedure by returning 'meteorDF'
-  return(meteorDF)
+  # End the procedure by returning 'outFile'
+  return(outFile)
   
 }
 
