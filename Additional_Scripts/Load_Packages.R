@@ -52,9 +52,9 @@ require(odbc)
 require(DBI)
 
 #### Miscellaneous ####
-require(cli)
-require(fs)
-require(SPEI)
+require(cli)            # Command line colors
+require(fs)             # File and directory management
+require(SPEI)           # Standard Precipitation Index (SPI)
 
 #### Custom Package ####
 require(devtools)
