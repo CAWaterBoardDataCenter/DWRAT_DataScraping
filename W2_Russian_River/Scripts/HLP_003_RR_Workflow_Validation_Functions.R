@@ -298,6 +298,14 @@ validateStationInputs <- function (inputDF, inputPath,
   }
   
   
+  # Filter 'inputDF' to only rows that have non-NA values for this model
+  # (A station file may have gages used by only one model, for example)
+  inputDF <- inputDF |>
+    filter(!is.na(get(inputFieldNames[2])) | 
+             !is.na(get(inputFieldNames[3])) |
+             !is.na(get(inputFieldNames[4])))
+  
+  
   # The station ID was previously validated in the scraping scripts
   # The next focus will be the "PRMS"/"SRP" fields
   
@@ -407,36 +415,6 @@ validateStationInputs <- function (inputDF, inputPath,
   
   # Check for multiple revisions in the same column
   validateRevisionInfo(tmaxNames[[2]], tmaxNames[[1]], model, inputFieldNames[4])
-  
-  
-  # Next, confirm that every row has at least one non-NA value for the 
-  # three PRMS/SRP fields
-  # Every station should have a corresponding PRMS field
-  # So at least one column between "PRECIP", "TMIN", and "TMAX" should have a 
-  # non-NA value in each row
-  
-  # Define a temporary variable to help with this
-  # If all three columns contain "NA", this column's value will be TRUE
-  inputDF <- inputDF |>
-    mutate(ALL_NA = is.na(get(inputFieldNames[2])) & 
-             is.na(get(inputFieldNames[3])) &
-             is.na(get(inputFieldNames[4])))
-  
-  
-  # If TRUE appears for any row in "ALL_NA", output an error message
-  if (TRUE %in% inputDF$ALL_NA) {
-    
-    paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The file contains a station without ",
-           "a corresponding ", model, " field identified\n\n",
-           "Across the ", length(inputFieldNames) - 1, " ", model, 
-           " columns, each row should contain a ", model, 
-           " field name in at least one column\n\n",
-           "Please revise the input file (\"", inputPath, "\") accordingly") |>
-      errWrap() |>
-      stop()
-    
-  }
   
   
   # The final check is to ensure that "TMIN" and "TMAX" have corresponding 
