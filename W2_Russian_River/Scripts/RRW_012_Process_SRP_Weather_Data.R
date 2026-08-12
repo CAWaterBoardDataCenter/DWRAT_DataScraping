@@ -67,7 +67,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # and QA/QC filepaths 
   
   # Several meteorological files will be added to the "Output" folder
-  outPath <- merge_weather_data(startDate, endDate, "SRP", 
+  outFile <- merge_weather_data(startDate, endDate, "SRP", 
                                 
                                 prismInputPath = getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
                                   sharepointPathCheck(isFolder = FALSE), 
