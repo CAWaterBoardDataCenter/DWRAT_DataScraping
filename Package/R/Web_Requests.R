@@ -5,7 +5,7 @@
 #' @title Obtain data from CDEC
 #' 
 #' @description
-#' This function can send a `GET` request to the [California Data Exchange 
+#' This function can send a [httr::GET()] request to the [California Data Exchange 
 #' Center](https://cdec.water.ca.gov/index.html) (CDEC) to procure data from 
 #' one or more stations. 
 #' 
@@ -20,6 +20,8 @@
 #' Typically, missing values are represented as "---" in the default data 
 #' returned by CDEC. However, these entries are detected and replaced with "-999". 
 #' This allows the column to be treated as numeric. 
+#' 
+#' @usage request_cdec(stationVec, startDate, endDate, sensorNum = 23, durCode = "D")
 #' 
 #' @param stationVec A character vector containing one or more "Station IDs" 
 #' (exactly as they appear on CDEC's website).
@@ -49,15 +51,16 @@
 #' # it has "RESERVOIR INFLOW, CFS" data available on a daily scale 
 #' # (https://cdec.water.ca.gov/dynamicapp/staMeta?station_id=WRS)
 #' #
-#' request_CDEC("WRS", as.Date("2026-01-01"), Sys.Date(), sensorNum = 76, durCode = "D")
-#' }
+#' request_cdec("WRS", as.Date("2026-01-01"), Sys.Date(), sensorNum = 76, durCode = "D")
 #' 
-#' #' @examples
-#' \dontrun{
-#' # Request precipitation data from multiple stations
-#' request_CDEC(c("COY", "WRS"), as.Date("2023-10-01"), as.Date("2024-09-30"), sensorNum = 45, durCode = "D")
+#' 
+#' # Alternatively, if precipitation data from multiple stations is desired,
+#' # this code can be executed instead
+#' #
+#' request_cdec(c("COY", "WRS"), as.Date("2023-10-01"), as.Date("2024-09-30"), 
+#'              sensorNum = 45, durCode = "D")
 #' }
-request_CDEC <- function (stationVec, startDate, endDate, 
+request_cdec <- function (stationVec, startDate, endDate, 
                           sensorNum = 23, durCode = "D") {
   
   # Prepare a GET request and submit it to CDEC
