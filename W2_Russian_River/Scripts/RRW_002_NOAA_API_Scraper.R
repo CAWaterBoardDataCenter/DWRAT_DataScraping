@@ -41,7 +41,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 # Allow greater time to download data from NOAA
 # (This is only relevant for large data downloads)
-options(timeout = 500) # 500 seconds
+options(timeout = 5000) # 5000 seconds (~83 minutes)
 
 
 
