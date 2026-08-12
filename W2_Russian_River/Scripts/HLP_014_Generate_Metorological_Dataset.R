@@ -165,8 +165,8 @@ merge_weather_data <- function (startDate, endDate, model,
                      startDate, endDate, model, 
                      fullQAQC = TRUE)
     
-  # Otherwise, if only PRISM data will appear in the QA/QC procedure, 
-  # simply define 'meteorDF' to equal 'prismProcessed'
+    # Otherwise, if only PRISM data will appear in the QA/QC procedure, 
+    # simply define 'meteorDF' to equal 'prismProcessed'
   } else {
     
     meteorDF <- prismProcessed
@@ -248,7 +248,7 @@ read_not_null_files <- function (path, delim = NULL) {
     # If 'delim' is NULL, use `getFile`
     return(getFile(path))
     
-  # Otherwise, use `getDelim`
+    # Otherwise, use `getDelim`
   } else {
     
     return(getDelim(path, delim = delim))
@@ -335,6 +335,12 @@ validate_outlier_file <- function (outlierDF, sourcePath, stationNames,
   # outlier bounds for every month
   
   
+  # Though, if 'outlierDF' is NULL, return nothing
+  if (is.null(outlierDF)) {
+    return(invisible(NULL))
+  }
+  
+  
   # Every month should have an outlier limit column
   expectedCols <- c("GAGE",
                     paste0(month.abb, "_OUTLIER_LIMIT_MM") |> toupper())
@@ -399,6 +405,12 @@ validate_corr_file <- function (corrDF, sourcePath, stationNames, model = "PRMS"
   # Check the values in 'corrDF' 
   # Ensure that all model precipitation gages have model values 
   # between themselves and with their respective PRISM datasets too
+  
+  
+  # Though, if 'corrDF' is NULL, return nothing
+  if (is.null(corrDF)) {
+    return(invisible(NULL))
+  }
   
   
   # Check for five key columns
@@ -550,8 +562,9 @@ validate_corr_file <- function (corrDF, sourcePath, stationNames, model = "PRMS"
   }
   
   
-  # Make sure every precipitation gage has at least one non-NA model entry 
-  if (!all(stationNames %in% 
+  # Make sure every primary precipitation gage has at least one non-NA model entry 
+  # (It is fine if "EX" or "SUP" gages do not have any models)
+  if (!all(str_subset(stationNames, "^PRECIP") %in% 
            unlist(corrDF |> filter(!is.na(R_SQUARED)) |> 
                   select(PREDICTOR, RESPONSE), use.names = FALSE))) {
     
@@ -1589,7 +1602,3 @@ sub_data_with_PRISM <- function (meteorDF, prismProcessed, allTempSub) {
   return(meteorDF)
   
 }
-
-
-
-
