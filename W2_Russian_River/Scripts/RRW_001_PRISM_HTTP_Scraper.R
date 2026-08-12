@@ -69,7 +69,7 @@ mainProcedure <- function () {
            "1981-01-01. The input start date (\"", startDate, "\") is ",
            "too early.") |>
       errWrap() |>
-      warning()
+      message()
     
   }
   
