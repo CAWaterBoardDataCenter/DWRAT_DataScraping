@@ -55,7 +55,11 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  # Use the functions in 'HLP_014_Generate_Metorological_Dataset.R' 
+  # Check for the directory that contains metadata and model input/output files
+  dirPath <- validateHydroFolder(startDate, endDate)
+  
+  
+  # After that, use the functions in 'HLP_014_Generate_Metorological_Dataset.R' 
   # to complete this procedure
   
   # This function requires several different inputs
@@ -63,43 +67,43 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   # and QA/QC filepaths 
   
   # Several meteorological files will be added to the "Output" folder
-  meteorDF <- merge_weather_data(startDate, endDate, "SRP", 
-                                 
-                                 prismInputPath = getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
-                                   sharepointPathCheck(isFolder = FALSE), 
-                                 prismOutputPath = paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_",
-                                                          startDate, "_", endDate, ".csv"), 
-                                 
-                                 allTempColumnsFromPRISM = allTempColumnsFromPRISM, 
-                                 siPRISM = FALSE,
-                                 numPrecip = 45, numTemp = 2, 
-                                 
-                                 noaaInputPath = getFromControl_RR("NOAA_STATIONS_CSV") |>
-                                   sharepointPathCheck(isFolder = FALSE), 
-                                 noaaOutputPath = paste0("W2_Russian_River/Intermediate/NOAA_API_Data_",
+  outPath <- merge_weather_data(startDate, endDate, "SRP", 
+                                
+                                prismInputPath = getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
+                                  sharepointPathCheck(isFolder = FALSE), 
+                                prismOutputPath = paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_",
+                                                         startDate, "_", endDate, ".csv"), 
+                                
+                                allTempColumnsFromPRISM = allTempColumnsFromPRISM, 
+                                siPRISM = FALSE,
+                                numPrecip = 45, numTemp = 2, 
+                                
+                                noaaInputPath = getFromControl_RR("NOAA_STATIONS_CSV") |>
+                                  sharepointPathCheck(isFolder = FALSE), 
+                                noaaOutputPath = paste0("W2_Russian_River/Intermediate/NOAA_API_Data_",
+                                                        startDate, "_", endDate, ".csv"),
+                                
+                                rawsInputPath = getFromControl_RR("RAWS_STATIONS_CSV") |>
+                                  sharepointPathCheck(isFolder = FALSE), 
+                                rawsOutputPath = paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_",
+                                                        startDate, "_", endDate, ".csv"),
+                                
+                                cimisInputPath = getFromControl_RR("CIMIS_STATIONS_CSV") |>
+                                  sharepointPathCheck(isFolder = FALSE), 
+                                cimisOutputPath = paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_",
                                                          startDate, "_", endDate, ".csv"),
-                                 
-                                 rawsInputPath = getFromControl_RR("RAWS_STATIONS_CSV") |>
-                                   sharepointPathCheck(isFolder = FALSE), 
-                                 rawsOutputPath = paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_",
-                                                         startDate, "_", endDate, ".csv"),
-                                 
-                                 cimisInputPath = getFromControl_RR("CIMIS_STATIONS_CSV") |>
-                                   sharepointPathCheck(isFolder = FALSE), 
-                                 cimisOutputPath = paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_",
-                                                          startDate, "_", endDate, ".csv"),
-                                 
-                                 cdecInputPath = getFromControl_RR("CDEC_PRECIPITATION_STATIONS_CSV") |>
-                                   sharepointPathCheck(isFolder = FALSE), 
-                                 cdecOutputPath = paste0("W2_Russian_River/Intermediate/CDEC_API_",
-                                                         "Precip_Data_",
-                                                         startDate, "_", endDate, ".csv"),
-                                 
-                                 precipOutliersPath = getFromControl_RR("SRP_PRECIP_GAGE_OUTLIER_BOUNDS") |>
-                                   sharepointPathCheck(isFolder = FALSE), 
-                                 
-                                 precipCorrPath = getFromControl_RR("SRP_PRECIP_GAGE_CORRELATION_TABLE") |>
-                                   sharepointPathCheck(isFolder = FALSE))
+                                
+                                cdecInputPath = getFromControl_RR("CDEC_PRECIPITATION_STATIONS_CSV") |>
+                                  sharepointPathCheck(isFolder = FALSE), 
+                                cdecOutputPath = paste0("W2_Russian_River/Intermediate/CDEC_API_",
+                                                        "Precip_Data_",
+                                                        startDate, "_", endDate, ".csv"),
+                                
+                                precipOutliersPath = getFromControl_RR("SRP_PRECIP_GAGE_OUTLIER_BOUNDS") |>
+                                  sharepointPathCheck(isFolder = FALSE), 
+                                
+                                precipCorrPath = getFromControl_RR("SRP_PRECIP_GAGE_CORRELATION_TABLE") |>
+                                  sharepointPathCheck(isFolder = FALSE))
   
   
   # Finally, update the metadata file as well
@@ -109,7 +113,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   updateMetadataCSV(dirPath,
-                    list("SRP_MODEL_REVISION" = getModelRevision(meteorDF),
+                    list("SRP_MODEL_REVISION" = outFile |> getFile() |> getModelRevision(),
                          "SRP_METEOROLOGICAL_FILE_CREATED" =
                            file.info(outFile)[["ctime"]]))
   
