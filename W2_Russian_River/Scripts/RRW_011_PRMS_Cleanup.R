@@ -42,7 +42,7 @@ mainProcedure <- function () {
   
   
   # Also confirm that the "RR_PRMS" folder was copied to "Output"
-  prmsPath <- validateModelCopy_PRMS()
+  prmsPath <- validate_model_copy("PRMS")
   
   
   cat("\tDone!\n\n")

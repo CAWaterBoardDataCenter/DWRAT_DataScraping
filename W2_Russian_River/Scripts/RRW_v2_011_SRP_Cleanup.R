@@ -42,7 +42,7 @@ mainProcedure <- function () {
   
   
   # Also confirm that the "SRPHM" folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP_2024()
+  srpPath <- validate_model_copy("SRPHM")
   
   
   cat("\tDone!\n\n")

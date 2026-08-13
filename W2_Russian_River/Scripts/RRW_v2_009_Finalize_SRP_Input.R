@@ -96,7 +96,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Also confirm that the SRP model folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP_2024()
+  srpPath <- validate_model_copy("SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -254,7 +254,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   # Update the SRP control file next
   # (Its presence was already confirmed at the beginning of the script in 
-  #  `validateModelCopy_SRP`)
+  #  `validate_model_copy`)
   updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
   
   
@@ -284,8 +284,8 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   
   # First, read in the file
-  controlPath <- paste0(srpPath, 
-                        "/SRPHM_spinup.control") |>
+  controlPath <- paste0(srpPath, "/", 
+                        list_model_components("SRPHM")[["CONTROL"]]) |>
     normalizePath(mustWork = TRUE)
   
   

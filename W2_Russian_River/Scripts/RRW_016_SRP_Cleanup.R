@@ -42,7 +42,7 @@ mainProcedure <- function () {
   
   
   # Also confirm that the "SRPHM_update_ag" folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP()
+  srpPath <- validate_model_copy("SRP")
   
   
   cat("\tDone!\n\n")

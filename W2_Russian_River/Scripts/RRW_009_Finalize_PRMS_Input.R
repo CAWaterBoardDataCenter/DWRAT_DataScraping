@@ -86,7 +86,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Also confirm that the "RR_PRMS" folder was copied to "Output"
-  prmsPath <- validateModelCopy_PRMS()
+  prmsPath <- validate_model_copy("PRMS")
   
   
   cat("\tDone!\n\n")
@@ -999,7 +999,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   
   # Update the PRMS control file next
   # (Its presence was already confirmed at the beginning of the script in 
-  #  `validateModelCopy_PRMS`)
+  #  `validate_model_copy`)
   updateControlFilePRMS(dirPath, prmsPath, genericName, endDate, predictWY)
   
   
@@ -1029,7 +1029,8 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # First, read in the file
-  controlPath <- paste0(prmsPath, "/windows/prms_rr.control") |>
+  controlPath <- paste0(prmsPath, "/",
+                        list_model_components("PRMS")[["CONTROL"]]) |>
     normalizePath(mustWork = TRUE)
   
   

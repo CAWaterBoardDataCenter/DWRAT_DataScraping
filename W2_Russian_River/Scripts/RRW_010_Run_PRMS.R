@@ -26,7 +26,7 @@ mainProcedure <- function () {
   
   
   # Confirm that the "RR_PRMS" folder was copied to "Output"
-  prmsPath <- validateModelCopy_PRMS()
+  prmsPath <- validate_model_copy("PRMS")
   
   
   # Get the path to the batch file stored in the "windows" folder
