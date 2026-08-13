@@ -98,7 +98,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
                      
                      allTempColumnsFromPRISM = allTempColumnsFromPRISM, 
                      siPRISM = TRUE,
-                     numPrecip = 45, numTemp = 8, 
+                     applyFullQAQC = TRUE, 
                      
                      noaaInputPath = getFromControl_RR("NOAA_STATIONS_CSV") |>
                        sharepointPathCheck(isFolder = FALSE), 

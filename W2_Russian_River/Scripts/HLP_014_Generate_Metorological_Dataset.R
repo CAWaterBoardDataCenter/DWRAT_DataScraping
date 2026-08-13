@@ -20,7 +20,7 @@ merge_weather_data <- function (startDate, endDate, model,
                                 prismInputPath, prismOutputPath, 
                                 allTempColumnsFromPRISM = TRUE, 
                                 siPRISM = model %notin% c("SRP"),
-                                numPrecip = 45, numTemp = 8, 
+                                applyFullQAQC = TRUE, 
                                 noaaInputPath = NULL, noaaOutputPath = NULL,
                                 rawsInputPath = NULL, rawsOutputPath = NULL,
                                 cimisInputPath = NULL, cimisOutputPath = NULL,
@@ -51,10 +51,9 @@ merge_weather_data <- function (startDate, endDate, model,
   cat("[1/2]\tChecking input files...\n")
   
   
-  # If values are specified for NOAA, RAWS, CIMIS, and/or CDEC files, 
+  # If the full QAQC procedure will be applied, 
   # outlier bounds and gage correlation files are required
-  error_if(!all_null(noaaInputPath, noaaOutputPath, rawsInputPath, rawsOutputPath, 
-                     cimisInputPath, cimisOutputPath, cdecInputPath, cdecOutputPath) &&
+  error_if(applyFullQAQC &&
              any_null(precipOutliersPath, precipCorrPath),
            paste0("Missing Required Files\n\n",
                   "If data from NOAA, RAWS, CIMIS, or CDEC will be incorporated ",
@@ -103,6 +102,15 @@ merge_weather_data <- function (startDate, endDate, model,
   corrDF <- precipCorrPath |> read_not_null_files()
   
   
+  # Before proceeding, define 'numPrecip' and 'numTemp' based on 'prismInput'
+  # The total number of expected precipitation and temperature stations 
+  # will be based on its three model fields ("[MODEL]_PRECIP_NAME", 
+  # "[MODEL]_TMIN_NAME", and "[MODEL]_TMAX_NAME")
+  numPrecip <- get_num_stations(model, prismInput, prismInputPath, "PRECIP")
+  
+  numTemp <- get_num_stations(model, prismInput, prismInputPath, "TEMP")
+  
+  
   # Validate all of the weather inputs next
   validate_inputs(prismInputPath, prismOutputPath, prismInput, prismDF,
                   noaaInputPath = noaaInputPath, noaaOutputPath = noaaOutputPath, 
@@ -113,7 +121,7 @@ merge_weather_data <- function (startDate, endDate, model,
                   cimisInput = cimisInput, cimisDF = cimisDF, 
                   cdecInputPath = cdecInputPath, cdecOutputPath = cdecOutputPath, 
                   cdecInput = cdecInput, cdecDF = cdecDF,
-                  numPrecip = 45, numTemp = 8, 
+                  numPrecip = numPrecip, numTemp = numTemp, 
                   siPRISM = siPRISM, model = model)
   
   
@@ -163,7 +171,7 @@ merge_weather_data <- function (startDate, endDate, model,
                      cdecInput, cdecDF, cdecOutputPath, 
                      prismProcessed, allTempColumnsFromPRISM, 
                      startDate, endDate, model, 
-                     fullQAQC = TRUE)
+                     fullQAQC = applyFullQAQC)
     
     # Otherwise, if only PRISM data will appear in the QA/QC procedure, 
     # simply define 'meteorDF' to equal 'prismProcessed'
@@ -252,6 +260,82 @@ read_not_null_files <- function (path, delim = NULL) {
   } else {
     
     return(getDelim(path, delim = delim))
+    
+  }
+  
+}
+
+
+
+get_num_stations <- function (model, prismInput, prismInputPath, fieldType) {
+  
+  # Each PRISM file should have columns that identify which stations and parameters
+  # are used by the model 
+  
+  # They have names like "[MODEL]_PRECIP_NAME" and "[MODEL]_TMIN_NAME"
+  
+  # A weather station row that has a value in these fields will be used in the 
+  # modeling procedure (for precipitation and/or air temperature)
+  
+  # Identify the unique number of non-NA values for each of these fields
+  
+  # Note 1: The PRISM file is used for this check because every weather station
+  #         from any source is required to have PRISM-equivalent data downloaded 
+  #         to support QAQC efforts 
+  
+  # Note 2: "[MODEL]_TMIN_NAME" and "[MODEL]_TMAX_NAME" should have 
+  #         the same number of values
+  
+  
+  # Start by confirming that the model columns exist in the PRISM station file 
+  fieldNames <- paste0(model, c("_PRECIP_NAME", "_TMIN_NAME", "_TMAX_NAME")) |>
+    set_names(c("PRECIP", "TMIN", "TMAX"))
+  
+  
+  checkMissingCol(prismInput, fieldNames,
+                  prismInputPath, infoStr = paste0("PRISM station CSV file for ", model))
+  
+  
+  # After that, if 'fieldType' is "PRECIP", return the number of unique non-NA
+  # entries in its field
+  if (fieldType == "PRECIP") {
+    
+    return(prismInput[[names(fieldNames) == "PRECIP"]] |>
+             na.omit() |>
+             unique() |>
+             length())
+    
+  # A similar procedure will be performed for temperature
+  # However, the number of min and max temperature stations used by the model should match 
+  } else if (fieldType == "TEMP") {
+    
+    # Get the number of unique temperature stations
+    minVal <- prismInput[[names(fieldNames) == "TMIN"]] |>
+      na.omit() |>
+      unique() |>
+      length()
+    
+    
+    maxVal <- prismInput[[names(fieldNames) == "TMAX"]] |>
+      na.omit() |>
+      unique() |>
+      length()
+    
+    
+    error_if(minVal != maxVal,
+             paste0("Mismatch in PRISM station CSV\n\n",
+                    "The PRISM file containing all weather stations for ", 
+                    model, " has an issue. The number of specified \"TMIN\" ",
+                    "stations does not match the number of \"TMAX\" stations.\n\n",
+                    "Please revise the file (\"", prismInputPath, "\")"))
+    
+    
+    # Return 'minVal' if there are no issues
+    return(minVal)
+    
+  } else {
+    
+    stop_script("Unknown 'fieldType' value received! Please revise the script.")
     
   }
   
@@ -1011,6 +1095,16 @@ apply_qc_flags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisOutputPath
   # This function will remove records that have certain precipitation flags
   
   
+  # Though, if 'cimisDF' is NULL, that means that there is no CIMIS data
+  # used by this model
+  if (is.null(cimisDF)) {
+    
+    # Return 'meteorDF' without any changes in that case
+    return(meteorDF)
+    
+  }
+  
+  
   # First, modify the column names in 'cimisDF' to be easier to work with
   # 'fieldNameVec' can help convert the raw headers in 'cimisDF' 
   fieldNameVec <- validateWebData_expectedColumnNames("CIMIS", siPRISM = TRUE)
@@ -1105,6 +1199,16 @@ apply_qc_flags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecOutputPath,
   # This function will remove records that have certain precipitation flags
   
   
+  # Though, if 'cdecDF' is NULL, that means that there is no CIMIS data
+  # used by this model
+  if (is.null(cdecDF)) {
+    
+    # Return 'meteorDF' without any changes in that case
+    return(meteorDF)
+    
+  }
+  
+  
   # First, modify the column names in 'cdecDF' to be easier to work with
   # 'fieldNameVec' can help convert the raw headers in 'cdecDF' 
   fieldNameVec <- validateWebData_expectedColumnNames("CDEC", siPRISM = TRUE)
@@ -1191,7 +1295,13 @@ remove_outliers <- function (meteorDF, outlierDF) {
   # remove outliers from their datasets
   
   
-  # Get a vector of precipitation columns that appear in 'meteorDF'
+  # If 'outlierDF' is NULL, do not apply this procedure
+  if (is.null(outlierDF)) {
+    return(meteorDF)
+  }
+  
+  
+  # Otherwise, get a vector of precipitation columns that appear in 'meteorDF'
   # (Exclude supplemental and extra gages from this)
   precipNames <- names(meteorDF) |>
     str_subset("^PRECIP[0-9]+")
@@ -1296,6 +1406,12 @@ sub_missing_gage_data <- function (meteorDF, corrDF, prismProcessed) {
   
   # Models that fill in missing data based on PRISM may also be used
   # ('prismProcessed' contains correpsonding data for each gage)
+  
+  
+  # If 'corrDF' is NULL, do not apply this procedure
+  if (is.null(corrDF)) {
+    return(meteorDF)
+  }
   
   
   # Make sure 'meteorDF' is sorted by date before proceeding
