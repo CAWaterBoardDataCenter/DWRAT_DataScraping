@@ -186,7 +186,7 @@ mainProcedure <- function (model = "PRMS") {
   
   
   validateStationInputs(stationDF, prismPath, model, 
-                        names(meteorDF) |> str_subset("PRECIP") |> 
+                        names(meteorDF) |> str_subset("^PRECIP") |> 
                           length(), 
                         names(meteorDF) |> str_subset("^TM((AX)|(IN))") |> 
                           length())
