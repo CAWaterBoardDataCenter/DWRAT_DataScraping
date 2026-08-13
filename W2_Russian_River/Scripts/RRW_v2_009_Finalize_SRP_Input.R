@@ -77,7 +77,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Import functions from the v1 PRMS and SRP scripts
   c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
-    "similarWY_findWY", "similarWY_appendDAT") |>
+    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
   
   c("updateMetadata_DAT", "finalizeDAT") |>
@@ -188,12 +188,18 @@ mainProcedure <- function (predictWY = TRUE) {
   }
   
   
+  # Before writing 'mergedDAT' to a file, make sure that it contains 
+  # the correct number of precipitation and temperature stations
+  mergedDAT |>
+    validate_num_stations(srpPath, "SRPHM")
+  
+  
   cat(paste0("[", if_else(predictWY, "5/5", "4/4"),
              "]\tSaving output...\n"))
   
   
   # Finally, write 'mergedDAT' to a file
-  # It will be stored in both the "SRPHM_update_ag" folder and the model run 
+  # It will be stored in both the "SRPHM" folder and the model run 
   # hydrology folder 
   mergedDAT |>
     outputDAT(startDate, endDate, dirPath, srpPath, predictWY)
