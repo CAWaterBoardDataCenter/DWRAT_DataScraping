@@ -91,11 +91,11 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
   
   # Confirm that they exist in the model folder first
-  checkForModelOutputs_SRP(srpPath, modelOutput = NULL)
+  check_for_model_outputs("SRP", srpPath, modelOutput = NULL)
   
   
   # Get a vector of paths to all important outputs
-  copyFiles <- getModelOutputs_SRP(srpPath)
+  copyFiles <- list_model_outputs("SRP", srpPath)
   
   
   # Prepare vectors that contain the proper filepaths and the planned filepaths

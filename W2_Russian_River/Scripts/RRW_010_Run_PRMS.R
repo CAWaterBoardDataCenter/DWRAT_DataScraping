@@ -53,8 +53,8 @@ mainProcedure <- function () {
   
   # Check for errors
   # There should be several output files
-  checkForModelOutputs_PRMS(prmsPath, modelOutput, 
-                            includeScriptGeneratedOutput = FALSE)
+  check_for_model_outputs("PRMS", prmsPath, modelOutput, 
+                          includeScriptGeneratedOutput = FALSE)
   
   
   # Output a completion message

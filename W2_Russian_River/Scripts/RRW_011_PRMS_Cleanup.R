@@ -87,14 +87,14 @@ copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
   
   
   # Confirm that they exist in the "output" folder first
-  checkForModelOutputs_PRMS(prmsPath, modelOutput = NULL,
-                            includeScriptGeneratedOutput = TRUE)
+  check_for_model_outputs("PRMS", prmsPath, modelOutput = NULL,
+                          includeScriptGeneratedOutput = TRUE)
   
   
   # This vector contains the paths of the key output files 
   # (and the script-generated log)
-  copyFiles <- getModelOutputs_PRMS(prmsPath, 
-                                    includeScriptGeneratedOutput = TRUE)
+  copyFiles <- list_model_outputs("PRMS", prmsPath, 
+                                  includeScriptGeneratedOutput = TRUE)
   
   
   # Prepare vectors that contain the proper filepaths and the planned filepaths

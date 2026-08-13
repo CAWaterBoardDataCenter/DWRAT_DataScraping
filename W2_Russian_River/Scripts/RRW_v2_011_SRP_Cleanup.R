@@ -92,12 +92,12 @@ copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
   
   
   # Confirm that they exist in the "output" folder first
-  checkForModelOutputs_SRP_2024(srpPath, modelOutput = NULL)
+  check_for_model_outputs("SRPHM", srpPath, modelOutput = NULL)
   
   
   # This vector contains the names of the desired output files
   # ("gsflow.log" is included here too)
-  copyFiles <- getModelOutputs_SRP_2024(srpPath)
+  copyFiles <- list_model_outputs("SRPHM", srpPath)
   
   
   # Prepare vectors that contain the proper filepaths and the planned filepaths
