@@ -77,7 +77,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Import functions from the PRMS counterpart script
   c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
-    "similarWY_findWY", "similarWY_appendDAT") |>
+    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
   
   
@@ -93,7 +93,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Also confirm that the SRP model folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP()
+  srpPath <- validate_model_copy("SRP")
   
   
   cat("\tDone!\n\n")
@@ -183,6 +183,13 @@ mainProcedure <- function (predictWY = TRUE) {
                        predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
     
   }
+  
+  
+  
+  # Before writing 'mergedDAT' to a file, make sure that it contains 
+  # the correct number of precipitation and temperature stations
+  mergedDAT |>
+    validate_num_stations(srpPath, "SRP")
   
   
   cat(paste0("[", if_else(predictWY, "5/5", "4/4"),
@@ -284,7 +291,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   # Update the SRP control file next
   # (Its presence was already confirmed at the beginning of the script in 
-  #  `validateModelCopy_SRP`)
+  #  `validate_model_copy`)
   updateControlFileSRP(dirPath, srpPath, genericName, endDate, predictWY)
   
   
@@ -411,7 +418,8 @@ updateControlFileSRP <- function (dirPath, srpPath, datName, endDate,
   
   
   # First, read in the file
-  controlPath <- paste0(srpPath, "/SRPHM_update.control") |>
+  controlPath <- paste0(srpPath, "/",
+                        list_model_components("SRP")[["CONTROL"]]) |>
     normalizePath(mustWork = TRUE)
   
   

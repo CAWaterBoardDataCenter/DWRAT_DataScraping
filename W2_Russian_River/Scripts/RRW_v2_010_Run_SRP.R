@@ -26,7 +26,7 @@ mainProcedure <- function () {
   
   
   # Confirm that the "SRPHM" folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP_2024()
+  srpPath <- validate_model_copy("SRPHM")
   
   
   # Get the path to the batch file stored in the root directory

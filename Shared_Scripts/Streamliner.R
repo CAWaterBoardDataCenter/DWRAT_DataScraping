@@ -28,7 +28,17 @@ all_null <- function (...) {
   
   
   # Use `sapply` to evaluate each argument
-  nullRes <- sapply(args, is.null, simplify = TRUE)
+  if (length(args) > 1) {
+    
+    nullRes <- sapply(args, is.null, simplify = TRUE)
+    
+  } else {
+    
+    # If there is only one input, it could be a vector or list
+    # In that case, apply `sapply` directly to that argument 
+    nullRes <- sapply(args[[1]], is.null, simplify = TRUE)
+    
+  }
   
   
   # Return TRUE if all values are TRUE in 'nullRes'
@@ -49,7 +59,17 @@ any_null <- function (...) {
   
   
   # Use `sapply` to evaluate each argument
-  nullRes <- sapply(args, is.null, simplify = TRUE)
+  if (length(args) > 1) {
+    
+    nullRes <- sapply(args, is.null, simplify = TRUE)
+    
+  } else {
+    
+    # If there is only one input, it could be a vector or list
+    # In that case, apply `sapply` directly to that argument 
+    nullRes <- sapply(args[[1]], is.null, simplify = TRUE)
+    
+  }
   
   
   # Return TRUE if any values are TRUE in 'nullRes'
