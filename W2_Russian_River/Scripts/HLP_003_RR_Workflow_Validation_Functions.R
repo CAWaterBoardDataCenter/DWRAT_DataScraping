@@ -275,27 +275,18 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Start by confirming that the field names appear in 'inputDF'
-  if (!all(inputFieldNames %in% names(inputDF))) {
-    
-    # Identify which fields are missing
-    missingFields <- which(!(inputFieldNames %in% names(inputDF)))
-    
-    
-    # Output an error message
-    paste0("Station Input File - Missing Column Issue\n\n", 
-           "For this script to work, the weather input files must contain ", 
-           length(inputFieldNames), " key column",
-           if_else(length(inputFieldNames) > 1, "s", ""), " (",
-           vec2QuotedStr(inputFieldNames), ")\n\n",
-           "However, the file is missing ",
-           if_else(length(missingFields) > 1, "fields", "a field"), ":\n\n",
-           paste0("(*) ", inputFieldNames[missingFields], collapse = "\n\n"), 
-           "\n\n",
-           "Please revise the input file (\"", inputPath, "\") accordingly") |>
-      errWrap() |>
-      stop()
-    
-  }
+  checkMissingCol(inputDF, inputFieldNames, inputPath, 
+                  msg = paste0("Station Input File - Missing Column Issue\n\n", 
+                               "For this script to work, the weather input files ",
+                               "must contain ", length(inputFieldNames), " key column",
+                               if_else(length(inputFieldNames) > 1, "s", ""), 
+                               " (", vec2QuotedStr(inputFieldNames), ")\n\n",
+                               "However, the file is missing ",
+                               if_else(length(missingFields) > 1, "fields", "a field"), 
+                               ":\n\n",
+                               paste0("(*) ", inputFieldNames[missingFields], collapse = "\n\n"), 
+                               "\n\n",
+                               "Please revise the input file (\"", inputPath, "\") accordingly"))
   
   
   # Filter 'inputDF' to only rows that have non-NA values for this model
