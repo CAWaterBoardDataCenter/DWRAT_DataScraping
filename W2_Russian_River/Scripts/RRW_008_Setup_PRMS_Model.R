@@ -31,31 +31,8 @@ mainProcedure <- function () {
   cat("Starting 'RRW_008_Setup_PRMS_Model.R'!\n\n")
   
   
-  # Get the location of the PRMS model files
-  sourceDir <- getFromControl_RR("RR_PRMS_SOURCE_LOCATION")
-  
-  
-  # Validate the user's input and ensure that this directory contains
-  # all required components
-  # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
-  #  to reflect that)
-  sourceDir <- validateSourceModelDirectory(sourceDir, "RR_PRMS_SOURCE_LOCATION",
-                                            "PRMS", 
-                                            c("bin", "PRMS", "windows", 
-                                              "PRMS/input/climate_scenarios"),
-                                            c("bin/gsflow.exe", 
-                                              "windows/prms_rr.control",
-                                              "windows/run.bat"))
-  
-  
-  cat("[1/1]\tCopying the PRMS folder to \"W2_Russian_River/Output/RR_PRMS\"...\n")
-  
-  
-  # Copy the contents from 'sourceDir' to a new "RR_PRMS" folder in "Output"
-  copyModel(sourceDir, "W2_Russian_River/Output/RR_PRMS")
-  
-  
-  cat("\tDone!\n\n")
+  # Perform the model copying procedure in a generic function
+  copy_model_files("PRMS", "RR_PRMS_SOURCE_LOCATION")
   
   
   # Output a completion message
@@ -69,7 +46,45 @@ mainProcedure <- function () {
 
 
 
-copyModel <- function (sourceDir, newDir) {
+copy_model_files <- function (model, sourceField) {
+  
+  # For a given model, copy its files from a source directory
+  # into a newly created folder within the workflow's "Output" folder
+  
+  # (This folder is temporary and will be deleted after the model run finishes)
+  
+  
+  # Get the location of the model files
+  sourceDir <- getFromControl_RR(sourceField)
+  
+  
+  # Validate the user's input and ensure that this directory contains
+  # all required components
+  # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
+  #  to reflect that)
+  sourceDir <- validateSourceModelDirectory(sourceDir, sourceField, model)
+  
+  
+  cat(paste0("[1/1]\tCopying the ", model, " folder to \"W2_Russian_River/Output/",
+             get_model_dir_name(model), "\"...\n"))
+  
+  
+  # Copy the contents from 'sourceDir' to a new folder in "Output"
+  copy_contents(sourceDir, 
+                paste0("W2_Russian_River/Output/", get_model_dir_name(model)))
+  
+  
+  cat("\tDone!\n\n")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+copy_contents <- function (sourceDir, newDir) {
   
   # Copy the files from 'sourceDir' into a newly created folder called 'newDir'
   
@@ -118,7 +133,7 @@ copyModel <- function (sourceDir, newDir) {
   }
   
   
-  # Return nothing
+  # If the process is successful, return nothing
   return(invisible(NULL))
   
 }
