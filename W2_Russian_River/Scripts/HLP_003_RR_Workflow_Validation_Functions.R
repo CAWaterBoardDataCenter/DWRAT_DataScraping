@@ -338,7 +338,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   # Note: "_REV#" is removed from 'precipNames' at this point
   if (!all(precipNames[[1]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)) |
-           grepl("^((SUP)|(EX))_PRECIP[0-9]+$", precipNames[[1]]))) { 
+           grepl("^((SUP)|(EX))_PRECIP_?[0-9]+$", precipNames[[1]]))) { 
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value for the field \"", 
