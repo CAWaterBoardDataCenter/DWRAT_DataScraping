@@ -51,8 +51,13 @@ mainProcedure <- function () {
   cat("[2/3]\tCopying output files...\n")
   
   
+  # Import the model copy and deletion functions from the PRMS script
+  c("copy_model_outputs", "deleteFiles") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R", .))
+  
+  
   # Copy output files into the hydrology folder
-  copyOutputs(srpPath, dirPath, startDate, endDate)
+  copy_model_outputs("SRP", srpPath, dirPath, startDate, endDate)
   
   
   cat("\tDone!\n\n")
@@ -61,10 +66,6 @@ mainProcedure <- function () {
   # The final step is to delete the "SRPHM_update_ag" folder that was copied to 
   # the "Output" folder
   cat("[3/3]\tDeleting the model files...\n")
-  
-  
-  # Import the model deletion function from the PRMS script
-  functionStealer("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R", "deleteFiles")
   
   
   deleteFiles(srpPath, "SRP")
@@ -78,55 +79,6 @@ mainProcedure <- function () {
   
   
   # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
-  
-  # Copy several files from the SRP folder (including the control file)
-  # into the hydrology folder 
-  
-  
-  # Confirm that they exist in the model folder first
-  check_for_model_outputs("SRP", srpPath, modelOutput = NULL)
-  
-  
-  # Get a vector of paths to all important outputs
-  copyFiles <- list_model_outputs("SRP", srpPath)
-  
-  
-  # Prepare vectors that contain the proper filepaths and the planned filepaths
-  sourcePaths <- copyFiles |>
-    normalizePath(mustWork = TRUE)
-  
-  
-  # Use the same exact filenames in the hydrology directory's SRP output folder
-  writePaths <- copyFiles |>
-    str_remove("^.+[/\\\\]") |>
-    paste0(dirPath, "/SRP/Output/", 
-           ... = _) |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  # Add rows to 'sourcePaths' and 'writePaths' for "SRPHM_update.control"
-  sourcePaths <- c(sourcePaths,
-                   paste0(srpPath, "/SRPHM_update.control") |>
-                     checkForPreviousOutput())
-  
-  
-  writePaths <- c(writePaths,
-                  paste0(dirPath, "/SRP/Input/SRPHM_update.control"))
-  
-  
-  # Copy the files using the `copyFile` function
-  # If any of these actions fail, the function will trigger an error 
-  map2(sourcePaths, writePaths, copyFile) 
-  
-  
-  # Return nothing if there were no issues
   return(invisible(NULL))
   
 }

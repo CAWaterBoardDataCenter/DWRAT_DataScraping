@@ -51,8 +51,16 @@ mainProcedure <- function () {
   cat("[2/3]\tCopying output files...\n")
   
   
+  # Import the model copy and deletion functions from the PRMS script
+  c("copy_model_outputs", "deleteFiles") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R", .))
+  
+  
   # Copy output files into the hydrology folder
-  copyOutputs(srpPath, dirPath, startDate, endDate)
+  copy_model_outputs("SRPHM", srpPath, dirPath, startDate, endDate,
+                     additionalInputFiles = c("external_files/prms_ic_WY1975_toWY2021.out",
+                                              "external_files/restartdata_WY1975_to_WY2021.out"), 
+                     archiveModelName = "SRP")
   
   
   cat("\tDone!\n\n")
@@ -63,11 +71,7 @@ mainProcedure <- function () {
   cat("[3/3]\tDeleting the model files...\n")
   
   
-  # Import the model deletion function from the PRMS script
-  functionStealer("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R", "deleteFiles")
-  
-  
-  deleteFiles(srpPath, "SRP")
+  deleteFiles(srpPath, "SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -78,66 +82,6 @@ mainProcedure <- function () {
   
   
   # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
-  
-  # Copy several files from the SRP "output" folder into the hydrology folder 
-  
-  # Include "gsflow.log" and several input files too (like the control file)
-  
-  
-  # Confirm that they exist in the "output" folder first
-  check_for_model_outputs("SRPHM", srpPath, modelOutput = NULL)
-  
-  
-  # This vector contains the names of the desired output files
-  # ("gsflow.log" is included here too)
-  copyFiles <- list_model_outputs("SRPHM", srpPath)
-  
-  
-  # Prepare vectors that contain the proper filepaths and the planned filepaths
-  sourcePaths <- copyFiles |>
-    normalizePath(mustWork = TRUE)
-  
-  
-  # Use the same exact filenames in the hydrology directory's SRP output folder
-  writePaths <- copyFiles |>
-    str_remove("^.+[/\\\\]") |>
-    paste0(dirPath, "/SRP/Output/", 
-           ... = _) |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  # Add rows to 'sourcePaths' and 'writePaths' for other important files, 
-  # like "SRPHM_spinup.control", "SRPHM_spinup.nam", and "restartdata_WY1975_to_WY2021.out"
-  otherFiles <- c("/SRPHM_spinup.control",
-                  "/SRPHM_spinup.nam",
-                  "/external_files/prms_ic_WY1975_toWY2021.out",
-                  "/external_files/restartdata_WY1975_to_WY2021.out",
-                  "/external_files/srphm.params")
-  
-  
-  sourcePaths <- c(sourcePaths,
-                   paste0(srpPath, otherFiles) |>
-                     checkForPreviousOutput())
-  
-  
-  writePaths <- c(writePaths,
-                  paste0(dirPath, "/SRP/Input/",
-                         otherFiles |> str_remove("^.+[/\\\\]")))
-  
-  
-  # Copy the files using the `copyFile` function
-  # If any of these actions fail, the function will trigger an error 
-  map2(sourcePaths, writePaths, copyFile) 
-  
-  
-  # Return nothing if there were no issues
   return(invisible(NULL))
   
 }
