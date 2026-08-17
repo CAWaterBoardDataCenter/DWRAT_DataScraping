@@ -20,7 +20,7 @@ require(data.table)
 require(tidyverse)
 require(janitor)
 
-#### Microsoft Excel ####
+#### XLSX Operations ####
 require(openxlsx)
 require(readxl)
 require(writexl)
