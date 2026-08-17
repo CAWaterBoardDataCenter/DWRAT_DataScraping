@@ -300,9 +300,10 @@ get_num_stations <- function (model, prismInput, prismInputPath, fieldType) {
   # entries in its field
   if (fieldType == "PRECIP") {
     
-    return(prismInput[[names(fieldNames) == "PRECIP"]] |>
+    return(prismInput[[fieldNames[names(fieldNames) == "PRECIP"]]] |>
              na.omit() |>
              unique() |>
+             str_subset("^PRECIP") |>   # Ignore supplemental and extra gages
              length())
     
   # A similar procedure will be performed for temperature
@@ -310,13 +311,13 @@ get_num_stations <- function (model, prismInput, prismInputPath, fieldType) {
   } else if (fieldType == "TEMP") {
     
     # Get the number of unique temperature stations
-    minVal <- prismInput[[names(fieldNames) == "TMIN"]] |>
+    minVal <- prismInput[[fieldNames[names(fieldNames) == "TMIN"]]] |>
       na.omit() |>
       unique() |>
       length()
     
     
-    maxVal <- prismInput[[names(fieldNames) == "TMAX"]] |>
+    maxVal <- prismInput[[fieldNames[names(fieldNames) == "TMAX"]]] |>
       na.omit() |>
       unique() |>
       length()
