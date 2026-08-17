@@ -47,7 +47,7 @@ extract_filename <- function (path) {
   # (e.g., getting "example.txt" from "C:/Users/.../example.txt")
   
   return(path |>
-           str_remove("^.+[/\\\\]"))
+           stringr::str_remove("^.+[/\\\\]"))
   
   # This regular expression removes everything from the beginning of the string
   # to a forward slash or backslash 
