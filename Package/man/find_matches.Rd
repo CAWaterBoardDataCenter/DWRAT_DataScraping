@@ -9,39 +9,39 @@ find_matches(x, pattern, minMatches = 1, maxMatches = 1,
              ignore.case = FALSE, fixed = FALSE)
 }
 \arguments{
-\item{x}{A \code{\link[=character]{character()}} vector that will be searched for matches.}
+\item{x}{A \link{character} vector that will be searched for matches.}
 
-\item{pattern}{A \code{\link[=character]{character()}} string that contains a regular expression. This
+\item{pattern}{A \link{character} string that contains a regular expression. This
 will be applied to \code{x} to search for matches.}
 
-\item{minMatches}{An \code{\link[=integer]{integer()}} that identifies the minimum number of acceptable
+\item{minMatches}{An \link{integer} that identifies the minimum number of acceptable
 matches that can be found by \code{pattern} in \code{x}.}
 
-\item{maxMatches}{An \code{\link[=integer]{integer()}} that identifies the maximum number of acceptable
+\item{maxMatches}{An \link{integer} that identifies the maximum number of acceptable
 matches that can be found by \code{pattern} in \code{x}.}
 
-\item{returnIndex}{A \code{\link[=logical]{logical()}} value that toggles whether a \code{\link[=numeric]{numeric()}} or
-\code{\link[=character]{character()}} vector is returned by the function. If TRUE (the default), matching elements'
+\item{returnIndex}{A \link{logical} value that toggles whether a \link{numeric} or
+\link{character} vector is returned by the function. If TRUE (the default), matching elements'
 indices will be returned by the function. Otherwise, the function will return
 the actual elements within \code{x} that match \code{pattern}. (This is the complement of
 the \code{value} argument in \code{\link[=grep]{grep()}})}
 
-\item{filePath}{An optional \code{character()} string (with default value \code{NULL}). This should
+\item{filePath}{An optional \code{character} string (with default value \code{NULL}). This should
 be the path to the file that is the source of \code{x}. See 'Details' for more information.}
 
-\item{ignore.case}{A \code{\link[=logical]{logical()}} value that affects case sensitivity in the pattern
+\item{ignore.case}{A \link{logical} value that affects case sensitivity in the pattern
 matching algorithm. Exactly like \code{\link[=grep]{grep()}}, this argument is FALSE by default,
 causing \code{pattern} to be case sensitive in its search (e.g., "A" and "a" are
 treated differently). If this argument is TRUE, case is ignored during matching
 (e.g., "A" and "a" are equivalent).}
 
-\item{fixed}{A \code{\link[=logical]{logical()}} value that determines whether \code{pattern} is treated like
+\item{fixed}{A \link{logical} value that determines whether \code{pattern} is treated like
 a regular expression. Just like \code{\link[=grep]{grep()}}, this parameter is FALSE by default,
 and \code{pattern} is applied in matching as a regular expression. Specify \code{TRUE} if
 literal matches are desired (when TRUE, \code{fixed} can override other arguments).}
 }
 \value{
-Either a \code{\link[=character]{character()}} or \code{\link[=integer]{integer()}} \code{\link[=vector]{vector()}}. Empty vectors are possible.
+Either a \link{character} or \link{integer} \link{vector}. Empty vectors are possible.
 }
 \description{
 This function is a wrapper for the process of using \code{\link[=grep]{grep()}} to find matches
