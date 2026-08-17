@@ -53,7 +53,7 @@ mainProcedure <- function () {
   
   # Check for errors
   # There should be several output files
-  checkForModelOutputs_SRP_2024(srpPath, modelOutput)
+  check_for_model_outputs("SRPHM", srpPath, modelOutput)
   
   
   # Output a completion message

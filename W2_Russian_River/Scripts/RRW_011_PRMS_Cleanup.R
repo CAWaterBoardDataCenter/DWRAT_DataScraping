@@ -52,7 +52,8 @@ mainProcedure <- function () {
   
   
   # Copy output files into the hydrology folder
-  copyOutputs(prmsPath, dirPath, startDate, endDate)
+  copy_model_outputs("PRMS", prmsPath, dirPath, startDate, endDate,
+                     includeScriptGeneratedOutput = TRUE)
   
   
   cat("\tDone!\n\n")
@@ -80,57 +81,111 @@ mainProcedure <- function () {
 
 
 
-copyOutputs <- function (prmsPath, dirPath, startDate, endDate) {
+copy_model_outputs <- function (model, modelPath, dirPath, startDate, endDate,
+                                additionalInputFiles = NULL, 
+                                includeScriptGeneratedOutput = FALSE,
+                                archiveModelName = model) {
   
-  # Copy several files from the PRMS "output" folder (plus the control file)
+  # Copy several files from the model "output" folder (plus additional files)
   # into the hydrology folder 
   
+  # By default, the control file and parameter file are archived too
+  # (in the model's input folder)
   
-  # Confirm that they exist in the "output" folder first
-  checkForModelOutputs_PRMS(prmsPath, modelOutput = NULL,
-                            includeScriptGeneratedOutput = TRUE)
+  # If a "nam" file is present too in the model files, it will be saved as well
+  
+  # If more input files must be archived, their paths should be included in 
+  # 'additionalInputFiles' as a character vector containing relative paths 
+  # (relative to the root model directory)
+  
+  # (If more output files should be archived, please update `list_model_outputs`)
+  
+  # 'archiveModelName' is reserved for models whose archive folder names are 
+  # different from their actual model names
+  # (For example, if the SRPHM model has its archive folder labeled as "SRP")
+  
+  
+  # Confirm that they exist in the model's "output" folder first
+  check_for_model_outputs(model, modelPath, modelOutput = NULL,
+                          includeScriptGeneratedOutput = includeScriptGeneratedOutput)
   
   
   # This vector contains the paths of the key output files 
   # (and the script-generated log)
-  copyFiles <- getModelOutputs_PRMS(prmsPath, 
-                                    includeScriptGeneratedOutput = TRUE)
+  copyFiles <- list_model_outputs(model, modelPath, 
+                                  includeScriptGeneratedOutput = includeScriptGeneratedOutput)
   
   
-  # Prepare vectors that contain the proper filepaths and the planned filepaths
+  # Prepare vectors that contain the proper filepaths in 'copyFiles'
   sourcePaths <- copyFiles |>
     normalizePath(mustWork = TRUE)
   
   
-  # For the "sub_cfs" and "sub_inq" files, include the model scraping bounds 
-  # in their archive filenames
-  writePaths <- copyFiles |>
-    str_replace("RR_PRMS_Output(?=_sub_((cfs)|(inq))\\.csv$)",
-                paste0("RR_PRMS_Output_", startDate, "_", endDate))
+  # Prepare the output filenames next
+  # In most cases, the names will be the exact same as 'copyFiles'
+  # However, some adjustments may be applied for different models
+  if (model %in% c("PRMS")) {
+    
+    # For the "sub_cfs" and "sub_inq" files, include the model scraping bounds 
+    # in their archive filenames
+    writePaths <- copyFiles |>
+      str_replace(paste0("RR_", model, "_Output(?=_sub_((cfs)|(inq))\\.csv$)"),
+                  paste0("RR_", model, "_Output_", startDate, "_", endDate))
+    
+    # The regular expression checks for "RR_PRMS_Output" in the file paths,
+    # with a lookahead regex specifically matching "sub_cfs.csv" and "sub_inq.csv" 
+    
+    # (This is needed in case "RR_PRMS_Output_" would match with a portion of the
+    #  path rather than the actual filename)
+    
+  } else {
+    
+    writePaths <- copyFiles
+    
+  }
   
-  # The regular expression checks for "RR_PRMS_Output" in the file paths,
-  # with a lookahead regex specifically matching "sub_cfs.csv" and "sub_inq.csv" 
   
-  # (This is needed in case "RR_PRMS_Output_" would match with a portion of the
-  #  path rather than the actual filename)
-  
-  
-  # After that, replace the paths in 'writePaths' using 'dirPath'
-  # The files will be written to the PRMS "Output" folder
+  # After that, replace the folder paths in 'writePaths' using 'dirPath'
+  # The files will be written to the model's "Output" folder
   writePaths <- writePaths |>
-    str_remove("^.+[/\\\\]") |>
-    paste0(dirPath, "/PRMS/Output/", ... = _) |>
+    extract_filename() |>
+    paste0(dirPath, "/", archiveModelName, "/Output/", ... = _) |>
     normalizePath(mustWork = FALSE)
   
   
-  # Add rows to 'sourcePaths' and 'writePaths' for "prms_rr.control"
+  # Archive the control and parameter files as well
+  # (The nam file too, if it exists)
+  modelFiles <- list_model_components(model)
+  
+  modelFiles <- modelFiles[names(modelFiles) %in% c("CONTROL", "PARAM", "NAM")]
+  
+  
+  # Convert 'modelFiles' into a vector
+  modelFiles <- modelFiles |> unlist(use.names = FALSE)
+  
+  
+  # If 'additionalInputFiles' is not NULL, add those paths to 'modelFiles' too
+  if (!is.null(additionalInputFiles)) {
+    
+    modelFiles <- c(modelFiles, 
+                    additionalInputFiles)
+    
+  }
+  
+  
+  # Add these paths to 'sourcePaths' and 'writePaths'
   sourcePaths <- c(sourcePaths,
-                   paste0(prmsPath, "/windows/prms_rr.control") |>
+                   modelFiles |>
+                     paste0(modelPath, "/", ... = _) |>
                      checkForPreviousOutput())
   
   
+  # These files will be saved in the archive "Input" folder
   writePaths <- c(writePaths,
-                  paste0(dirPath, "/PRMS/Input/prms_rr.control"))
+                  modelFiles |>
+                    extract_filename() |>
+                    paste0(dirPath, "/", archiveModelName, "/Input/", ... = _) |>
+                    normalizePath(mustWork = FALSE))
   
   
   # Copy the files using the `copyFile` function
