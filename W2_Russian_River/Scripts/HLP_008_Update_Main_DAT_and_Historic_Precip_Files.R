@@ -240,9 +240,15 @@ updateDAT <- function (actualStart, actualEnd, latestPathPRMS, latestPathSRP) {
   # The PRMS DAT file will start from 1990-01-01, while 
   # the SRP DAT file will start from 1947-10-01
   
-  # The earliest download date will be 1981-01-01 (for SRP and PRISM only)
-  # (In SRP's case, the previous DAT file's data from 1947-10-01 to 1980-12-31
-  #  will be reused)
+  # However, the same downloaded data will be used in both cases
+  # (from 1947-10-01 to the end of the previous WY)
+  
+  # That way, all weather scripts will be run only once
+  # (Except in PRISM's case, both models' station inputs appear in the same file anyways)
+  
+  
+  # Set the start date for data downloads
+  dlStart <- as.Date("1947-10-01", format = "%Y-%m-%d")
   
   
   # Calculate the final date to include in these new files
@@ -250,13 +256,20 @@ updateDAT <- function (actualStart, actualEnd, latestPathPRMS, latestPathSRP) {
   fileEnd <- getModeledWY(actualEnd)[1] - days(1)
   
   
-  # Generate new DAT files for each model in separate functions
-  updateDAT_PRMS(as.Date("1990-01-01", format = "%Y-%m-%d"), fileEnd, 
+  # Download weather data using workflow scripts
+  download_weather_data(dlStart, fileEnd, actualStart, actualEnd)
+  
+  
+  # This raw data will need to be processed using the respective PRMS and SRP scripts 
+  
+  # That will be done in the next function, 
+  # which also generates new DAT files for each model
+  updateDAT_PRMS(as.Date("1990-01-01", format = "%Y-%m-%d"), fileEnd, dlStart, 
                  latestPathPRMS, actualStart, actualEnd)
   
   
   updateDAT_SRP(as.Date("1947-10-01", format = "%Y-%m-%d"), fileEnd, 
-                latestPathSRP)
+                latestPathSRP, actualStart, actualEnd)
   
   
   # Return nothing
@@ -266,14 +279,12 @@ updateDAT <- function (actualStart, actualEnd, latestPathPRMS, latestPathSRP) {
 
 
 
-updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actualEnd) {
+download_weather_data <- function (datStart, datEnd, actualStart, actualEnd) {
   
-  # Generate a new DAT file for PRMS
+  # Use some of the workflow scripts to obtain weather data
   
-  # Use some of the workflow scripts and functions for this process
+  # This data will support the creation of both PRMS and SRP DAT files
   
-  
-  # In this function:
   
   #  (*) Download PRISM data
   #      Using pieces of "RRW_001_PRISM_HTTP_Scraper.R"
@@ -283,32 +294,28 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   #  (*) Download RAWS data
   #      Using "RRW_003_RAWS_HTTP_Scraper.R"
-
+  
   #  (*) Download CIMIS data
   #      Using "RRW_004_CIMIS_API_Scraper.R"
   
   #  (*) Download CDEC data
   #      Using "RRW_005_CDEC_API_Scraper.R"
   
-  #  (*) Combine the weather files
-  #      Using "RRW_006_Process_PRMS_Weather_Data.R"
-  
-  # Except in PRISM's case, the entire scripts can be used
-  # (The PRISM script would download extra data unnecessarily)
-  
-  
-  # After that, some final processing and validation steps will occur
-  
-  # The format of the previous PRMS DAT file (located at 'latestPathPRMS')
-  # will influence the final output's format
-  
-  
+ 
   # Start by downloading PRISM data for this date range ('datStart' to 'datEnd')
+  # Download data for PRMS and SRP separately (the units will be different)
   runModifiedPRISM("PRISM_PRMS_STATIONS_CSV", datStart, datEnd,
                    paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", 
                           datStart, "_", datEnd, ".csv"),
                    useHighRes = TRUE, interpCells = TRUE,
                    getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
+  
+  
+  runModifiedPRISM("PRISM_SRP_STATIONS_CSV", datStart, datEnd,
+                   paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", 
+                          datStart, "_", datEnd, ".csv"),
+                   useHighRes = TRUE, interpCells = TRUE,
+                   getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
   
   
   # The next five scripts can be run in their entirety 
@@ -346,11 +353,49 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   toggleAndRunScript("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
   
   
-  # Combine the downloaded weather data after that
-  toggleAndRunScript("W2_Russian_River/Scripts/RRW_006_Process_PRMS_Weather_Data.R")
-  
-  
   # After running these scripts, revert the dates in the control script
+  updateControlScript(actualStart, actualEnd)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+updateDAT_PRMS <- function (datStart, datEnd, dlStart, latestPathPRMS, 
+                            actualStart, actualEnd) {
+  
+  # Generate a new DAT file for PRMS
+  
+  # In a prior function, the weather data was downloaded 
+  # (from 'dlStart' to 'datEnd')
+  
+  # Now, some final processing and validation steps will occur
+  
+  # The format of the previous PRMS DAT file (located at 'latestPathPRMS')
+  # will influence the final output's format
+  
+  
+  # First, modify "CTR_001_Set_Start_and_End_Dates.R"
+  # Replace the start and end dates
+  updateControlScript(datStart, datEnd)
+  
+  
+  # Combine the downloaded weather data after that
+  # Disable the `mainProcedure` call when this occurs
+  # (Doing so just loads the functions into the current environment)
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_007_Process_PRMS_Weather_Data.R", 
+                     includeMainCall = TRUE)
+  
+  
+  # Call `mainProcedure` for the script that combines PRMS weather data
+  # But set 'archiveFiles' to FALSE (to prevent any archiving of model files)
+  mainProcedure(archiveFiles = FALSE)
+  
+  
+  # After running that script, revert the dates in the control script
   updateControlScript(actualStart, actualEnd)
   
   
@@ -358,7 +403,7 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
   
   # Read in the processed weather file
   # Add columns for "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND"
-  newDAT <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", datStart, "_",
+  newDAT <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", dlStart, "_",
                    datEnd, ".csv") |>
     getFile() |>
     mutate(YEAR = year(DATE),
@@ -367,6 +412,12 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
            HOUR = 0,
            MINUTE = 0,
            SECOND = 0)
+  
+  
+  # Make sure 'newDAT' covers just the range from 'datStart' to 'datEnd'
+  # (since it initially contains data from 'dlStart' to 'datEnd' instead)
+  newDAT <- newDAT |>
+    filter(DATE >= datStart & DATE <= datEnd)
   
   
   # Add 22 runoff columns to 'newDAT' too
@@ -415,95 +466,56 @@ updateDAT_PRMS <- function (datStart, datEnd, latestPathPRMS, actualStart, actua
 
 
 
-updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
+updateDAT_SRP <- function (datStart, datEnd, latestPathSRP, 
+                           actualStart, actualEnd) {
   
   # Generate a new DAT file for SRP
   
-  # Use some of the workflow scripts and functions for this process
-  # as well as the previous main DAT file for SRP
+  # In a prior function, the weather data was downloaded 
+  # (from 'datStart' to 'datEnd')
+  
+  # Now, some final processing and validation steps will occur
   
   
   # In this function:
   
-  #  (*) Download PRISM data
-  #      Using pieces of "RRW_001_PRISM_HTTP_Scraper.R"
-  
   #  (*) Process the weather file
   #      Using pieces of "RRW_012_Process_SRP_Weather_Data.R"
   
-  #  (*) Append data for WY1948 to the end of CY1980
-  #      Using the data in 'latestPathSRP'
+  #  (*) Ensure that data for WY1948 to the end of CY1980 is represented
+  #      using the data in 'latestPathSRP'
   
   
-  # Start by downloading PRISM data
-  
-  # PRISM has data starting from "1981-01-01"
-  prismStart <- "1981-01-01" |>
-    as.Date(format = "%Y-%m-%d")
+  # First, modify "CTR_001_Set_Start_and_End_Dates.R"
+  # Replace the start and end dates
+  updateControlScript(datStart, datEnd)
   
   
-  # Save the downloaded data to the "Intermediate" folder
-  pathRawPRISM <- paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", 
-                         prismStart, "_", datEnd, ".csv")
+  # Combine the downloaded weather data after that
+  # Disable the `mainProcedure` call when this occurs
+  # (Doing so just loads the functions into the current environment)
+  toggleAndRunScript("W2_Russian_River/Scripts/RRW_012_Process_SRP_Weather_Data.R", 
+                     includeMainCall = TRUE)
   
   
-  # Download data until 'datEnd'
-  runModifiedPRISM("PRISM_SRP_STATIONS_CSV", prismStart, datEnd,
-                   pathRawPRISM,
-                   useHighRes = TRUE, interpCells = TRUE,
-                   getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
+  # Call `mainProcedure` for the script that combines SRP weather data
+  # But set 'archiveFiles' to FALSE (to prevent any archiving of model files)
+  mainProcedure(archiveFiles = FALSE)
   
   
-  # The next step is to use a portion of "RRW_012_Process_SRP_Weather_Data.R"
-  # Gather the required inputs (including the previously downloaded PRISM data),
-  # validate them, and then run the function `reformatClimateData`
-  inputFiles <- tibble("PRISM_INPUT" = 
-                         getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
-                         sharepointPathCheck(isFolder = FALSE),
-                       "PRISM_OUTPUT" = 
-                         pathRawPRISM)
+  # After running that script, revert the dates in the control script
+  updateControlScript(actualStart, actualEnd)
   
   
-  # Check if any required input files are missing
-  if (!all(map_lgl(inputFiles, file.exists))) {
-    
-    # Get the names of the missing files before sending a message
-    missingFiles <- inputFiles[!map_lgl(inputFiles, file.exists)]
-    
-    
-    # Output the error
-    stop(paste0("Missing Required Input File", 
-                if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-                "The PRISM web scraping function should have gathered data ",
-                "from ", prismStart, " to ", datEnd, " for the new SRP DAT ",
-                "file. However, the following file", 
-                if_else(length(missingFiles) > 1, "s are", " is"), 
-                " missing:\n\n",
-                paste0(" (*) ", names(missingFiles), ": \"", 
-                       missingFiles, "\"", collapse = "\n\n"), "\n\n",
-                "Please investigate.") |>
-           errWrap())
-    
-  }
-  
-  
-  # Import the PRISM files
-  prismInput <- inputFiles$PRISM_INPUT[1] |> getFile() |> unique()
-  prismDF <- getPRISM(inputFiles$PRISM_OUTPUT[1])
-  
-  
-  # Extract functions from "RRW_012_Process_SRP_Weather_Data.R"
-  c("validateInputs", "reformatClimateData") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_012_Process_SRP_Weather_Data.R", .))
-  
-  
-  # Validate the inputs
-  validateInputs(prismInput, prismDF, inputFiles)
-  
-  
-  # Reformat the PRISM data for SRP
+  # Import the processed weather file next
   # Add columns for "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND"
-  prismProcessed <- reformatClimateData(prismDF, prismInput, "PRISM") |>
+  newDAT <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", datStart, "_",
+                   datEnd, ".csv") |>
+    getFile()
+  
+  
+  # Add columns for "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND"
+  newDAT <- newDAT |>
     mutate(YEAR = year(DATE),
            MONTH = month(DATE),
            DAY = day(DATE),
@@ -512,29 +524,31 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
            SECOND = 0)
   
   
-  # The data from 1981-01-01 onwards is ready
-  
-  # Read in 'latestPathSRP' and extract data from WY1948 to the end of CY1980
-  # (To help filter the dataset, add a temporary "DATE" column and filter 
-  #  the dates to before 'prismStart')
-  oldSRP <- getFile(latestPathSRP) |>
-    mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |>
-             as.Date(format = "%Y-%m-%d")) |>
-    filter(DATE < prismStart) |>
-    select(-DATE)
+  # Read in data from the previous SRP DAT file next
+  oldSRP <- oldSRP <- getFile(latestPathSRP) |>
+  mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |>
+           as.Date(format = "%Y-%m-%d"))
   
   
-  # Bind 'oldSRP' and 'prismProcessed'
-  newSRP <- bind_rows(oldSRP, prismProcessed)
+  # If the earliest date in 'newDAT' is later than the start of 'oldSRP',
+  # use the previous DAT file to fill in the gaps
+  if (min(oldSRP$DATE) < min(newDAT$DATE)) {
+    
+    
+    # Bind 'oldSRP' and 'newDAT'
+    newDAT <- bind_rows(oldSRP |> filter(DATE < min(newDAT$DATE)), 
+                        newDAT)
+    
+  }
   
   
   # Validate the new result
-  newSRP <- newSRP |>
+  newDAT <- newDAT |>
     validateInputDAT(NA_character_, "SRP",
                      names(oldSRP), datStart, datEnd, datType = "Final")
   
   
-  # Prepare to write 'newSRP' to the same location as 'latestPathSRP'
+  # Prepare to write 'newDAT' to the same location as 'latestPathSRP'
   
   # It will have a similar filename
   # However, the final WY portion will be updated
@@ -546,8 +560,8 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP) {
                 paste0("to_WY", year(datEnd), ".csv"))
   
   
-  # Write 'newSRP' to a file
-  newSRP |>
+  # Write 'newDAT' to a file
+  newDAT |>
     select(all_of(names(oldSRP))) |>
     writeOutput(newPathSRP)
   
@@ -789,22 +803,8 @@ findAndReplace <- function (vec, pattern, replacement) {
   
   
   # Apply 'pattern' to 'vec' to find a match
-  matchIndex <- grep(pattern, vec)
-  
-  
-  # Make sure that exactly one match was found using 'pattern'
-  if (length(matchIndex) != 1) {
-    
-    paste0(length(matchIndex), " Matches Found for Input Pattern\n\n", 
-           "The script attempted to update a single line of text in a vector. ",
-           "However, the regular expression \"", pattern, "\" yielded ",
-           length(matchIndex), " matches.\n\n",
-           "The intended rewrite was \"", replacement, "\". Please ",
-           "investigate.") |>
-      errWrap() |>
-      stop()
-    
-  }
+  # (Exactly one match should be returned)
+  matchIndex <- find_matches(pattern, vec, minMatches = 1, maxMatches = 1)
   
   
   # If only one match was found, update that location with 'replacement'
@@ -818,17 +818,24 @@ findAndReplace <- function (vec, pattern, replacement) {
 
 
 
-toggleAndRunScript <- function (scriptPath) {
+toggleAndRunScript <- function (scriptPath, includeMainCall = FALSE) {
   
-  # Temporarily disable the `remove` function calls
+  # In the text of another script, temporarily disable the `remove` function calls
+  # (and possibly the `mainProcedure` call too)
   
   # Then, run a different script
   
-  # After that, enable the `remove` function calls again
+  # After that, enable the `remove` function calls again (along with `mainProcedure`)
   
   
   # Disable `base::remove(list = ls())`
   toggleRemoveFunctions(scriptPath, commentOut = TRUE)
+  
+  
+  # If 'includeMainCall' is TRUE, toggle `mainProcedure` too
+  if (includeMainCall) {
+    toggleMainFunctionCall(scriptPath, commentOut = TRUE)
+  }
   
   
   # Run the script
@@ -837,6 +844,12 @@ toggleAndRunScript <- function (scriptPath) {
   
   # Enable `base::remove(list = ls())`
   toggleRemoveFunctions(scriptPath, commentOut = FALSE)
+  
+  
+  # If 'includeMainCall' is TRUE, restore the call to `mainProcedure` 
+  if (includeMainCall) {
+    toggleMainFunctionCall(scriptPath, commentOut = FALSE)
+  }
   
   
   # Return nothing
@@ -864,13 +877,73 @@ toggleRemoveFunctions <- function (scriptPath, commentOut = TRUE) {
   
   
   # Get the lines that clear the environment
-  matchLines <- grep("^[ #]*base::remove\\(list = ls\\(\\)\\)\\s*$", scriptVec)
+  matchLines <- find_matches("^[ #]*base::remove\\(list = ls\\(\\)\\)\\s*$", scriptVec,
+                             minMatches = 1, maxMatches = Inf, filePath = scriptPath)
   
   # This regular expression checks for lines that:
   
   #  (*) Optionally start with one or more spaces and/or comment hashtags
   #  (*) Contains "base::remove(list = ls())"
   #  (*) Optionally end with one or more spaces
+  
+  
+  # If 'commentOut' is TRUE, set those lines with a "#" at the beginning
+  # Otherwise, set those lines without any "#" at the beginning
+  if (commentOut) {
+    
+    # Make sure these removal lines are commented out
+    scriptVec[matchLines] <- paste0("# ", scriptVec[matchLines])
+    
+  } else {
+    
+    # Make sure these removal lines are NOT commented out
+    scriptVec[matchLines] <- scriptVec[matchLines] |>
+      str_remove("^[ #]*")
+    
+  }
+  
+  
+  # Write 'scriptVec' back to its file
+  writeOutput(scriptVec, scriptPath, "write_lines", quietly = TRUE)
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+toggleMainFunctionCall <- function (scriptPath, commentOut = TRUE, 
+                                    mainName = "mainProcedure") {
+  
+  # Edit a script to either comment or uncomment the line that 
+  # executed the primary function (commonly called "mainProcedure")
+  
+  # This script searches for lines that contain:
+  # 'mainName' followed by an left parenthesis "("
+  
+  # If 'commentOut' is TRUE, add "#" to the beginning of these lines
+  
+  # If 'commentOut' is FALSE, remove "#" from the beginning of these lines
+  
+  
+  # Read the lines of 'scriptPath'
+  scriptVec <- getFile(scriptPath, fileType = "OTHER")
+  
+  
+  # Get the lines that clear the environment
+  matchLines <- mainName |>
+    str_escape() |>
+    paste0("^[ #]*", ... = _, "\\(") |>
+    find_matches(scriptVec, 
+                 minMatches = 1, maxMatches = 1, filePath = scriptPath)
+  
+  # This regular expression checks for lines that:
+  
+  #  (*) Optionally start with one or more spaces and/or comment hashtags
+  #  (*) Contains the function name 'mainName' (e.g., "mainProcedure")
+  #  (*) Followed by one opening parenthesis "("
   
   
   # If 'commentOut' is TRUE, set those lines with a "#" at the beginning
