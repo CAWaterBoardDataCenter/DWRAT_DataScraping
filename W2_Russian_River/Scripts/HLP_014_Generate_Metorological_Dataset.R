@@ -157,7 +157,7 @@ merge_weather_data <- function (startDate, endDate, model,
   # Process PRISM data separately into a mirror image of 'meteorDF'
   # (i.e., same columns, same number of rows, just potentially different values)
   prismProcessed <- reformat_climate_data(prismDF, prismInput, "PRISM", 
-                                          model, siPRISM)
+                                          model, startDate, endDate, siPRISM)
   
   
   # The next steps depend on whether the DAT will be PRISM-only or not
@@ -781,10 +781,10 @@ merge_datasets <- function (startDate, endDate,
   # Then, append them to 'meteorDF', replacing the placeholder columns in 'meteorDF'
   # with the actual downloaded data
   meteorDF <- meteorDF |>
-    process_climate_data(noaaDF, noaaInput, "NOAA", model) |>
-    process_climate_data(rawsDF, rawsInput, "RAWS", model) |>
-    process_climate_data(cimisDF, cimisInput, "CIMIS", model) |>
-    process_climate_data(cdecDF, cdecInput, "CDEC", model)
+    process_climate_data(noaaDF, noaaInput, "NOAA", startDate, endDate, model) |>
+    process_climate_data(rawsDF, rawsInput, "RAWS", startDate, endDate, model) |>
+    process_climate_data(cimisDF, cimisInput, "CIMIS", startDate, endDate, model) |>
+    process_climate_data(cdecDF, cdecInput, "CDEC", startDate, endDate, model)
   
   
   # Return the revised 'meteorDF'
@@ -795,8 +795,9 @@ merge_datasets <- function (startDate, endDate,
 
 
 
-process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource, 
-                                  model, siPRISM = TRUE) {
+process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
+                                  startDate, endDate, model, startDate, endDate, 
+                                  siPRISM = TRUE) {
   
   # Replace placeholder columns in 'meteorDF'
   
@@ -814,7 +815,7 @@ process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
   
   # Otherwise, process the data in 'climateDF'
   climateProcessed <- climateDF |>
-    reformat_climate_data(climateInput, dataSource, model, siPRISM)
+    reformat_climate_data(climateInput, dataSource, model, startDate, endDate, siPRISM)
   
   
   # Bind the processed tibble to 'meteorDF'
@@ -836,7 +837,7 @@ process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
 
 
 reformat_climate_data <- function (climateDF, climateInput, dataSource, 
-                                   model, siPRISM) {
+                                   model, startDate, endDate, siPRISM) {
   
   # The 'climateDF' data frames need to be widened 
   # (so that each station's data is in its own separate column)
@@ -947,6 +948,12 @@ reformat_climate_data <- function (climateDF, climateInput, dataSource,
   processedDF <- widerDF |>
     rename(any_of(renameVec)) |>
     select(DATE, any_of(names(renameVec)))
+  
+  
+  # Finally, ensure that 'processedDF' is limited to the bounds of 
+  # 'startDate' and 'endDate'
+  processedDF <- processedDF |>
+    filter(DATE >= startDate & DATE <= endDate)
   
   
   # Return 'processedDF'
@@ -1888,36 +1895,5 @@ get_model_revision <- function (meteorDF, model) {
   # Finally, remove the starting underscore from 'revStr' and return it
   return(revStr |>
            str_remove("^_"))
-  
-}
-
-
-
-copy_file_to_archive <- function (inputPath, outputDirectory, model = "PRMS",
-                                  subdir = "Input") {
-  
-  # Given a path to a file, copy it to 'outputDirectory' with a similar name
-  
-  
-  # If 'inputPath' is NULL, end the function without doing anything
-  if (is.null(inputPath)) {
-    return(invisible(NULL))
-  }
-  
-  
-  # Otherwise, start by setting the output path
-  
-  # Modify 'inputPath' into a location within the model's sub-folder
-  # in 'outputDirectory'
-  outputPath <- paste0(outputDirectory, "/", model, "/", subdir, "/",
-                       extract_filename(inputPath))
-  
-  
-  # Copy the file
-  copyFile(inputPath, outputPath, quietly = TRUE)
-  
-  
-  # Return nothing
-  return(invisible(NULL))
   
 }
