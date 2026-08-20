@@ -804,7 +804,7 @@ findAndReplace <- function (vec, pattern, replacement) {
   
   # Apply 'pattern' to 'vec' to find a match
   # (Exactly one match should be returned)
-  matchIndex <- find_matches(pattern, vec, minMatches = 1, maxMatches = 1)
+  matchIndex <- find_matches(vec, pattern, minMatches = 1, maxMatches = 1)
   
   
   # If only one match was found, update that location with 'replacement'
@@ -877,7 +877,7 @@ toggleRemoveFunctions <- function (scriptPath, commentOut = TRUE) {
   
   
   # Get the lines that clear the environment
-  matchLines <- find_matches("^[ #]*base::remove\\(list = ls\\(\\)\\)\\s*$", scriptVec,
+  matchLines <- find_matches(scriptVec, "^[ #]*base::remove\\(list = ls\\(\\)\\)\\s*$", 
                              minMatches = 1, maxMatches = Inf, filePath = scriptPath)
   
   # This regular expression checks for lines that:
@@ -936,7 +936,7 @@ toggleMainFunctionCall <- function (scriptPath, commentOut = TRUE,
   matchLines <- mainName |>
     str_escape() |>
     paste0("^[ #]*", ... = _, "\\(") |>
-    find_matches(scriptVec, 
+    find_matches(scriptVec, pattern = _, 
                  minMatches = 1, maxMatches = 1, filePath = scriptPath)
   
   # This regular expression checks for lines that:
