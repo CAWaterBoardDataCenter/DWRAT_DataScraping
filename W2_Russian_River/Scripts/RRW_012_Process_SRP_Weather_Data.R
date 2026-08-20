@@ -45,7 +45,7 @@ source("W2_Russian_River/Scripts/HLP_014_Generate_Metorological_Dataset.R")
 
 #### Functions ####
 
-mainProcedure <- function (allTempColumnsFromPRISM = TRUE, archiveFiles = TRUE) {
+mainProcedure <- function (archiveFiles = TRUE) {
   
   cat("\n\n")
   cat("Starting 'RRW_012_Process_SRP_Weather_Data.R'!\n")
@@ -66,7 +66,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE, archiveFiles = TRUE) 
                      prismOutputPath = paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_",
                                               startDate, "_", endDate, ".csv"), 
                      
-                     allTempColumnsFromPRISM = allTempColumnsFromPRISM, 
+                     allTempColumnsFromPRISM = TRUE, 
                      siPRISM = FALSE, 
                      applyFullQAQC = TRUE, 
                      archiveFiles = archiveFiles, 
