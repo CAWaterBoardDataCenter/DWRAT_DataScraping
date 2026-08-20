@@ -10,19 +10,6 @@
 
 # A CSV file will also be generated that contains information about the procedure
 
-# The meteorological CSV file from the previous script will be 
-# copied there as well
-# ("Output/PRMS_Meteorological_[startDate]_[endDate].csv")
-
-# Its pre-QAQC and intermediate-QAQC versions will be included too
-# ("W2_Russian_River/Output/PRMS_Meteorological_No_QC_[startDate]_[endDate].csv")
-# ("W2_Russian_River/Output/PRMS_Meteorological_Intermediate_QC_[startDate]_[endDate].csv")
-
-# The weather station input files and datasets will be archived in this folder as well
-
-# The PRMS and SRP PRISM model domain grid cell datasets, gage correlation 
-# and outlier bound dataset, and `renv` lockfile will all be copied too
-
 
 # After that, one additional file will be added to the "Output" folder
 
@@ -30,7 +17,6 @@
 # the path to the newly generated directory
 
 # Its filename will be "Hydrology_Output_Folder_[startDate]_[endDate].txt"
-
 # (This file will be archived too)
 
 
@@ -54,30 +40,11 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_007_Setup_Output_Directory.R'!\n")
+  cat("Starting 'RRW_006_Setup_Output_Directory.R'!\n")
   
   
   # Import the start and end date
   source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
-  
-  
-  # Verify that the meteorological CSV file exists
-  # (This is a sign that the previous script completed its procedure)
-  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate,
-                       "_", endDate, ".csv") |>
-    checkForPreviousOutput()
-  
-  
-  # Check for the "Pre-QAQC" version of this file as well
-  preQC_Meteor <- paste0("W2_Russian_River/Output/PRMS_Meteorological_No_QC_", startDate,
-                           "_", endDate, ".csv") |>
-    checkForPreviousOutput()
-  
-  
-  # Include the intermediate QA/QC file too (after CIMIS and CDEC flags have been applied)
-  intermediateMeteor <- paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_",
-                            "Intermediate_", startDate, "_", endDate, ".csv") |> 
-    checkForPreviousOutput()
   
   
   cat("[1/3]\tCreating new folders...\n")
@@ -98,12 +65,12 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat("[2/3]\tGenerating metadata and copying meteorological file...\n")
+  cat("[2/3]\tGenerating metadata...\n")
   
   
-  # Add metadata and the meteorological CSV to this new location
-  addFiles(outputDirectory, meteorPath, preQC_Meteor, intermediateMeteor,
-           startDate, endDate)
+  # Add metadata and the project lockfile to this new location
+  # (The workflow version number will be saved here too)
+  addFiles(outputDirectory, startDate, endDate, "RRW_v1")
   
   
   cat("\tDone!\n\n")
@@ -125,7 +92,7 @@ mainProcedure <- function () {
   
   # Edit 'outPath' to point to 'outputDirectory' instead of "Output"
   outPath <- outPath |>
-    str_remove("^.+[/\\\\]") |>
+    extract_filename() |>
     paste0(outputDirectory, "/", ... = _) |> 
     normalizePath(mustWork = FALSE)
   
@@ -139,7 +106,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_007_Setup_Output_Directory.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_006_Setup_Output_Directory.R' is complete!\n\n"))
   
   
   # Return nothing
@@ -326,24 +293,20 @@ chooseFolderName <- function (saveDirectory) {
 
 
 
-addFiles <- function (outputDirectory, meteorPath, preQC_Meteor, intermediateMeteor,
-                      startDate, endDate) {
+addFiles <- function (outputDirectory, startDate, endDate, workflowVersion) {
   
   # Create metadata about the process in 'outputDirectory'
-  # Also, copy meteorological files, input files, and the "renv" lock file there
+  # Also, copy the "renv" lock file there
   
   
   # Gather various information about the process into one data frame
   metaDF <- tibble(MODEL_RUN_DATE = Sys.Date(),
-                   WORKFLOW_VERSION = "RRW_v1",
+                   WORKFLOW_VERSION = workflowVersion,
                    R_VERSION = sessionInfo()[["R.version"]][["version.string"]],
                    MODELER_NAME = Sys.info()[["user"]],
                    LATEST_GIT_HASH = getGitHash(),
                    METEOROLOGICAL_START = startDate,
                    METEOROLOGICAL_END = endDate,
-                   PRMS_MODEL_REVISION = meteorPath |> getFile() |> getModelRevision(),
-                   PRMS_METEOROLOGICAL_FILE_CREATED = 
-                     file.info(meteorPath)[["ctime"]],
                    METADATA_DF_FIRST_DEFINED = Sys.time(),
                    CURRENT_WATER_YEAR = if_else(month(Sys.Date()) < 10,
                                                 year(Sys.Date()),
@@ -353,7 +316,6 @@ addFiles <- function (outputDirectory, meteorPath, preQC_Meteor, intermediateMet
   # The initial version of 'metaDF' contains information about:
   #   (*) The person running the scripts
   #   (*) 'startDate' and 'endDate'
-  #   (*) The creation datetime of the meteorological CSV
   #   (*) The approximate creation datetime of the metadata dataframe
   #   (*) The current water year
   
@@ -363,234 +325,10 @@ addFiles <- function (outputDirectory, meteorPath, preQC_Meteor, intermediateMet
     writeOutput(paste0(outputDirectory, "/metadata.csv"))
   
   
-  # After that, copy 'meteorDF' to 'outputDirectory'
-  # (Place it in the "Input" folder under "PRMS")
-  newMeteorPath <- paste0(outputDirectory, "/PRMS/Input/", 
-                          meteorPath |> str_remove("^.+[/\\\\]")) |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  # Copy the file
-  copyFile(from = meteorPath, to = newMeteorPath)
-  
-  
-  # Attempt the same copy process with the "Pre-QAQC" version of 
-  # the meteorological CSV file
-  copyFile(from = preQC_Meteor, 
-           to = newMeteorPath |> 
-             str_replace("^(.+[/\\\\]PRMS_Meteorological)_", 
-                         "\\1_No_QC_"), 
-           quietly = TRUE)
-  
-  
-  # Save the intermediate QC file too (post-CIMIS/CDEC adjustment)
-  copyFile(from = intermediateMeteor, 
-           to = newMeteorPath |> 
-             str_replace("^(.+[/\\\\]PRMS_Meteorological)_", 
-                         "\\1_QC_Intermediate_"), 
-           quietly = TRUE)
-  
-  
-  # Save the PRISM grid-cell-averaged precipitation data too
-  # There is one file each for the PRMS and SRP model domains
-  prmsGridPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
-                         getModeledWY(endDate)[1], "_", 
-                         endDate, ".csv")
-  
-  
-  srpGridPath <- paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
-                        getModeledWY(endDate)[1], "_", 
-                        endDate, ".csv")
-  
-  
-  copyFile(prmsGridPath, paste0(outputDirectory, "/PRMS/Input/",
-                                prmsGridPath |> str_remove("^.+/")), 
-           quietly = TRUE)
-  
-  
-  copyFile(srpGridPath, paste0(outputDirectory, "/SRP/Input/",
-                               srpGridPath |> str_remove("^.+/")), 
-           quietly = TRUE)
-  
-  
-  # After that, save the outlier bounds and regression data for precipitation gages
-  outlierPath <- getFromControl_RR("PRMS_PRECIP_GAGE_OUTLIER_BOUNDS") |>
-    sharepointPathCheck(isFolder = FALSE)
-  
-  regressionPath <- getFromControl_RR("PRMS_PRECIP_GAGE_CORRELATION_TABLE") |>
-    sharepointPathCheck(isFolder = FALSE)
-  
-  
-  # Copy both files to the "PRMS" folder
-  copyFile(outlierPath, paste0(outputDirectory, "/PRMS/Input/",
-                               outlierPath |> str_remove("^.+[/\\\\]")))
-  
-  copyFile(regressionPath, paste0(outputDirectory, "/PRMS/Input/",
-                                  regressionPath |> str_remove("^.+[/\\\\]")))
-  
-  
-  # Each of the weather station input files will be archived as well
-  copyStationInputFile("PRISM_PRMS_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("NOAA_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("RAWS_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("CIMIS_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("CDEC_PRECIPITATION_STATIONS_CSV", outputDirectory, "PRMS")
-  copyStationInputFile("PRISM_PRMS_GRID_CELLS_CSV", outputDirectory, "PRMS")
-  
-  copyStationInputFile("PRISM_SRP_STATIONS_CSV", outputDirectory, "SRP")
-  copyStationInputFile("PRISM_SRP_GRID_CELLS_CSV", outputDirectory, "SRP")
-  
-  
-  # Save the raw downloaded station data too
-  
-  # Some stations have extra gages' data to help with QA/QC
-  
-  # In CIMIS and CDEC's cases, too, their quality control flags are not applied by default, 
-  # so a record of what data was flagged is worth preserving
-  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", startDate, "_",
-                         endDate, ".csv"),
-                  outputDirectory)
-  
-  copyStationFile(paste0("W2_Russian_River/Intermediate/NOAA_API_Data_", startDate, "_",
-                         endDate, ".csv"),
-                  outputDirectory)
-  
-  copyStationFile(paste0("W2_Russian_River/Intermediate/RAWS_HTTP_Data_", startDate, "_",
-                         endDate, ".csv"),
-                  outputDirectory)
-  
-  copyStationFile(paste0("W2_Russian_River/Intermediate/CIMIS_API_Data_", startDate, "_",
-                         endDate, ".csv"),
-                  outputDirectory)
-  
-  copyStationFile(paste0("W2_Russian_River/Intermediate/CDEC_API_Precip_Data_", startDate, "_",
-                         endDate, ".csv"),
-                  outputDirectory)
-  
-  copyStationFile(paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", startDate, "_",
-                         endDate, ".csv"),
-                  outputDirectory, model = "SRP")
-  
-  
   # Finally, copy the "renv.lock" file located in the root directory
   # Store it in the same location as the metadata file
   copyFile(from = "renv.lock",
            to = paste0(outputDirectory, "/renv.lock"))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-getModelRevision <- function (meteorDF, model = "PRMS") {
-  
-  # Get the revision number of the model being used
-  # for a meteorological dataset
-  
-  # The column names of the precipitation and temperature stations may
-  # contain a "_REV#" string at the end (e.g., "PRECIP17_REV2")
-  
-  # Use that to fill out the metadata field about the model revision number
-  
-  
-  # Extract revision information from the precipitation and temperature columns
-  revList <- meteorDF |>
-    select(matches("^((PRECIP)|(TMAX)|(TMIN))")) |>
-    names() |> 
-    extractRevisionInfo()
-  
-  # `extractRevisionInfo` will extract revision strings from the names of 
-  # each column and produce a list that has three vectors: 
-  #   (1) The names without the revision string
-  #   (2) The extracted revision strings
-  #   (3) The actual numbers in the revision strings
-  
-  
-  # Make sure only one type of revision is listed in 'revList'
-  if (length(unique(revList[[3]])) != 1) {
-    
-    paste0("Multiple Revisions in Meteorological File\n\n",
-           "Different revisions correspond to different configurations of ",
-           model, ". A meteorological CSV should only have one revision string ",
-           "that appears in all precipitation and temperature columns' names. ",
-           "However, ", vec2QuotedStr(unique(revList[[3]])), " were detected. ",
-           "Please investigate the cause.\n\n",
-           "(This error occurred for '", meteorPath, "')") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Get the revision string
-  revStr <- revList[[2]] |>
-    unique()
-  
-  
-  # If 'revStr' is NA, that corresponds to the first revision of these files
-  # (i.e., when the stations used names like "PRECIP1" and "TMIN8")
-  if (is.na(revStr)) {
-    revStr <- "_REV1"
-  }
-  
-  
-  # Finally, remove the starting underscore from 'revStr' and return it
-  return(revStr |>
-           str_remove("^_"))
-  
-}
-
-
-
-copyStationInputFile <- function (sourceField, outputDirectory, model = "PRMS") {
-  
-  # Get the station input file's path from the control file
-  
-  # Then copy it into the new hydrology folder
-  
-  
-  # Read in the path from the control file
-  inputPath <- getFromControl_RR(sourceField) |>
-    sharepointPathCheck(isFolder = FALSE)
-  
-  
-  # Set the output path next
-  # The filename will be the same as in 'inputPath'
-  # (But any earlier folders in the path are replaced)
-  outputPath <- paste0(outputDirectory, "/", model, "/Input/",
-                       inputPath |> str_remove("^.+[/\\\\]"))
-  
-  
-  # Copy the file
-  copyFile(inputPath, outputPath, quietly = TRUE)
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-copyStationFile <- function (inputPath, outputDirectory, model = "PRMS") {
-  
-  # Given a path to a station's scraped data file, copy it to 'outputDirectory'
-  # with a similar name
-  
-  
-  # Set the output path first
-  
-  # Modify 'inputPath' into a location within the model's "Input" folder
-  # in 'outputDirectory'
-  outputPath <- paste0(outputDirectory, "/", model, "/Input/",
-                       inputPath |> str_remove("^.+[/\\\\]"))
-  
-  
-  # Copy the file
-  copyFile(inputPath, outputPath, quietly = TRUE)
   
   
   # Return nothing
