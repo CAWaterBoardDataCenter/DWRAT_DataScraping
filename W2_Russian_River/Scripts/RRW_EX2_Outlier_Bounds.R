@@ -7,7 +7,7 @@
 # As part of the "REV2" updates to the workflow, we made a few changes:
 
 #  (1) For data sources like CIMIS and CDEC, if data flags are provided,
-#      problematic data is removed (see "RRW_006_Process_PRMS_Weather_Data.R")
+#      problematic data is removed (see "RRW_007_Process_PRMS_Weather_Data.R")
 #
 #  (2) Upper bounds for extremely high values were developed
 

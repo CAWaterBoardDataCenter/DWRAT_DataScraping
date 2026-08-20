@@ -21,6 +21,7 @@ merge_weather_data <- function (startDate, endDate, model,
                                 allTempColumnsFromPRISM = TRUE, 
                                 siPRISM = model %notin% c("SRP"),
                                 applyFullQAQC = TRUE, 
+                                archiveFiles = TRUE, 
                                 noaaInputPath = NULL, noaaOutputPath = NULL,
                                 rawsInputPath = NULL, rawsOutputPath = NULL,
                                 cimisInputPath = NULL, cimisOutputPath = NULL,
@@ -156,21 +157,42 @@ merge_weather_data <- function (startDate, endDate, model,
   # Process PRISM data separately into a mirror image of 'meteorDF'
   # (i.e., same columns, same number of rows, just potentially different values)
   prismProcessed <- reformat_climate_data(prismDF, prismInput, "PRISM", 
-                                          model, siPRISM)
+                                          model, startDate, endDate, siPRISM)
   
   
   # The next steps depend on whether the DAT will be PRISM-only or not
   
   # If 'meteorDF' is not NULL, it contains data from other sources
   # In that case, QA/QC procedures, must be applied
+  
+  # Define variables to hold the planned filenames for pre-QC and intermediate-QC
+  # versions of 'meteorDF' as it goes through QC procedures
+  # (This will be important if archiving is performed)
+  noQCPath <- NULL
+  intermediatePath <- NULL
+  
+  
+  # Check next if 'meteorDF' uses data from non-PRISM sources
   if (!is.null(meteorDF)) {
     
+    # Update 'noQCPath' and 'intermediateQCPath' with proper filenames
+    noQCPath <- paste0("W2_Russian_River/Output/", model, "_Meteorological_No_QC_", 
+                       startDate, "_", endDate, ".csv")
+    
+    
+    intermediatePath <- paste0("W2_Russian_River/Output/", model, 
+                               "_Meteorological_QC_Intermediate_",
+                               startDate, "_", endDate, ".csv")
+    
+    
+    # Apply QA/QC procedures to 'meteorDF'
     meteorDF <- meteorDF |>
       apply_dat_qaqc(outlierDF, corrDF, 
                      cimisInput, cimisDF, cimisOutputPath,
                      cdecInput, cdecDF, cdecOutputPath, 
                      prismProcessed, allTempColumnsFromPRISM, 
                      startDate, endDate, model, 
+                     noQCPath, intermediatePath, 
                      fullQAQC = applyFullQAQC)
     
     # Otherwise, if only PRISM data will appear in the QA/QC procedure, 
@@ -188,13 +210,31 @@ merge_weather_data <- function (startDate, endDate, model,
     select(-starts_with("SUP_"), -starts_with("EX_"))
   
   
-  # Finally, write 'meteorDF' to a file
+  # Write 'meteorDF' to a file after that
   outFile <- paste0("W2_Russian_River/Output/", model, "_Meteorological_", 
                     startDate, "_", endDate, ".csv")
   
   
   meteorDF |>
     writeOutput(outFile)
+  
+  
+  # As a final step, check if 'archiveFiles' is TRUE
+  # That means that the weather files should be saved to the model archive folder
+  if (archiveFiles == TRUE) {
+    
+    # Save copies of the key climate files and add metadata too 
+    archive_climate_files(startDate, endDate, model, 
+                          noQCPath, intermediatePath, meteorPath = outFile, 
+                          prismInputPath, prismOutputPath, 
+                          noaaInputPath, noaaOutputPath,
+                          rawsInputPath, rawsOutputPath,
+                          cimisInputPath, cimisOutputPath,
+                          cdecInputPath, cdecOutputPat,
+                          precipOutliersPath, precipCorrPath)
+    
+  }
+  
   
   
   cat("\tDone!\n\n")
@@ -741,10 +781,10 @@ merge_datasets <- function (startDate, endDate,
   # Then, append them to 'meteorDF', replacing the placeholder columns in 'meteorDF'
   # with the actual downloaded data
   meteorDF <- meteorDF |>
-    process_climate_data(noaaDF, noaaInput, "NOAA", model) |>
-    process_climate_data(rawsDF, rawsInput, "RAWS", model) |>
-    process_climate_data(cimisDF, cimisInput, "CIMIS", model) |>
-    process_climate_data(cdecDF, cdecInput, "CDEC", model)
+    process_climate_data(noaaDF, noaaInput, "NOAA", startDate, endDate, model) |>
+    process_climate_data(rawsDF, rawsInput, "RAWS", startDate, endDate, model) |>
+    process_climate_data(cimisDF, cimisInput, "CIMIS", startDate, endDate, model) |>
+    process_climate_data(cdecDF, cdecInput, "CDEC", startDate, endDate, model)
   
   
   # Return the revised 'meteorDF'
@@ -755,8 +795,9 @@ merge_datasets <- function (startDate, endDate,
 
 
 
-process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource, 
-                                  model, siPRISM = TRUE) {
+process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
+                                  startDate, endDate, model, startDate, endDate, 
+                                  siPRISM = TRUE) {
   
   # Replace placeholder columns in 'meteorDF'
   
@@ -774,7 +815,7 @@ process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
   
   # Otherwise, process the data in 'climateDF'
   climateProcessed <- climateDF |>
-    reformat_climate_data(climateInput, dataSource, model, siPRISM)
+    reformat_climate_data(climateInput, dataSource, model, startDate, endDate, siPRISM)
   
   
   # Bind the processed tibble to 'meteorDF'
@@ -796,7 +837,7 @@ process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
 
 
 reformat_climate_data <- function (climateDF, climateInput, dataSource, 
-                                   model, siPRISM) {
+                                   model, startDate, endDate, siPRISM) {
   
   # The 'climateDF' data frames need to be widened 
   # (so that each station's data is in its own separate column)
@@ -909,6 +950,12 @@ reformat_climate_data <- function (climateDF, climateInput, dataSource,
     select(DATE, any_of(names(renameVec)))
   
   
+  # Finally, ensure that 'processedDF' is limited to the bounds of 
+  # 'startDate' and 'endDate'
+  processedDF <- processedDF |>
+    filter(DATE >= startDate & DATE <= endDate)
+  
+  
   # Return 'processedDF'
   return(processedDF)
   
@@ -1017,6 +1064,7 @@ apply_dat_qaqc <- function (meteorDF, outlierDF, corrDF,
                             cdecInput, cdecDF, cdecOutputPath, 
                             prismProcessed, allTempSub, 
                             startDate, endDate, model, 
+                            noQCPath, intermediatePath, 
                             fullQAQC = TRUE) {
   
   # Perform different QA/QC routines to flag and replace suspicious precipitation data
@@ -1027,10 +1075,7 @@ apply_dat_qaqc <- function (meteorDF, outlierDF, corrDF,
   # Before beginning, for archival purposes, 
   # save 'meteorDF' without any data substitution or outlier modifications
   meteorDF |>
-    writeOutput(paste0("W2_Russian_River/Output/", model, 
-                       "_Meteorological_No_QC_", 
-                       startDate, "_", endDate, ".csv"),
-                quietly = TRUE)
+    writeOutput(noQCPath, quietly = TRUE)
   
   
   # Start by addressing CIMIS and CDEC data
@@ -1047,9 +1092,7 @@ apply_dat_qaqc <- function (meteorDF, outlierDF, corrDF,
   # Save 'meteorDF' to an intermediate file
   # CIMIS and CDEC flags are the only QA/QC applied at this point
   meteorDF |>
-    writeOutput(paste0("W2_Russian_River/Output/", model, 
-                       "_Meteorological_QC_Intermediate_",
-                       startDate, "_", endDate, ".csv"))
+    writeOutput(intermediatePath)
   
   
   # If 'fullQAQC' is TRUE, the outlier procedure and correlation-based 
@@ -1717,5 +1760,140 @@ sub_data_with_PRISM <- function (meteorDF, prismProcessed, allTempSub) {
   
   # Return 'meteorDF'
   return(meteorDF)
+  
+}
+
+
+
+archive_climate_files <- function (startDate, endDate, model, 
+                                   noQCPath, intermediatePath, meteorPath, 
+                                   prismInputPath, prismOutputPath, 
+                                   noaaInputPath, noaaOutputPath,
+                                   rawsInputPath, rawsOutputPath,
+                                   cimisInputPath, cimisOutputPath,
+                                   cdecInputPath, cdecOutputPat,
+                                   precipOutliersPath, precipCorrPath) {
+  
+  # In a previous script, a folder for archiving model files was established
+  
+  # This function will add climate files to this folder 
+  # (if they are used by the process and not NULL)
+  
+  # The folder's metadata CSV file will be updated too 
+  
+  
+  # Start by locating the archive folder
+  # It can be found using 'startDate' and 'endDate'
+  dirPath <- validateHydroFolder(startDate, endDate)
+  
+  
+  # Next, save copies of the climate files
+  
+  # If they are not NULL, save each of the files whose paths were input 
+  # into this function
+  copy_file_to_archive(noQCPath, dirPath, model)
+  copy_file_to_archive(intermediatePath, dirPath, model)
+  copy_file_to_archive(meteorPath, dirPath, model)
+  
+  copy_file_to_archive(prismInputPath, dirPath, model)
+  copy_file_to_archive(prismOutputPath, dirPath, model)
+  
+  copy_file_to_archive(noaaInputPath, dirPath, model)
+  copy_file_to_archive(noaaOutputPath, dirPath, model)
+  
+  copy_file_to_archive(rawsInputPath, dirPath, model)
+  copy_file_to_archive(rawsOutputPath, dirPath, model)
+  
+  copy_file_to_archive(cimisInputPath, dirPath, model)
+  copy_file_to_archive(cimisOutputPath, dirPath, model)
+  
+  copy_file_to_archive(cdecInputPath, dirPath, model)
+  copy_file_to_archive(cdecOutputPat, dirPath, model)
+  
+  copy_file_to_archive(precipOutliersPath, dirPath, model)
+  copy_file_to_archive(precipCorrPath, dirPath, model)
+  
+  
+  # Finally, update the folder's metadata CSV with 
+  # information about the meteorological file
+  list(meteorPath |> getFile() |> get_model_revision(model),
+       file.info(meteorPath)[["ctime"]]) |>
+    set_names(c(paste0(model, "_MODEL_REVISION"),
+                paste0(model, "_METEOROLOGICAL_FILE_CREATED"))) |>
+    updateMetadataCSV(dirPath = dirPath)
+  
+  # Note 1: Functions cannot be used as names in a list, so `set_names` was called
+  #         after defining the list to name the elements
+  #         If any future changes are made to this function, please ensure that
+  #         the ordering of the values matches the ordering of the name assignments
+  
+  # Note 2: If 'meteorDF' was included as a function argument, 'meteorPath' and 
+  #         `getFile` would not be needed to run `get_model_revision`
+  #         However, doing it this way also serves as a test to ensure that the 
+  #         file was written correctly without any issues
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+get_model_revision <- function (meteorDF, model) {
+  
+  # Get the revision number of the model being used
+  # for a meteorological dataset
+  
+  # The column names of the precipitation and temperature stations may
+  # contain a "_REV#" string at the end (e.g., "PRECIP17_REV2")
+  
+  # Use that to fill out the metadata field about the model revision number
+  
+  
+  # Extract revision information from the precipitation and temperature columns
+  revList <- meteorDF |>
+    select(matches("^((PRECIP)|(TMAX)|(TMIN))")) |>
+    names() |> 
+    extractRevisionInfo()
+  
+  # `extractRevisionInfo` will extract revision strings from the names of 
+  # each column and produce a list that has three vectors: 
+  #   (1) The names without the revision string
+  #   (2) The extracted revision strings
+  #   (3) The actual numbers in the revision strings
+  
+  
+  # Make sure only one type of revision is listed in 'revList'
+  if (length(unique(revList[[3]])) != 1) {
+    
+    paste0("Multiple Revisions in Meteorological File\n\n",
+           "Different revisions correspond to different configurations of ",
+           model, ". A meteorological CSV should only have one revision string ",
+           "that appears in all precipitation and temperature columns' names. ",
+           "However, ", vec2QuotedStr(unique(revList[[3]])), " were detected. ",
+           "Please investigate the cause.\n\n",
+           "(This error occurred for '", meteorPath, "')") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Get the revision string
+  revStr <- revList[[2]] |>
+    unique()
+  
+  
+  # If 'revStr' is NA, that corresponds to the first revision of these files
+  # (i.e., when the stations used names like "PRECIP1" and "TMIN8")
+  if (is.na(revStr)) {
+    revStr <- "_REV1"
+  }
+  
+  
+  # Finally, remove the starting underscore from 'revStr' and return it
+  return(revStr |>
+           str_remove("^_"))
   
 }

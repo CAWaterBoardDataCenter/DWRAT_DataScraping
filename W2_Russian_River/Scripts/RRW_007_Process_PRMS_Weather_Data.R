@@ -71,10 +71,10 @@ source("W2_Russian_River/Scripts/HLP_014_Generate_Metorological_Dataset.R")
 
 #### Functions ####
 
-mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
+mainProcedure <- function (archiveFiles = TRUE) {
   
   cat("\n\n")
-  cat("Starting 'RRW_006_Process_PRMS_Weather_Data.R'!\n")
+  cat("Starting 'RRW_007_Process_PRMS_Weather_Data.R'!\n")
   
   
   # Import the start and end date
@@ -96,9 +96,10 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
                      prismOutputPath = paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_",
                                               startDate, "_", endDate, ".csv"), 
                      
-                     allTempColumnsFromPRISM = allTempColumnsFromPRISM, 
+                     allTempColumnsFromPRISM = TRUE, 
                      siPRISM = TRUE,
                      applyFullQAQC = TRUE, 
+                     archiveFiles = archiveFiles, 
                      
                      noaaInputPath = getFromControl_RR("NOAA_STATIONS_CSV") |>
                        sharepointPathCheck(isFolder = FALSE), 
@@ -129,7 +130,7 @@ mainProcedure <- function (allTempColumnsFromPRISM = TRUE) {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_006_Process_PRMS_Weather_Data.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_007_Process_PRMS_Weather_Data.R' is complete!\n\n"))
   
   
   # Return nothing

@@ -68,14 +68,16 @@ source("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
 source("W2_Russian_River/Scripts/RRW_v2_005_CDEC_API_Scraper.R")
 
 
+##### Archive Directory Setup #####
+
+# Prepare the output directory for the workflow model runs
+source("W2_Russian_River/Scripts/RRW_v2_006_Setup_Output_Directory.R")
+
+
 ##### SRP #####
 
 # Process PRISM data for SRP
-source("W2_Russian_River/Scripts/RRW_v2_006_Process_SRP_Weather_Data.R")
-
-
-# Setup the output directory for the workflow model runs
-source("W2_Russian_River/Scripts/RRW_v2_007_Setup_Output_Directory.R")
+source("W2_Russian_River/Scripts/RRW_v2_007_Process_SRP_Weather_Data.R")
 
 
 # Setup the temporary SRP model location

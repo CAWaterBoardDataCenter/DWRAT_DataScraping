@@ -634,8 +634,10 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, model,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # 'currentPrecip' should be archived too, but that was already accomplished
-  # in a prior script
+  # The original files for 'pastPrecip' and 'currentPrecip' should be
+  # archived as well
+  copy_file_to_archive(pathPastPrecip, dirPath, model)
+  copy_file_to_archive(prismPath, dirPath, model)
   
   
   # Return 'finalDAT'
