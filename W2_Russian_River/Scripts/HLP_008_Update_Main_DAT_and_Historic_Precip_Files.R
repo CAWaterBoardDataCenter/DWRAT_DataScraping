@@ -301,7 +301,7 @@ download_weather_data <- function (datStart, datEnd, actualStart, actualEnd) {
   #  (*) Download CDEC data
   #      Using "RRW_005_CDEC_API_Scraper.R"
   
- 
+  
   # Start by downloading PRISM data for this date range ('datStart' to 'datEnd')
   # Download data for PRMS and SRP separately (the units will be different)
   runModifiedPRISM("PRISM_PRMS_STATIONS_CSV", datStart, datEnd,
@@ -525,19 +525,57 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP,
   
   
   # Read in data from the previous SRP DAT file next
-  oldSRP <- oldSRP <- getFile(latestPathSRP) |>
-  mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |>
-           as.Date(format = "%Y-%m-%d"))
+  oldSRP <- getFile(latestPathSRP) |>
+    mutate(DATE = paste0(YEAR, "-", MONTH, "-", DAY) |>
+             as.Date(format = "%Y-%m-%d"))
+  
+  
+  # Make sure 'newDAT' contains all of the same columns as 'oldSRP'
+  # (in the same order)
+  newDAT <- newDAT |>
+    select(all_of(names(oldSRP)))
   
   
   # If the earliest date in 'newDAT' is later than the start of 'oldSRP',
   # use the previous DAT file to fill in the gaps
   if (min(oldSRP$DATE) < min(newDAT$DATE)) {
     
-    
     # Bind 'oldSRP' and 'newDAT'
     newDAT <- bind_rows(oldSRP |> filter(DATE < min(newDAT$DATE)), 
                         newDAT)
+    
+  }
+  
+  
+  # If there is missing data before the implementation of PRISM (1981-01-01),
+  # import data from 'oldSRP'
+  if (newDAT |> filter(DATE < prism_start()) |> anyNA()) {
+    
+    # Filter 'newDAT' and 'oldSRP' to pre-1981
+    newDAT_Historic <- newDAT |> filter(DATE < prism_start())
+    oldSRP_Historic <- oldSRP |> filter(DATE < prism_start())
+    
+    
+    # Replace all NA entries with data from 'oldSRP_Historic'
+    newDAT_Historic <- newDAT_Historic |> 
+      map2(oldSRP_Historic, coalesce) |>
+      as_tibble()
+    
+    # The above code iterates through every column of 
+    # 'newDAT_Historic' and 'oldSRP_Historic'
+    # (the two tibbles have the same ordering because of the earlier `select` call
+    #  with 'newDAT' and 'oldSRP')
+    #
+    # `coalesce` is called on each pair of columns, with values mainly  
+    # coming from 'newDAT_Historic' 
+    # (NA entries are then replaced with values from 'oldSRP_Historic')
+    #
+    # The resultant list is then coerced into a tibble
+    
+    
+    # Redefine 'newDAT' with these updated historic values
+    newDAT <- bind_rows(newDAT_Historic,
+                        newDAT |> filter(DATE >= prism_start()))
     
   }
   
@@ -591,7 +629,6 @@ updatePrecip <- function (actualStart, actualEnd, latestPathPRMS, latestPathSRP)
   
   # Both files will download data from 1981-01-01 onwards
   # (this is the earliest date with data from PRISM)
-  prismStart <- as.Date("1981-01-01", format = "%Y-%m-%d")
   
   
   # Calculate the final date to include in these new files
@@ -600,16 +637,16 @@ updatePrecip <- function (actualStart, actualEnd, latestPathPRMS, latestPathSRP)
   
   
   # For these edits, temporarily modify "CTR_001_Set_Start_and_End_Dates.R"
-  # Replace the start and end dates with 'prismStart' and 'fileEnd'
-  updateControlScript(prismStart, fileEnd)
+  # Replace the start and end dates with `prismStart` and 'fileEnd'
+  updateControlScript(prismStart(), fileEnd)
   
   
   # Generate new precipitation files for each model in separate function calls
-  createPrecipFile(prismStart, fileEnd, model = "PRMS",
+  createPrecipFile(prismStart(), fileEnd, model = "PRMS",
                    latestPathPRMS, actualEnd)
   
   
-  createPrecipFile(prismStart, fileEnd, model = "SRP",
+  createPrecipFile(prismStart(), fileEnd, model = "SRP",
                    latestPathSRP, actualEnd)
   
   
