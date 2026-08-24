@@ -1636,11 +1636,40 @@ sub_missing_gage_data <- function (meteorDF, corrDF, prismProcessed) {
 
 
 
-sub_data_with_PRISM <- function (meteorDF, prismProcessed, allTempSub) {
+sub_data_with_PRISM <- function (meteorDF, prismProcessed, allTempSub,
+                                 prismStart = as.Date("1981-01-01", format = "%Y-%m-%d")) {
   
   # Wherever missing values are present in 'meteorDF', use PRISM data as a substitute
   
   # And if 'allTempSub' is TRUE, all temperature data will come from PRISM
+  
+  
+  # If 'meteorDF' does not contain any data after the start of PRISM, 
+  # return 'meteorDF' without any changes
+  if (all(meteorDF$DATE < prismStart)) {
+    return(meteorDF)
+  }
+  
+  
+  # If there is data in 'meteorDF' from before the start of PRISM, 
+  # temporarily separate that historic data 
+  # (it will be added back in at the end)
+  if (any(meteorDF$DATE < prismStart)) {
+    
+    historicMeteor <- meteorDF |>
+      filter(DATE < prismStart)
+    
+    
+    meteorDF <- meteorDF |>
+      filter(DATE >= prismStart)
+    
+  } else {
+    
+    # If there is no pre-1981 data in 'meteorDF', 
+    # set 'historicMeteor' to NULL instead
+    historicMeteor <- NULL
+    
+  }
   
   
   # Make sure the columns in 'prismProcessed' match the ordering in 'meteorDF'
@@ -1755,6 +1784,12 @@ sub_data_with_PRISM <- function (meteorDF, prismProcessed, allTempSub) {
                 "Please investigate.") |>
            errWrap())
     
+  }
+  
+  
+  # If 'historicMeteor' is NOT NULL, add back in that pre-1981 data to 'meteorDF'
+  if (!is.null(historicMeteor)) {
+    meteorDF <- bind_rows(historicMeteor, meteorDF)
   }
   
   
