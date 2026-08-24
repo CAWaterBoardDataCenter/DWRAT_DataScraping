@@ -1092,10 +1092,9 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   # (they correspond to the model domains of PRMS and SRP)
   
   # This function verifies that continuous precipitation data is present 
-  # from "1981-01-01" to within two water years of the modeled water year
+  # from "1981-01-01" (PRISM daily data start date) to within two water years 
+  # of the modeled water year
   # (e.g., For WY2026, there should be data through at least WY2024)
-  prismStart <- "1981-01-01" |>
-    as.Date(format = "%Y-%m-%d")
   
   
   # First, confirm that both expected columns are present
@@ -1141,7 +1140,7 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   
   
   # After that, check for missing dates in 'precipDF'
-  dateSeq <- seq(from = prismStart, 
+  dateSeq <- seq(from = prism_start(), 
                  to = max(precipDF$Date), 
                  by = "days")
   

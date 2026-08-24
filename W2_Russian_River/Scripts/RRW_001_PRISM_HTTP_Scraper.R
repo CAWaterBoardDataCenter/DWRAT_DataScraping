@@ -63,10 +63,10 @@ mainProcedure <- function () {
   
   # PRISM does not have data earlier than 1981-01-01
   # If 'startDate' is earlier than this date, output a warning message
-  if (startDate < "1981-01-01") {
+  if (startDate < prism_start()) {
     
-    paste0("The earliest date for which PRISM has data available is ",
-           "1981-01-01. The input start date (\"", startDate, "\") is ",
+    paste0("The earliest date for which PRISM has data available is ", 
+           prism_start(), ". The input start date (\"", startDate, "\") is ",
            "too early.") |>
       errWrap() |>
       message()
@@ -229,8 +229,8 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   
   # To start, ensure that 'startDate' is not greater than 1981-01-01
   # If it is, update the value of 'startDate'
-  if (startDate < "1981-01-01") {
-    startDate <- "1981-01-01" |> as.Date(format = "%Y-%m-%d")
+  if (startDate < prism_start()) {
+    startDate <- prism_start()
   }
   
   
