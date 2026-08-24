@@ -796,7 +796,7 @@ merge_datasets <- function (startDate, endDate,
 
 
 process_climate_data <- function (meteorDF, climateDF, climateInput, dataSource,
-                                  startDate, endDate, model, startDate, endDate, 
+                                  startDate, endDate, model, 
                                   siPRISM = TRUE) {
   
   # Replace placeholder columns in 'meteorDF'
