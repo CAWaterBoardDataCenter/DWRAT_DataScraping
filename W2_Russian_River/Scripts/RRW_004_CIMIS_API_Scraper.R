@@ -52,10 +52,10 @@ mainProcedure <- function () {
   
   # CIMIS does not have data earlier than 1982-06-07 
   # If 'startDate' is earlier than this date, output a warning
-  if (startDate < "1982-06-07") {
+  if (startDate < cimis_start()) {
     
-    paste0("The earliest date for which CIMIS has data available is ",
-           "1982-06-07. The input start date (\"", startDate, "\") is ",
+    paste0("The earliest date for which CIMIS has data available is ", 
+           cimis_start(), ". The input start date (\"", startDate, "\") is ",
            "too early.") |>
       errWrap() |>
       message()
@@ -121,10 +121,9 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   # Before continuing, confirm that 'startDate' is not earlier than 1982-06-07
   # If it is, adjust its value
-  if (startDate < "1982-06-07") {
+  if (startDate < cimis_start()) {
     
-    startDate <- "1982-06-07" |>
-      as.Date(format = "%Y-%m-%d")
+    startDate <- cimis_start()
     
   }
   

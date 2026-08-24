@@ -1637,7 +1637,7 @@ sub_missing_gage_data <- function (meteorDF, corrDF, prismProcessed) {
 
 
 sub_data_with_PRISM <- function (meteorDF, prismProcessed, allTempSub,
-                                 prismStart = as.Date("1981-01-01", format = "%Y-%m-%d")) {
+                                 prismStart = prism_start()) {
   
   # Wherever missing values are present in 'meteorDF', use PRISM data as a substitute
   

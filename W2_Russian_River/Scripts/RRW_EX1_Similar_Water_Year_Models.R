@@ -128,10 +128,6 @@ base::remove(list = ls())
 
 # Import packages
 source("Additional_Scripts/Load_Packages.R")
-require(sf)
-require(stars)
-require(mapview)
-require(writexl)
 
 
 # Import shared functions
@@ -216,8 +212,7 @@ mainProcedure <- function () {
   # Still, the code that could download this information is included below
   # It is just commented out
   
-  startDate <- "1981-01-01" |>
-    as.Date(format = "%Y-%m-%d")
+  startDate <- prism_start()
   
   endDate <- "2026-03-10" |>
     as.Date(format = "%Y-%m-%d")

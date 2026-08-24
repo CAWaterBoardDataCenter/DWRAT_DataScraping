@@ -1,10 +1,5 @@
 # Many of these functions condense repetitive actions into function calls
 
-# Procedures that involve an "assumption" use functions from here as well
-
-# That way, if the assumption changes, only one edit is needed in this function
-# (as opposed to edits wherever the assumption is applied)
-
 
 #' @title Extract a File Name from a File Path 
 #' 
@@ -170,9 +165,9 @@ find_matches <- function (x, pattern, minMatches = 1, maxMatches = 1,
   if (length(matchIndex) < minMatches) {
     
     paste0("Expected ", minMatches, " match", 
-           dplyr::if_else(minMatches > 1, "es", ""),
+           dplyr::if_else(minMatches != 1, "es", ""),
            ", but \"", pattern, "\" had only ", length(matchIndex), 
-           " match", dplyr::if_else(length(matchIndex) > 1, "es", ""), ".", 
+           " match", dplyr::if_else(length(matchIndex) != 1, "es", ""), ".", 
            dplyr::if_else(is.null(filePath), 
                    "",
                    paste0("\n\nPlease investigate \"", filePath, "\""))) |>
