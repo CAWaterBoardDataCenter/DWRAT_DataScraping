@@ -509,7 +509,7 @@ updateDAT_SRP <- function (datStart, datEnd, latestPathSRP,
   
   # Import the processed weather file next
   # Add columns for "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", and "SECOND"
-  newDAT <- paste0("W2_Russian_River/Output/PRMS_Meteorological_", datStart, "_",
+  newDAT <- paste0("W2_Russian_River/Output/SRP_Meteorological_", datStart, "_",
                    datEnd, ".csv") |>
     getFile()
   
