@@ -230,7 +230,7 @@ merge_weather_data <- function (startDate, endDate, model,
                           noaaInputPath, noaaOutputPath,
                           rawsInputPath, rawsOutputPath,
                           cimisInputPath, cimisOutputPath,
-                          cdecInputPath, cdecOutputPat,
+                          cdecInputPath, cdecOutputPath,
                           precipOutliersPath, precipCorrPath)
     
   }
@@ -1806,7 +1806,7 @@ archive_climate_files <- function (startDate, endDate, model,
                                    noaaInputPath, noaaOutputPath,
                                    rawsInputPath, rawsOutputPath,
                                    cimisInputPath, cimisOutputPath,
-                                   cdecInputPath, cdecOutputPat,
+                                   cdecInputPath, cdecOutputPath,
                                    precipOutliersPath, precipCorrPath) {
   
   # In a previous script, a folder for archiving model files was established
@@ -1843,7 +1843,7 @@ archive_climate_files <- function (startDate, endDate, model,
   copy_file_to_archive(cimisOutputPath, dirPath, model)
   
   copy_file_to_archive(cdecInputPath, dirPath, model)
-  copy_file_to_archive(cdecOutputPat, dirPath, model)
+  copy_file_to_archive(cdecOutputPath, dirPath, model)
   
   copy_file_to_archive(precipOutliersPath, dirPath, model)
   copy_file_to_archive(precipCorrPath, dirPath, model)
