@@ -380,7 +380,7 @@ updateDAT_PRMS <- function (datStart, datEnd, dlStart, latestPathPRMS,
   
   # First, modify "CTR_001_Set_Start_and_End_Dates.R"
   # Replace the start and end dates
-  updateControlScript(datStart, datEnd)
+  updateControlScript(dlStart, datEnd)
   
   
   # Combine the downloaded weather data after that
