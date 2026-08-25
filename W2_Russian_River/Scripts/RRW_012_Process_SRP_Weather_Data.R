@@ -51,6 +51,10 @@ mainProcedure <- function (archiveFiles = TRUE) {
   cat("Starting 'RRW_012_Process_SRP_Weather_Data.R'!\n")
   
   
+  # Import the start and end date
+  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  
+  
   # Use the functions in 'HLP_014_Generate_Metorological_Dataset.R' 
   # to complete this procedure
   
