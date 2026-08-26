@@ -151,9 +151,9 @@ getXLSX <- function (filePath, worksheet = NULL,
   }
   
   
-  sheetDF <- try(read_xlsx(filePath, sheet = worksheet, range = range,
-                           col_names = col_names, col_types = col_types,
-                           skip = skip, n_max = n_max, guess_max = guess_max), 
+  sheetDF <- try(readxl::read_xlsx(filePath, sheet = worksheet, range = range,
+                                   col_names = col_names, col_types = col_types,
+                                   skip = skip, n_max = n_max, guess_max = guess_max), 
                  silent = TRUE)
   
   
@@ -1300,7 +1300,7 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
     
   } else if (writeFunction == "write_xlsx") {
     
-    writeRes <- try(write_xlsx(x, outPath, col_names = col_names))
+    writeRes <- try(writexl::write_xlsx(x, outPath, col_names = col_names))
     
   } else if (writeFunction == "write_tsv") {
     

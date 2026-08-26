@@ -93,7 +93,7 @@ for (i in 1:length(xlsxList)) {
       grepl("[/\\\\]Master_Control_File\\.xlsx$", xlsxList[i])) {
     
     # Read in the file
-    masterDF <- read_xlsx(xlsxList[i])
+    masterDF <- readxl::read_xlsx(xlsxList[i])
     
     
     # To prevent accidental commits of sensitive information 
