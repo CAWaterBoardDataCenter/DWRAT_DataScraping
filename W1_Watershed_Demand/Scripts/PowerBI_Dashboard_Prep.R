@@ -216,9 +216,13 @@ mainProcedure <- function () {
       message()
     
     
+    # Get the indices with problematic catchments
+    catchIndices <- which(lengths(catchOverlap) == 0)
+    
+    
     # In that case, use `st_distance` to determine the nearest HUC-12 sub-basin
     # for every catchment with this issue
-    nearestCatch <- st_distance(catchDF[lengths(catchOverlap) == 0, ], huc12) |>
+    nearestCatch <- st_distance(catchDF[catchIndices, ], huc12) |>
       drop_units() |>
       t() |> data.frame() |>
       summarize(across(everything(), ~ which.min(.)[1])) |>
@@ -237,7 +241,7 @@ mainProcedure <- function () {
     # Then, for each problematic catchment, assign its nearest HUC-12 sub-basin
     for (i in 1:length(nearestCatch)) {
       
-      catchOverlap[[which(lengths(catchOverlap) == 0)[i]]] <- nearestCatch[i]
+      catchOverlap[[catchIndices[i]]] <- nearestCatch[i]
       
     }
     
