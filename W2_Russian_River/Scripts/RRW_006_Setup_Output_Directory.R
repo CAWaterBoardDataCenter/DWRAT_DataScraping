@@ -160,7 +160,8 @@ validateInput <- function (saveDirectory, sourceField) {
 
 
 generateFolders <- function (saveDirectory,
-                             models = c("PRMS", "SRP")) {
+                             models = c("PRMS", "SRP"),
+                             isRussianRiver = TRUE) {
   
   # In 'saveDirectory', a new folder will be created for the imminent 
   # model runs of PRMS, SRP, and DWRAT
@@ -174,24 +175,43 @@ generateFolders <- function (saveDirectory,
   
   
   # Create the directory 'mainName'
-  
   # In addition, create sub-folders for "PRMS", "SRP", and "DWRAT"
   # In each of these folders, create "Input" and "Output" folders
-  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/", models[1], "/Input"),
-                      paste0(saveDirectory, "/", mainName, "/", models[1], "/Output"),
-                      paste0(saveDirectory, "/", mainName, "/", models[2], "/Input"),
-                      paste0(saveDirectory, "/", mainName, "/", models[2], "/Output"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected")) |>
+  # For the Russian River workflow, sub-directories in the DWRAT "Output" folder 
+  # are required for the upper and lower Russian River
+  
+  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
+                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output"))
+  
+  
+  if (isRussianRiver) {
+    
+    newDirectories <- c(newDirectories,
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected"))
+    
+  }
+  
+  
+  # For each model in 'models', generate "Input" and "Output" folders
+  for (i in 1:length(models)) {
+    
+    newDirectories <- c(newDirectories,
+                        paste0(saveDirectory, "/", mainName, "/", models[i], "/Input"),
+                        paste0(saveDirectory, "/", mainName, "/", models[i], "/Output"))
+    
+  }
+  
+  
+  # Normalize all of these paths (converting them into absolute paths)
+  newDirectories <- newDirectories |>
     normalizePath(mustWork = FALSE)
   
   
   # Create the folders
   newDirectories |>
-    map_lgl(~ dir.create(., recursive = TRUE))
-    
+    dir_create(recurse = TRUE)
+  
   
   # Ensure that all folders were created successfully
   # If not, output an error
