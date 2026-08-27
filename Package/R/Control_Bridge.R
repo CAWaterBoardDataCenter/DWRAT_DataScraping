@@ -138,7 +138,7 @@ get_from_master_control <- function (fieldName) {
       
       # For other SharePoint-related fields, do nothing
     } else if (fieldName %in% c("SHAREPOINT_DEMAND_CONTROL_FILE",
-                                "SHAREPOINT_RR_SUPPLY_CONTROL_FILE",
+                                "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE",
                                 "SHAREPOINT_LSPC_WORKFLOW_CONTROL_FILE")) {
       
       # No messages or errors
@@ -207,9 +207,84 @@ read_lspc_weather_control <- function () {
 
 
 
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
 read_lspc_master_control <- function () {
   
-  # Return a value from the RR Workflow control file
+  # Read in the primary LSPC control file
+  
+  # This spreadsheet can be stored locally or on SharePoint
+  
+  
+  # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
+  # and "SHAREPOINT_LSPC_WORKFLOW_CONTROL_FILE" must be specified in 
+  # the master control file
+  if (!is.na(get_from_master_control("INITIAL_SHAREPOINT_FILE_PORTION"))) {
+    
+    # Try and read the SharePoint fragment for the LSPC control file
+    controlPath <- get_from_master_control("SHAREPOINT_LSPC_WORKFLOW_CONTROL_FILE")
+    
+    
+    # If that value is indeed specified, read in that file and return it
+    if (!is.na(controlPath)) {
+      
+      return(controlPath |>
+               makeSharePointPath() |>
+               getXLSX(worksheet = lspc_master_control_worksheet()))
+      
+    }
+    
+  }
+  
+  
+  # In all other cases, use the local version of the control file
+  controlPath <- lspc_master_control_local_path()
+  
+  
+  # Read in the spreadsheet as a data frame and return it
+  return(getXLSX(controlPath, worksheet = lspc_master_control_worksheet()))
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+get_from_lspc_master_control <- function (fieldName) {
+  
+  # Return a value from the  control file
   
   # The name of the parameter is given in 'fieldName'
   # The "FIELD" column of the spreadsheet should have a matching value
@@ -218,36 +293,7 @@ read_lspc_master_control <- function () {
   
   # The first step is to read in the spreadsheet
   # It can either be a SharePoint version or a local copy
-  
-  # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
-  # and "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE" must be specified in 
-  # "Master_Control_File.xlsx"
-  if (!is.na(getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"))) {
-    
-    # Try and read the SharePoint fragment for the RR Worfklow control file
-    controlPath <- getFromMasterControl("SHAREPOINT_RR_WORKFLOW_CONTROL_FILE")
-    
-    
-    # If that value is indeed specified, read it in as 'controlDF'
-    if (!is.na(controlPath)) {
-      
-      controlDF <- controlPath |>
-        makeSharePointPath() |>
-        getXLSX()
-      
-    }
-    
-  }
-  
-  
-  # In all other cases, use the local version of the control file
-  if (!exists("controlDF")) {
-    
-    controlPath <- "W2_Russian_River/Input/RR_Workflow_Control_File.xlsx"
-    
-    controlDF <- getXLSX(controlPath)
-    
-  }
+  controlDF <- read_lspc_master_control()
   
   
   # Find a match for 'fieldName' in the "FIELD" column
@@ -293,4 +339,3 @@ read_lspc_master_control <- function () {
   return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
   
 }
-

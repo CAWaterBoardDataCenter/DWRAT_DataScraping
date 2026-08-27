@@ -2,6 +2,9 @@
 
 # These folders must be in place before the weather data download can begin
 
+# If files from a previous run are present, clear them out
+
+# The "shared" folder must be cleared as well
 
 #### Setup ####
 
@@ -47,8 +50,19 @@ mainProcedure <- function () {
   dirPaths <- paste0("W3_LSPC_Watershed/data/projects/", controlDF$project_name)
   
   
-  # Create these directories if they do not already exist
+  # Include the "shared" folder in this vector as well
+  dirPaths <- paste0("W3_LSPC_Watershed/data/shared")
+  
+  
+  # If these directories already exist, delete them
+  dir_delete(dirPaths)
+  
+  
+  # Then, create the folders for each watershed
   dirPaths |> dir_create(recurse = FALSE)
+  
+  # 'recurse' is FALSE, meaning that the workflow, "data", and "projects" folders 
+  # must already exist; otherwise, an error will occur
   
   
   cat("\tDone!\n\n")
