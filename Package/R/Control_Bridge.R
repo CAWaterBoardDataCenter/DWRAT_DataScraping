@@ -7,17 +7,66 @@
 #   (*) LSPC_Weather_Control.xlsx
 
 
-#### Dependencies ####
+#### Master Control File ####
+
+#' @title Read in the Master Control File as a Tibble
+#' 
+#' @description
+#' To Be Written
+#' 
+#' @details
+#' To Be Written
+#' 
+#' Wrapper for `getXLSX`, which in turn calls [readxl::read_xlsx()]
+#' 
+#' @usage read_master_control()
+#' 
+#' @returns A [tibble::tibble()] containing the "Main" worksheet of the master control file
+#' 
+#' @export
+#' 
+#' @examples
+#' \dontrun{
+#' masterDF <- read_master_control()
+#' }
+read_master_control <- function () {
+  
+  # Read in the repository's primary control file
+  return(master_control_path() |>
+           getXLSX(worksheet = master_control_worksheet()))
+  
+}
 
 
-# This script DOES NOT call all required packages and dependencies
-
-# Please use "!Shared_Functions_Importer.R"
-
-
-#### Functions ####
-
-getFromMasterControl <- function (fieldName) {
+#' @title Get the Value for a Field in the Master Control File
+#' 
+#' @description
+#' To Be Written
+#' 
+#' @details
+#' To Be Written
+#' 
+#' Type of returned value is most likely a string
+#' read_xlsx will assign the type for "VALUE" based on all of its values
+#' If there's at least one text string in a row of that column, the entire 
+#' column will be read as [character]
+#' 
+#' @usage get_from_master_control(fieldName)
+#' 
+#' @param fieldName A [character] string exactly as it appears in the "FIELD" 
+#' column of the control file
+#' 
+#' @returns A single [character] string or similar value
+#' 
+#' @export
+#' 
+#' @examples
+#' \dontrun{
+#' # Extract the "VALUE" entry in the row that corresponds to the 
+#' # "INITIAL_SHAREPOINT_FILE_PORTION" field
+#' get_from_master_control("INITIAL_SHAREPOINT_FILE_PORTION")
+#' }
+get_from_master_control <- function (fieldName) {
   
   # Extract a value from the main control file for the repository
   # ("Master_Control_File.xlsx")
@@ -28,7 +77,7 @@ getFromMasterControl <- function (fieldName) {
   
   
   # First, read in the primary spreadsheet
-  controlDF <- getXLSX("Master_Control_File.xlsx")
+  controlDF <- read_master_control()
   
   
   # Find a match for 'fieldName' in the "FIELD" column
@@ -38,8 +87,8 @@ getFromMasterControl <- function (fieldName) {
                 "'", fieldName, "' does not appear in the 'FIELD' column of the Master ",
                 "Control File\n\n",
                 "Please ensure that the scripts are up-to-date\n\n",
-                "Also, please confirm that the correct version of ",
-                "'../Master_Control_File.xlsx' is in use") |>
+                "Also, please confirm that the correct version of \"",
+                master_control_path(), "\" is in use") |>
            errWrap())
     
   }
@@ -68,7 +117,7 @@ getFromMasterControl <- function (fieldName) {
         paste0("Empty SharePoint Field in Control File\n\n",
                "SharePoint connectivity is disabled because the corresponding ",
                "'VALUE' entry for the field '", fieldName, "' is empty\n\n",
-               "Please consider updating 'Master_Control_File.xlsx'\n\n",
+               "Please consider updating \"", master_control_path(), "\"\n\n",
                "\n\n_______\n\n",
                "(This message will only display once per session/day)") |>
           errWrap() |>
@@ -89,7 +138,7 @@ getFromMasterControl <- function (fieldName) {
       
       # For other SharePoint-related fields, do nothing
     } else if (fieldName %in% c("SHAREPOINT_DEMAND_CONTROL_FILE",
-                                "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE",
+                                "SHAREPOINT_RR_SUPPLY_CONTROL_FILE",
                                 "SHAREPOINT_LSPC_WORKFLOW_CONTROL_FILE")) {
       
       # No messages or errors
@@ -100,7 +149,7 @@ getFromMasterControl <- function (fieldName) {
       stop(paste0("Empty Field in Control File\n\n",
                   "The corresponding 'VALUE' entry for the field '", fieldName, 
                   "' is empty\n\n",
-                  "Please update 'Master_Control_File.xlsx'") |>
+                  "Please update \"", master_control_path(), "\"") |>
              errWrap())
       
     }
@@ -116,7 +165,49 @@ getFromMasterControl <- function (fieldName) {
 
 
 
-getFromControl_RR <- function (fieldName) {
+#### General Control File Functions ####
+
+read_control_file <- function () {
+  
+  # This function is not exported publicly, but it supports 
+  # reading in control files for every workflow
+  
+  
+  
+}
+
+
+#### LSPC Weather Control File ####
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+read_lspc_weather_control <- function () {
+  
+  # Read in the repository's weather control file for LSPC
+  return(lspc_weather_control_path() |>
+           getXLSX(worksheet = lspc_weather_control_worksheet()))
+  
+}
+
+
+
+read_lspc_master_control <- function () {
   
   # Return a value from the RR Workflow control file
   
@@ -203,88 +294,3 @@ getFromControl_RR <- function (fieldName) {
   
 }
 
-
-
-getFromSupControl_LSPC <- function (fieldName) {
-  
-  # Return a value from the LSPC supplemental control file
-  
-  # The name of the parameter is given in 'fieldName'
-  # The "FIELD" column of the spreadsheet should have a matching value
-  # Return the corresponding string in the "VALUE" column
-  
-  
-  # The first step is to read in the spreadsheet
-  # It can either be a SharePoint version or a local copy
-  
-  # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
-  # and "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE" must be specified in 
-  # "Master_Control_File.xlsx"
-  if (!is.na(getFromMasterControl("INITIAL_SHAREPOINT_FILE_PORTION"))) {
-    
-    # Try and read the SharePoint fragment for the RR Worfklow control file
-    controlPath <- getFromMasterControl("SHAREPOINT_LSPC_SUPPLEMENTAL_CONTROL_FILE")
-    
-    
-    # If that value is indeed specified, read it in as 'controlDF'
-    if (!is.na(controlPath)) {
-      
-      controlDF <- controlPath |>
-        makeSharePointPath() |>
-        getXLSX()
-      
-    }
-    
-  }
-  
-  
-  # In all other cases, use the local version of the control file
-  if (!exists("controlDF")) {
-    
-    controlPath <- "W3_LSPC_Watershed/inputs/Supplemental_LSPC_Control.xlsx"
-    
-    controlDF <- getXLSX(controlPath)
-    
-  }
-  
-  
-  # Find a match for 'fieldName' in the "FIELD" column
-  if (!(fieldName %in% controlDF[["FIELD"]])) {
-    
-    stop(paste0("Field Does Not Exist\n\n",
-                "'", fieldName, "' does not appear in the 'FIELD' column of the ",
-                "LSPC Workflow Supplemental Control File\n\n",
-                "Please ensure that the scripts are up-to-date\n\n",
-                "Also, please confirm that the correct version of '",
-                controlPath, "' is in use") |>
-           errWrap())
-    
-  }
-  
-  
-  # If the control file has a blank entry for this field, notify the user
-  if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
-    
-    # Exceptions:
-    if (fieldName %in% c("EARTHDATA_LOGIN_CREDENTIALS")) {
-      
-      # These fields are optional, so it is okay if they are "NA"
-      
-    } else {
-      
-      stop(paste0("Empty Field in Control File\n\n",
-                  "The corresponding 'VALUE' entry for the field '", fieldName, 
-                  "' is empty\n\n",
-                  "Please update '", controlPath, "'") |>
-             errWrap())
-      
-    }
-    
-  }
-  
-  
-  # Extract a string from the "VALUE" column based on the row where
-  # 'fieldName' matches the string in "FIELD"
-  return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
-  
-}

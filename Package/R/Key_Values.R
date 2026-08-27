@@ -5,6 +5,281 @@
 # instead of in several
 
 
+#### Control File Paths ####
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+master_control_path <- function () {
+  
+  # This is the repository path to the Master Control File
+  return("Master_Control_File.xlsx")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+master_control_worksheet <- function () {
+  
+  # This is the worksheet name for the Master Control File
+  return("Main")
+  
+}
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+demand_control_local_path <- function () {
+  
+  # This is the repository path to the demand workflow's control file
+  return("W1_Watershed_Demand/Input/Watershed_Demand_Dataset_Paths.xlsx")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+demand_control_worksheet <- function () {
+  
+  # This is the worksheet name for the demand workflow's control file
+  return("Main_Sheet")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+rr_control_local_path <- function () {
+  
+  # This is the repository path to the Russian River workflow's control spreadsheet
+  return("W2_Russian_River/Input/RR_Workflow_Control_File.xlsx")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+rr_control_worksheet <- function () {
+  
+  # This is the worksheet name for the Russian River workflow control file
+  return("Sheet1")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+lspc_weather_control_path <- function () {
+  
+  # This is the repository path to the LSPC workflow's weather control spreadsheet
+  # It contains information related to preparing the weather input files
+  return("W3_LSPC_Watershed/inputs/LSPC_Weather_Control.xlsx")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+lspc_weather_control_worksheet <- function () {
+  
+  # This is the worksheet name for the LSPC workflow's weather control spreadsheet
+  return("Control")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+lspc_master_control_local_path <- function () {
+  
+  # This is the repository path to the LSPC workflow's primary control spreadsheet
+  # It contains information related to managing the entire workflow
+  return("W3_LSPC_Watershed/inputs/LSPC_Workflow_Control_File.xlsx")
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+lspc_master_control_worksheet <- function () {
+  
+  # This is the worksheet name for the LSPC workflow's master control spreadsheet
+  return("Sheet1")
+  
+}
+
+
+
+#### Weather Data Start Dates ####
+
 #' @title Get the Start Date for PRISM
 #' 
 #' @description

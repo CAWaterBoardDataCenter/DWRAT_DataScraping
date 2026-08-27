@@ -24,6 +24,7 @@ require(janitor)
 require(openxlsx)
 require(readxl)
 require(writexl)
+require(openxlsx2)
 
 #### Web Requests ####
 require(httr)

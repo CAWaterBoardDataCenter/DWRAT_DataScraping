@@ -200,6 +200,10 @@ mainProcedure <- function (predictWY = TRUE) {
     outputDAT(startDate, endDate, dirPath, prmsPath, predictWY)
   
   
+  # Archive the historic DAT file too
+  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "PRMS")
+  
+  
   cat("\tDone!\n\n")
   
   
