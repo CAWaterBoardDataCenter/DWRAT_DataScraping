@@ -26,6 +26,16 @@ detectAnacondaBat <- function () {
     sort() |> tail(1)
   
   
+  # If no match was found, check for an "Anaconda" folder in the C: drive
+  if (length(anacondaInstallation) == 0) {
+    
+    anacondaInstallation <- list.files("C:/", pattern = "[Aa]naconda",
+                                       full.names = TRUE) |>
+      sort() |> tail(1)
+    
+  }
+  
+  
   # If no match was found, throw an error
   if (length(anacondaInstallation) == 0) {
     
@@ -152,7 +162,20 @@ installAnacondaEnv <- function (batPath, envPath) {
         # Recursively call this function
         return(installAnacondaEnv(batPath, envPath))
         
-        # If the token installation process failed, simply return an error 
+        # If the token installation process failed, return an error message 
+      } else if (any(grepl("Error.+Login.+required", tokenRes))) {
+        
+        paste0("Could Not Install Token\n\n",
+               "Login credentials are required to install the token. Please ",
+               "prepare it manually.\n\n",
+               "You will need to visit \"www.anaconda.com/\" and sign in to ",
+               "obtain a token. In Anaconda Navigator, you can save this token.\n\n",
+               "For more options, try running \"anaconda token install\" in Anaconda ",
+               "Prompt.") |>
+          errWrap() |>
+          stop()
+        
+        # For all other types of issues, return a generic error message
       } else {
         
         paste0("Could Not Install Token\n\n",
