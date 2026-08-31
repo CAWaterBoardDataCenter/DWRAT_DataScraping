@@ -42,7 +42,7 @@ mainProcedure <- function () {
   # 'temp.py' will be written the workflow's "scripts" folder
   # It should contain information on the location of the weather control file
   # and Earth Data login credentials (if provided)
-  generate_temp_LSPC_py_script()
+  generate_temp_LSPC_script()
   
   
   cat("\tDone!\n\n")
@@ -74,14 +74,28 @@ mainProcedure <- function () {
   }
   
   
-  # Run the Python script
-  climateRes <- system(paste0(batPath, " && ",
-                              "conda activate lspc-climate-processing-restructure && ",
-                              "python ", shQuote(scriptPath)), 
-                       intern = TRUE)
+  # Prepare a batch file to execute the Python script
+  tempBat <- "temp.bat"
+  
+  
+  c("cd W3_LSPC_Watershed\\scripts",
+    paste0(batPath, " && ",
+           "conda activate lspc-climate-processing-restructure && ",
+           "python ", shQuote(scriptPath))) |>
+    writeOutput(tempBat, writeFunction = "write_lines", quietly = TRUE)
+  
+  
+  climateRes <- system(tempBat, intern = TRUE)
+  
+  
+  # Remove the temporary batch file
+  unlink(tempBat)
   
   
   # To Do: Check for outputs and errors
+  
+  
+  print(climateRes)
   
   
   cat("\tDone!\n\n")
@@ -153,7 +167,7 @@ generate_temp_LSPC_script <- function () {
   
   # Write 'pyVec' to 'tempPath'
   pyVec |>
-  writeOutput(tempPath, writeFunction = "write_lines")
+    writeOutput(tempPath, writeFunction = "write_lines")
   
   
   # Return nothing
