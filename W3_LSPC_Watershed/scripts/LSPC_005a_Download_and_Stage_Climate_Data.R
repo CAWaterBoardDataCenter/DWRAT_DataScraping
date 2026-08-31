@@ -78,7 +78,7 @@ mainProcedure <- function () {
   tempBat <- "temp.bat"
   
   
-  c("cd W3_LSPC_Watershed\\scripts",
+  c("cd W3_LSPC_Watershed",
     paste0(batPath, " && ",
            "conda activate lspc-climate-processing-restructure && ",
            "python ", shQuote(scriptPath))) |>
