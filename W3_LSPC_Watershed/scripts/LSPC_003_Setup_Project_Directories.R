@@ -51,11 +51,11 @@ mainProcedure <- function () {
   
   
   # Include the "shared" folder in this vector as well
-  dirPaths <- paste0("W3_LSPC_Watershed/data/shared")
+  dirPaths <- c(dirPaths, "W3_LSPC_Watershed/data/shared")
   
   
   # If these directories already exist, delete them
-  dir_delete(dirPaths)
+  try(dir_delete(dirPaths), silent = TRUE)
   
   
   # Then, create the folders for each watershed
