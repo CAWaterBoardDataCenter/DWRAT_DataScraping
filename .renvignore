@@ -1,31 +1,24 @@
-
-# Ignore the "Archive" and "Models" folders
-**/Additional_Scripts/Archive/**
-**/Models/**
-
-# Ignore any "Documentation" folders
-**/Documentation/**
-
-# Ignore any "Input", "Intermediate", and "Output" folders
-**/Input/**
-**/Intermediate/**
-**/Output/**
-
-# Ignore folders for the LSPC workflow 
-**/W3_LSPC_Watershed/data/**
-**/W3_LSPC_Watershed/inputs/**
-**/W3_LSPC_Watershed/notebooks/**
-**/W3_LSPC_Watershed/src/**
+# Ignore everything by default
+**/**
 
 
-# Ignore the "XLSX_Tracking" folder
-# (But not the R script within it)
-**/XLSX_Tracking/**
-!**/XLSX_Tracking/*.R
+# Un-ignore the script folders of each workflow
+!W1_Watershed_Demand/Scripts
+!W2_Russian_River/Scripts
+!W3_LSPC_Watershed/scripts
 
-# Ignore the .git and RProj folders
-.git
-**/.git/**
-**/objects
-.Rproj.user
-**/.Rproj.user/**
+
+# Un-ignore their R scripts too
+!W1_Watershed_Demand/Scripts/*.R
+!W2_Russian_River/Scripts/*.R
+!W3_LSPC_Watershed/scripts/*.R
+
+
+# Un-ignore the "Additional_Scripts" and "XLSX_Tracking" directories too
+!Additional_Scripts
+!Additional_Scripts/XLSX_Tracking
+
+
+# Un-ignore their R scripts as well
+!Additional_Scripts/*.R
+!Additional_Scripts/XLSX_Tracking/*.R
