@@ -1,21 +1,67 @@
 # These functions help with obtaining and formatting data received from web sources
 
-
-#### Dependencies ####
-
-
-# This script DOES NOT call all required packages and dependencies
-
-# Please use "!Shared_Functions_Importer.R"
-
-
-#### Functions ####
-
-
 ##### CDEC #####
 
-requestCDEC <- function (stationVec, startDate, endDate, 
-                         sensorNum = 23, durCode = "D") {
+#' @title Obtain data from CDEC
+#' 
+#' @description
+#' This function can send a [httr::GET()] request to the [California Data Exchange 
+#' Center](https://cdec.water.ca.gov/index.html) (CDEC) to procure data from 
+#' one or more stations. 
+#' 
+#' @details
+#' Given a set of arguments, this function builds the required web request. 
+#' It has built-in error-handling capabilities and will process the result into 
+#' a [tibble::tibble()]. 
+#' 
+#' The columns of this result will match the data obtained from CDEC ("STATION_ID", 
+#' "DATE TIME", "VALUE", "UNITS", and "DATA_FLAG"). 
+#' 
+#' Typically, missing values are represented as "---" in the default data 
+#' returned by CDEC. However, these entries are detected and replaced with "-999". 
+#' This allows the column to be treated as numeric. 
+#' 
+#' @usage request_cdec(stationVec, startDate, endDate, sensorNum = 23, durCode = "D")
+#' 
+#' @param stationVec A character vector containing one or more "Station IDs" 
+#' (exactly as they appear on CDEC's website).
+#' 
+#' @param startDate A [Date()] object representing the first date in the data request.
+#' 
+#' @param endDate A [Date()] object representing the last date in the data request.
+#' 
+#' @param sensorNum The type of variable to obtain data for. Each Sensor Number 
+#' corresponds to a different parameter. See a station's 
+#' [metadata page](https://cdec.water.ca.gov/dynamicapp/staMeta?station_id=COY) 
+#' to determine which number should be specified. The default value is 23, which
+#' corresponds to "RESERVOIR OUTFLOW, CFS".
+#' 
+#' @param durCode The timescale of the obtained data. "D" (the default) means   
+#' "Daily" data, "H" is for "Hourly", and "E" is for "Event". 
+#' 
+#' @returns A [tibble::tibble()] containing the downloaded data.
+#' 
+#' @export
+#' 
+#' @examples
+#' \dontrun{
+#' # Request data for Lake Sonoma ("WRS")
+#' #
+#' # According to its station metadata page, 
+#' # it has "RESERVOIR INFLOW, CFS" data available on a daily scale 
+#' # (https://cdec.water.ca.gov/dynamicapp/staMeta?station_id=WRS)
+#' #
+#' request_cdec("WRS", as.Date("2026-01-01"), Sys.Date(), sensorNum = 76, durCode = "D")
+#' 
+#' 
+#' # Alternatively, if precipitation data from multiple stations is desired,
+#' # this code can be executed instead
+#' #
+#' request_cdec(c("COY", "WRS"), as.Date("2023-10-01"), as.Date("2024-09-30"), 
+#'              sensorNum = 45, durCode = "D")
+#' }
+request_cdec <- function (stationVec, startDate, endDate, 
+                          sensorNum = 23, durCode = "D") {
   
   # Prepare a GET request and submit it to CDEC
   
@@ -24,6 +70,7 @@ requestCDEC <- function (stationVec, startDate, endDate,
   
   # Sensor 23 is "Reservoir Outflow" (cfs)
   # Sensor 45 is "Incremental Precipitation" (in)
+  # Sensor 76 is "Reservoir Inflow" (cfs) 
   
   # "Dur Code" set to "D" means "daily" data
   
@@ -39,7 +86,7 @@ requestCDEC <- function (stationVec, startDate, endDate,
   
   # Try to submit the GET request
   # (Also, ask for a CSV-formatted response)
-  req <- try(GET(requestURL), silent = TRUE)
+  req <- try(httr::GET(requestURL), silent = TRUE)
   
   
   # Wait a bit after receiving the response

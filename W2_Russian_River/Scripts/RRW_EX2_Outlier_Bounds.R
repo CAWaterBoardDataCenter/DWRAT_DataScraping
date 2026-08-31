@@ -7,7 +7,7 @@
 # As part of the "REV2" updates to the workflow, we made a few changes:
 
 #  (1) For data sources like CIMIS and CDEC, if data flags are provided,
-#      problematic data is removed (see "RRW_006_Process_PRMS_Weather_Data.R")
+#      problematic data is removed (see "RRW_007_Process_PRMS_Weather_Data.R")
 #
 #  (2) Upper bounds for extremely high values were developed
 
@@ -74,7 +74,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -85,7 +85,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 #### Functions ####
 
 
-mainProcedure <- function () {
+mainProcedure <- function (model = "PRMS") {
   
   cat("\n\n")
   cat("Starting 'RRW_EX2_Outlier_Bounds.R'!\n")
@@ -104,7 +104,8 @@ mainProcedure <- function () {
   
   
   # Get the path to the "Pre-QAQC" meteorological CSV
-  meteorPath <- paste0("W2_Russian_River/Output/PRMS_Meteorological_QC_Intermediate_",
+  meteorPath <- paste0("W2_Russian_River/Output/", model, 
+                       "_Meteorological_QC_Intermediate_",
                        startDate, "_", endDate, ".csv")
   
   
@@ -146,7 +147,8 @@ mainProcedure <- function () {
   
   
   outlierDF |>
-    writeOutput("W2_Russian_River/Output/RR_Workflow_PRMS_Gage_Outlier_Bounds.csv")
+    writeOutput(paste0("W2_Russian_River/Output/RR_Workflow_", model, 
+                       "_Gage_Outlier_Bounds.csv"))
   
   
   cat("\tDone!\n\n")
@@ -181,7 +183,7 @@ calcOutlierBounds <- function (meteorDF) {
   # Prepare the final output variable as well
   outlierDF <- tibble(GAGE = precipCols)
   
-  # 'outlierDF' will have a row for each PRMS precipitation gage
+  # 'outlierDF' will have a row for each model precipitation gage
   
   
   # There will be separate upper bound columns in 'outlierDF' for each month

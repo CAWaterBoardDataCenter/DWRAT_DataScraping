@@ -17,10 +17,10 @@ if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
 # Import packages next
 
 # Install 'renv' if it's not already present
-source("Shared_Scripts/Project_Setup.R")
+source("Additional_Scripts/Project_Setup.R")
 
 
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 #### Scripts ####
@@ -63,14 +63,16 @@ source("W2_Russian_River/Scripts/RRW_004_CIMIS_API_Scraper.R")
 source("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
 
 
+##### Archive Directory Setup #####
+
+# Prepare the output directory for the PRMS and SRP model runs
+source("W2_Russian_River/Scripts/RRW_006_Setup_Output_Directory.R")
+
+
 ##### PRMS #####
 
 # Process the downloaded weather files
-source("W2_Russian_River/Scripts/RRW_006_Process_PRMS_Weather_Data.R")
-
-
-# Setup the output directory for the PRMS and SRP model runs
-source("W2_Russian_River/Scripts/RRW_007_Setup_Output_Directory.R")
+source("W2_Russian_River/Scripts/RRW_007_Process_PRMS_Weather_Data.R")
 
 
 # Setup the temporary PRMS model location

@@ -151,9 +151,9 @@ getXLSX <- function (filePath, worksheet = NULL,
   }
   
   
-  sheetDF <- try(read_xlsx(filePath, sheet = worksheet, range = range,
-                           col_names = col_names, col_types = col_types,
-                           skip = skip, n_max = n_max, guess_max = guess_max), 
+  sheetDF <- try(readxl::read_xlsx(filePath, sheet = worksheet, range = range,
+                                   col_names = col_names, col_types = col_types,
+                                   skip = skip, n_max = n_max, guess_max = guess_max), 
                  silent = TRUE)
   
   
@@ -1300,7 +1300,7 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
     
   } else if (writeFunction == "write_xlsx") {
     
-    writeRes <- try(write_xlsx(x, outPath, col_names = col_names))
+    writeRes <- try(writexl::write_xlsx(x, outPath, col_names = col_names))
     
   } else if (writeFunction == "write_tsv") {
     
@@ -1476,6 +1476,9 @@ sharepointPathCheck <- function (path, isFolder = FALSE) {
   # Otherwise, it should be FALSE for files
   
   
+  # Note: 'path' can be either a single file path or a vector of paths
+  
+  
   # Make a SharePoint version of 'path'
   sharepointPath <- makeSharePointPath(path)
   
@@ -1484,29 +1487,16 @@ sharepointPathCheck <- function (path, isFolder = FALSE) {
   if (isFolder) {
     
     # Check if the folder exists on SharePoint
-    if (dir.exists(sharepointPath)) {
-      
-      # If yes, return the SharePoint path
-      return(sharepointPath)
-      
-    }
+    # If yes, return the SharePoint path; otherwise, return the original path
+    return(if_else(dir.exists(sharepointPath), sharepointPath, path))
     
   } else {
     
     # Check if the file exists on SharePoint
-    if (file.exists(sharepointPath)) {
-      
-      # If yes, return the SharePoint path
-      return(sharepointPath)
-      
-    }
+    # If yes, return the SharePoint path; otherwise, return the original path
+    return(if_else(file.exists(sharepointPath), sharepointPath, path))
     
   }
-  
-  
-  # If the procedure reaches this point, the file/folder is NOT on SharePoint
-  # In that case, return 'path' without any changes
-  return(path)
   
 }
 

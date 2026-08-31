@@ -9,7 +9,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -26,7 +26,7 @@ mainProcedure <- function () {
   
   
   # Confirm that the "SRPHM" folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP_2024()
+  srpPath <- validate_model_copy("SRPHM")
   
   
   # Get the path to the batch file stored in the root directory
@@ -53,7 +53,7 @@ mainProcedure <- function () {
   
   # Check for errors
   # There should be several output files
-  checkForModelOutputs_SRP_2024(srpPath, modelOutput)
+  check_for_model_outputs("SRPHM", srpPath, modelOutput)
   
   
   # Output a completion message

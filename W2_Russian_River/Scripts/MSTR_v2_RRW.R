@@ -20,10 +20,10 @@ if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
 # Import packages next
 
 # Install 'renv' if it's not already present
-source("Shared_Scripts/Project_Setup.R")
+source("Additional_Scripts/Project_Setup.R")
 
 
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 #### Scripts ####
 
@@ -68,14 +68,16 @@ source("W2_Russian_River/Scripts/RRW_005_CDEC_API_Scraper.R")
 source("W2_Russian_River/Scripts/RRW_v2_005_CDEC_API_Scraper.R")
 
 
+##### Archive Directory Setup #####
+
+# Prepare the output directory for the workflow model runs
+source("W2_Russian_River/Scripts/RRW_v2_006_Setup_Output_Directory.R")
+
+
 ##### SRP #####
 
 # Process PRISM data for SRP
-source("W2_Russian_River/Scripts/RRW_v2_006_Process_SRP_Weather_Data.R")
-
-
-# Setup the output directory for the workflow model runs
-source("W2_Russian_River/Scripts/RRW_v2_007_Setup_Output_Directory.R")
+source("W2_Russian_River/Scripts/RRW_v2_007_Process_SRP_Weather_Data.R")
 
 
 # Setup the temporary SRP model location
@@ -92,6 +94,10 @@ source("W2_Russian_River/Scripts/RRW_v2_010_Run_SRP.R")
 
 # Store key outputs and clear out the copied model files
 source("W2_Russian_River/Scripts/RRW_v2_011_SRP_Cleanup.R")
+
+
+# 
+source("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R")
 
 
 #### RRIHM ####

@@ -54,7 +54,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -86,7 +86,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Also confirm that the "RR_PRMS" folder was copied to "Output"
-  prmsPath <- validateModelCopy_PRMS()
+  prmsPath <- validate_model_copy("PRMS")
   
   
   cat("\tDone!\n\n")
@@ -182,6 +182,13 @@ mainProcedure <- function (predictWY = TRUE) {
   }
   
   
+  # As a final step before writing 'mergedDAT' to a file, 
+  # make sure that it contains the correct number of 
+  # precipitation and temperature stations
+  mergedDAT |>
+    validate_num_stations(prmsPath, "PRMS")
+  
+  
   cat(paste0("[", if_else(predictWY, "5/5", "4/4"),
              "]\tSaving output...\n"))
   
@@ -191,6 +198,10 @@ mainProcedure <- function (predictWY = TRUE) {
   # output folder 
   mergedDAT |>
     outputDAT(startDate, endDate, dirPath, prmsPath, predictWY)
+  
+  
+  # Archive the historic DAT file too
+  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "PRMS")
   
   
   cat("\tDone!\n\n")
@@ -627,8 +638,10 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, model,
                      similarWY = similarWY, linModel = linModel)
   
   
-  # 'currentPrecip' should be archived too, but that was already accomplished
-  # in a prior script
+  # The original files for 'pastPrecip' and 'currentPrecip' should be
+  # archived as well
+  copy_file_to_archive(pathPastPrecip, dirPath, model)
+  copy_file_to_archive(prismPath, dirPath, model)
   
   
   # Return 'finalDAT'
@@ -931,6 +944,167 @@ similarWY_appendDAT <- function (mergedDAT, endDate, similarWY) {
 
 
 
+validate_num_stations <- function (mergedDAT, modelPath, model) {
+  
+  # Check the model's parameter configuration file
+  
+  # It contains information on the number of 
+  # precipitation and temperature stations
+  
+  # Make sure these values match the number of weather columns in 'mergedDAT'
+  
+  
+  # First, get the path to the configuration file
+  paramPath <- paste0(modelPath , "/", 
+                      list_model_components(model)[["PARAM"]])
+  
+  
+  # Read it in as 'paramVec'
+  paramVec <- paramPath |>
+    getFile(fileType = "OTHER")
+  
+  
+  # Based on the model name, get the parameter names that specify 
+  # the number of each type of station
+  if (model %in% c("PRMS", "SRP", "RRIHM", "SRPHM")) {
+    
+    # For PRMS and SRP, these parameters are called "nrain" and "ntemp"
+    precipParam <- "nrain"
+    
+    tempParam <- "ntemp"
+    
+    # If a model has not had this parameter information specified yet,
+    # output an error message
+  } else {
+    
+    stop_script(paste0("No parameter names given for \"", model, "\". ",
+                       "Please revise the script!"))
+    
+  }
+  
+  
+  # Get the number of precipitation stations according to 'precipParam'
+  
+  # First, locate the precipitation parameter in 'paramVec' 
+  matchIndex <- paramVec |> 
+    find_matches(precipParam, 
+                 minMatches = 1, maxMatches = 1, 
+                 filePath = paramPath)
+  
+  
+  # Extract the number of precipitation stations using 'matchIndex'
+  if (model %in% c("PRMS", "SRP", "RRIHM", "SRPHM")) {
+    
+    # The line immediately after 'matchIndex' contains the number of precipitation stations
+    expectedPrecip <- paramVec[matchIndex + 1] |>
+      trimws() |> as.numeric()
+    
+    
+    # Output an error if it cannot be found
+    error_if(length(expectedPrecip) == 0 || is.na(expectedPrecip),
+             paste0(model, " Configuration File - Precipitation Stations\n\n",
+                    "The parameter \"", precipParam, "\" should contain the ",
+                    "number of precipitation stations used by the model. ",
+                    "However, a number could not be extracted from its ",
+                    "parameter file. Please investigate.\n\n",
+                    "(This error occurred for \"", paramPath, "\")"))
+    
+    # If a model does not have this information specified,
+    # output an error message
+  } else {
+    
+    paste0("No method specified to locate \"", precipParam, "\" for model \"", 
+           model, "\". ",
+           "Please revise the script!") |>
+      stop_script()
+    
+  }
+  
+  
+  # Confirm that the number of precipitation stations in 'mergedDAT' matches
+  # the value in 'expectedPrecip'
+  error_if(expectedPrecip != 
+             names(mergedDAT) |> str_subset("PRECIP") |> length(),
+           paste0(model, " Configuration File - Precipitation Mismatch\n\n",
+                  "The model parameter file states that ", expectedPrecip, " ",
+                  "station(s) are required to supply precipitation data. However, ",
+                  "the DAT file appears to have ", 
+                  names(mergedDAT) |> str_subset("PRECIP") |> length(), " ", 
+                  "precipitation stations. Please investigate.\n\n",
+                  "(This error occurred for \"", paramPath, "\")"))
+  
+  
+  # Check the required number of temperature stations next
+  matchIndex <- paramVec |> 
+    find_matches(tempParam, 
+                 minMatches = 1, maxMatches = 2, 
+                 filePath = paramPath)
+  
+  
+  # Extract the number of temperature stations using 'matchIndex'
+  if (model %in% c("PRMS", "SRP", "RRIHM", "SRPHM")) {
+    
+    # The line immediately after 'matchIndex' contains the number of precipitation stations
+    expectedTemp <- paramVec[matchIndex[1] + 1] |>
+      trimws() |> as.numeric()
+    
+    
+    # Output an error if it cannot be found
+    error_if(length(expectedTemp) == 0 || is.na(expectedTemp),
+             paste0(model, " Configuration File - Temperature Stations\n\n",
+                    "The parameter \"", tempParam, "\" should contain the ",
+                    "number of temperature stations used by the model. ",
+                    "However, a number could not be extracted from its ",
+                    "parameter file. Please investigate.\n\n",
+                    "(This error occurred for \"", paramPath, "\")"))
+    
+    # If a model does not have this information specified,
+    # output an error message
+  } else {
+    
+    paste0("No method specified to locate \"", tempParam, "\" for model \"", 
+           model, "\". ",
+           "Please revise the script!") |>
+      stop_script()
+    
+  }
+  
+  
+  # Confirm that the number of temperature stations in 'mergedDAT' matches
+  # the value in 'expectedTemp'
+  
+  # First make sure the number of "TMIN" and "TMAX" stations is equivalent
+  error_if(names(mergedDAT) |> str_subset("TMIN") |> length() !=
+             names(mergedDAT) |> str_subset("TMAX") |> length(),
+           paste0(model, " DAT File - Temperature Issue\n\n",
+                  "The prepared DAT file for ", model, " appears to have ",
+                  "an inconsistent number of temperature columns. ",
+                  names(mergedDAT) |> str_subset("TMIN") |> length(), " ",
+                  "\"TMIN\" column(s) were detected, while ",
+                  names(mergedDAT) |> str_subset("TMAX") |> length(), " ",
+                  "\"TMAX\" column(s) were found. Please investigate.\n\n",
+                  "(This error occurred for \"", paramPath, "\")"))
+  
+  
+  # Then, use "TMIN" (arbitrarily) and compare it to 'expectedTemp'
+  error_if(expectedTemp != 
+             names(mergedDAT) |> str_subset("TMIN") |> length(),
+           paste0(model, " Configuration File - Temperature Mismatch\n\n",
+                  "The model parameter file states that ", expectedTemp, " ",
+                  "station(s) are required to supply temperature data. However, ",
+                  "the DAT file appears to have ", 
+                  names(mergedDAT) |> str_subset("TMIN") |> length(), " ", 
+                  "temperature stations. Please investigate.\n\n",
+                  "(This error occurred for \"", paramPath, "\")"))
+  
+  
+  # If there are no issues, return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
 outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath, 
                        predictWY, quietly = FALSE) {
   
@@ -999,7 +1173,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   
   # Update the PRMS control file next
   # (Its presence was already confirmed at the beginning of the script in 
-  #  `validateModelCopy_PRMS`)
+  #  `validate_model_copy`)
   updateControlFilePRMS(dirPath, prmsPath, genericName, endDate, predictWY)
   
   
@@ -1029,7 +1203,8 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # First, read in the file
-  controlPath <- paste0(prmsPath, "/windows/prms_rr.control") |>
+  controlPath <- paste0(prmsPath, "/",
+                        list_model_components("PRMS")[["CONTROL"]]) |>
     normalizePath(mustWork = TRUE)
   
   

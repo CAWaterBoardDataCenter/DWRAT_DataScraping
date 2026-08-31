@@ -7,7 +7,7 @@
 #### Setup ####
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -87,9 +87,9 @@ validateStationInputFile <- function (stationDF, sourceField, dataSource) {
                                  "stations (e.g., '103' for ",
                                  "'Windsor')."),
                 "CDEC" = paste0("The input file must contain the IDs that ",
-                                 "correspond to different CDEC stations ",
-                                 "(e.g., 'COY' for 'COYOTE (LAKE MENDOCINO)'",
-                                 ")."))[[dataSource]], " ",  
+                                "correspond to different CDEC stations ",
+                                "(e.g., 'COY' for 'COYOTE (LAKE MENDOCINO)'",
+                                ")."))[[dataSource]], " ",  
            "Also, the names of these columns must match exactly.\n\n",
            "(This error occurred for '", getFromControl_RR(sourceField),
            "')") |>
@@ -245,8 +245,7 @@ validateStationInputs <- function (inputDF, inputPath,
            "Therefore, the input variable 'model' should be either \"PRMS\" ",
            "or \"SRP\". However, it was input as \"", model, "\" instead.\n\n", 
            "Please correct the script and try again.") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -260,7 +259,7 @@ validateStationInputs <- function (inputDF, inputPath,
   # Similarly, the maximum and minimum temperature fields can have values between 
   # "TMAX1"/"TMIN1" and "TMAX8"/"TMIN8" (inclusive)
   
-  # "_REV#" tags are allowed at the end of the precipitation station names
+  # "_REV#" tags are allowed at the end of these names
   # Similarly, "SUP_" or "EX_" can precede "PRECIP" (for supplemental/extra gages)
   
   
@@ -276,30 +275,26 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Start by confirming that the field names appear in 'inputDF'
-  if (!all(inputFieldNames %in% names(inputDF))) {
-    
-    # Identify which fields are missing
-    missingFields <- which(!(inputFieldNames %in% names(inputDF)))
-    
-    
-    # Output an error message
-    paste0("Station Input File - Missing Column Issue\n\n", 
-           "For this script to work, the ",
-           if_else(model == "PRMS", 
-                   "PRISM, NOAA, RAWS, CIMIS, and CDEC input files ",
-                   "PRISM input file "), "must contain ", 
-           length(inputFieldNames), " key column",
-           if_else(length(inputFieldNames) > 1, "s", ""), " (",
-           vec2QuotedStr(inputFieldNames), ")\n\n",
-           "However, the file is missing ",
-           if_else(length(missingFields) > 1, "fields", "a field"), ":\n\n",
-           paste0("(*) ", inputFieldNames[missingFields], collapse = "\n\n"), 
-           "\n\n",
-           "Please revise the input file (\"", inputPath, "\") accordingly") |>
-      errWrap() |>
-      stop()
-    
-  }
+  checkMissingCol(inputDF, inputFieldNames, inputPath, 
+                  msg = paste0("Station Input File - Missing Column Issue\n\n", 
+                               "For this script to work, the weather input files ",
+                               "must contain ", length(inputFieldNames), " key column",
+                               if_else(length(inputFieldNames) > 1, "s", ""), 
+                               " (", vec2QuotedStr(inputFieldNames), ")\n\n",
+                               "However, the file is missing ",
+                               if_else(length(missingFields) > 1, "fields", "a field"), 
+                               ":\n\n",
+                               paste0("(*) ", inputFieldNames[missingFields], collapse = "\n\n"), 
+                               "\n\n",
+                               "Please revise the input file (\"", inputPath, "\") accordingly"))
+  
+  
+  # Filter 'inputDF' to only rows that have non-NA values for this model
+  # (A station file may have gages used by only one model, for example)
+  inputDF <- inputDF |>
+    filter(!is.na(get(inputFieldNames[2])) | 
+             !is.na(get(inputFieldNames[3])) |
+             !is.na(get(inputFieldNames[4])))
   
   
   # The station ID was previously validated in the scraping scripts
@@ -327,16 +322,14 @@ validateStationInputs <- function (inputDF, inputPath,
   #   (3) The revision numbers
   
   
-  # For PRMS, the values should be "NA" or "PRECIP#" (from 1 up to 'numPrecipFields')
+  # For both models, the values should be "NA" or "PRECIP#" (from 1 up to 
+  # 'numPrecipFields')
   # (Supplemental gages with "SUP_" at the start of the name are valid as well,
   #  as are extra gages, which start with "EX_")
   
-  # For SRP, it's "NA" and "PRECIP#" only (until model revisions occur)
-  
   # Note: "_REV#" is removed from 'precipNames' at this point
   if (!all(precipNames[[1]] %in% c(NA, paste0("PRECIP", 1:numPrecipFields)) |
-               (model %in% "PRMS" & 
-                grepl("^((SUP)|(EX))_PRECIP[0-9]+$", precipNames[[1]])))) { 
+           grepl("^((SUP)|(EX))_PRECIP_?[0-9]+$", precipNames[[1]]))) { 
     
     paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
            "The file contains an invalid value for the field \"", 
@@ -362,7 +355,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Use a similar check for the minimum temperature field next
-  # For PRMS, the values should be "NA", or something between 
+  # For PRMS REV1, the values should be "NA", or something between 
   # "TMIN1" and "TMIN8" (inclusive)--for SRP, it's up to "TMIN2"
   # Revision information may appear in these strings as well
   tminNames <- inputDF[[inputFieldNames[3]]] |>
@@ -390,7 +383,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Repeat the check for the "TMAX" field
-  # The values should be "NA", or something between "TMAX1" and "TMAX8" 
+  # In "REV1", the values should be "NA", or something between "TMAX1" and "TMAX8" 
   # (inclusive) for PRMS--for SRP, it's up to "TMAX2"
   tmaxNames <- inputDF[[inputFieldNames[4]]] |>
     extractRevisionInfo()
@@ -413,36 +406,6 @@ validateStationInputs <- function (inputDF, inputPath,
   
   # Check for multiple revisions in the same column
   validateRevisionInfo(tmaxNames[[2]], tmaxNames[[1]], model, inputFieldNames[4])
-  
-  
-  # Next, confirm that every row has at least one non-NA value for the 
-  # three PRMS/SRP fields
-  # Every station should have a corresponding PRMS field
-  # So at least one column between "PRECIP", "TMIN", and "TMAX" should have a 
-  # non-NA value in each row
-  
-  # Define a temporary variable to help with this
-  # If all three columns contain "NA", this column's value will be TRUE
-  inputDF <- inputDF |>
-    mutate(ALL_NA = is.na(get(inputFieldNames[2])) & 
-             is.na(get(inputFieldNames[3])) &
-             is.na(get(inputFieldNames[4])))
-  
-  
-  # If TRUE appears for any row in "ALL_NA", output an error message
-  if (TRUE %in% inputDF$ALL_NA) {
-    
-    paste0("Station Input File - Invalid ", model, " Value Issue\n\n", 
-           "The file contains a station without ",
-           "a corresponding ", model, " field identified\n\n",
-           "Across the ", length(inputFieldNames) - 1, " ", model, 
-           " columns, each row should contain a ", model, 
-           " field name in at least one column\n\n",
-           "Please revise the input file (\"", inputPath, "\") accordingly") |>
-      errWrap() |>
-      stop()
-    
-  }
   
   
   # The final check is to ensure that "TMIN" and "TMAX" have corresponding 
@@ -473,10 +436,9 @@ validateStationInputs <- function (inputDF, inputPath,
            "\" do not contain matching values\n\n",
            "Either both ", model, " temperature columns should be empty, or ",
            "they should have corresponding values (e.g., \"TMIN3\" and ",
-           "\"TMAX3\"  in the same row)\n\n",
+           "\"TMAX3\" in the same row)\n\n",
            "Please revise the input file (\"", inputPath, "\") accordingly") |>
-      errWrap() |>
-      stop()
+      stop_script()
     
   }
   
@@ -566,7 +528,7 @@ validateRevisionInfo <- function (revInfo, colVals, model, colName) {
   # The latter case is only a problem if it is mixed in with stations that *do* have
   # revision information 
   # (As discussed above, having multiple revisions in the same set of values is an issue)
-
+  
   
   # Then, get all unique values in 'revInfo'
   revInfo <- unique(revInfo)
@@ -786,7 +748,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
   # (All vectors should have the same length and the same replacement names)
   if (length(nameVec) != 5 ||
       !all(c("STATION_ID", "DATE", "PRECIP", "TMIN", "TMAX") %in% 
-               names(nameVec))) {
+           names(nameVec))) {
     
     paste0("Issue in `validateWebData_expectedColumnNames()`\n\n", 
            "The name vector for ", dataSource, " may contain an issue\n\n",
@@ -1130,10 +1092,9 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   # (they correspond to the model domains of PRMS and SRP)
   
   # This function verifies that continuous precipitation data is present 
-  # from "1981-01-01" to within two water years of the modeled water year
+  # from "1981-01-01" (PRISM daily data start date) to within two water years 
+  # of the modeled water year
   # (e.g., For WY2026, there should be data through at least WY2024)
-  prismStart <- "1981-01-01" |>
-    as.Date(format = "%Y-%m-%d")
   
   
   # First, confirm that both expected columns are present
@@ -1179,7 +1140,7 @@ validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   
   
   # After that, check for missing dates in 'precipDF'
-  dateSeq <- seq(from = prismStart, 
+  dateSeq <- seq(from = prism_start(), 
                  to = max(precipDF$Date), 
                  by = "days")
   
@@ -1309,8 +1270,7 @@ checkForPreviousOutput <- function (filePath) {
 
 
 
-validateSourceModelDirectory <- function (sourceDir, sourceField, model,
-                                          reqFolders, reqFiles) {
+validateSourceModelDirectory <- function (sourceDir, sourceField, model) {
   
   # Ensure that the user-provided directory containing model files is valid
   # For the PRMS and SRP models, certain files and folders are expected
@@ -1319,36 +1279,26 @@ validateSourceModelDirectory <- function (sourceDir, sourceField, model,
   # the model directory at the end
   
   
-  # Make sure the script was given "PRMS", "SRP", or "RRIHM" as input for 'model'
-  if (!(model %in% c("PRMS", "SRP", "RRIHM"))) {
-    
-    paste0("Script Error - Unrecognized Value for 'model'\n\n", 
-           "The function `validateSourceModelDirectory` checks a source model ",
-           "directory that contains files for running a specified model. ",
-           "Therefore, the input variable 'model' should be either \"PRMS\", ",
-           "\"SRP\", or \"RRIHM\". However, it was input as \"", model, "\" ",
-           "instead.\n\n", 
-           "Please correct the script and try again.") |>
-      errWrap() |>
-      stop()
-    
-  }
+  # Given 'model', get lists of required folders and files
+  # (and turn them into named vectors)
+  reqFolders <- list_model_folders(model) |>
+    unlist()
+  
+  reqFiles <- list_model_components(model) |>
+    unlist()
   
   
   # After that, check if the directory is a SharePoint fragment
   # If it exists on SharePoint, convert 'sourceDir' into a SharePoint path
-  if (dir.exists(makeSharePointPath(sourceDir))) {
-    
-    sourceDir <- makeSharePointPath(sourceDir)
-    
-  }
+  sourceDir <- sourceDir |> 
+    sharepointPathCheck(isFolder = TRUE)
   
   
   # If the directory cannot be found, notify the user
   if (!dir.exists(sourceDir)) {
     
     paste0("Cannot Find the Specified ", model, " Directory\n\n",
-           "In the RR Supply Control File, the location of the ", model, 
+           "In the RR Workflow Control File, the location of the ", model, 
            " model files was specified in \"", sourceField, "\". ",
            "However, \"", sourceDir, "\" does not appear to exist.\n\n",
            "Please correct the value specified for \"", sourceField,
@@ -1368,7 +1318,7 @@ validateSourceModelDirectory <- function (sourceDir, sourceField, model,
   if (!all(folderExists)) {
     
     paste0("Missing Components in the ", model, " Model Folder\n\n",
-           "In the RR Supply Control File, the location of the ", model, 
+           "In the RR Workflow Control File, the location of the ", model, 
            " model files was set to be \"", sourceDir, "\"\n\n", 
            "However, this directory does not contain of all the required ",
            "folders that a proper installation of ", model, " would have ", 
@@ -1391,7 +1341,7 @@ validateSourceModelDirectory <- function (sourceDir, sourceField, model,
   if (!all(fileExists)) {
     
     paste0("Missing Components in the ", model, " Model Folder\n\n",
-           "In the RR Supply Control File, the location of the ", model, 
+           "In the RR Workflow Control File, the location of the ", model, 
            " model files was set to be \"", sourceDir, "\"\n\n", 
            "However, this directory does not contain of all the required ",
            "files that a proper installation of ", model, " would have ", 
@@ -1543,105 +1493,339 @@ validateHydroFolder <- function (startDate, endDate) {
 
 
 
-validateModelCopy_PRMS <- function () {
+get_model_dir_name <- function (model) {
   
-  # In a prior script, PRMS model files were copied to the "Output" folder
+  # Before running a model, its files will be copied from a source location 
+  # to the workflow's "Output" folder
+  
+  # This function returns the planned name of its main folder 
+  # (i.e., the name that comes after "Output" in the path)
+  
+  
+  if (model == "PRMS") {
+    
+    return("RR_PRMS")
+    
+  } else if (model == "SRP") {
+    
+    return("SRPHM_update_ag")
+    
+  } else if (model == "RRIHM") {
+    
+    return("RRIHM")
+    
+  } else if (model == "SRPHM") {
+    
+    return("SRPHM")
+    
+  } else {
+    
+    stop_script(paste0("Unknown model \"", model, "\". Please revise the script!"))
+    
+  }
+  
+}
+
+
+
+list_model_folders <- function (model) {
+  
+  # Given the name of a model,
+  # return a vector containing key model folders
+  
+  
+  if (model == "PRMS") {
+    
+    return(list("bin", "PRMS", "windows", 
+                "PRMS/input/climate_scenarios"))
+    
+  } else if (model == "SRP") {
+    
+    return(list("basin", "External Files", 
+                "input", "nsub", "output"))
+    
+  } else if (model == "RRIHM") {
+    
+    return(list("modflow", "prms", "windows",
+                "modflow/input", "prms/input",
+                "modflow/output", "prms/output"))
+    
+  } else if (model == "SRPHM") {
+    
+    return(list("external_files", "bin", "output"))
+    
+  } else {
+    
+    paste0("Unknown model \"", model, "\". Please revise the script!") |>
+      stop_script()
+    
+  }
+  
+}
+
+
+
+list_model_components <- function (model) {
+  
+  # Given the name of a model, 
+  # generate a list containing paths to key model files
+  
+  
+  # Most models will contain these four key components:
+  #   (*) Control File
+  #   (*) Parameter File (for precipitation, temperature, etc)
+  #   (*) Batch File
+  #   (*) Exe File
+  
+  
+  # Some models may  have other key files too (e.g., Nam File for RRIHM and SRPHM)
+  
+  modelList <- list(CONTROL = NULL,
+                    PARAM = NULL,
+                    BATCH = NULL,
+                    EXE = NULL,
+                    NAM = NULL)
+  
+  
+  # Based on the value of 'model', return a different set of relative file paths
+  if (model == "PRMS") {
+    
+    modelList$CONTROL <- "windows/prms_rr.control"
+    modelList$PARAM <- "PRMS/input/wetRECALIB_spring.param"
+    modelList$BATCH <- "windows/run.bat"
+    modelList$EXE <- "bin/gsflow.exe"
+    
+  } else if (model == "SRP") {
+    
+    modelList$CONTROL <- "SRPHM_update.control"
+    modelList$PARAM <- "prms_v3_param.params"
+    modelList$BATCH <- "Run_updated_Model.bat"
+    modelList$EXE <- "gsflow_ag.exe"
+    
+  } else if (model == "RRIHM") {
+    
+    modelList$CONTROL <- "windows/gsflow_rr.control"
+    modelList$PARAM <- "prms/input/prms_rr.param"
+    modelList$BATCH <- "windows/run.bat"
+    modelList$EXE <- "windows/bin/gsflow.exe"
+    modelList$NAM <- "windows/rr_tr.nam"
+    
+  } else if (model == "SRPHM") {
+    
+    modelList$CONTROL <- "SRPHM_spinup.control"
+    modelList$PARAM <- "external_files/srphm.params"
+    modelList$BATCH <- "run_SRPHM_spinup.bat"
+    modelList$EXE <- "bin/gsflow.exe"
+    modelList$NAM <- "SRPHM_spinup.nam"
+    
+  } else {
+    
+    stop_script(paste0("Unknown model \"", model, "\". Please revise the script!"))
+    
+  }
+  
+  
+  # If there are NULL entries in 'modelList', remove them
+  if (any_null(modelList)) {
+    
+    modelList <- modelList[!sapply(modelList, is.null)]
+    
+  }
+  
+  
+  # Return 'modelList'
+  return(modelList)
+  
+}
+
+
+
+list_model_outputs <- function (model, modelPath, includeScriptGeneratedOutput = FALSE) {
+  
+  # This function returns a vector of expected output files for a model
+  
+  # If 'includeScriptGeneratedOutput' is TRUE, for certain models,
+  # a script-generated output file is included in the output vector too
+  
+  
+  # Based on the value of 'model', return a different set of file paths
+  if (model == "PRMS") {
+    
+    # Several files were written to the "output" folder by PRMS
+    outFiles <- c("gsflow.csv", 
+                  "rr_budget.out2",
+                  "RR_PRMS_Output_sub_cfs.csv",
+                  "RR_PRMS_Output_sub_inq.csv") |>
+      paste0("PRMS/output/", ... = _)
+    
+    
+    # If 'includeScriptGeneratedOutput' is TRUE, include the console output 
+    # text file generated by a script in this workflow
+    if (includeScriptGeneratedOutput) {
+      
+      outFiles <- c(outFiles,
+                    "PRMS/output/PRMS_Console_Output.txt")
+      
+    }
+    
+  } else if (model == "SRP") {
+    
+    # Most key output files are in the root directory
+    # Two are in the "basin" folder
+    outFiles <- c("gsflow.log",
+                  paste0("SRP_inflow_", 1:6, ".gag"),
+                  "SRP_inflow_11465500.gag",
+                  "SRP_inflow_11465660.gag",
+                  "SRP_inflow_11465680.gag",
+                  "SRP_inflow_11465690.gag",
+                  "SRP_inflow_11465700.gag",
+                  "SRP_inflow_11465750.gag",
+                  "SRP_inflow_11466170.gag",
+                  "SRP_inflow_11466200.gag",
+                  "SRP_inflow_11466320.gag",
+                  "SRP_inflow_11466800.gag",
+                  "model_output_summary.txt",
+                  "basin/basin_.csv",
+                  "basin/basin__monthly.csv")
+    
+  } else if (model == "RRIHM") {
+    
+    stop("Unfinished")
+    
+  } else if (model == "SRPHM") {
+    
+    # Most important files generated by SRPHM are stored in the "output" folder
+    outFiles <- c(paste0("SRP_inflow_", 1:7, ".gag"),
+                  "SRP_inflow_11465500.gag", "SRP_inflow_11465660.gag",
+                  "SRP_inflow_11465680.gag", "SRP_inflow_11465690.gag",
+                  "SRP_inflow_11465700.gag", "SRP_inflow_11465750.gag",
+                  "SRP_inflow_11465800.gag", "SRP_inflow_11466065.gag",
+                  "SRP_inflow_11466170.gag", "SRP_inflow_11466200.gag",
+                  "SRP_inflow_11466320.gag", "SRP_inflow_11466800.gag", 
+                  "srphm_dpl_allUz.out", "srphm_dpl_gsflow.csv",
+                  "srphm_dpl_gsflow.out", "srphm_dpl_ISTCB1.cb1",
+                  "srphm_dpl_IUZFCB1.cb1", "srphm_dpl_IUZFCB2.cb2",
+                  "srphm_dpl_model_output_summary.txt", 
+                  "srphm_dpl_nsub_hru_rain.csv", 
+                  "srphm_dpl_nsub_hru_rain_monthly.csv", 
+                  "srphm_dpl_nsub_sub_cfs.csv", "srphm_dpl_nsub_sub_cfs_monthly.csv",
+                  "srphm_dpl_nsub_sub_inq.csv", "srphm_dpl_nsub_sub_inq_monthly.csv", 
+                  "srphm_dpl_statvar_prms.dat", "srphm_spinup.lst",
+                  "SRPHM_strm_dpl.bud", "SRPHM_strm_dpl.hds",
+                  "stream_budget.dat",
+                  "well_dpl.dat", "wellall_dpl.dat", "wellet_dpl.dat",
+                  "welletall_dpl.dat", "wellirlist_dpl.dat") |>
+      paste0("output/", ... = _)
+    
+    
+    # "gsflow.log" is an important file too, but it is in the root directory
+    outFiles <- c(outFiles, "gsflow.log")
+    
+  } else {
+    
+    stop_script(paste0("Unknown model \"", model, "\". Please revise the script!"))
+    
+  }
+  
+  
+  # Adjust the relative file paths in 'pathVec' to incorporate 'modelPath'
+  outFiles <- paste0(modelPath, "/", outFiles) |>
+    normalizePath(mustWork = FALSE)
+  
+  
+  # Return 'outFiles'
+  return(outFiles)
+  
+}
+
+
+
+validate_model_copy <- function (model) {
+  
+  # In a prior script, model files were copied to the "Output" folder
   # Verify that it exists
   
   # This function also returns the path to the model folder
   
   
-  # The expected path of the "RR_PRMS" folder
-  prmsPath <- "W2_Russian_River/Output/RR_PRMS" |> normalizePath(mustWork = FALSE)
+  # Get the expected path to the model folder
+  modelPath <- paste0("W2_Russian_River/Output/", get_model_dir_name(model)) |>
+    normalizePath(mustWork = FALSE)
   
   
   # Make sure that that folder exists 
-  if (!dir.exists(prmsPath)) {
+  if (!dir.exists(modelPath)) {
     
-    paste0("PRMS Folder Not Found\n\n",
-           "A copy of the PRMS model files should have been added ",
+    paste0(model, " Folder Not Found\n\n",
+           "A copy of the ", model, " model files should have been added ",
            "to the \"Output\" folder in an earlier script. ",
            "However, it was not found. ",
            "Please run the previous scripts before running this one.\n\n",
-           "The expected directory was \"", prmsPath, "\"") |>
+           "The expected directory was \"", modelPath, "\"") |>
       errWrap() |>
       stop()
     
   }
   
   
-  # Also confirm that the control file for PRMS exists
-  controlPath <- paste0(prmsPath, "/windows/prms_rr.control") |> 
-    normalizePath(mustWork = FALSE)
+  # Also, confirm that the key model files still exist
   
   
-  if (!file.exists(controlPath)) {
+  # First, get a list of these files
+  fileList <- list_model_components(model)
+  
+  
+  # Iterate through 'fileList'
+  for (i in 1:length(fileList)) {
     
-    paste0("Missing PRMS Control File\n\n",
-           "When the PRMS folder was copied into the \"Output\" ", 
-           "folder, a control file was present in the \"windows\" folder. ",
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", controlPath, "\")") |>
-      errWrap() |>
-      stop()
+    # Construct a temporary path to this iteration's file
+    filePath <- paste0(modelPath, "/", fileList[[i]]) |>
+      normalizePath(mustWork = FALSE)
     
+    
+    # Confirm that the file exists
+    if (!file.exists(filePath)) {
+      
+      # Output an error message otherwise
+      paste0("Missing ", model, " ", names(fileList)[i], " File\n\n",
+             "When the ", model, " folder was copied into the \"Output\" ", 
+             "folder, a key file was present in the folder. ",
+             "However, it cannot be found now. Please investigate.\n\n",
+             "(This error occurred for \"", filePath, "\")") |>
+        errWrap() |>
+        stop()
+      
+    }
+
   }
+ 
   
-  
-  # A batch file should be present in the model files too
-  # Check for that as well
-  batPath <- paste0(prmsPath, "/windows/run.bat") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(batPath)) {
-    
-    paste0("Missing PRMS Batch File\n\n",
-           "When the PRMS folder was copied into the \"Output\" ", 
-           "folder, a batch file was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", batPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Finally, check for the main executable file
-  exePath <- paste0(prmsPath, "/bin/gsflow.exe") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(exePath)) {
-    
-    paste0("Missing PRMS EXE File\n\n",
-           "When the PRMS folder was copied into the \"Output\" ", 
-           "folder, \"gsflow.exe\" was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", exePath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Return 'prmsPath' if there are no issues
-  return(prmsPath)
+  # If there are no issues, return 'modelPath'
+  return(modelPath)
   
 }
 
 
 
-checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
-                                       includeScriptGeneratedOutput = FALSE) {
+check_for_model_outputs <- function (model, modelPath, modelOutput = NULL,
+                                     includeScriptGeneratedOutput = FALSE) {
   
-  # Double-check that the model ran successfully
+  # Confirm that a model ran successfully
+  # If it did, there should be several key output files
   
-  # There should be several key files in the "output" folder
+  # In addition, if present, 'modelOutput' should not contain any error messages
   
   
-  # These files were all generated by PRMS
-  outFiles <- getModelOutputs_PRMS(prmsPath, includeScriptGeneratedOutput)
+  # First assume that no issues occurred
+  runFailed <- FALSE
+  errMessage <- ""
+  
+  
+  # Start by checking for the output files
+  
+  
+  # Get all generated by the model
+  outFiles <- list_model_outputs(model, modelPath, includeScriptGeneratedOutput)
   
   
   # Check if any files are missing
@@ -1651,185 +1835,39 @@ checkForModelOutputs_PRMS <- function (prmsPath, modelOutput = NULL,
   
   if (length(missingFiles) > 0) {
     
-    # Include the model run outputs in the console if 'modelOutput' is not NULL
-    if (!is.null(modelOutput)) {
-      
-      cat("\n\nModel Output Message(s):\n\n")
-      print(modelOutput)
-      
-      
-      # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "W2_Russian_River/Output/PRMS_Output_Messages.txt")
-      
-    }
+    runFailed <- TRUE
     
-    
-    paste0("Missing PRMS Output File", 
-           if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-           "The PRMS model run did not generate all of the expected ",
-           "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
-           "). Please investigate ",
-           if_else(!is.null(modelOutput),
-                   "the model's output messages (included above and in a file)",
-                   "this issue"),
-           ".\n\n", 
-           "(This error occurred for \"", prmsPath, "\")") |>
-      errWrap() |>
-      stop()
+    errMessage <- paste0("Missing ", model, " Output File", 
+                         if_else(length(missingFiles) > 1, "s", ""), "\n\n",
+                         "The ", model, " model run did not generate all of the expected ",
+                         "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
+                         "). Please investigate ",
+                         if_else(!is.null(modelOutput),
+                                 "the model's output messages (included above and in a file)",
+                                 "this issue"),
+                         ".\n\n", 
+                         "(This error occurred for \"", modelPath, "\")")
     
   }
   
   
-  # Return nothing if there are no issues
-  return(invisible(NULL))
-  
-}
-
-
-
-getModelOutputs_PRMS <- function (prmsPath, 
-                                  includeScriptGeneratedOutput = FALSE) {
-  
-  # Return a vector containing the filepaths for outputs from PRMS
-  
-  # (And a script-generated output if 'includeScriptGeneratedOutput' is TRUE)
-  
-  
-  # These files were generated by PRMS
-  outFiles <- c("gsflow.csv", 
-                "rr_budget.out2",
-                "RR_PRMS_Output_sub_cfs.csv",
-                "RR_PRMS_Output_sub_inq.csv")
-  
-  
-  # If 'includeScriptGeneratedOutput' is TRUE, include the console output 
-  # text file generated by a script in this workflow
-  if (includeScriptGeneratedOutput) {
+  # Check for error messages in 'modelOutput' (if that parameter has been specified)
+  if (!runFailed && !is.null(modelOutput) && 
+      any(grepl("Due to error.+simulation halted", modelOutput))) {
     
-    outFiles <- c(outFiles,
-                  "PRMS_Console_Output.txt")
+    runFailed <- TRUE
+    
+    errMessage <- paste0("Model Run Failed\n\n", 
+                         "The model encountered an issue while running. Please ",
+                         "investigate the messages shown above. These messages ",
+                         "have also been output into a file for review.\n\n", 
+                         "(This error occurred for \"", modelPath, "\")")
     
   }
   
   
-  # Convert these filenames into paths
-  outFiles <- paste0(prmsPath, "/PRMS/output/", outFiles)
-  
-  
-  # Return 'outFiles'
-  return(outFiles)
-  
-}
-
-
-
-validateModelCopy_SRP <- function () {
-  
-  # In a prior script, SRP model files were copied to the "Output" folder
-  # Verify that it exists
-  
-  # This function also returns the path to the model folder
-  
-  
-  # The expected path of the "SRPHM_update_ag" folder
-  srpPath <- "W2_Russian_River/Output/SRPHM_update_ag" |> normalizePath(mustWork = FALSE)
-  
-  
-  # Make sure that that folder exists 
-  if (!dir.exists(srpPath)) {
-    
-    paste0("SRP Folder Not Found\n\n",
-           "A copy of the SRP model files should have been added ",
-           "to the \"Output\" folder in an earlier script. ",
-           "However, it was not found. ",
-           "Please run the previous scripts before running this one.\n\n",
-           "The expected directory was \"", srpPath, "\"") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Also confirm that the control file for SRP exists
-  controlPath <- paste0(srpPath, "/SRPHM_update.control") |> 
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(controlPath)) {
-    
-    paste0("Missing SRP Control File\n\n",
-           "When the SRP folder was copied into the \"Output\" ", 
-           "folder, a control file was present in the root folder. ",
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", controlPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # A batch file should be present in the model files too
-  # Check for that as well
-  batPath <- paste0(srpPath, "/Run_updated_Model.bat") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(batPath)) {
-    
-    paste0("Missing SRP Batch File\n\n",
-           "When the SRP folder was copied into the \"Output\" ", 
-           "folder, a batch file was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", batPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Finally, check for the main executable file
-  exePath <- paste0(srpPath, "/gsflow_ag.exe") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(exePath)) {
-    
-    paste0("Missing SRP EXE File\n\n",
-           "When the SRP folder was copied into the \"Output\" ", 
-           "folder, \"gsflow_ag.exe\" was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", exePath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Return 'srpPath' if there are no issues
-  return(srpPath)
-  
-}
-
-
-
-checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
-  
-  # Double-check that the model ran successfully
-  
-  # There should be several key files in the root directory folder
-  # (Plus some in the "basin" folder)
-  
-  
-  # These files were all generated by SRP
-  outFiles <- getModelOutputs_SRP(srpPath)
-  
-  
-  # Check if any files are missing
-  missingFiles <- which(!file.exists(outFiles |>
-                                       normalizePath(mustWork = FALSE)))
-  
-  
-  if (length(missingFiles) > 0) {
+  # If the model run failed, output an error message
+  if (runFailed) {
     
     # Include the model run outputs in the console if 'modelOutput' is not NULL
     if (!is.null(modelOutput)) {
@@ -1839,23 +1877,15 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
       
       
       # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "W2_Russian_River/Output/SRP_Output_Messages.txt")
+      writeOutput(modelOutput, 
+                  paste0("W2_Russian_River/Output/", model, "_Output_Messages.txt"))
       
     }
     
     
-    paste0("Missing SRP Output File", 
-           if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-           "The SRP model run did not generate all of the expected ",
-           "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
-           "). Please investigate ",
-           if_else(!is.null(modelOutput),
-                   "the model's output messages (included above and in a file)",
-                   "this issue"),
-           ".\n\n", 
-           "(This error occurred for \"", srpPath, "\")") |>
-      errWrap() |>
-      stop()
+    # Output the error message
+    errMessage |>
+      stop_script()
     
   }
   
@@ -1863,439 +1893,6 @@ checkForModelOutputs_SRP <- function (srpPath, modelOutput = NULL) {
   # Return nothing if there are no issues
   return(invisible(NULL))
   
-}
-
-
-
-getModelOutputs_SRP <- function (srpPath) {
   
-  # Prepare a vector that contains all key outputs from SRP
-  
-  # Most of these files are in the root "SRPHM_update_ag" folder
-  # Two are in the "basin" sub-folder
-  
-  
-  outFiles <- c("gsflow.log",
-                paste0("SRP_inflow_", 1:6, ".gag"),
-                "SRP_inflow_11465500.gag",
-                "SRP_inflow_11465660.gag",
-                "SRP_inflow_11465680.gag",
-                "SRP_inflow_11465690.gag",
-                "SRP_inflow_11465700.gag",
-                "SRP_inflow_11465750.gag",
-                "SRP_inflow_11466170.gag",
-                "SRP_inflow_11466200.gag",
-                "SRP_inflow_11466320.gag",
-                "SRP_inflow_11466800.gag",
-                "model_output_summary.txt",
-                "basin/basin_.csv",
-                "basin/basin__monthly.csv")
-  
-  
-  # Append 'srpPath' to these filenames
-  outFiles <- paste0(srpPath, "/", outFiles)
-  
-  
-  # Return 'outFiles'
-  return(outFiles)
   
 }
-
-
-
-validateModelCopy_SRP_2024 <- function () {
-  
-  # In a prior script, SRP model files were copied to the "Output" folder
-  # Verify that it exists
-  
-  # This function also returns the path to the model folder
-  
-  
-  # The expected path of the "SRPHM" folder
-  srpPath <- "W2_Russian_River/Output/SRPHM" |> normalizePath(mustWork = FALSE)
-  
-  
-  # Make sure that that folder exists 
-  if (!dir.exists(srpPath)) {
-    
-    paste0("SRP Folder Not Found\n\n",
-           "A copy of the SRP model files should have been added ",
-           "to the \"Output\" folder in an earlier script. ",
-           "However, it was not found. ",
-           "Please run the previous scripts before running this one.\n\n",
-           "The expected directory was \"", srpPath, "\"") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Also confirm that the control file for SRP exists
-  controlPath <- paste0(srpPath, 
-                        "/SRPHM_spinup.control") |> 
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(controlPath)) {
-    
-    paste0("Missing SRP Control File\n\n",
-           "When the SRP folder was copied into the \"Output\" ", 
-           "folder, a control file was present in the spinup folder. ",
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", controlPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # A batch file should be present in the model files too
-  # Check for that as well
-  batPath <- paste0(srpPath, "/run_SRPHM_spinup.bat") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(batPath)) {
-    
-    paste0("Missing SRP Batch File\n\n",
-           "When the SRP folder was copied into the \"Output\" ", 
-           "folder, a batch file was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", batPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Finally, check for the main executable file
-  exePath <- paste0(srpPath, "/bin/gsflow.exe") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(exePath)) {
-    
-    paste0("Missing SRP EXE File\n\n",
-           "When the SRP folder was copied into the \"Output\" ", 
-           "folder, \"bin/gsflow.exe\" was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", exePath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Return 'srpPath' if there are no issues
-  return(srpPath)
-  
-}
-
-
-
-checkForModelOutputs_SRP_2024 <- function (srpPath, modelOutput = NULL) {
-  
-  # Double-check that the model ran successfully
-  
-  # There should be several key files in the "output" folder
-  
-  
-  # These files were all generated by SRP
-  outFiles <- getModelOutputs_SRP_2024(srpPath)
-  
-  
-  # Check if any files are missing
-  missingFiles <- which(!file.exists(outFiles |>
-                                       normalizePath(mustWork = FALSE)))
-  
-  
-  if (length(missingFiles) > 0) {
-    
-    # Include the model run outputs in the console if 'modelOutput' is not NULL
-    if (!is.null(modelOutput)) {
-      
-      cat("\n\nModel Output Message(s):\n\n")
-      print(modelOutput)
-      
-      
-      # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "W2_Russian_River/Output/SRP_Output_Messages.txt")
-      
-    }
-    
-    
-    paste0("Missing SRP Output File", 
-           if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-           "The SRP model run did not generate all of the expected ",
-           "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
-           "). Please investigate ",
-           if_else(!is.null(modelOutput),
-                   "the model's output messages (included above and in a file)",
-                   "this issue"),
-           ".\n\n", 
-           "(This error occurred for \"", srpPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Return nothing if there are no issues
-  return(invisible(NULL))
-  
-}
-
-
-
-getModelOutputs_SRP_2024 <- function (srpPath) {
-  
-  # Return a vector that contains model outputs from SRP
-  
-  
-  outFiles <- c(paste0("SRP_inflow_", 1:7, ".gag"),
-                "SRP_inflow_11465500.gag", "SRP_inflow_11465660.gag",
-                "SRP_inflow_11465680.gag", "SRP_inflow_11465690.gag",
-                "SRP_inflow_11465700.gag", "SRP_inflow_11465750.gag",
-                "SRP_inflow_11465800.gag", "SRP_inflow_11466065.gag",
-                "SRP_inflow_11466170.gag", "SRP_inflow_11466200.gag",
-                "SRP_inflow_11466320.gag", "SRP_inflow_11466800.gag", 
-                "srphm_dpl_allUz.out", "srphm_dpl_gsflow.csv",
-                "srphm_dpl_gsflow.out", "srphm_dpl_ISTCB1.cb1",
-                "srphm_dpl_IUZFCB1.cb1", "srphm_dpl_IUZFCB2.cb2",
-                "srphm_dpl_model_output_summary.txt", 
-                "srphm_dpl_nsub_hru_rain.csv", 
-                "srphm_dpl_nsub_hru_rain_monthly.csv", 
-                "srphm_dpl_nsub_sub_cfs.csv", "srphm_dpl_nsub_sub_cfs_monthly.csv",
-                "srphm_dpl_nsub_sub_inq.csv", "srphm_dpl_nsub_sub_inq_monthly.csv", 
-                "srphm_dpl_statvar_prms.dat", "srphm_spinup.lst",
-                "SRPHM_strm_dpl.bud", "SRPHM_strm_dpl.hds",
-                "stream_budget.dat",
-                "well_dpl.dat", "wellall_dpl.dat", "wellet_dpl.dat",
-                "welletall_dpl.dat", "wellirlist_dpl.dat")
-  
-  
-  # Append the model path to these filenames
-  outFiles <- paste0(srpPath, 
-                     "/output/", 
-                     outFiles)
-  
-  
-  # "gsflow.log" is also an important file, but it is not stored in "output"
-  outFiles <- c(outFiles,
-                paste0(srpPath, "/gsflow.log"))
-  
-  
-  # Return 'outFiles'
-  return(outFiles)
-  
-}
-
-
-
-validateModelCopy_RRIHM <- function () {
-  
-  # In a prior script, RRIHM model files were copied to the "Output" folder
-  # Verify that it exists
-  
-  # This function also returns the path to the model folder
-  
-  
-  # The expected path of the "RRIHM" folder
-  rrPath <- "W2_Russian_River/Output/RRIHM" |> normalizePath(mustWork = FALSE)
-  
-  
-  # Make sure that that folder exists 
-  if (!dir.exists(rrPath)) {
-    
-    paste0("RRIHM Folder Not Found\n\n",
-           "A copy of the RRIHM model files should have been added ",
-           "to the \"Output\" folder in an earlier script. ",
-           "However, it was not found. ",
-           "Please run the previous scripts before starting this one.\n\n",
-           "The expected directory was \"", rrPath, "\"") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Also confirm that the control file for RRIHM exists
-  controlPath <- paste0(rrPath, 
-                        "/RRIHM_post_spinup_WY2021/windows/gsflow_rr.control") |> 
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(controlPath)) {
-    
-    paste0("Missing RRIHM Control File\n\n",
-           "When the RRIHM folder was copied into the \"Output\" ", 
-           "folder, a control file was present in the \"windows\" folder. ",
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", controlPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # A batch file should be present in the model files too
-  # Check for that as well
-  batPath <- paste0(rrPath, "/RRIHM_post_spinup_WY2021/windows/run.bat") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(batPath)) {
-    
-    paste0("Missing RRIHM Batch File\n\n",
-           "When the RRIHM folder was copied into the \"Output\" ", 
-           "folder, a batch file was present in the \"windows\" folder. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", batPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Check for the Mark West DAT file after that
-  markPath <- paste0(rrPath, "/RRIHM_post_spinup_WY2021/modflow/input/",
-                     "Mark_West_inflow.dat") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(markPath)) {
-    
-    paste0("Missing RRIHM DAT File\n\n",
-           "When the RRIHM folder was copied into the \"Output\" ", 
-           "folder, \"Mark_West_inflow.dat\" was present in the files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", markPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Finally, check for the main executable file
-  exePath <- paste0(rrPath, "/RRIHM_post_spinup_WY2021/windows/bin/gsflow.exe") |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  if (!file.exists(exePath)) {
-    
-    paste0("Missing GSFLOW EXE File\n\n",
-           "When the RRIHM folder was copied into the \"Output\" ", 
-           "folder, \"gsflow.exe\" was present among the model files. ", 
-           "However, it cannot be found now. Please investigate.\n\n",
-           "(This error occurred for \"", exePath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Return 'rrPath' if there are no issues
-  return(rrPath)
-  
-}
-
-
-
-
-
-
-
-checkForModelOutputs_RRIHM <- function (rrPath, modelOutput = NULL) {
-  
-  # Double-check that the model ran successfully
-  
-  # There should be several key files in the "output" folder
-  
-  
-  # These files were all generated by SRP
-  outFiles <- getModelOutputs_SRP_2024(rrPath)
-  
-  
-  # Check if any files are missing
-  missingFiles <- which(!file.exists(outFiles |>
-                                       normalizePath(mustWork = FALSE)))
-  
-  
-  if (length(missingFiles) > 0) {
-    
-    # Include the model run outputs in the console if 'modelOutput' is not NULL
-    if (!is.null(modelOutput)) {
-      
-      cat("\n\nModel Output Message(s):\n\n")
-      print(modelOutput)
-      
-      
-      # Save 'modelOutput' to a file too
-      writeOutput(modelOutput, "W2_Russian_River/Output/SRP_Output_Messages.txt")
-      
-    }
-    
-    
-    paste0("Missing SRP Output File", 
-           if_else(length(missingFiles) > 1, "s", ""), "\n\n",
-           "The SRP model run did not generate all of the expected ",
-           "files (missing ", vec2QuotedStr(outFiles[missingFiles]),
-           "). Please investigate ",
-           if_else(!is.null(modelOutput),
-                   "the model's output messages (included above and in a file)",
-                   "this issue"),
-           ".\n\n", 
-           "(This error occurred for \"", rrPath, "\")") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # Return nothing if there are no issues
-  return(invisible(NULL))
-  
-}
-
-
-
-getModelOutputs_RRIHM <- function (srpPath) {
-  
-  # Return a vector that contains model outputs from SRP
-  
-  
-  outFiles <- c(paste0("SRP_inflow_", 1:7, ".gag"),
-                "SRP_inflow_11465500.gag", "SRP_inflow_11465660.gag",
-                "SRP_inflow_11465680.gag", "SRP_inflow_11465690.gag",
-                "SRP_inflow_11465700.gag", "SRP_inflow_11465750.gag",
-                "SRP_inflow_11465800.gag", "SRP_inflow_11466065.gag",
-                "SRP_inflow_11466170.gag", "SRP_inflow_11466200.gag",
-                "SRP_inflow_11466320.gag",
-                "srphm_dpl_allUz.out", "srphm_dpl_gsflow.csv",
-                "srphm_dpl_gsflow.out", "srphm_dpl_ISTCB1.cb1",
-                "srphm_dpl_IUZFCB1.cb1", "srphm_dpl_IUZFCB2.cb2",
-                "srphm_dpl_model_output_summary.txt", 
-                "srphm_dpl_statvar_prms.dat", "srphm_spinup.lst",
-                "SRPHM_strm_dpl.bud", "SRPHM_strm_dpl.hds",
-                "stream_budget.dat",
-                "well_dpl.dat", "wellall_dpl.dat", "wellet_dpl.dat",
-                "welletall_dpl.dat", "wellirlist_dpl.dat")
-  
-  
-  # Append the model path to these filenames
-  outFiles <- paste0(srpPath, 
-                     "/model1/SRPHM_post_spinup_WY2021/output/", 
-                     outFiles)
-  
-  
-  # "gsflow.log" is also an important file, but it is not stored in "output"
-  outFiles <- c(outFiles,
-                paste0(srpPath, "/model1/SRPHM_post_spinup_WY2021/",
-                       "gsflow.log"))
-  
-  
-  # Return 'outFiles'
-  return(outFiles)
-  
-}
-

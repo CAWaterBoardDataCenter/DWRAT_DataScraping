@@ -35,7 +35,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -45,7 +45,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 # Allow greater time to download data from PRISM
 # (This is only relevant for large data downloads)
-options(timeout = 500) # 500 seconds
+options(timeout = 5000) # 5000 seconds
 
 
 
@@ -62,14 +62,14 @@ mainProcedure <- function () {
   
   
   # PRISM does not have data earlier than 1981-01-01
-  # If 'startDate' is earlier than this date, output an error message
-  if (startDate < "1981-01-01") {
+  # If 'startDate' is earlier than this date, output a warning message
+  if (startDate < prism_start()) {
     
-    stop(paste0("Requested Date Range - Start Date Issue\n\n",
-                "The earliest date for which PRISM has data available is ",
-                "1981-01-01. The input start date (\"", startDate, "\") is ",
-                "too early. Please revise this input.") |>
-           errWrap())
+    paste0("The earliest date for which PRISM has data available is ", 
+           prism_start(), ". The input start date (\"", startDate, "\") is ",
+           "too early.") |>
+      errWrap() |>
+      message()
     
   }
   
@@ -227,7 +227,14 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   # The remaining options customize the request
   
   
-  # To start, check if the request is too large 
+  # To start, ensure that 'startDate' is not greater than 1981-01-01
+  # If it is, update the value of 'startDate'
+  if (startDate < prism_start()) {
+    startDate <- prism_start()
+  }
+  
+  
+  # After that, check if the request is too large 
   if (nrow(stationDF) > 300) {
     
     # If data for more than 300 locations is requested, split up the request

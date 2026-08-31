@@ -20,7 +20,7 @@ if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
 # Import packages next
 
 # Install 'renv' and all required R packages
-source("Shared_Scripts/Project_Setup.R")
+source("Additional_Scripts/Project_Setup.R")
 
 
 # Load in tidyverse packages

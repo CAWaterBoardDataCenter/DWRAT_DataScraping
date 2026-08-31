@@ -30,7 +30,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -50,15 +50,15 @@ mainProcedure <- function () {
   source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
-  # CIMIS does not have data earlier than 1982-06-07 for many stations
-  # If 'startDate' is earlier than this date, output an error message
-  if (startDate < "1982-06-07") {
+  # CIMIS does not have data earlier than 1982-06-07 
+  # If 'startDate' is earlier than this date, output a warning
+  if (startDate < cimis_start()) {
     
-    stop(paste0("Requested Date Range - Start Date Issue\n\n",
-                "The earliest date for which CIMIS has data available is ",
-                "1982-06-07. The input start date (\"", startDate, "\") is ",
-                "too early. Please revise this input.") |>
-           errWrap())
+    paste0("The earliest date for which CIMIS has data available is ", 
+           cimis_start(), ". The input start date (\"", startDate, "\") is ",
+           "too early.") |>
+      errWrap() |>
+      message()
     
   }
   
@@ -117,6 +117,15 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   # 'isSplit' identifies whether `requestCIMIS` is being called normally
   # or through the function `splitRequest`
+  
+  
+  # Before continuing, confirm that 'startDate' is not earlier than 1982-06-07
+  # If it is, adjust its value
+  if (startDate < cimis_start()) {
+    
+    startDate <- cimis_start()
+    
+  }
   
   
   # First, obtain the user's API key
@@ -441,22 +450,25 @@ formatResponse <- function (res, startDate, endDate, stationVec, isSplit) {
     # In this instance, no data is available for the requested date range
     if (length(res[["Data"]][["Providers"]][[1]][["Records"]]) == 0) {
       
-      stop(paste0("Empty CIMIS Response\n\n",
-                  "CIMIS returned zero records for the requested date ",
-                  "range (\"", startDate, "\" to \"", endDate, "\"). Please ",
-                  "revise the input date range.") |>
+      # Output a warning instead of an error in this case
+      paste0("Empty CIMIS Response\n\n",
+             "CIMIS returned zero records for the requested date ",
+             "range (\"", startDate, "\" to \"", endDate, "\").") |>
+        errWrap() |>
+        message()
+      
+      # For all other cases, use an error message instead
+    } else {
+      
+      stop(paste0("Could Not Parse CIMIS Response\n\n",
+                  "The information returned by CIMIS could not be interpreted ",
+                  " correctly. The response text was not in the expected format.\n\n", 
+                  "Please investigate this issue further. Either this script ",
+                  "requires revisions, or CIMIS must be contacted about a ",
+                  "server issue.\n\n") |>
              errWrap())
       
     }
-    
-    
-    stop(paste0("Could Not Parse CIMIS Response\n\n",
-                "The information returned by CIMIS could not be interpreted ",
-                " correctly. The response text was not in the expected format.\n\n", 
-                "Please investigate this issue further. Either this script ",
-                "requires revisions, or CIMIS must be contacted about a ",
-                "server issue.\n\n") |>
-           errWrap())
     
   }
   

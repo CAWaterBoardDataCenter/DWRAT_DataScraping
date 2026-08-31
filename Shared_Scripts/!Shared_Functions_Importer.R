@@ -7,13 +7,7 @@
 
 #### Dependencies ####
 
-require(data.table)
-require(tidyverse)
-require(readxl)
-require(cli)
-require(httr)
-require(rvest)
-require(writexl)
+source("Additional_Scripts/Load_Packages.R")
 
 
 #### Script Calls ####
@@ -26,4 +20,3 @@ source("Shared_Scripts/R_Bridge.R")
 source("Shared_Scripts/Statistics.R")
 source("Shared_Scripts/Streamliner.R")
 source("Shared_Scripts/Validation.R")
-source("Shared_Scripts/Web_Requests.R")

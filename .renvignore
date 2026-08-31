@@ -24,5 +24,8 @@
 !**/XLSX_Tracking/*.R
 
 # Ignore the .git and RProj folders
+.git
 **/.git/**
+**/objects
+.Rproj.user
 **/.Rproj.user/**
