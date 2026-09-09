@@ -63,6 +63,19 @@ mainProcedure <- function() {
   }
   
   
+  if (any(st_geometry_type(catchDF) %in% c("GEOMETRYCOLLECTION"))) {
+    
+    catchmentCollections <- which(st_geometry_type(catchDF) %in% c("GEOMETRYCOLLECTION"))
+    
+    newCatchments <- catchDF[catchmentCollections, ] |>
+      st_collection_extract()
+    
+    catchDF <- rbind(catchDF[-catchmentCollections, ],
+                     newCatchments)
+    
+  }
+  
+  
   # Get the name of the column that contains the catchment IDs too
   if (is.na(ws$SUBBASIN_FIELD_ID_NAMES[1])) {
     

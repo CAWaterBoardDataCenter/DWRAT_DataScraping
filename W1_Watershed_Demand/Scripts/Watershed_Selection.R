@@ -24,11 +24,11 @@ index <- 2 # Change the index to your desired watershed's corresponding "INDEX" 
 if (file.exists(makeSharePointPath(getFromMasterControl("SHAREPOINT_DEMAND_CONTROL_FILE")))) {
   
   ws <- makeSharePointPath(getFromMasterControl("SHAREPOINT_DEMAND_CONTROL_FILE")) %>%
-    read_xlsx(sheet = "Main_Sheet", skip = 1)
+    readxl::read_xlsx(sheet = "Main_Sheet", skip = 1)
   
 } else {
   
-  ws <- read_xlsx("W1_Watershed_Demand/Input/Watershed_Demand_Dataset_Paths.xlsx",
+  ws <- readxl::read_xlsx("W1_Watershed_Demand/Input/Watershed_Demand_Dataset_Paths.xlsx",
                   sheet = "Main_Sheet", skip = 1)
   
 }
