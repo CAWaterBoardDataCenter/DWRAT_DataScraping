@@ -2,11 +2,11 @@
   
 **Authors:** Payman Alemi and Aakash Prashar  
   
-**Last Updated On:** 2026-08-10  
+**Last Updated On:** 2026-09-10
   
 This repository contains files related to several ongoing development projects managed by the Waterboards' [Supply and Demand Assessment](https://www.waterboards.ca.gov/waterrights/water_issues/programs/supply-and-demand/) (SDA) section. The three main folders are "W1_Watershed_Demand", "W2_Russian_River", and "W3_LSPC_Watershed".  
   
-## W1_Watershed_Demand (Demand Workflow)  
+## W1_Watershed_Demand (eWRIMS-based Demand Workflow)  
 For every watershed in California, water rightholders self-report monthly diversion data to the Waterboards on an annual basis. These scripts can help users gather relevant water rights for a watershed and flag potential issues in their reporting data. In combination with several manual QA/QC processes, these scripts ultimately generate a *demand dataset* for the watershed that can be used to simulate withdrawals in various sub-basins of a watershed on a monthly timescale. This dataset has applications in both SDA's model development and water availability analysis procedures.  
   
 ## W2_Russian_River (Russian River Workflow)  
@@ -14,7 +14,12 @@ Originally a process inherited from the Waterboards' Cannabis Instream Flows uni
   
 ## W3_LSPC_Watershed (LSPC Watershed Workflow)  
 For watersheds where SDA and its contractors have developed a [Loading Simulation Program in C++](https://cfpub.epa.gov/si/si_public_record_Report.cfm?Lab=NERL&dirEntryId=75860) (LSPC) model, this is the counterpart to the **Russian River Workflow**. The scripts in this folder perform similar processes, obtaining weather data, performing QA/QC analyses, forecasting conditions in the current water year, and modeling hydrologic flows (via LSPC in this case). Furthermore, later scripts in the workflow integrate the resultant *supply dataset* with the watershed's *demand dataset* to run **Paradigm DWRAT**.  
-  
+
+
+## W4_Calwatrs_Demand (CALWATRS-based Demand Workflow)
+This folder contains scripts that treat Calwatrs flat files as the intake source for demand data, instead of ewrims. It is currently under development and not officially part of the workflow but SDA's goal is to replace the W1_Watershed_Demand workflow with this one by the end of 2026.
+
+
 ## Supporting Folders  
 This repository contains several additional folders that support the three main workflows.  
   

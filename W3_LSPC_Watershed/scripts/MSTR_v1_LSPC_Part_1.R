@@ -8,6 +8,11 @@
 # The resultant files are submitted alongside demand data to run DWRAT
 
 
+# This is the "Part 1" portion of the workflow 
+
+# It covers much of the initial setup as well as the gathering of weather data
+
+
 #### Setup ####
 
 # Clear the environment first
@@ -48,30 +53,42 @@ source("W3_LSPC_Watershed/scripts/LSPC_001_Update_Control_File.R")
 source("W3_LSPC_Watershed/scripts/LSPC_002_Setup_Anaconda_Environment.R")
 
 
-# Make sure project directories exist
+# Make sure project directories exist 
+# Clear out previously downloaded data too, if present
 source("W3_LSPC_Watershed/scripts/LSPC_003_Setup_Project_Directories.R")
 
 
-# Check for previous downloaded data
-# Remove data from the last two water years
+# Download weather data from "shared" sources (PRISM, CIMIS, and NLDAS)
+source("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R")
+
+
+# Copy old weather data into the "shared" weather folder
+source("W3_LSPC_Watershed/scripts/LSPC_005_Copy_Raw_Historic_Weather_Data.R")
+
 
 
 # Setup archive directory
-
-
-# Read credential file for `env` values (NLDAS only)
-
-
-# Download weather data
-
-
-# Archive weather data and QC scripts
-
-
-# Copy data from previous manual reviews
+source("W3_LSPC_Watershed/scripts/LSPC_004_Setup_Archive_Directory.R")
 
 
 
 
+# To Do: 
+# Update the 100 yr return period from NOAA in each watershed's project control file
 
 
+# Use Python scripts to download and process weather data
+source("W3_LSPC_Watershed/scripts/LSPC_005a_Download_and_Stage_Climate_Data.R")
+
+
+# The next step of the workflow is a manual review
+# Provide the user with instructions about this
+cat("\n\n")
+paste0("Manual review spreadsheets have been generated for each watershed.\n\n",
+       "They are located in \"W3_LSPC_Watershed/data/projects/[Watershed]/candidate/gage/QCSpreadsheets\".\n\n",
+       "Please review the two spreadsheets that contain QC Flags 1, 2, 3, and 4. Delete the ",
+       "entries of values that should be removed. Later scripts will fill in ",
+       "all blank entries with data from PRISM.") |>
+  errWrap() |>
+  cat()
+cat("\n\n")

@@ -314,10 +314,7 @@ get_from_lspc_master_control <- function (fieldName) {
   if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
     
     # Exceptions:
-    if (fieldName %in% c("ADDITIONAL_ARCHIVE_LOCATION", 
-                         "CIMIS_LOGIN_CREDENTIALS",
-                         "LONG-RUNNING_METADATA_FILE_LOCATION",
-                         "USGS_API_KEY")) {
+    if (fieldName %in% c("EARTHDATA_LOGIN_CREDENTIALS")) {
       
       # These fields are optional, so it is okay if they are "NA"
       
