@@ -9,7 +9,8 @@
 # to download weather data for each watershed
 
 # Note: The temporary Python script should never be committed
-#       The 004b script should have a line of code that deletes it too
+#       The 004b script should reference a helper script with a line of code 
+#       that deletes it too
 
 
 #### Setup ####
@@ -56,7 +57,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the Python script next
-  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_004b_Download_Climate_Data.py" |>
+  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_004b_Download_Shared_Climate_Data.py" |>
     normalizePath(mustWork = FALSE)
   
   
