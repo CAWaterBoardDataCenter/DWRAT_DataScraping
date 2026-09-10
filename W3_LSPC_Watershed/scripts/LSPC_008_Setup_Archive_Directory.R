@@ -26,7 +26,7 @@ source("Shared_Scripts/!Shared_Functions_Importer.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'LSPC_004_Setup_Archive_Directory.R'!\n")
+  cat("Starting 'LSPC_008_Setup_Archive_Directory.R'!\n")
   
   
   # Import the data scraping bounds
@@ -105,7 +105,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'LSPC_004_Setup_Archive_Directory.R' is complete!\n\n"))
+  cat(col_green("\n'LSPC_008_Setup_Archive_Directory.R' is complete!\n\n"))
   
   
   # Return nothing
