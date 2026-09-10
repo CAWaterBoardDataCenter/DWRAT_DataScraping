@@ -58,8 +58,19 @@ source("W3_LSPC_Watershed/scripts/LSPC_002_Setup_Anaconda_Environment.R")
 source("W3_LSPC_Watershed/scripts/LSPC_003_Setup_Project_Directories.R")
 
 
+# Download weather data from "shared" sources (PRISM, CIMIS, and NLDAS)
+source("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R")
+
+
+# Copy old weather data into the "shared" weather folder
+source("W3_LSPC_Watershed/scripts/LSPC_005_Copy_Raw_Historic_Weather_Data.R")
+
+
+
 # Setup archive directory
 source("W3_LSPC_Watershed/scripts/LSPC_004_Setup_Archive_Directory.R")
+
+
 
 
 # To Do: 
