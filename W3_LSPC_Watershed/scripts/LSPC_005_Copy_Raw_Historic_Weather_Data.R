@@ -50,8 +50,7 @@ mainProcedure <- function () {
   
   
   # Get the list of data source folders in 'targetPath' (e.g., "prism", "nldas", "cimis")
-  targetFolders <- list.dirs(targetPath, full.names = FALSE) |> 
-    str_subset("^$", negate = TRUE) # Ignore the root directory
+  targetFolders <- list.dirs(targetPath, full.names = FALSE, recursive = FALSE)
   
   
   # Get the path to the historic weather data next
