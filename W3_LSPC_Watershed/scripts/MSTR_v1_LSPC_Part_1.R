@@ -40,7 +40,7 @@ source("Additional_Scripts/Load_Packages.R")
 ##### User Inputs #####
 
 # Please open the following script and update it:
-"CTR_001_Set_Start_and_End_Dates.R"
+"W3_LSPC_Watershed/scripts/CTR_001_Set_Start_and_End_Dates.R"
 
 
 ##### Web Scraping #####
@@ -64,6 +64,16 @@ source("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R")
 
 # Copy old weather data into the "shared" weather folder
 source("W3_LSPC_Watershed/scripts/LSPC_005_Copy_Raw_Historic_Weather_Data.R")
+
+
+# Update the LSPC weather control file to have a start date from the beginning
+# of the model run period
+source("W3_LSPC_Watershed/scripts/LSPC_006_Update_Control_File_Start_Date.R")
+
+
+# Download gage data for each watershed
+source("W3_LSPC_Watershed/scripts/LSPC_007a_Download_Watershed_Data.R")
+
 
 
 
