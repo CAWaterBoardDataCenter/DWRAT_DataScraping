@@ -78,16 +78,20 @@ source("W3_LSPC_Watershed/scripts/LSPC_006_Update_Control_File_Start_Date.R")
 source("W3_LSPC_Watershed/scripts/LSPC_007a_Download_Watershed_Data.R")
 
 
-
-
-# Setup archive directory
-source("W3_LSPC_Watershed/scripts/LSPC_004_Setup_Archive_Directory.R")
-
-
+# Setup an archive directory
+source("W3_LSPC_Watershed/scripts/LSPC_008_Setup_Archive_Directory.R")
 
 
 # To Do: 
 # Update the 100 yr return period from NOAA in each watershed's project control file
+
+
+# Stage climate data next
+source("W3_LSPC_Watershed/scripts/LSPC_009a_Stage_Climate_Data.R")
+
+
+# Adjust the manual review spreadsheets before users perform the actual review
+
 
 
 # Use Python scripts to download and process weather data
