@@ -62,6 +62,9 @@ source("W3_LSPC_Watershed/scripts/LSPC_003_Setup_Project_Directories.R")
 source("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R")
 
 
+source("W3_LSPC_Watershed/scripts/LSPC_004c_Download_PRISM_Data.R")
+
+
 # Copy old weather data into the "shared" weather folder
 source("W3_LSPC_Watershed/scripts/LSPC_005_Copy_Raw_Historic_Weather_Data.R")
 

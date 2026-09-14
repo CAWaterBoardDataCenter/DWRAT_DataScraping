@@ -30,7 +30,7 @@ class StagePrism(DataStager):
         end_datetime = request_control.end_date
 
         # Write Candidate PRISM data (slightly transformed)--> unit converted to inches 
-        StagePrism.write_prism_grid_csv(project)
+        #StagePrism.write_prism_grid_csv(project)
 
         # Read staged NLDAS data for disaggregation
         for index, row in prism_input.iterrows():

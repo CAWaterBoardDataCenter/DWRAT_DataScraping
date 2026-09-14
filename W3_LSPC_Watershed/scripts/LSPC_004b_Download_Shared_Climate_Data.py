@@ -9,8 +9,8 @@ from HLP_001_Setup_Weather_Object import app, projects
 
 
 # PRISM
-for project in projects:
-    app.run.fetch.prism(project)
+# for project in projects:
+#     app.run.fetch.prism(project)
 
 
 # CIMIS

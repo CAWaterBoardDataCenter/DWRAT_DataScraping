@@ -208,7 +208,7 @@ mainProcedure <- function () {
 scrapePRISM <- function (stationDF, startDate, endDate, writePath,
                          useHighRes = TRUE, interpCells = TRUE, 
                          getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE,
-                         quietly = FALSE, maxRetries = 15) {
+                         quietly = FALSE, isDaily = TRUE, maxRetries = 15) {
   
   # The process of getting daily data from PRISM involves 
   # making two POST requests
@@ -244,13 +244,13 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
                         writePath = writePath, useHighRes = useHighRes,
                         interpCells = interpCells, getPrecip = getPrecip, 
                         getTemp = getTemp, useMetric = useMetric,
-                        quietly = quietly, maxVal = 300))
+                        quietly = quietly, isDaily = isDaily, maxVal = 300))
     
   }
   
   
   # Prepare the body of the initial request
-  bodyList <- list(call = "pp/daily_timeseries_mp",
+  bodyList <- list(call = if_else(isDaily, "pp/daily_timeseries_mp", "pp/monthly_timeseries_mp"),
                    proc = "gridserv",
                    # Latitude
                    lons = stationDF$LONGITUDE |> paste0(collapse = "|"),
@@ -269,14 +269,21 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
                      trimws(),    
                    # Metric or US Customary units
                    units = if_else(useMetric, "si", "eng"),
-                   range = "daily",
-                   # Start and end dates in YYMMDD format
-                   start = paste0(year(startDate), 
-                                  twoDigitText(month(startDate)), 
-                                  twoDigitText(day(startDate))),
-                   end = paste0(year(endDate), 
-                                twoDigitText(month(endDate)), 
-                                twoDigitText(day(endDate))),
+                   range = if_else(isDaily, "daily", "monthly"),
+                   # Start and end dates in YYMMDD format (Daily)
+                   # or in YYYYMM format (Monthly)
+                   start = if_else(isDaily,
+                                   paste0(year(startDate), 
+                                          twoDigitText(month(startDate)), 
+                                          twoDigitText(day(startDate))),
+                                   paste0(year(startDate), 
+                                          twoDigitText(month(startDate)))),
+                   end = if_else(isDaily,
+                                 paste0(year(endDate), 
+                                        twoDigitText(month(endDate)), 
+                                        twoDigitText(day(endDate))),
+                                 paste0(year(endDate), 
+                                        twoDigitText(month(endDate)))),
                    stability = "provisional")
   
   
@@ -489,7 +496,7 @@ validateReqResults <- function (req, checkForContentErrors = TRUE) {
 
 splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
                           interpCells, getPrecip, getTemp, useMetric,
-                          quietly, maxVal = 500) {
+                          quietly, isDaily, maxVal = 500) {
   
   # If a PRISM request contains too many requested locations, it must be split
   
@@ -532,7 +539,7 @@ splitRequest <- function (stationDF, startDate, endDate, writePath, useHighRes,
                 writePath = nameVec[i], useHighRes = useHighRes,
                 interpCells = interpCells, getPrecip = getPrecip, 
                 getTemp = getTemp, useMetric = useMetric,
-                quietly = quietly)
+                quietly = quietly, isDaily = isDaily)
     
     
     # Wait a little before continuing to the next iteration
