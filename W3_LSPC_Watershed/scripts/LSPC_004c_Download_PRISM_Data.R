@@ -89,7 +89,7 @@ mainProcedure <- function () {
   
   
   # Start by making sure each watershed has its "candidate" folder
-  cat("\n[1/2]Checking directories...\n")
+  cat("\n[1/2]\tChecking directories...\n")
   
   
   # Iterate through each file
@@ -230,161 +230,13 @@ mainProcedure <- function () {
       # Write 'gridDF' to 'outPath'
       # (Do not include column names)
       gridDF |>
-        writeOutput(outPath, col_names = FALSE)
+        writeOutput(outPath, col_names = FALSE, quietly = TRUE)
       
     }
     
-    
-    
-  }
+  } # End of loop through PRISM grid cells
   
   
-  
-  
-  
-  # Iterate through each file
-  for (i in 1:length(wsPRISM)) {
-    
-    paste0("\tWatershed ", i, " of ", length(wsPRISM), ": ", controlDF$project_name[i], "\n\n") |>
-      cat()
-    
-    
-    # Ensure that the 'candidate' folder exists in the watershed's project folder
-    try(dir_create(paste0("W3_LSPC_Watershed/",
-                          wsDir[[i]] |>
-                            filter(scope == "project" & level == "root") |>
-                            select(path) |> unlist(use.names = FALSE), 
-                          "/",
-                          wsDir[[i]] |>
-                            filter(scope == "project" & level == "candidate" & source == "prism") |>
-                            select(path) |> unlist(use.names = FALSE))),
-        silent = TRUE)
-    
-    
-    # For each row in this watershed's "Prism" worksheet, download data for that grid cell
-    # To Do: 
-    
-    
-    
-  }
-  
-  
-  
-  # Read in the list of stations 
-  stationDF <- getFromControl_RR("PRISM_PRMS_STATIONS_CSV") |>
-    getFile() |>
-    unique()
-  
-  
-  # Perform data validation on 'stationDF' next
-  validateStationInputFile(stationDF, "PRISM_PRMS_STATIONS_CSV", "PRISM")
-  
-  
-  # Prepare and submit a request for meteorological data
-  scrapePRISM(stationDF, startDate, endDate, 
-              paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Data_", 
-                     startDate, "_", endDate, ".csv"),
-              useHighRes = TRUE, interpCells = TRUE,
-              getPrecip = TRUE, getTemp = TRUE, useMetric = TRUE)
-  
-  
-  # Add to the message
-  cat("\tDone!\n\n")
-  
-  
-  # Wait a bit before proceeding
-  Sys.sleep(1)
-  
-  
-  # The next step is to get both precipitation and temperature data for the SRP stations
-  
-  
-  cat("[2/4]\tGetting precipitation and temperature data for SRP-related stations...\n")
-  
-  
-  # Read in a list of SRP stations
-  stationDF <- getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
-    getFile() |>
-    unique()
-  
-  
-  # Perform data validation on 'stationDF' next
-  validateStationInputFile(stationDF, "PRISM_SRP_STATIONS_CSV", "PRISM")
-  
-  
-  # Prepare and submit a POST request for data
-  # The SRP stations require English units (inches and Fahrenheit)
-  scrapePRISM(stationDF, startDate, endDate, 
-              paste0("W2_Russian_River/Intermediate/PRISM_SRP_Data_", 
-                     startDate, "_", endDate, ".csv"),
-              useHighRes = TRUE, interpCells = TRUE,
-              getPrecip = TRUE, getTemp = TRUE, useMetric = FALSE)
-  
-  
-  # Output a completion message
-  cat("\tDone!\n\n")
-  
-  
-  # After that, get precipitation data for the PRMS domain PRISM grid cells
-  cat(paste0("[3/4]\tGetting precipitation data for PRISM grid cells ",
-             "in the PRMS model domain...\n"))
-  
-  
-  # For the next two data downloads, get data from the start of the 
-  # current water year to 'endDate'
-  wyStart <- getModeledWY(endDate)[1]
-  
-  
-  # Read in a list of grid cells for the PRMS model domain
-  stationDF <- getFromControl_RR("PRISM_PRMS_GRID_CELLS_CSV") |>
-    getFile() |>
-    unique()
-  
-  
-  # Perform data validation on 'stationDF' next
-  validateStationInputFile(stationDF, "PRISM_PRMS_GRID_CELLS_CSV", "PRISM")
-  
-  
-  # Prepare the POST request for precipitation data
-  # No grid cell interpolation will be performed for this request
-  scrapePRISM(stationDF, wyStart, endDate, 
-              paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
-                     wyStart, "_", endDate, ".csv"),
-              useHighRes = TRUE, interpCells = FALSE,
-              getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
-  
-  
-  # Output a completion message
-  cat("\tDone!\n\n")
-  
-  
-  # Finally, download precipitation data for the SRP domain PRISM grid cells
-  
-  
-  cat(paste0("[4/4]\tGetting precipitation data for PRISM grid cells ",
-             "in the SRP model domain...\n"))
-  
-  
-  # Read in a list of grid cells for the SRP model domain
-  stationDF <- getFromControl_RR("PRISM_SRP_GRID_CELLS_CSV") |>
-    getFile() |>
-    unique()
-  
-  
-  # Perform data validation on 'stationDF' next
-  validateStationInputFile(stationDF, "PRISM_SRP_GRID_CELLS_CSV", "PRISM")
-  
-  
-  # Prepare and submit POST requests
-  # No grid cell interpolation will be performed for this request
-  scrapePRISM(stationDF, wyStart, endDate, 
-              paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
-                     wyStart, "_", endDate, ".csv"),
-              useHighRes = TRUE, interpCells = FALSE,
-              getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
-  
-  
-  # Output a completion message
   cat("\tDone!\n\n")
   
   
