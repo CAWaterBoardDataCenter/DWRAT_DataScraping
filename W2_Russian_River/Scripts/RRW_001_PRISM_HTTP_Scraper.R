@@ -409,12 +409,55 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   Sys.sleep(1.2)
   
   
-  # Save the result to a file
-  paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
-    read_lines() |>
+  # Save the result to a file next
+  tempRead <- try(paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
+                    read_lines(),
+                  silent = TRUE)
+  
+  
+  # Just in case there are issues when reading in the result, 
+  # use a `while` loop to catch these errors and try again
+  counter <- 1
+  
+  
+  # If an error is detected, keep trying while 'counter' is less than 'maxRetries'
+  while ("try-error" %in% class(tempRead) && counter < maxRetries) {
+    
+    # Wait a bit before retrying
+    Sys.sleep(runif(1, min = 1 * counter, max = 5 * counter))
+    
+    
+    tempRead <- try(paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
+                      read_lines(),
+                    silent = TRUE)
+    
+    
+    counter <- counter + 1
+    
+  }
+  
+  
+  # If the loop concludes while 'tempRead' still has an error, stop the script
+  if ("try-error" %in% class(tempRead)) {
+    
+    cat("\n\n")
+    print(tempRead)
+    cat("\n\n")
+    
+    
+    paste0("Error Reading in Final CSV Result\n\n",
+           "The final output from PRISM could not be obtained. Please ",
+           "investigate the error message above.") |>
+      stop_script()
+    
+  }
+  
+  
+  #Otherwise, if there are no issues, write 'tempRead' to a file
+  tempRead |>
     write_lines(writePath)
   
-  # Note: The superior method using `download.file` does not work on our network :/
+  # Note: The superior method using `download.file` does not work on all corporate networks
   # `read_lines` is able to bypass the SSL issues that occur with `download.file`
   
   # Otherwise, this code is preferred because it doesn't involve storing the data
