@@ -1,16 +1,15 @@
-# Run Python scripts to download weather data that can be shared by multiple watersheds
-# (e.g., data from PRISM, NLDAS, and CIMIS)
+# Run Python scripts to download weather data for each watershed
+# (e.g., data from NOAA and RAWS)
 
 # This script prepares a temporary Python script that has key information
 # (path to Weather Control file and NLDAS Earth Data credentials)
 
-# Then, using Anaconda, this script executes its Python counterpart (LSPC_004b),
+# Then, using Anaconda, this script executes its Python counterpart (LSPC_007b),
 # which imports values from the temporary script and executes other Python scripts 
 # to download weather data for each watershed
 
 # Note: The temporary Python script should never be committed
-#       The 004b script should reference a helper script with a line of code 
-#       that deletes it too
+#       The Python script should have a procedure that deletes it too
 
 
 #### Setup ####
@@ -32,7 +31,12 @@ source("Shared_Scripts/!Shared_Functions_Importer.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'LSPC_004a_Download_Shared_Climate_Data.R'!\n")
+  cat("Starting 'LSPC_007a_Download_Watershed_Data.R'!\n")
+  
+  
+  # Import functions from another script
+  c("generate_temp_LSPC_script", "run_temp_bat") |>
+    map(~ functionStealer("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R", .))
   
   
   # Start by preparing a temporary file
@@ -57,7 +61,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the Python script next
-  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_004b_Download_Shared_Climate_Data.py" |>
+  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_007b_Download_Watershed_Data.py" |>
     normalizePath(mustWork = FALSE)
   
   
@@ -91,106 +95,11 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'LSPC_004a_Download_Shared_Climate_Data.R' is complete!\n\n"))
+  cat(col_green("\n'LSPC_007a_Download_Watershed_Data.R' is complete!\n\n"))
   
   
   # Return nothing
   return(invisible(NULL))
-  
-}
-
-
-
-generate_temp_LSPC_script <- function () {
-  
-  # Generate a temporary script for the LSPC climate process
-  
-  # This file will contain the path to the weather control file
-  
-  # Similarly, if a user has NASA Earth Data login credentials, 
-  # they will be stored as environment variables for use in the NLDAS download script
-  
-  
-  # First check if the user has provided Earth Data credentials in a file
-  nldasLogin <- get_from_lspc_master_control("EARTHDATA_LOGIN_CREDENTIALS")
-  
-  
-  # If the control file field contains a file path, read it in
-  if (!is.na(nldasLogin)) {
-    nldasLogin <- getFile(nldasLogin)
-  }
-  
-  
-  # To Do: Validate login credentials file
-  # (Adjust `validateLogin` in the RRW CIMIS script for that)
-  
-  
-  # Next, prepare the script contents
-  
-  # It will be three lines that define three different variables
-  # ('master_control_file', 'username', and 'password')
-  
-  # Start with a vector containing the planned Python code
-  pyVec <- c(
-    # Path to LSPC Weather Control File
-    # (Absolute path that uses forward slashes and quotes)
-    paste0("master_control_file = '", 
-           lspc_weather_control_path() |> 
-             normalizePath(mustWork = TRUE, winslash = "/"), "'"),
-    
-    # Earth Data Username
-    # (Either an empty string or the first line of 'nldasLogin')
-    paste0("username = '",
-           if_else(is.na(nldasLogin[1]), "", nldasLogin[1]),
-           "'"),
-    
-    # Earth Data Password
-    # (Either an empty string or the second line of 'nldasLogin')
-    paste0("password = '",
-           if_else(is.na(nldasLogin[2]), "", nldasLogin[2]),
-           "'"))
-  
-  
-  # Prepare the output path of 'pyVec' next
-  tempPath <- "W3_LSPC_Watershed/scripts/temp.py"
-  
-  
-  # Write 'pyVec' to 'tempPath'
-  pyVec |>
-    writeOutput(tempPath, writeFunction = "write_lines")
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-run_temp_bat <- function (commands, path = "temp.bat") {
-  
-  # Generate a temporary batch file containing Windows OS commands
-  
-  # After creating this file, execute it, and then delete it
-  
-  # This function will return the output from the run attempt
-  
-  
-  # With the commands included in 'commands', generate the temporary batch file
-  commands |>
-    writeOutput(path, writeFunction = "write_lines", quietly = TRUE)
-  
-  
-  # Execute the file and store its results
-  res <- system(path, intern = TRUE)
-  
-  
-  # Remove the temporary batch file afterwards
-  unlink(path)
-  
-  
-  # Return the Command Prompt output
-  return(res)
   
 }
 
