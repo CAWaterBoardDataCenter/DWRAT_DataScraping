@@ -8,8 +8,10 @@
 # These folder names should match the names present in "W3_LSPC_Watershed\data\shared\raw"
 
 
-# However, only data from before the user-specified start date will be saved in the "raw" folder
-# Files that were just downloaded by prior scripts will not be overwritten
+# However, data that was downloaded for the user-specified  data range 
+# will not be overwritten
+
+# Only files that cover dates before or after that range will be copied
 
 
 #### Setup ####
@@ -32,10 +34,6 @@ mainProcedure <- function () {
   
   cat("\n\n")
   cat("Starting 'LSPC_005_Copy_Raw_Historic_Weather_Data.R'!\n")
-  
-  
-  # Import the data scraping bounds
-  source("W3_LSPC_Watershed/scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   cat("\n[1/2]\tChecking directories...\n")
@@ -73,15 +71,38 @@ mainProcedure <- function () {
   
   # Copy the contents of the directories in 'rawPath' over to the repository's 
   # local "raw" folder ('targetPath')
-  try(dir_copy(paste0(rawPath, "/", targetFolders),
-               paste0(targetPath, "/", targetFolders),
-               overwrite = FALSE), 
-      silent = TRUE)
-  
-  # With 'overwrite' set to FALSE, files downloaded by prior scripts
-  # will NOT be overwritten
-  
-  # Ideally, these files would be more "fresh" 
+  for (i in 1:length(targetFolders)) {
+    
+    # This loop iterates through each weather source (e.g., "CIMIS" or "NLDAS")
+    
+    # Read in the files within the historic folder's weather source folder
+    sourceFiles <- paste0(rawPath, "/", targetFolders[i]) |>
+      list.files(pattern = "\\.")
+    
+    # Note: A period is specified in "pattern" so that only files (with extensions)
+    #       are saved in 'sourceFiles'
+    
+    
+    # Exclude files that are already present in 'targetPath'
+    # Only the leftover files in 'sourceFiles' will be copied over
+    sourceFiles <- base::setdiff(sourceFiles,
+                                 paste0(targetPath, "/", targetFolders[i]) |>
+                                   list.files())
+    
+    
+    # If 'sourceFiles' is empty, skip to the next data source
+    if (length(sourceFiles) == 0) {
+      next
+    }
+    
+    
+    # Otherwise, copy the files in 'sourceFiles' to the target folder's
+    # corresponding weather source sub-directory
+    paste0(rawPath, "/", targetFolders[i], "/", sourceFiles) |>
+      file_copy(paste0(targetPath, "/", targetFolders[i], "/", sourceFiles),
+                overwrite = TRUE)
+    
+  }
   
   
   cat("\tDone!\n\n")
