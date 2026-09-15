@@ -1,9 +1,10 @@
 # Download precipitation data from PRISM at various locations across each watershed
 
-# These locations correspond to grid cells within each watershed boundary
+# These locations correspond to grid cells within each watershed's LSPC model domain
 
 
-# Coordinates for each watershed's project control file (in the "Prism" worksheet)
+# Coordinates for each watershed are located in their project control files 
+# (in the "Prism" worksheet)
 
 # Each of these files must contain these three columns:
 #  (1) prism_id
@@ -11,10 +12,7 @@
 #  (3) lon
 
 
-# A CSV file is produced for each corresponding row in these worksheets
-
-# These files will be stored within each watershed's "candidate" folder
-# (e.g., "data/projects/Navarro/candidate/prism/[id]_[lon]_[lat].csv")
+# Raw PRISM data for each unique grid cell is stored in the "raw/prism" folder
 
 
 # NOTE: The data will use US Customary units (i.e., inches)
@@ -52,7 +50,8 @@ mainProcedure <- function () {
                   "read_all_lspc_project_control")
   
   
-  c("scrapePRISM", "validateReqResults", "splitRequest", "combineRawOutputs") |>
+  c("scrapePRISM", "validateReqResults", "splitRequest", "combineRawOutputs",
+    "try_read_and_write") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_001_PRISM_HTTP_Scraper.R", .))
   
   
@@ -126,10 +125,9 @@ mainProcedure <- function () {
     remove_duplicate_prism_ids()
   
   
-  # Finally, begin downloading data for each watershed
-  
+  # Finally, begin downloading data for each grid cell
   cat(paste0("[2/2]\tGetting precipitation data for ", length(wsPRISM), 
-             " watersheds...\n"))
+             " watersheds (", nrow(prismDF), " PRISM grid cells)...\n"))
   
   
   # Iterate through the rows of 'prismDF'
@@ -137,6 +135,11 @@ mainProcedure <- function () {
     
     # Each row corresponds to a single PRISM grid cell
     # (though multiple watersheds may rely on the same cell)
+    
+    
+    paste0("\t\t[", i, "/", nrow(prismDF), "]\t",
+           "Downloading data for Grid Cell ", prismDF$prism_id[i], "...\n\n") |>
+      cat()
     
     
     # Create a temporary data frame with the required formatting for station information
@@ -147,7 +150,7 @@ mainProcedure <- function () {
     # To Do: Validate 'stationDF' using RR Workflow function
     
     
-    # Define the initial download path as well
+    # Define the initial download path
     # At first, the file will be stored in the shared PRISM directory
     initialPath <- paste0("W3_LSPC_Watershed/",
                           
@@ -172,67 +175,7 @@ mainProcedure <- function () {
     
     
     # Wait a moment before proceeding
-    Sys.sleep(runif(1, min = 1, max = 1.2))
-    
-    
-    # Read in the downloaded PRISM data
-    gridDF <- getPRISM(initialPath)
-    
-    
-    # To Do: Validate 'gridDF' using RR Workflow function?
-    
-    
-    # Adjust 'gridDF' 
-    # Keep only the date and precipitation columns
-    # Also, convert 'Date' into a character column that has a "MM/DD/YYYY" format
-    # (with no leading zeros)
-    gridDF <- gridDF |>
-      select(Date, `ppt (inches)`) |>
-      mutate(Date = format(Date, "%m/%d/%Y") |>
-               str_remove("^0") |> 
-               str_remove("(?<=/)0"))
-    
-    # The first `str_remove` call removes any leading zero for the month
-    # The second `str_remove` call removes any leading zero for the day
-    # (it uses a lookbehind regex check for "/")
-    
-    
-    # Identify which watersheds require this grid cell in their dataset
-    relevantWS <- wsPRISM |>
-      map_lgl(~ stationDF$STATION_ID %in% .[["prism_id"]]) |>
-      which()
-    
-    # The ID in 'stationDF' should appear within the watershed's PRISM worksheet
-    # (in the "prism_id" column)
-    
-    # Because of `which`, 'relevantWS' will contain the numerical indices of 
-    # watersheds in 'wsPRISM' that use this PRISM grid cell
-    
-    
-    # For each watershed in 'relevantWS', write 'gridDF' to its "candidate" folder
-    # (Without any column names)
-    for (j in 1:length(relevantWS)) {
-      
-      # Construct the output path for this watershed
-      outPath <- paste0("W3_LSPC_Watershed/",
-                        wsDir[[relevantWS[j]]] |>
-                          filter(scope == "project" & level == "root") |>
-                          select(path) |> unlist(use.names = FALSE), 
-                        "/",
-                        wsDir[[relevantWS[j]]] |>
-                          filter(scope == "project" & level == "candidate" & source == "prism") |>
-                          select(path) |> unlist(use.names = FALSE),
-                        "/",
-                        stationDF$STATION_ID, "_", stationDF$LONGITUDE, "_",
-                        stationDF$LATITUDE, ".csv")
-      
-      
-      # Write 'gridDF' to 'outPath'
-      # (Do not include column names)
-      gridDF |>
-        writeOutput(outPath, col_names = FALSE, quietly = TRUE)
-      
-    }
+    Sys.sleep(runif(1, min = 1.05, max = 1.3))
     
   } # End of loop through PRISM grid cells
   
