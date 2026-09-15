@@ -410,55 +410,16 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   
   
   # Save the result to a file next
-  tempRead <- try(paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
-                    read_lines(),
-                  silent = TRUE)
+  paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
+    try_read_and_write(writePath, maxRetries = maxRetries)
   
   
-  # Just in case there are issues when reading in the result, 
-  # use a `while` loop to catch these errors and try again
-  counter <- 1
+  # Note: The function `try_read_and_write` involves reading the file into R's
+  # environment before exporting it to a CSV file
   
-  
-  # If an error is detected, keep trying while 'counter' is less than 'maxRetries'
-  while ("try-error" %in% class(tempRead) && counter < maxRetries) {
-    
-    # Wait a bit before retrying
-    Sys.sleep(runif(1, min = 1 * counter, max = 5 * counter))
-    
-    
-    tempRead <- try(paste0("https://prism.oregonstate.edu/explorer/tmp/", csvStr) |>
-                      read_lines(),
-                    silent = TRUE)
-    
-    
-    counter <- counter + 1
-    
-  }
-  
-  
-  # If the loop concludes while 'tempRead' still has an error, stop the script
-  if ("try-error" %in% class(tempRead)) {
-    
-    cat("\n\n")
-    print(tempRead)
-    cat("\n\n")
-    
-    
-    paste0("Error Reading in Final CSV Result\n\n",
-           "The final output from PRISM could not be obtained. Please ",
-           "investigate the error message above.") |>
-      stop_script()
-    
-  }
-  
-  
-  #Otherwise, if there are no issues, write 'tempRead' to a file
-  tempRead |>
-    write_lines(writePath)
-  
-  # Note: The superior method using `download.file` does not work on all corporate networks
+  # The typical method using `download.file` does not work on all corporate networks
   # `read_lines` is able to bypass the SSL issues that occur with `download.file`
+  # due to its alternate configuration
   
   # Otherwise, this code is preferred because it doesn't involve storing the data
   # temporarily in RAM:
@@ -469,8 +430,8 @@ scrapePRISM <- function (stationDF, startDate, endDate, writePath,
   if (!file.exists(writePath)) {
     
     paste0("PRISM Request Failed\n\n",
-           "The output file was not detected in the expected directory\n\n",
-           "The POST request may have failed, please investigate this issue\n\n") |>
+           "The output file was not detected in the expected directory.\n\n",
+           "The POST request may have failed, please investigate this issue.\n\n") |>
       errWrap() |>
       str_replace("(not)", col_red("\\1")) |>
       str_replace("(investigate)", col_green("\\1")) |>
@@ -665,6 +626,75 @@ combineRawOutputs <- function (nameVec, writePath) {
   
   # Save 'mainFile' to 'writePath'
   writeOutput(mainFile, writePath, writeFunction = "write_lines")
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+try_read_and_write <- function (urlStr, writePath, maxRetries = 15) {
+  
+  # Try to read in a file from a URL ('urlStr')
+  # Then, try to write it to a file
+  
+  # Error handling functions are used in case issues occur during the download process
+  
+  
+  # Try to read in the file from 'urlStr'
+  tempRead <- try(urlStr |> read_lines(), silent = TRUE)
+  
+  
+  # Just in case there are issues when reading in the result, 
+  # use a `while` loop to catch these errors and try again
+  attemptCounter <- 1
+  
+  
+  # If an error is detected, keep trying while 'attemptCounter' is less than 'maxRetries'
+  while ("try-error" %in% class(tempRead) && attemptCounter < maxRetries) {
+    
+    # Notify the user
+    cat("\n\n")
+    message(paste0("Encountered an error while downloading the final CSV file! ",
+                   "Retrying in at least ", attemptCounter, " seconds! [Attempt ",
+                   attemptCounter + 1, "/", maxRetries, "]\n\n"))
+    
+    
+    # Wait a bit before retrying
+    Sys.sleep(runif(1, min = 1 * attemptCounter, max = 5 * attemptCounter))
+    
+    
+    # Attempt to read in the file again
+    tempRead <- try(urlStr |> read_lines(), silent = TRUE)
+    
+    
+    # Increment the counter too
+    attemptCounter <- attemptCounter + 1
+    
+  }
+  
+  
+  # If the loop concludes while 'tempRead' still has an error, stop the script
+  if ("try-error" %in% class(tempRead)) {
+    
+    cat("\n\n")
+    print(tempRead)
+    cat("\n\n")
+    
+    
+    paste0("Error Reading in Final CSV Result\n\n",
+           "The final output from PRISM could not be obtained from \"", urlStr,
+           "\". Please investigate the error message above.") |>
+      stop_script()
+    
+  }
+  
+  
+  # Otherwise, if there are no issues, write 'tempRead' to a file
+  tempRead |>
+    write_lines(writePath)
   
   
   # Return nothing
