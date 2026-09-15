@@ -105,7 +105,7 @@ set_model_start_date <- function () {
   
   
   # Exclude CIMIS from this check
-  # (It lacks data before November 2003 but it should not restrict the procedure)
+  # (It lacks data for October 2003 but it should not restrict the procedure)
   weatherFolders <- weatherFolders |>
     str_subset("/cimis$", negate = TRUE)
   
@@ -123,14 +123,16 @@ set_model_start_date <- function () {
     
     
     # Try to extract a date from 'earliestFile' (though its formatting can differ)
-    if (grepl("[0-9]{4}-[0-9]{2}-[0-9]{2}T", earliestFile)) {
+    if (grepl("[0-9]{4}-[0-9]{2}-[0-9]{2}(T|_)", earliestFile)) {
       
       fileDate <- earliestFile |>
-        str_extract("[0-9]{4}-[0-9]{2}-[0-9]{2}(?=T)") |>
+        str_extract("[0-9]{4}-[0-9]{2}-[0-9]{2}(?=(T|_))") |>
         as.Date(format = "%Y-%m-%d")
       
-      # This regular expression looks for a date in YYYY-MM-DD that appears right before a "T"
-      # (Datetime values appear in NLDAS filenames)
+      # This regular expression looks for a date in YYYY-MM-DD that appears 
+      # right before a "T" or "_"
+      # (Datetime values appear in NLDAS filenames, while Date values before an 
+      #  underscore appear in some PRISM filenames)
       
     } else if (grepl("_[0-9]{6}\\.", earliestFile)) {
       
@@ -141,7 +143,7 @@ set_model_start_date <- function () {
       
       # This regular expression looks for a date in YYYYMM format that appears
       # between an underscore and period
-      # (Like in PRISM files)
+      # (Like in some PRISM files)
       
     } else {
       
