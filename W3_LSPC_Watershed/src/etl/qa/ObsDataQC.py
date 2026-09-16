@@ -3,7 +3,7 @@
 Output Excel file1: "Ground_stations_Flagged_1_2_3.xlsx"
  - This file outputs all the ground-based stations at columns along with 3 Flags
   - Flag 1: Flags daily rainfall greater than the NOAA-100yr-24 hr storm - Use the "Flag1" Column to filter for flagged cells - Highlighted in Red bold text.  
-  - Flag 2A: Spatial outliers: This flags rainfall that are more than two standard deviation greater than the surrounding rainfall for that day. Currently flags storms > 1 inch - Highlighted as light blue cell
+  - Flag 2A: Spatial outliers: This flags rainfall that are more than four standard deviation in distance from the inter-gage mean for a given date. Highlighted as light blue cell
   - Flag 2B: Temporal outliers: This flags rainfall that are more than 1 inches if the prior and post 3 days have 0 rainfall - color PURPLE
   - Flag 3: Continuous rainfall: For eachs station, flags if rainfall is continuous for more than 15 days - Highlights the cells as brown
   
@@ -15,9 +15,12 @@ Output Excel file2: "Flag4_Monthly_Only_CompleteData"
 import os
 import shutil
 import pandas as pd
+import pandera as pa
 import numpy as np
+from typing import (Tuple, List, Dict)
 
 from src.core.models import ProjectControl
+from src.core.schemas import GageRawDataSchema
 from src.etl.util.helpers import StationNameHelpers
 
 # Function to copy the raw daily gage data into candidate folder. Hourly data is skipped from QC.
@@ -38,6 +41,7 @@ def consolidate_gage_data(project: ProjectControl) -> None:
         'lcd': project.storage.gage.lcd.raw,
         'noaa': project.storage.gage.noaa.raw,
         'raws': project.storage.gage.raws.raw,
+        'other': project.storage.gage.other.raw # TODO: Add other source
     }
 
     copied_count = 0
@@ -68,6 +72,23 @@ def consolidate_gage_data(project: ProjectControl) -> None:
                 skipped_count += 1
                 continue
 
+            # Read the file and validate schema and continunity before copying
+            try:
+                gageData = pd.read_csv(source_file, header=None)
+                gageData.columns = ['col' + str(i) for i in range(gageData.shape[1])]
+
+            except Exception as e:
+                print(f"Error reading {source_file.name}: {e}, skipping...")
+                continue
+            
+            # Schema validation
+            try:
+                gageData = GageRawDataSchema.validate(gageData, lazy=True)
+            except pa.errors.SchemaErrors as e:
+                errors = e.schema_errors
+                print(f"Warning: {destination_file.name} failed schema validation skipping ...\nFailure cases:\n{errors}")
+                continue
+            
             shutil.copy2(source_file, destination_file)
             copied_count += 1
 
@@ -131,7 +152,7 @@ def run_obs_data_qc(project: ProjectControl):
     ### Flag 1: flagging rainfall that has rainfall values greater than the NOAA_100_Year for each station
 
     station_id_list = df_master.columns[1:].tolist()
-    agencies = ['NOAA', 'RAWS', 'CDEC', 'LCD']
+    agencies = ['NOAA', 'RAWS', 'CDEC', 'LCD', 'OTHER'] # add other
     cleaned_station_ids = []
 
     for station_id in station_id_list:
@@ -251,24 +272,23 @@ def run_obs_data_qc(project: ProjectControl):
         #print(index)    
         mean = row.mean(skipna = True)
         std = row.std(skipna = True)
-        threshold = mean + 4 * std
+        threshold_distance_from_mean = 4 * std
         
         
         for col in station_list:
             val = row[col]
             #print(val)
-            if pd.notna(val) and val != -9999 and val > threshold:
-                if threshold > 0.9:
-                    spatial_outliers.append({
-                        'Row': row.name + 2,  # +2 to account for Excel-style row (1-based + header row)
-                        'Column': col,
-                        'Value': val
-                    })
-                    
-                    # Apply light blue style to the full row
-                    style_map.at[index, col] += 'background-color: lightblue; font-weight: bold'
-                    #Marking the row as needing a flag
-                    flag2A_rows.at[index] = True
+            if (pd.notna(val)) and (val != -9999) and (abs(mean - val) > threshold_distance_from_mean):
+                spatial_outliers.append({
+                    'Row': row.name + 2,  # +2 to account for Excel-style row (1-based + header row)
+                    'Column': col,
+                    'Value': val
+                })
+                
+                # Apply light blue style to the full row
+                style_map.at[index, col] += 'background-color: lightblue; font-weight: bold'
+                #Marking the row as needing a flag
+                flag2A_rows.at[index] = True
             
 
     print("Processing Flag 2............part 2")

@@ -9,7 +9,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -26,7 +26,7 @@ mainProcedure <- function () {
   
   
   # Confirm that the "RR_PRMS" folder was copied to "Output"
-  prmsPath <- validateModelCopy_PRMS()
+  prmsPath <- validate_model_copy("PRMS")
   
   
   # Get the path to the batch file stored in the "windows" folder
@@ -53,8 +53,8 @@ mainProcedure <- function () {
   
   # Check for errors
   # There should be several output files
-  checkForModelOutputs_PRMS(prmsPath, modelOutput, 
-                            includeScriptGeneratedOutput = FALSE)
+  check_for_model_outputs("PRMS", prmsPath, modelOutput, 
+                          includeScriptGeneratedOutput = FALSE)
   
   
   # Output a completion message

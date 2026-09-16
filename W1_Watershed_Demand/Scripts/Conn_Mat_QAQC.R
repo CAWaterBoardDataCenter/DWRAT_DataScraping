@@ -77,7 +77,7 @@ if (!all(connMat[[1]] %in% names(connMat))) {
 
 for (i in 1:nrow(connMat)) {
   
-  # Get a list of all catchments that are downstream this catchment's flowpath
+  # Get a list of all catchments that are downstream of this catchment's flowpath
   flowIndices <- which(connMat[i, -1] == 1)
   
   
@@ -95,7 +95,11 @@ for (i in 1:nrow(connMat)) {
   # Get the number of upstream connections for each downstream catchment
   # Further downstream catchments have larger numbers
   # (since more catchments eventually drain into that catchment)
-  downstreamSums <- colSums(connMat[, names(connMat) %in% flowPath])
+  if (length(flowPath) > 1) {
+    downstreamSums <- colSums(connMat[, names(connMat) %in% flowPath])
+  } else {
+    downstreamSums <- connMat[, names(connMat) %in% flowPath] |> sum() |> set_names(flowPath)
+  }
   
   
   # The most immediate downstream sub-basin would have the minimum column sum

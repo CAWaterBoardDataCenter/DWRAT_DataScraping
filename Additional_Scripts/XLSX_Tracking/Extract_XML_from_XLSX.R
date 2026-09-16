@@ -19,15 +19,12 @@ base::remove(list = ls())
 
 
 # Import functions
-require(cli)
-require(stringr)
-require(fs)
-require(readxl)
+source("Additional_Scripts/Load_Packages.R")
 
 
 # By default, consider the content of the Master Control File to be secure information
 # Output an error message if its XML would be extracted
-options(sda_Protect_MasterControl = TRUE)
+options(sda_protect_master_control = TRUE)
 
 # (Set this option to "FALSE" to disable it)
 
@@ -65,6 +62,7 @@ xlsxList <- xlsxList |>
   str_subset("/renv/", negate = TRUE) |>
   str_subset("/Models/", negate = TRUE) |>
   str_subset("/Output/", negate = TRUE) |>
+  str_subset("/candidate/", negate = TRUE) |>
   str_subset("/RUSSIAN_RIVER_DATABASE_2022\\.xlsx$", negate = TRUE)
 
 
@@ -90,19 +88,19 @@ for (i in 1:length(xlsxList)) {
   
   
   # For the Master Control File, check it before proceeding
-  # (if the option "sda_Protect_MasterControl" is TRUE)
-  if (getOption("sda_Protect_MasterControl") == TRUE &&
+  # (if the option "sda_protect_master_control" is TRUE)
+  if (getOption("sda_protect_master_control") == TRUE &&
       grepl("[/\\\\]Master_Control_File\\.xlsx$", xlsxList[i])) {
     
     # Read in the file
-    masterDF <- read_xlsx(xlsxList[i])
+    masterDF <- readxl::read_xlsx(xlsxList[i])
     
     
     # To prevent accidental commits of sensitive information 
     # If any of the fields have a value in 'masterDF', output an error message 
     if (!anyNA(masterDF$VALUE)) {
       paste0("\"", xlsxList[i], "\" contains values.\n",
-             "While the option \"sda_Protect_MasterControl\" is \"TRUE\", ",
+             "While the option \"sda_protect_master_control\" is \"TRUE\", ",
              "this is not allowed.") |>
         stop()
     }

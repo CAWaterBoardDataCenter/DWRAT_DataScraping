@@ -11,7 +11,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -42,7 +42,7 @@ mainProcedure <- function () {
   
   
   # Also confirm that the "SRPHM" folder was copied to "Output"
-  srpPath <- validateModelCopy_SRP_2024()
+  srpPath <- validate_model_copy("SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -51,8 +51,16 @@ mainProcedure <- function () {
   cat("[2/3]\tCopying output files...\n")
   
   
+  # Import the model copy and deletion functions from the PRMS script
+  c("copy_model_outputs", "deleteFiles") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_011_PRMS_Cleanup.R", .))
+  
+  
   # Copy output files into the hydrology folder
-  copyOutputs(srpPath, dirPath, startDate, endDate)
+  copy_model_outputs("SRPHM", srpPath, dirPath, startDate, endDate,
+                     additionalInputFiles = c("external_files/prms_ic_WY1975_toWY2021.out",
+                                              "external_files/restartdata_WY1975_to_WY2021.out"), 
+                     archiveModelName = "SRP")
   
   
   cat("\tDone!\n\n")
@@ -63,7 +71,7 @@ mainProcedure <- function () {
   cat("[3/3]\tDeleting the model files...\n")
   
   
-  deleteFiles(srpPath)
+  deleteFiles(srpPath, "SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -78,91 +86,6 @@ mainProcedure <- function () {
   
 }
 
-
-
-copyOutputs <- function (srpPath, dirPath, startDate, endDate) {
-  
-  # Copy several files from the SRP "output" folder into the hydrology folder 
-  
-  # Include "gsflow.log" and several input files too (like the control file)
-  
-  
-  # Confirm that they exist in the "output" folder first
-  checkForModelOutputs_SRP_2024(srpPath, modelOutput = NULL)
-  
-  
-  # This vector contains the names of the desired output files
-  # ("gsflow.log" is included here too)
-  copyFiles <- getModelOutputs_SRP_2024(srpPath)
-  
-  
-  # Prepare vectors that contain the proper filepaths and the planned filepaths
-  sourcePaths <- copyFiles |>
-    normalizePath(mustWork = TRUE)
-  
-  
-  # Use the same exact filenames in the hydrology directory's SRP output folder
-  writePaths <- copyFiles |>
-    str_remove("^.+[/\\\\]") |>
-    paste0(dirPath, "/SRP/Output/", 
-           ... = _) |>
-    normalizePath(mustWork = FALSE)
-  
-  
-  # Add rows to 'sourcePaths' and 'writePaths' for other important files, 
-  # like "SRPHM_spinup.control", "SRPHM_spinup.nam", and "restartdata_2020.out"
-  otherFiles <- c("/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
-                  "/model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
-                  "/external_files/restartdata_2020.out")
-  
-  
-  sourcePaths <- c(sourcePaths,
-                   paste0(srpPath, otherFiles) |>
-                     checkForPreviousOutput())
-  
-  
-  writePaths <- c(writePaths,
-                  paste0(dirPath, "/SRP/Input/",
-                         otherFiles |> str_remove("^.+[/\\\\]")))
-  
-  
-  # Copy the files using the `copyFile` function
-  # If any of these actions fail, the function will trigger an error 
-  map2(sourcePaths, writePaths, copyFile) 
-  
-  
-  # Return nothing if there were no issues
-  return(invisible(NULL))
-  
-}
-
-
-
-deleteFiles <- function (srpPath) {
-  
-  # Delete the "SRPHM" directory in the "Output" folder
-  
-  # Start by deleting that folder
-  dir_delete(srpPath)
-  
-  
-  # Confirm that it was deleted
-  if (dir.exists(srpPath)) {
-    
-    stop(paste0("Failed to Delete SRP Directory\n\n",
-                "The script attempted to delete the SRP model files that ",
-                "were located in the \"Output\" folder. However, it ",
-                "was unsuccessful for an unknown reason. Please investigate.\n\n",
-                "(This error occurred for \"", srpPath, "\")") |>
-           errWrap())
-    
-  }
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
 
 
 #### Script Execution ####

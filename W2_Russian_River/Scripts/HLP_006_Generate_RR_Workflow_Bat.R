@@ -14,7 +14,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -60,10 +60,9 @@ mainProcedure <- function () {
            
            " && ",
            
-           # Execute "RRW_000A_Run_RR_Process_Today.R" to run the 
-           # entire Russian River process
+           # Execute "MSTR_v1_RRW_AUTO.R" to run the entire Russian River process
            shQuote(rPath), rOpts, 
-           shQuote("W2_Russian_River\\Scripts\\RRW_000A_Run_RR_Process_Today.R"),
+           shQuote("W2_Russian_River\\Scripts\\MSTR_v1_RRW_AUTO.R"),
            
            # All output is stored in a new file established at 'logPath'
            ") > ", shQuote(logPath), " 2>&1 "),

@@ -1,0 +1,11 @@
+NAME,FILENAME,LINK,DATE_OBTAINED,NOTES
+Pacific Ocean,3853-s3_2002_s3_reg_pacific_ocean-geojson.json,https://geodata.library.ucsb.edu/catalog/3853-s3_2002_s3_reg_pacific_ocean,2024-10-22,
+Counties,ca_counties.geojson,https://data.ca.gov/dataset/ca-geographic-boundaries/,2025-12-22,California Counties
+NAD27 SPCS Zones,California_SPCS_Zones_NAD27.geojson,https://catalog.data.gov/dataset/united-states-stateplane-zones-nad27,2025-06-03,State Plane Coordinate System (https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system)
+NAD83 SPCS Zones,California_SPCS_Zones_NAD83.geojson,https://catalog.data.gov/dataset/united-states-stateplane-zones-nad83,2025-06-03,State Plane Coordinate System (https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system)
+HUC-12 Boundaries,NHD_H_California_State_WBDHU12.RData,https://prd-tnm.s3.amazonaws.com/index.html?prefix=StagedProducts/Hydrography/NHD/State/GPKG/,2026-03-25,Extracted "WBDHU12" from the geopackage and saved it as an .RData file to keep filesize under 100 MB
+PLSS Subdivisions 1,PLSS_Subdivisions_BLM_20240123_Part_1.RData,https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3,2025-05-06,
+PLSS Subdivisions 2,PLSS_Subdivisions_BLM_20240123_Part_2.RData,https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3,2025-05-06,Downloaded entire layer into a single geopackage and split it across 3 .RData files to keep filesize under 100 MB
+PLSS Subdivisions 3,PLSS_Subdivisions_BLM_20240123_Part_3.RData,https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3,2025-05-06,Downloaded entire layer into a single geopackage and split it across 3 .RData files to keep filesize under 100 MB
+PLSS Sections,Public_Land_Survey_System_(PLSS)%3A_Sections.gpkg,https://data.ca.gov/dataset/public-land-survey-system-plss-sections,2025-05-05,Downloaded entire layer into a single geopackage and split it across 3 .RData files to keep filesize under 100 MB
+State Boundary,State_of_California_Boundary_with_Bay_Cuts.geojson,https://gis.data.ca.gov/datasets/c309fd16ec1049f9babc70f7558187a6_1/explore,2026-07-23,California Boundary (with Bay Cuts included)

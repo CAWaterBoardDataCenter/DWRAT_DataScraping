@@ -56,6 +56,7 @@ class GageStorageRegistry:
     lcd: RawRegistry
     raws: RawRegistry
     cdec: RawRegistry
+    other: RawRegistry
     candidate: Path
     staged: Path
 
@@ -114,6 +115,7 @@ class StorageRegistry: # TODO: Handle relative path difference for Jupyter Noteb
                 lcd=RawRegistry(raw=paths["lcd"]["raw"]),
                 raws=RawRegistry(raw=paths["raws"]["raw"]),
                 cdec=RawRegistry(raw=paths["cdec"]["raw"],),
+                other=RawRegistry(raw=paths["other"]["raw"]),
                 candidate=paths["gage"]["candidate"],
                 staged=paths["gage"]["staged"]
             ),

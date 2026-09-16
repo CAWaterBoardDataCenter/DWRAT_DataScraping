@@ -54,10 +54,10 @@ getFromMasterControl <- function (fieldName) {
     if (fieldName == "INITIAL_SHAREPOINT_FILE_PORTION") {
       
       # This message will only display once per day
-      # It does that using a custom option called "sdaDisplayedSharePointWarning"
+      # It does that using a custom option called "sda_displayed_sharepoint_warning"
       
       # This option's value will either be NULL or a date
-      optionRes <- getOption("sdaDisplayedSharePointWarning")
+      optionRes <- getOption("sda_displayed_sharepoint_warning")
       
       
       # Check if 'optionRes' exists (if not, this is first message of the session)
@@ -78,7 +78,7 @@ getFromMasterControl <- function (fieldName) {
         
         # After the message has been displayed, update the custom option 
         # with today's date
-        options(sdaDisplayedSharePointWarning = Sys.Date())
+        options(sda_displayed_sharepoint_warning = Sys.Date())
         
         
         # After that, do not stop the code and allow the function to return 
@@ -89,7 +89,8 @@ getFromMasterControl <- function (fieldName) {
       
       # For other SharePoint-related fields, do nothing
     } else if (fieldName %in% c("SHAREPOINT_DEMAND_CONTROL_FILE",
-                                "SHAREPOINT_RR_SUPPLY_CONTROL_FILE")) {
+                                "SHAREPOINT_RR_WORKFLOW_CONTROL_FILE",
+                                "SHAREPOINT_LSPC_WORKFLOW_CONTROL_FILE")) {
       
       # No messages or errors
       # Since these are optional fields, let the regular procedure return NA

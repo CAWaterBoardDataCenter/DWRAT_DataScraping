@@ -22,7 +22,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -59,8 +59,8 @@ mainProcedure <- function () {
   
   
   # Get data for all CDEC stations at once
-  cdecDF <- requestCDEC(stationDF$STATION_ID, startDate, endDate, 
-                        sensorNum = 45)
+  cdecDF <- request_cdec(stationDF$STATION_ID, startDate, endDate, 
+                         sensorNum = 45)
   
   
   # Add another message

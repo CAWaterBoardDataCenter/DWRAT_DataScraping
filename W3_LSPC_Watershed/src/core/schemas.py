@@ -59,7 +59,7 @@ class StorageRegistrySchema(pa.DataFrameModel):
 
     @pa.dataframe_check
     def correct_shape(cls, df: pd.DataFrame):
-        return df.shape == (17,5)
+        return df.shape == (18,5)
 
     @pa.dataframe_check
     def scope_in_registry(cls, df: pd.DataFrame):
@@ -73,7 +73,7 @@ class StorageRegistrySchema(pa.DataFrameModel):
 
     @pa.dataframe_check
     def source_in_registry(cls, df: pd.DataFrame):
-        VALID = {"all","cimis","prism","nldas","gage","noaa","lcd","cdec","raws", "air","pre"}
+        VALID = {"all","cimis","prism","nldas","gage","noaa","lcd","cdec","raws", "other","air","pre"}
         return df["source"].isin(VALID).all() # TODO: Expand for each data type of gage data
     
     @pa.dataframe_check
@@ -94,6 +94,7 @@ class StorageRegistrySchema(pa.DataFrameModel):
             ("project", "raw", "cdec"),
             ("project", "raw", "lcd"),
             ("project", "raw", "raws"),
+            ("project", "raw", "other"),
             ("project", "staged", "prism"),
             ("project", "staged", "cimis"),
             ("project", "staged", "nldas"),
@@ -155,7 +156,7 @@ class GageTargetsSchema(TargetsSchema):
     @pa.dataframe_check
     def agency_id_in_registry(cls, df: pd.DataFrame):
         """All agency_id (source) field values must be in the registry of avaiable sources."""
-        VALID = {"noaa","lcd","raws","cdec"}
+        VALID = {"noaa","lcd","raws","cdec","other"}
         return df["agency_id"].isin(VALID).all()
     
     @pa.dataframe_check
@@ -193,6 +194,14 @@ class GageMappingSchema(pa.DataFrameModel):
     gage_id: Series[pd.Int64Dtype] = Field(unique=True, nullable=False)
     nldas_id: Series[pd.Int64Dtype] = Field(unique=False, nullable=False)
     noaa_100: Series[pa.Float] = Field(unique=False, nullable=False)
+    
+    class Config(BaseConfig):
+        strict = True
+        coerce = True
+
+class GageRawDataSchema(pa.DataFrameModel):
+    col0: Series[pa.DateTime] = Field(unique=True, nullable=False)
+    col1: Series[pa.Float] = Field(unique=False, nullable=True)
     
     class Config(BaseConfig):
         strict = True

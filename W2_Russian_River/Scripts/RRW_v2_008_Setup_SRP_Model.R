@@ -14,7 +14,7 @@ base::remove(list = ls())
 
 
 # Import packages
-source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
+source("Additional_Scripts/Load_Packages.R")
 
 
 # Import shared functions
@@ -30,39 +30,13 @@ mainProcedure <- function () {
   cat("Starting 'RRW_v2_008_Setup_SRP_Model.R'!\n\n")
   
   
-  # Get the location of the SRP model files
-  sourceDir <- getFromControl_RR("SRPHM_SOURCE_LOCATION")
+  # Rely on the functions from the PRMS model setup script to perform these actions
+  c("copy_model_files", "copy_contents") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", .))
   
   
-  # Validate the user's input and ensure that this directory contains
-  # all required components
-  # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
-  #  to reflect that)
-  sourceDir <- validateSourceModelDirectory(
-    sourceDir, 
-    "SRPHM_SOURCE_LOCATION",
-    "SRP", 
-    c("external_files", "model1", "model1/SRPHM_post_spinup_WY2021",
-      "model1/SRPHM_post_spinup_WY2021/bin", 
-      "model1/SRPHM_post_spinup_WY2021/output"),
-    c("model1/SRPHM_post_spinup_WY2021/bin/gsflow.exe",
-      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.control",
-      "model1/SRPHM_post_spinup_WY2021/SRPHM_spinup.nam",
-      "external_files/restartdata_2020.out"))
-  
-  
-  cat("[1/1]\tCopying the SRP folder to \"W2_Russian_River/Output/SRPHM\"...\n")
-  
-  
-  # Borrow a function from the PRMS model setup script
-  functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", "copyModel")
-  
-  
-  # Copy the contents from 'sourceDir' to a new SRP folder in "Output"
-  copyModel(sourceDir, "W2_Russian_River/Output/SRPHM")
-  
-  
-  cat("\tDone!\n\n")
+  # Copy the SRPHM model files to the "Output" folder
+  copy_model_files("SRPHM", "SRPHM_SOURCE_LOCATION")
   
   
   # Output a completion message

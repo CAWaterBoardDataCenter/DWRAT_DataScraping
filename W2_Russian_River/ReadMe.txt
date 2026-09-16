@@ -15,7 +15,9 @@ Workflow Steps
 
 	Option 1: Specify data scraping dates in "CTR_001_Set_Start_and_End_Dates.R" and use a workflow version's master script
 	
-	Option 2: Use the workflow's "Run Process Today" script
+	Option 2: Use the workflow's "AUTO" script
+	
+		(start and end dates are chosen automatically --> from start of previous water year to four days prior to today)
 	
 	Option 3: Use a batch file (developed by "HLP_006_Generate_RR_Workflow_Bat.R" and stored in the "Workflow_Bin" folder)
 	

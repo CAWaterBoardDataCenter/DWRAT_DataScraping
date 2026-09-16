@@ -1,0 +1,11 @@
+Package: SDA
+Title: Supporting Supply and Demand Modeling with Custom Functions
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Supply and Demand Assessment Section (CA Waterboards)", role = "cph", email = "DWR-SDA@Waterboards.ca.gov")
+	person(given = c("Aakash", "Kumar"), family = "Prashar", email = "aakash.prashar@waterboards.ca.gov", role = c("cre", "aut"))
+Description: This package is a collection of functions used across various scripts in the Supply and Demand Assessment (SDA) Section's modeling workflow repository. The primary aim is to consolidate code and reduce redundancy. A package allows for more formal (and better integrated) documentation as well. For other users of this repository, the functions in this package may also be useful in their own modeling workflows.
+License: use_ccby_license()
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.0

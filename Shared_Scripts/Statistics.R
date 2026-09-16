@@ -186,6 +186,6 @@ calcRSqrd <- function (obs, sim, na.rm = FALSE) {
   }
   
   
-  return(cor(obs, sim, method = "pearson"))
+  return(cor(obs, sim, method = "pearson")^2)
   
 }
