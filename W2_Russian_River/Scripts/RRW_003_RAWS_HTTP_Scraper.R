@@ -121,7 +121,7 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   
   
   # The next step is to submit a POST request to the WRCC server
-  req <- try(POST(url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl",
+  req <- try(POST(url = "https://wrcc-archive.dri.edu/cgi-bin/wea_dysimts2.pl",
                   body = list("stn" = stationID,
                               # Set the Start Date
                               "smon" = twoDigitText(month(adjDates[1])),
