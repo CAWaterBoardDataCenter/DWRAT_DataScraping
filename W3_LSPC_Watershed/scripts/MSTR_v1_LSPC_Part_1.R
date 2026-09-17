@@ -76,6 +76,8 @@ source("W3_LSPC_Watershed/scripts/LSPC_006_Update_Control_File_Start_Date.R")
 # Download gage data for each watershed
 source("W3_LSPC_Watershed/scripts/LSPC_007a_Download_Watershed_Data.R")
 
+source("W3_LSPC_Watershed/scripts/LSPC_007c_Download_RAWS_Data.R")
+
 
 # Setup an archive directory
 source("W3_LSPC_Watershed/scripts/LSPC_008_Setup_Archive_Directory.R")
@@ -89,11 +91,16 @@ source("W3_LSPC_Watershed/scripts/LSPC_008_Setup_Archive_Directory.R")
 source("W3_LSPC_Watershed/scripts/LSPC_009_Prep_Candidate_PRISM_Data.R")
 
 
+# Pre-process RAWS data before staging as well
+source("W3_LSPC_Watershed/scripts/LSPC_010_Prep_RAWS_Data.R")
+
+
 # Stage climate data next
-source("W3_LSPC_Watershed/scripts/LSPC_010a_Stage_Climate_Data.R")
+source("W3_LSPC_Watershed/scripts/LSPC_011a_Stage_Climate_Data.R")
 
 
 # Archive files before proceeding
+source("W3_LSPC_Watershed/scripts/LSPC_012_Archive_Raw_and_Staged_Files.R")
 
 
 # Adjust the manual review spreadsheets before users perform the actual review
