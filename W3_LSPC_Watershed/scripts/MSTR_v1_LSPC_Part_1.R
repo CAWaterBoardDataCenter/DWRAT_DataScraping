@@ -61,7 +61,6 @@ source("W3_LSPC_Watershed/scripts/LSPC_003_Setup_Project_Directories.R")
 # Download weather data from "shared" sources (PRISM, CIMIS, and NLDAS)
 source("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R")
 
-
 source("W3_LSPC_Watershed/scripts/LSPC_004c_Download_PRISM_Data.R")
 
 
@@ -86,11 +85,19 @@ source("W3_LSPC_Watershed/scripts/LSPC_008_Setup_Archive_Directory.R")
 # Update the 100 yr return period from NOAA in each watershed's project control file
 
 
+# Pre-process PRISM data for the staging step
+source("W3_LSPC_Watershed/scripts/LSPC_009_Prep_Candidate_PRISM_Data.R")
+
+
 # Stage climate data next
-source("W3_LSPC_Watershed/scripts/LSPC_009a_Stage_Climate_Data.R")
+source("W3_LSPC_Watershed/scripts/LSPC_010a_Stage_Climate_Data.R")
+
+
+# Archive files before proceeding
 
 
 # Adjust the manual review spreadsheets before users perform the actual review
+
 
 
 

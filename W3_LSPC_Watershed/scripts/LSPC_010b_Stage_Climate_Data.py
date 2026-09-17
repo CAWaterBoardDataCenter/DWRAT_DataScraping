@@ -1,4 +1,4 @@
-# Continuing from the R script 'LSPC_009a_Stage_Climate_Data.R', 
+# Continuing from the R script 'LSPC_010a_Stage_Climate_Data.R', 
 # this script processes the downloaded climate data into preliminary LSPC weather files
 
 # Manual review spreadsheets are generated as well
