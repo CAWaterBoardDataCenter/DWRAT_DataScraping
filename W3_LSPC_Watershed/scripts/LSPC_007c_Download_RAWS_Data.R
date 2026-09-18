@@ -140,7 +140,7 @@ mainProcedure <- function () {
     
     
     # Download RAWS data and save it to 'initialPath'
-    resDF <- requestRAWS(rawsDF$RAWS_ID[i], startDate, endDate)
+    resDF <- requestRAWS(rawsDF$RAWS_ID[i], startDate, endDate, useSI = FALSE)
     
     
     # Wait a moment before proceeding

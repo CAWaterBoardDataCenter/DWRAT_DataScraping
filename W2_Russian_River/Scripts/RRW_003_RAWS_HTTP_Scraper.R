@@ -99,7 +99,8 @@ mainProcedure <- function () {
 
 
 
-requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 15) {
+requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 15,
+                         useSI = TRUE) {
   
   # Prepare a POST request and submit it to RAWS
   
@@ -116,7 +117,8 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   # To avoid overwhelming RAWS's server, no more than three years of data 
   # should be requested at a time
   if (difftime(endDate, startDate, units = "days") > 365 * 3) {
-    return(splitRequest(stationID, startDate, endDate, maxDays = 365 * 3, maxTries = maxTries))
+    return(splitRequest(stationID, startDate, endDate, maxDays = 365 * 3, 
+                        maxTries = maxTries, useSI = useSI))
   }
   
   
@@ -134,8 +136,8 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
                               # Select "Air Temperature" and "Precipitation" data
                               "qAT" = "ON",
                               "qPR" = "ON",
-                              # Metric units
-                              "unit" = "M",
+                              # Metric units ("M") or English units ("E")
+                              "unit" = if_else(useSI, "M", "E"),
                               # HTML output
                               "Ofor" = "H",
                               # Only Complete data
@@ -190,7 +192,8 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
       
       
       # Submit the request again
-      return(requestRAWS(stationID, startDate, endDate, counter = counter + 1, maxTries = maxTries))
+      return(requestRAWS(stationID, startDate, endDate, counter = counter + 1, maxTries = maxTries,
+                         useSI = useSI))
       
     }
     
@@ -251,10 +254,14 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   # After that, make sure the expected columns are in 'htmlTable'
   expectedCols <- c("DAY_OF_YEAR" = "Day of Year", 
                     "DAY_OF_RUN" = "Day of Run",
-                    "TAVG" = "Ave.  Average Air Temperature   Deg C",
-                    "TMAX" = "Max.  Average Air Temperature   Deg C",
-                    "TMIN" = "Min.  Average Air Temperature   Deg C",
-                    "PRECIPITATION" = "Total  Precipitation    mm",
+                    "TAVG" = paste0("Ave.  Average Air Temperature   Deg ",
+                                    if_else(useSI, "C", "F")),
+                    "TMAX" = paste0("Max.  Average Air Temperature   Deg ",
+                                    if_else(useSI, "C", "F")),
+                    "TMIN" = paste0("Min.  Average Air Temperature   Deg ",
+                                    if_else(useSI, "C", "F")),
+                    "PRECIPITATION" = paste0("Total  Precipitation    ",
+                                             if_else(useSI, "mm", "in")),
                     "DATE" = "Date",
                     "YEAR" = "Year")
   
@@ -486,7 +493,7 @@ getDatasetBounds <- function (stationID) {
 
 
 
-splitRequest <- function (stationID, startDate, endDate, maxDays, maxTries) {
+splitRequest <- function (stationID, startDate, endDate, maxDays, maxTries, useSI) {
   
   # For data requests that cover a large date range, 
   # split the range into chunks and perform several requests to RAWS
@@ -538,7 +545,8 @@ splitRequest <- function (stationID, startDate, endDate, maxDays, maxTries) {
     
     # If there are no issues (or if this is the first run), get data
     # for a subset of the full date range
-    iterRes <- requestRAWS(stationID, dateVec[i - 1], dateVec[i], maxTries = maxTries)
+    iterRes <- requestRAWS(stationID, dateVec[i - 1], dateVec[i], maxTries = maxTries,
+                           useSI = useSI)
     
     
     # Combine 'iterRes' after each request
