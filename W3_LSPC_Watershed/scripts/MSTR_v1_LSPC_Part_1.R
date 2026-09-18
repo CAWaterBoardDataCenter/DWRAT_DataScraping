@@ -104,12 +104,8 @@ source("W3_LSPC_Watershed/scripts/LSPC_012_Archive_Raw_and_Staged_Files.R")
 
 
 # Adjust the manual review spreadsheets before users perform the actual review
+source("W3_LSPC_Watershed/scripts/LSPC_013_Adjust_Manual_Review_Sheets.R")
 
-
-
-
-# Use Python scripts to download and process weather data
-source("W3_LSPC_Watershed/scripts/LSPC_005a_Download_and_Stage_Climate_Data.R")
 
 
 # The next step of the workflow is a manual review
@@ -120,6 +116,7 @@ paste0("Manual review spreadsheets have been generated for each watershed.\n\n",
        "Please review the two spreadsheets that contain QC Flags 1, 2, 3, and 4. Delete the ",
        "entries of values that should be removed. Later scripts will fill in ",
        "all blank entries with data from PRISM.") |>
-  errWrap() |>
+  strwrap(width = 0.99 * getOption("width")) |>
+  paste0(collapse = "\n") |>
   cat()
 cat("\n\n")
