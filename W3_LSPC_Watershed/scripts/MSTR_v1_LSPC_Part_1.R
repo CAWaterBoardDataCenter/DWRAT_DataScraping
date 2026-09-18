@@ -107,16 +107,8 @@ source("W3_LSPC_Watershed/scripts/LSPC_012_Archive_Raw_and_Staged_Files.R")
 source("W3_LSPC_Watershed/scripts/LSPC_013_Adjust_Manual_Review_Sheets.R")
 
 
+# End of Part 1
 
-# The next step of the workflow is a manual review
-# Provide the user with instructions about this
-cat("\n\n")
-paste0("Manual review spreadsheets have been generated for each watershed.\n\n",
-       "They are located in \"W3_LSPC_Watershed/data/projects/[Watershed]/candidate/gage/QCSpreadsheets\".\n\n",
-       "Please review the two spreadsheets that contain QC Flags 1, 2, 3, and 4. Delete the ",
-       "entries of values that should be removed. Later scripts will fill in ",
-       "all blank entries with data from PRISM.") |>
-  strwrap(width = 0.99 * getOption("width")) |>
-  paste0(collapse = "\n") |>
-  cat()
-cat("\n\n")
+# Please complete the manual reviews
+# Then, proceed to the Part 2 master script
+"W3_LSPC_Watershed/scripts/MSTR_v1_LSPC_Part_2.R"
