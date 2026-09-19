@@ -25,5 +25,7 @@ for project in projects:
 
 
 # RAWS
-for project in projects:
-    app.run.fetch.gage.raws(project)
+# for project in projects:
+#     app.run.fetch.gage.raws(project)
+
+# (RAWS data is now downloaded by the "LSPC_007c" script)

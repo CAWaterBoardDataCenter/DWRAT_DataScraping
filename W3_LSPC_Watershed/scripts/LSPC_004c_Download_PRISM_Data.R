@@ -79,36 +79,37 @@ mainProcedure <- function () {
   # Read in all project control files after that
   wsDir <- read_all_lspc_project_control(controlDF, worksheet = "Storage")
   
-  wsPRISM <- read_all_lspc_project_control(controlDF, worksheet = "Prism")
-  
-  
   # To Do:
-  # Validate the "Prism" worksheets of each control file
-  # Validate the "Storage" worksheets too
+  # Validate the "Storage" worksheets
   
   
-  # Start by making sure each watershed has its "candidate" folder
+  # Start by making sure that the shared "raw" folder exists for PRISM
   cat("\n[1/2]\tChecking directories...\n")
   
   
-  # Iterate through each file
-  for (i in 1:length(wsDir)) {
-    
-    # Try to create the "candidate" PRISM folder if it doesn't already exist
-    try(dir_create(paste0("W3_LSPC_Watershed/",
-                          wsDir[[i]] |>
-                            filter(scope == "project" & level == "root") |>
-                            select(path) |> unlist(use.names = FALSE), 
-                          "/",
-                          wsDir[[i]] |>
-                            filter(scope == "project" & level == "candidate" & source == "prism") |>
-                            select(path) |> unlist(use.names = FALSE))),
-        silent = TRUE)
-    
-    # To Do: Optimize extracting paths from the storage worksheet with functions
-    # build_lspc_project_path(is_shared, level = "root", source = NA_character_)
-    
-  }
+  # The path to the raw PRISM data is specified redundantly in each watershed's spreadsheet
+  # However, they should all point to the same location
+  
+  # To Do: A function for building shared paths (checks every file and confirms consistency)
+  # build_lspc_shared_path(storageList, ...)
+  
+  
+  # Use each watershed's project control file to build a path to the shared PRISM folder
+  # Then, call `unique`, which should result in a single path
+  rawFolder <- wsDir |>
+    map_chr(~ paste0("W3_LSPC_Watershed/",
+                     filter(., scope == "shared" & level == "root") |>
+                       select(path) |> unlist(use.names = FALSE),
+                     "/",
+                     filter(., scope == "shared" & level == "raw" & source == "prism") |>
+                       select(path) |> unlist(use.names = FALSE))) |>
+    unique()
+  
+  stopifnot(length(rawFolder) == 1)
+  
+  
+  # Try to create the "raw" PRISM folder if it doesn't already exist
+  try(dir_create(rawFolder), silent = TRUE)
   
   
   cat("\tDone!\n\n")
@@ -116,17 +117,12 @@ mainProcedure <- function () {
   
   # After that, create a single data frame with every relevant PRISM grid cell
   # across all watersheds
-  prismDF <- wsPRISM |>
-    list_rbind()
-  
-  
-  # Address cases of duplicate IDs
-  prismDF <- prismDF |>
-    remove_duplicate_prism_ids()
-  
+  prismDF <- controlDF |>
+    gather_lspc_prism_ids(mergeDFs = TRUE)
+    
   
   # Finally, begin downloading data for each grid cell
-  cat(paste0("[2/2]\tGetting precipitation data for ", length(wsPRISM), 
+  cat(paste0("[2/2]\tGetting precipitation data for ", nrow(controlDF), 
              " watersheds (", nrow(prismDF), " PRISM grid cells)...\n"))
   
   
@@ -162,8 +158,9 @@ mainProcedure <- function () {
                           wsDir[[1]] |> filter(scope == "shared" & level == "raw" & source == "prism") |> 
                             select(path) |> unlist(use.names = FALSE),
                           
-                          "/", stationDF$STATION_ID, "_", 
-                          startDate, "_", endDate, ".csv")
+                          "/", 
+                          
+                          stationDF$STATION_ID, "_", startDate, "_", endDate, ".csv")
     
     
     # Download PRISM data and save it to 'initialPath'
@@ -188,6 +185,53 @@ mainProcedure <- function () {
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+gather_lspc_prism_ids <- function (controlDF, mergeDFs = TRUE) {
+  
+  # Each watershed has a list of relevant PRISM grid cells in their 
+  # respective project control files
+  
+  # These tables contain PRISM IDs and coordinates
+  
+  # This function can help prepare a list, with each element containing 
+  # a different watershed's PRISM tibble
+  
+  # Alternatively, if 'mergeDFs' is TRUE, that list can be combined 
+  # into a single tibble
+  
+  # (In that case, if the same PRISM grid cell appears in multiple watersheds' files, 
+  #  duplicate entries will be removed)
+  
+  
+  # Use the weather control spreadsheet to read in all watersheds' PRISM worksheets
+  wsPRISM <- read_all_lspc_project_control(controlDF, worksheet = "Prism")
+  
+  
+  # To Do:
+  # Validate the "Prism" worksheets of each control file
+  
+  
+  # If 'mergeDFs' is TRUE, the list of tibbles will be consolidated
+  if (mergeDFs) {
+    
+    # Combine every list element into one tibble
+    wsPRISM <- wsPRISM |>
+      list_rbind()
+    
+    
+    # Address cases of duplicate IDs
+    wsPRISM <- wsPRISM |>
+      remove_duplicate_prism_ids()
+    
+  }
+  
+  
+  # Return 'wsPRISM'
+  return(wsPRISM)
   
 }
 
