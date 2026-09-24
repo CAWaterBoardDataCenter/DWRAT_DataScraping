@@ -14,7 +14,6 @@
 # of the procedure (producing weather files, running LSPC, and running DWRAT)
 
 
-
 #### Setup ####
 
 # Clear the environment first
@@ -41,15 +40,17 @@ source("Additional_Scripts/Load_Packages.R")
 
 # Confirm that the "Part 1" script has been run
 # Check for QC spreadsheets, the archive text file
+source("W3_LSPC_Watershed/scripts/HLP_003_Confirm_Part_1_Completion.R")
 
 
-# Run the "Part 2" Python script
+# Run the final set of Python scripts to prepare the LSPC weather files
+source("W3_LSPC_Watershed/scripts/LSPC_014a_Generate_Weather_Files.R")
 
 
-# Archive the resultant weather files
+# Archive the files
 
 
-# Combine them with long-running versions of the weather files
+# Adjust the weather files to prevent QA/QC issues
 
 
 # Set up the inp files
@@ -63,3 +64,5 @@ source("Additional_Scripts/Load_Packages.R")
 
 # Run DWRAT
 
+
+# Archive files
