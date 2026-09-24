@@ -1,10 +1,12 @@
-# Run Python scripts to stage weather data for each watershed
-# (i.e., process raw downloaded data into preliminary weather files for LSPC)
+# Run Python scripts to create weather files for each watershed
+
+# The staged weather files as well as the manual review worksheets will be
+# examined and processed to develop the final weather files
 
 # This script prepares a temporary Python script that has key information
 # (path to Weather Control file and NLDAS Earth Data credentials)
 
-# Then, using Anaconda, this script executes its Python counterpart (LSPC_011b),
+# Then, using Anaconda, this script executes its Python counterpart (LSPC_014b),
 # which imports values from the temporary script and executes other Python scripts 
 # to process weather data for each watershed
 
@@ -31,7 +33,7 @@ source("Shared_Scripts/!Shared_Functions_Importer.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'LSPC_011a_Stage_Climate_Data.R'!\n")
+  cat("Starting 'LSPC_014a_Generate_Weather_Files.R'!\n")
   
   
   # Import functions from another script
@@ -52,8 +54,8 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  # Call the 011b Python script to obtain weather data
-  cat("[2/2]\tInitiating climate data staging scripts...\n")
+  # Call the 014b Python script to obtain weather data
+  cat("[2/2]\tInitiating LSPC weather file generation scripts...\n")
   
   
   # Get a path to Anaconda's "activate.bat" script
@@ -95,7 +97,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'LSPC_011a_Stage_Climate_Data.R' is complete!\n\n"))
+  cat(col_green("\n'LSPC_014a_Generate_Weather_Files.R' is complete!\n\n"))
   
   
   # Return nothing
