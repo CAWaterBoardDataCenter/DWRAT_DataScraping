@@ -88,17 +88,32 @@ for (i in 1:nrow(connMat)) {
   }
   
   
-  # Get all downstream catchments (ignore the current iteration's catchment in this list)
-  flowPath <- names(connMat)[base::setdiff(flowIndices, i)]
+  # Get all downstream catchments' IDs (ignore the current iteration's catchment in this list)
+  flowPath <- names(connMat)[flowIndices] |>
+    base::setdiff(connMat[i, 1])
   
   
   # Get the number of upstream connections for each downstream catchment
   # Further downstream catchments have larger numbers
   # (since more catchments eventually drain into that catchment)
-  if (length(flowPath) > 1) {
+  if (length(flowPath) == 0) {
+    
+    # The most downstream catchment will have no downstream sub-basins
+    next
+    
+  } else if (length(flowPath) > 1) {
+    
+    # For each downstream catchment, get the number of catchments that are downstream
+    # of that catchment
     downstreamSums <- colSums(connMat[, names(connMat) %in% flowPath])
+    
   } else {
+    
+    # The penultimate catchment will have only one downstream sub-basin
+    # (`colSums` cannot be used in this case because the data frame subsetting
+    #  operation returns a vector instead of a data frame here)
     downstreamSums <- connMat[, names(connMat) %in% flowPath] |> sum() |> set_names(flowPath)
+    
   }
   
   
