@@ -96,7 +96,9 @@ mainProcedure <- function () {
   # Try to create the raw RAWS folder
   # Note: This type of folder did not exist in the initial design
   #       of the LSPC climate processing scripts
-  try(dir_create(rawFolder), silent = TRUE)
+  catch_warnings_and_errors(
+    dir_create(rawFolder)
+  )
   
   
   cat("\tDone!\n\n")

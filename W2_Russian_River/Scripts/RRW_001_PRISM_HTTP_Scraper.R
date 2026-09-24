@@ -644,12 +644,9 @@ try_read_and_write <- function (urlStr, writePath, maxRetries = 15) {
   
   
   # Try to read in the file from 'urlStr'
-  tempRead <- 
-    tryCatch({
-      urlStr |> read_lines()
-    },
-    error = function(e) e,
-    warning = function(w) w)
+  tempRead <- catch_warnings_and_errors(
+    urlStr |> read_lines()
+  )
   
   
   # Just in case there are issues when reading in the result, 
@@ -658,7 +655,7 @@ try_read_and_write <- function (urlStr, writePath, maxRetries = 15) {
   
   
   # If an error is detected, keep trying while 'attemptCounter' is less than 'maxRetries'
-  while (any(c("error", "warning") %in% class(tempRead)) && 
+  while (caught_issue(tempRead) && 
          attemptCounter < maxRetries) {
     
     # Notify the user
@@ -673,12 +670,9 @@ try_read_and_write <- function (urlStr, writePath, maxRetries = 15) {
     
     
     # Attempt to read in the file again
-    tempRead <- 
-      tryCatch({
-        urlStr |> read_lines()
-      },
-      error = function(e) e,
-      warning = function(w) w)
+    tempRead <- catch_warnings_and_errors(
+      urlStr |> read_lines()
+    )
     
     
     # Increment the counter too
@@ -688,7 +682,7 @@ try_read_and_write <- function (urlStr, writePath, maxRetries = 15) {
   
   
   # If the loop concludes while 'tempRead' still has an error, stop the script
-  if (any(c("error", "warning") %in% class(tempRead))) {
+  if (caught_issue(tempRead)) {
     
     cat("\n\n")
     print(tempRead)
