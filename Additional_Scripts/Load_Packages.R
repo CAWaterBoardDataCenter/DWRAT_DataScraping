@@ -25,6 +25,7 @@ require(openxlsx)
 require(readxl)
 require(writexl)
 require(openxlsx2)
+require(encharter)
 
 #### Web Requests ####
 require(httr)

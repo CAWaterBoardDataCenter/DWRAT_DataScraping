@@ -163,7 +163,7 @@ mainProcedure <- function () {
     # Also, try to incorporate previous manual review decisions
     for (j in 1:length(qcFiles[[i]])) {
       
-      paste0("\t\t\t[", i, "/", length(qcFiles[[i]]), "]\t", qcFiles[[i]][j], "\n\n") |>
+      paste0("\t\t\t[", j, "/", length(qcFiles[[i]]), "]\t", qcFiles[[i]][j], "\n\n") |>
         cat()
       
       # Get the path to the spreadsheet
@@ -232,6 +232,10 @@ mainProcedure <- function () {
       wb <- wb_incorporate_old_review(wb, reviewPath, controlDF$project_name[i], 
                                       qcFiles[[i]][j], wbNames[1], 
                                       worksheetArchiveName, startDate)
+      
+      
+      # Then, add plots of the gage data to a new worksheet in the file
+      wb <- wb_add_gage_charts(wb, wbNames[1], qcFiles[[i]][j])
       
       
       # Finally, write 'wb' back to its file
@@ -744,6 +748,139 @@ add_date_column <- function (qcDF) {
   
   # Return 'qcDF'
   return(qcDF)
+  
+}
+
+
+
+wb_add_gage_charts <- function (wb, worksheet, fileName) {
+  
+  # For each gage in a QC worksheet, develop a bar column chart
+  
+  # Plot the date and precipitation data
+  
+  
+  # First read in the QC flag table from 'worksheet'
+  qcDF <- wb_to_df(wb, worksheet)
+  
+  # To Do: Validate the worksheet
+  
+  
+  # Add a "DATE" column to 'qcDF'
+  qcDF <- qcDF |>
+    add_date_column()
+  
+  
+  # Identify gage columns in 'qcDF' next
+  gageNames <- qcDF |>
+    select(where(is.numeric)) |>
+    names() |>
+    base::setdiff(c("Date", "Year", "Month")) |>
+    str_subset("_")
+  
+  # Look for numeric columns in 'qcDF' 
+  # Then, among that list, exclude ones with date column names (like "Year")
+  # Also, these gage column names should contain an underscore
+  
+  
+  # Stop if no gages are found
+  error_if(length(gageNames) == 0,
+           
+           paste0("Could Not Find Gage Columns in \"", worksheet, "\"\n\n",
+                  "The script could not locate the columns in this spreadsheet ",
+                  "that contain precipitation data. Please investigate.\n\n",
+                  "(This error occurred for \"", fileName, "\")"))
+  
+  
+  # After that, define a new worksheet in 'wb'
+  # This will contain the parsed "DATE" values as well as the charts
+  chartWorksheet <- "Gage_Charts"
+  
+  
+  wb <- wb_add_worksheet(wb, chartWorksheet)
+  
+  
+  # Write the "DATE" variable to the first column of that worksheet
+  wb <- wb_add_data(wb, chartWorksheet, qcDF |> select(DATE))
+  
+  
+  # The next step is to generate charts for each gage
+  
+  # Before proceeding, define some variables that set the dimensions of the charts
+  startCol <- "D"
+  startRow <- 2
+  chartWidth <- 7
+  chartHeight <- 16
+  chartGap <- 2
+  
+  # The charts will extend from Column D
+  # Their widths will be 7 cells (Column D to K)
+  
+  # The charts will begin from Row 2
+  # Their heights will be 16 cells (initially Row 2 to 18)
+  
+  # There will be a two-cell gap between each chart (in terms of height)
+  
+  
+  # After that, in a loop, create charts for each gage
+  for (i in 1:length(gageNames)) {
+    
+    # Define a new bar chart
+    gageChart <- encharter(type = "barChart")
+    
+    
+    # Add a chart title and axis titles to 'gageChart'
+    gageChart$set_chart_title(gageNames[i])
+    gageChart$set_x_title("Date")
+    gageChart$set_y_title("Precip (in)")
+    
+    # (The chart name will display the gage column name)
+    # The x-axis will be called "Date"
+    # The y-axis will be called "Precip (in)"
+    
+    
+    # Add data to the chart next
+    gageChart$add_series(
+      label = paste0(chartWorksheet, "!A$2:$A$", nrow(qcDF) + 1),
+      data = paste0(worksheet, "!", 
+                    int2col(which(names(qcDF) == gageNames[i])[1]), "$2:$", 
+                    int2col(which(names(qcDF) == gageNames[i])[1]), "$", nrow(qcDF) + 1)
+    )
+    
+    # The series name will be retain its default value ("Series1")
+    # This is unimportant
+    
+    # The x-axis labels will be in Column A of the chart's worksheet
+    # (These are the "DATE" column values that were written to the sheet before this loop)
+    
+    # The y-axis data values will come from the main QC worksheet
+    # These will be the current iteration's gage precipitation data
+    
+    
+    # Do not show a legend
+    # (So the default "Series1" name will not appear in the chart)
+    gageChart$set_legend_style(pos = "none")
+    
+    
+    # Calculate the location of the chart in the worksheet next
+    chartDims <- paste0(startCol,
+                        startRow + chartGap * (i - 1) + chartHeight * (i - 1),
+                        ":",
+                        int2col(col2int(startCol) + chartWidth),
+                        startRow + chartGap * (i - 1) + chartHeight * i)
+    
+    # Based on the values set before this loop, the charts will cover these ranges:
+    # D2:K18, D20:K36, D38:K54, ...
+    
+    
+    # Finally, incorporate this chart into the worksheet
+    wb <- wb_add_encharter(wb, chartWorksheet, gageChart, dims = chartDims)
+    
+  }
+  
+  
+  # After the gage chart worksheet has been created, return 'wb'
+  return(wb)
   
 }
 
