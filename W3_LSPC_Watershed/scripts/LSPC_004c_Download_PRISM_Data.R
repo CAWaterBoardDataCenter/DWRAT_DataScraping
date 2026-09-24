@@ -109,7 +109,9 @@ mainProcedure <- function () {
   
   
   # Try to create the "raw" PRISM folder if it doesn't already exist
-  try(dir_create(rawFolder), silent = TRUE)
+  catch_warnings_and_errors(
+    dir_create(rawFolder)
+  )
   
   
   cat("\tDone!\n\n")

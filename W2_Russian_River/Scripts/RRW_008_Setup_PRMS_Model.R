@@ -102,16 +102,17 @@ copy_contents <- function (sourceDir, newDir) {
   
   
   # Copy the entire contents of 'sourceDir' into this new folder
-  tryRes <- try(dir_copy(sourceDir, newDir, overwrite = TRUE),
-                silent = TRUE)
+  tryRes <- catch_warnings_and_errors(
+    dir_copy(sourceDir, newDir, overwrite = TRUE)
+  )
   
   
   # If copying the files fails for some reason, try a second time before quitting
-  if ("try-error" %in% class(tryRes)) {
+  if (caught_issue(tryRes)) {
     
     # Output the error message that was received
     cat("\n\n")
-    print(tryRes)
+    print(tryRes[[1]])
     cat("\n\n")
     
     

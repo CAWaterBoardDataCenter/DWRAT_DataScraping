@@ -77,15 +77,16 @@ mainProcedure <- function () {
   for (i in 1:length(wsDir)) {
     
     # Try to create the RAWS folder if it doesn't already exist
-    try(dir_create(paste0("W3_LSPC_Watershed/",
-                          wsDir[[i]] |>
-                            filter(scope == "project" & level == "root") |>
-                            select(path) |> unlist(use.names = FALSE), 
-                          "/",
-                          wsDir[[i]] |>
-                            filter(scope == "project" & level == "raw" & source == "raws") |>
-                            select(path) |> unlist(use.names = FALSE))),
-        silent = TRUE)
+    catch_warnings_and_errors(
+      dir_create(paste0("W3_LSPC_Watershed/",
+                        wsDir[[i]] |>
+                          filter(scope == "project" & level == "root") |>
+                          select(path) |> unlist(use.names = FALSE), 
+                        "/",
+                        wsDir[[i]] |>
+                          filter(scope == "project" & level == "raw" & source == "raws") |>
+                          select(path) |> unlist(use.names = FALSE)))
+    )
     
     # To Do: Optimize extracting paths from the storage worksheet with functions
     # build_lspc_project_path(is_shared, level = "root", source = NA_character_)

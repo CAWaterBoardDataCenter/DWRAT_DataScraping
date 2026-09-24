@@ -123,39 +123,41 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   
   
   # The next step is to submit a POST request to the WRCC server
-  req <- try(POST(url = "https://wrcc-archive.dri.edu/cgi-bin/wea_dysimts2.pl",
-                  body = list("stn" = stationID,
-                              # Set the Start Date
-                              "smon" = twoDigitText(month(adjDates[1])),
-                              "sday" = twoDigitText(day(adjDates[1])),
-                              "syea" = format(adjDates[1], "%y"), # Last two digits of the year
-                              # Set the End Date
-                              "emon" = twoDigitText(month(adjDates[2])),
-                              "eday" = twoDigitText(day(adjDates[2])), 
-                              "eyea" = format(adjDates[2], "%y"),
-                              # Select "Air Temperature" and "Precipitation" data
-                              "qAT" = "ON",
-                              "qPR" = "ON",
-                              # Metric units ("M") or English units ("E")
-                              "unit" = if_else(useSI, "M", "E"),
-                              # HTML output
-                              "Ofor" = "H",
-                              # Only Complete data
-                              "Datareq" = "C",
-                              # Apply physical limits QC to the data
-                              "qc" = "Y",
-                              # Missing values are "-999"
-                              "miss" = "07",
-                              # Don't include number of valid observations for each element
-                              "obs" = "N",
-                              # Subinterval start and end dates
-                              "WsMon" = "01",
-                              "WsDay" = "01",
-                              "WeMon" = "12",
-                              "WeDay" = "31"),
-                  add_headers(`User-Agent` = sessionInfo()[["R.version"]][["version.string"]],
-                              `X-User-Contact` = "DWR-SDA@Waterboards.ca.gov",
-                              `X-User-Name` = Sys.info()[["user"]])))
+  req <- catch_warnings_and_errors(
+    POST(url = "https://wrcc-archive.dri.edu/cgi-bin/wea_dysimts2.pl",
+         body = list("stn" = stationID,
+                     # Set the Start Date
+                     "smon" = twoDigitText(month(adjDates[1])),
+                     "sday" = twoDigitText(day(adjDates[1])),
+                     "syea" = format(adjDates[1], "%y"), # Last two digits of the year
+                     # Set the End Date
+                     "emon" = twoDigitText(month(adjDates[2])),
+                     "eday" = twoDigitText(day(adjDates[2])), 
+                     "eyea" = format(adjDates[2], "%y"),
+                     # Select "Air Temperature" and "Precipitation" data
+                     "qAT" = "ON",
+                     "qPR" = "ON",
+                     # Metric units ("M") or English units ("E")
+                     "unit" = if_else(useSI, "M", "E"),
+                     # HTML output
+                     "Ofor" = "H",
+                     # Only Complete data
+                     "Datareq" = "C",
+                     # Apply physical limits QC to the data
+                     "qc" = "Y",
+                     # Missing values are "-999"
+                     "miss" = "07",
+                     # Don't include number of valid observations for each element
+                     "obs" = "N",
+                     # Subinterval start and end dates
+                     "WsMon" = "01",
+                     "WsDay" = "01",
+                     "WeMon" = "12",
+                     "WeDay" = "31"),
+         add_headers(`User-Agent` = sessionInfo()[["R.version"]][["version.string"]],
+                     `X-User-Contact` = "DWR-SDA@Waterboards.ca.gov",
+                     `X-User-Name` = Sys.info()[["user"]]))
+  )
   
   
   # Wait a bit after receiving the response
@@ -163,7 +165,7 @@ requestRAWS <- function (stationID, startDate, endDate, counter = 1, maxTries = 
   
   
   # Check for errors
-  if ("try-error" %in% class(req)) {
+  if (caught_issue(req)) {
     
     # If the error is "Failure when receiving data from the peer [wrcc.dri.edu]"
     # "schannel: server closed abruptly (missing close_notify)", 
