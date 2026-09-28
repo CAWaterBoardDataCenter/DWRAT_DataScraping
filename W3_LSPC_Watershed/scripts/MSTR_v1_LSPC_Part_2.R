@@ -47,10 +47,9 @@ source("W3_LSPC_Watershed/scripts/HLP_003_Confirm_Part_1_Completion.R")
 source("W3_LSPC_Watershed/scripts/LSPC_014a_Generate_Weather_Files.R")
 
 
-# Archive the files
+# Adjust the weather files to prevent issues with newer versions of LSPC
+source("W3_LSPC_Watershed/scripts/LSPC_015_Add_Dummy_Weather_Entries.R")
 
-
-# Adjust the weather files to prevent QA/QC issues
 
 
 # Set up the inp files
@@ -60,6 +59,9 @@ source("W3_LSPC_Watershed/scripts/LSPC_014a_Generate_Weather_Files.R")
 
 
 # Archive files
+#source("W3_LSPC_Watershed/scripts/LSPC_015_Archive_Candidate_and_Curated_Files.R")
+
+
 
 
 # Run DWRAT
