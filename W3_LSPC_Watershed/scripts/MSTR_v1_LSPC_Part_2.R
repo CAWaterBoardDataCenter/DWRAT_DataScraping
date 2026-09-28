@@ -51,6 +51,9 @@ source("W3_LSPC_Watershed/scripts/LSPC_014a_Generate_Weather_Files.R")
 source("W3_LSPC_Watershed/scripts/LSPC_015_Add_Dummy_Weather_Entries.R")
 
 
+# Archive the files
+source("W3_LSPC_Watershed/scripts/LSPC_016_Archive_Candidate_and_Curated_Files.R")
+
 
 # Set up the inp files
 
@@ -58,8 +61,6 @@ source("W3_LSPC_Watershed/scripts/LSPC_015_Add_Dummy_Weather_Entries.R")
 # Run LSPC
 
 
-# Archive files
-#source("W3_LSPC_Watershed/scripts/LSPC_015_Archive_Candidate_and_Curated_Files.R")
 
 
 
