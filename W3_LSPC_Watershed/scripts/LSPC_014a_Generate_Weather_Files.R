@@ -63,7 +63,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the Python script next
-  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_011b_Stage_Climate_Data.py" |>
+  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_014b_Generate_Weather_Files.py" |>
     normalizePath(mustWork = FALSE)
   
   
