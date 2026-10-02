@@ -103,6 +103,14 @@ mainProcedure <- function () {
     # Then, iterate through each of the watershed's weather files
     for (j in 1:length(weatherFiles[[i]])) {
       
+      # Print the name of the weather file
+      cat("\n\n")
+      paste0("\t\t[", j, "/", length(weatherFiles[[i]]), "]\t", 
+             weatherFiles[[i]][j] |> extract_filename()) |>
+        cat()
+      cat("\n\n")
+      
+      
       # Update the weather file with 'dummyStart' and 'dummyEnd'
       weatherFiles[[i]][j] |>
         add_dummy_entries(dummyStart, dummyEnd)
