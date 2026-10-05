@@ -105,6 +105,19 @@ validate_lspc_model_folder <- function (modelFolderPath) {
   # a model source directory
   
   
+  # First double-check that 'modelFolderPath' is the expected type of variable
+  # It should be a single string that contains a folder path
+  if (!is.vector(modelFolderPath) || length(modelFolderPath) != 1 ||
+      !is.character(modelFolderPath[1]) || !dir.exists(modelFolderPath[1])) {
+    
+    paste0("Input Not a Folder Path\n\n",
+           "Please adjust the script. A single path to a folder is the expected ",
+           "input for this function.") |>
+      stop_script()
+    
+  }
+  
+  
   # Start by checking for model folders
   # Every watershed should have at least three key folders
   modelFolders <- c("Input", "Output", "Input/Weather") |>
