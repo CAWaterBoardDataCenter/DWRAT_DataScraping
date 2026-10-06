@@ -314,7 +314,8 @@ get_from_lspc_master_control <- function (fieldName) {
   if (is.na(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])) {
     
     # Exceptions:
-    if (fieldName %in% c("EARTHDATA_LOGIN_CREDENTIALS")) {
+    if (fieldName %in% c("EARTHDATA_LOGIN_CREDENTIALS", 
+                         "PRIOR_MANUAL_REVIEW_SHEETS_LOCATION")) {
       
       # These fields are optional, so it is okay if they are "NA"
       

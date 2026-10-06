@@ -180,9 +180,10 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   # Try to submit the GET request
   # (Also, ask for a JSON-formatted response)
-  req <- try(GET(requestURL, add_headers("Ocp-Apim-Subscription-Key" = apiKey,
-                                         "Accept" = "application/json")), 
-             silent = TRUE)
+  req <- catch_warnings_and_errors(
+    GET(requestURL, add_headers("Ocp-Apim-Subscription-Key" = apiKey,
+                                "Accept" = "application/json"))
+  )
   
   
   # Wait a bit after receiving the response
@@ -190,7 +191,7 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   
   # Check if an error was received
-  if ("try-error" %in% class(req)) {
+  if (caught_issue(req)) {
     
     # Print out the error message
     cat("\n\n")
@@ -1390,18 +1391,19 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
     
     
     # Next, try to read in "daily_report.csv"
-    cimisDF <- try(getFile(outFile))
+    cimisDF <- catch_warnings_and_errors(
+      getFile(outFile)
+    )
     
     
     # If an error occurred, stop the remote driver and server
-    if ("try-error" %in% class(cimisDF)) {
+    if (caught_issue(cimisDF)) {
       
-      try(rd$quit(), silent = TRUE)
-      try(server$stop(), silent = TRUE)
+      quit_selenium(rd, server)
       
       
       # Print out the error message and stop the script
-      stop(cimisDF)
+      stop(cimisDF[[1]])
       
     }
     
@@ -1438,8 +1440,7 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   
   
   # Then, close the remote driver and turn off the server
-  try(rd$quit(), silent = TRUE)
-  try(server$stop(), silent = TRUE)
+  quit_selenium(rd, server)
   
   
   # 'compiledDF' contains the data from each downloaded file 
@@ -1629,15 +1630,16 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
   
   
   # Click on the element
-  tryRes <- try(foundElement$clickElement())
+  tryRes <- catch_warnings_and_errors(
+    foundElement$clickElement()
+  )
   
   
   # Check for errors
-  if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
+  if (!is.null(tryRes) && caught_issue(tryRes)) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
@@ -1670,24 +1672,25 @@ locateElement <- function (rd, server, val, searchType = "xpath") {
   
   
   # Use `findElement` to locate the element
-  foundElement <- try(rd$findElement(using = searchType, value = val))
+  foundElement <- catch_warnings_and_errors(
+    rd$findElement(using = searchType, value = val)
+  )
   
   
   # Error Check
   # Stop if no element is found or if more than one element is found
-  if (length(foundElement) != 1 || "try-error" %in% class(foundElement)) {
+  if (length(foundElement) != 1 || caught_issue(foundElement)) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
     paste0("Could Not Find Specified Element\n\n",
            "The element whose ", searchType, " is \"", val, 
            "\" was not found.",
-           if_else(length(foundElement) != 1,
-                   paste0(" The input returned ", length(foundElement), " ",
+           if_else(length(foundElement[[1]]) != 1,
+                   paste0(" The input returned ", length(foundElement[[1]]), " ",
                           "matches."),
                    "")) |>
       errWrap() |>
@@ -1768,8 +1771,7 @@ loopWait <- function (rd, server, breakStr, sleepTime = 3, maxCount = 15) {
   if (counter == maxCount) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
@@ -1843,15 +1845,16 @@ scrollToElement <- function (rd, server, val, searchType = "xpath") {
   
   
   # Scroll to the element
-  tryRes <- try(rd$executeScript("arguments[0].scrollIntoView(true);", 
-                                 list(foundElement)))
+  tryRes <- catch_warnings_and_errors(
+    rd$executeScript("arguments[0].scrollIntoView(true);", 
+                     list(foundElement))
+  )
   
   
-  if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
+  if (!is.null(tryRes) && caught_issue(tryRes)) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
@@ -1980,8 +1983,7 @@ waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
       !any(file.exists(c(outFile, paste0(outFile, ".crdownload"))))) {
     
     # Close the web driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Output an error message
@@ -2014,8 +2016,7 @@ waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
   if (!file.exists(outFile)) {
     
     # Close the web driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Generate an error message
@@ -2028,6 +2029,25 @@ waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
   
   
   # Otherwise, once the download is complete, return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+quit_selenium <- function (rd, server) {
+  
+  # Exit out of the dynamic scraping mechanism
+  
+  # Close the Selenium remote driver
+  # Then stop the server
+  
+  
+  catch_warnings_and_errors(rd$quit())
+  catch_warnings_and_errors(server$stop())
+  
+  
+  # Return nothing
   return(invisible(NULL))
   
 }

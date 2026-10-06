@@ -759,7 +759,8 @@ runModifiedPRISM <- function (sourceName, startDate, endDate, outFile,
   
   
   # Import functions from "RRW_001_PRISM_HTTP_Scraper.R" using `functionStealer`
-  c("scrapePRISM", "validateReqResults", "splitRequest", "combineRawOutputs") |>
+  c("scrapePRISM", "validateReqResults", "splitRequest", "combineRawOutputs",
+    "try_read_and_write") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_001_PRISM_HTTP_Scraper.R", .))
   
   

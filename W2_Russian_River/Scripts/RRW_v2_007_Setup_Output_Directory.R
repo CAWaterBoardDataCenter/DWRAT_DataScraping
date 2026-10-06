@@ -22,7 +22,7 @@
 # It will be a text file containing a single line that specifies 
 # the path to the newly generated directory
 
-# Its filename will be "Hydrology_Output_Folder_[startDate]_[endDate].txt"
+# Its filename will be "Archive_Location_[startDate]_[endDate].txt"
 
 
 #### Setup ####
@@ -99,7 +99,7 @@ mainProcedure <- function () {
   # Save 'outputDirectory' to a text file in the "Output" folder
   # This will make it easier to reference in later scripts
   outputDirectory |>
-    writeOutput(paste0("W2_Russian_River/Output/Hydrology_Output_Location_", startDate,
+    writeOutput(paste0("W2_Russian_River/Output/Archive_Location_", startDate,
                        "_", endDate, ".txt"))
   
   

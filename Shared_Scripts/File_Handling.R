@@ -617,8 +617,17 @@ getPRISM <- function (prismPath) {
   # If not, apply that type manually
   if (is.character(prismDF$Date[1])) {
     
-    prismDF <- prismDF |>
-      mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+    if (any(grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", prismDF$Date))) {
+      
+      prismDF <- prismDF |>
+        mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+      
+    } else if (any(grepl("^[0-9]{4}-[0-9]{2}$", prismDF$Date))) {
+      
+      prismDF <- prismDF |>
+        mutate(Date = as_date(Date, format = "%Y-%m"))
+      
+    }
     
   }
   

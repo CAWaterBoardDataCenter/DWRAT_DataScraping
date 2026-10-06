@@ -60,7 +60,9 @@ mainProcedure <- function () {
   
   
   # If these directories already exist, delete them
-  try(dir_delete(dirPaths), silent = TRUE)
+  catch_warnings_and_errors(
+    dir_delete(dirPaths)
+  )
   
   
   # Then, create the folders for each watershed
