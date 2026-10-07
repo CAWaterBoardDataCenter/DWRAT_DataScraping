@@ -180,13 +180,21 @@ generateFolders <- function (saveDirectory,
   # For the Russian River workflow, sub-directories in the DWRAT "Output" folder 
   # are required for the upper and lower Russian River
   
-  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output"))
+  # For the LSPC workflow, DWRAT should be a sub-directory of the watershed
+  # folders instead
   
   
+  # Define a vector that will contain the directories that will be created
+  newDirectories <- c()
+  
+  
+  # For the Russian River workflow, DWRAT is at the root of the archive folder
+  # Its "Output" folder also requires sub-directories for the upper and lower RR
   if (isRussianRiver) {
     
     newDirectories <- c(newDirectories,
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
                         paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
                         paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected"))
     
@@ -199,6 +207,17 @@ generateFolders <- function (saveDirectory,
     newDirectories <- c(newDirectories,
                         paste0(saveDirectory, "/", mainName, "/", models[i], "/Input"),
                         paste0(saveDirectory, "/", mainName, "/", models[i], "/Output"))
+    
+    
+    # For watersheds other than the Russian River, DWRAT will be added here too
+    if (!isRussianRiver) {
+      
+      newDirectories <- c(newDirectories,
+                          paste0(saveDirectory, "/", mainName, "/", models[i], "/DWRAT"),
+                          paste0(saveDirectory, "/", mainName, "/", models[i], "/DWRAT/Input"),
+                          paste0(saveDirectory, "/", mainName, "/", models[i], "/DWRAT/Output"))
+      
+    }
     
   }
   
