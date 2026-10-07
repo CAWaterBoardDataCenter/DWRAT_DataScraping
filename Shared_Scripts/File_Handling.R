@@ -1221,7 +1221,8 @@ read_gag <- function (gagPath) {
 ##### File Writing #####
 
 writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
-                         col_names = TRUE, delim = NA_character_, na = "") {
+                         col_names = TRUE, delim = NA_character_, na = "",
+                         sep = "\n") {
   
   # Write a variable 'x' to 'outPath'
   
@@ -1305,7 +1306,7 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
     
   } else if (writeFunction == "write_lines") {
     
-    writeRes <- try(write_lines(x, outPath, na = na))
+    writeRes <- try(write_lines(x, outPath, na = na, sep = sep))
     
   } else if (writeFunction == "write_xlsx") {
     

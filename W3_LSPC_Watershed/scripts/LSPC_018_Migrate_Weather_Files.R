@@ -32,6 +32,10 @@ mainProcedure <- function () {
                   "read_all_lspc_project_control")
   
   
+  functionStealer("W3_LSPC_Watershed/scripts/LSPC_019_Finalize_LSPC_Inputs.R",
+                  "find_card_lines_in_inp")
+  
+  
   # Read in the LSPC weather control file too
   controlDF <- read_lspc_weather_control()
   
@@ -262,27 +266,14 @@ extract_lspc_inp_card <- function (inpLines, cardRegex) {
   # match with the first line of that card
   
   
-  # Begin by applying 'cardRegex' to identify the start of the model configuration card
-  cardStart <- inpLines |>
-    find_matches(cardRegex)
+  # Use `find_card_lines_in_inp` (defined in another script)
+  # This will extract the line numbers that correspond to this card
+  cardIndices <- inpLines |>
+    find_card_lines_in_inp(cardRegex)
   
   
-  # Shorten 'inpLines' to begin at the index denoted by 'cardStart'
-  cardLines <- inpLines[cardStart:length(inpLines)]
-  
-  
-  # Find the end of this card next
-  # Essentially all cards end with a line that contains "c" and many hyphens
-  cardEnd <- cardLines |>
-    find_matches("^c--", maxMatches = Inf) |>
-    head(1)
-  
-  # With 'inpLines' adjusted to start at the beginning of the card, 
-  # the first instance of "c--" marks the end of that card
-  
-  
-  # Remove all lines that appear after 'cardEnd'
-  cardLines <- cardLines[1:cardEnd]
+  # Define a subset of 'inpLines' using the vector of indices
+  cardLines <- inpLines[cardIndices]
   
   
   # Return the shortened 'cardLines' afterwards
