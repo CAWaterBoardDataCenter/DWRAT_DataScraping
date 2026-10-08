@@ -214,7 +214,13 @@ add_dummy_air_entries <- function (filePath, dummyStart, dummyEnd) {
   
   # Write 'airVec' back to 'filePath'
   airVec |>
-    writeOutput(filePath, writeFunction = "write_lines", quietly = TRUE)
+    writeOutput(filePath, writeFunction = "write_lines", quietly = TRUE, 
+                sep = "\r\n")
+  
+  # Note: "\r\n" is the full expression for a new line marker in Windows
+  
+  # The LSPC executable file explicitly requires "\r\n" in all text-based files
+  # Otherwise, the file will fail to parse (without any clear error message)
   
   
   # Return nothing
@@ -233,8 +239,11 @@ create_air_row <- function (id, date, hour = 0, minute = 0, et = 0) {
   
   
   # Define a vector of values and collapse them together with tab spaces
-  return(c(id, year(date), month(date), day(date), hour, minute, et) |>
+  return(c(id, year(date), month(date), day(date), hour, minute, 
+           sprintf("%.1f", et)) |>
            paste0(collapse = "\t"))
+  
+  # `sprintf` sets 'et' to always have one decimal place (even when it's 0)
   
 }
 
@@ -271,7 +280,13 @@ add_dummy_pre_entries <- function (filePath, dummyStart, dummyEnd) {
   
   # Write 'preVec' back to 'filePath'
   preVec |>
-    writeOutput(filePath, writeFunction = "write_lines", quietly = TRUE)
+    writeOutput(filePath, writeFunction = "write_lines", quietly = TRUE, 
+                sep = "\r\n")
+  
+  # Note: "\r\n" is the full expression for a new line marker in Windows
+  
+  # The LSPC executable file explicitly requires "\r\n" in all text-based files
+  # Otherwise, the file will fail to parse (without any clear error message)
   
   
   # Return nothing
@@ -294,7 +309,10 @@ create_pre_row <- function (date, hour = 0, minute = 0, second = 0, precip = 0) 
                 sprintf(fmt = "%.2d", hour), ":", 
                 sprintf(fmt = "%.2d", minute), ":", 
                 sprintf(fmt = "%.2d", second), ",", 
-                precip))
+                sprintf(fmt = "%.1f", precip)))
+  
+  # `sprintf` helps ensure that the time values are two digits each
+  # For the precipitation value, it will always have one decimal place
   
 }
 
