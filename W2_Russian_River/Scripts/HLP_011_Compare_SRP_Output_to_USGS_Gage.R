@@ -216,8 +216,22 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
     getFile()
   
   
-  currentDF <- currentPath |>
-    getPRISM()
+  # 'currentPath' may not exist if the procedure did not use the "Similar WY"
+  # forecasting methodology
+  if (!file.exists(currentPath)) {
+    
+    # In that case, create a fake tibble
+    # This will contain the expected columns from this file
+    currentDF <- tibble(Name = character(0), 
+                        Date = Date(0), 
+                        `ppt (mm)` = numeric(0))
+    
+  } else {
+    
+    currentDF <- currentPath |>
+      getPRISM()
+    
+  }
   
   
   # Validate these variables
@@ -2118,7 +2132,7 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
       
     }
     
-  # If no data is available, all metrics should be "NA"
+    # If no data is available, all metrics should be "NA"
   } else {
     
     statDF$MONTHLY_RESULT <- NA_real_
