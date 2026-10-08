@@ -382,12 +382,26 @@ getDatasetBounds <- function (stationID) {
                     stationID)
   
   
-  pageContent <- pageURL |>
-    read_lines()
+  pageContent <- catch_warnings_and_errors(
+    read_lines(pageURL)
+  )
   
   
   # Wait a bit before continuing
   Sys.sleep(runif(1, min = 1.0, max = 1.3))
+  
+  
+  # If an error occurred while querying the website, try again
+  if (caught_issue(pageContent)) {
+    
+    # Wait a bit before retrying
+    Sys.sleep(runif(1, min = 5, max = 10))
+    
+    
+    # Call this function again
+    return(getDatasetBounds(stationID))
+    
+  }
   
   
   # Find the text that says "Earliest available data"
@@ -444,7 +458,7 @@ getDatasetBounds <- function (stationID) {
   # Then, convert it into a date variable 
   # (with the day set to the first of the month)
   endDateString <- grep("Latest available data:", pageContent, 
-                          ignore.case = TRUE, value = TRUE) |>
+                        ignore.case = TRUE, value = TRUE) |>
     str_extract(" [A-Za-z]+ [0-9]+\\.?$") |>
     trimws() |>
     str_remove("\\.$") |>
