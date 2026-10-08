@@ -25,7 +25,7 @@ mainProcedure <- function () {
   cat("Starting 'LSPC_016_Archive_Candidate_and_Curated_Files.R'!\n")
   
   
-  # Import function from other scripts
+  # Import functions from other scripts
   functionStealer("W3_LSPC_Watershed/scripts/LSPC_003_Setup_Project_Directories.R",
                   "read_all_lspc_project_control")
   

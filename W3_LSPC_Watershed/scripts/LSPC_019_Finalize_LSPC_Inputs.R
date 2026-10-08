@@ -9,6 +9,10 @@
 # Finally, diversion data should be disabled as well (Card 660)
 
 
+# To Do:
+# Implement setting Cards 30, 31, and 45
+
+
 #### Setup ####
 
 # Clear the environment
@@ -41,9 +45,6 @@ mainProcedure <- function () {
   
   functionStealer("W3_LSPC_Watershed/scripts/LSPC_018_Migrate_Weather_Files.R",
                   "get_lspc_inp_paths")
-  
-  # c("get_lspc_inp_paths", "extract_lspc_inp_card") |>
-  #   map(~ functionStealer("W3_LSPC_Watershed/scripts/LSPC_018_Migrate_Weather_Files.R", .))
   
   
   # Read in the LSPC weather control file
