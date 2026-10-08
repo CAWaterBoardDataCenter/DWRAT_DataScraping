@@ -1292,6 +1292,14 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   }
   
   
+  # If every value for "PRECIP" in 'precipDF' is 0, treat it as NULL
+  if (!is.null(precipDF) && all(precipDF$PRECIP == 0)) {
+    
+    precipDF <- NULL
+    
+  }
+  
+  
   # If daily streamflow will be plotted, the x-axis will be the "DATE" column
   # Otherwise, for monthly streamflow, it is the "YEAR_MONTH" column
   xCol <- if_else(isDaily, "DATE", "YEAR_MONTH")
