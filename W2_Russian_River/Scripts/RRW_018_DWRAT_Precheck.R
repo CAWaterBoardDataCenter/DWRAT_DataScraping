@@ -25,6 +25,27 @@ mainProcedure <- function () {
   cat("Starting 'RRW_018_DWRAT_Precheck.R'!\n")
   
   
+  # Perform the entirety of this script's procedure in another function
+  # (That will allow it to be replicated in other workflows easily)
+  dwrat_precheck()
+  
+  
+  cat(col_green("\n'RRW_018_DWRAT_Precheck.R' is complete!\n\n"))
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+dwrat_precheck <- function () {
+  
+  # Examine a user's Anaconda installation for the "paradgim-dwrat" environment
+  # Install it, if it's not already present
+  
+  
   # Check for an installation of Anaconda
   cat("\n[1/2]\tChecking for Anaconda...\n")
   
@@ -66,9 +87,6 @@ mainProcedure <- function () {
   
   # Once "paradigm-dwrat" is confirmed or installed, conclude the script
   cat("\tDone!\n\n")
-  
-  
-  cat(col_green("\n'RRW_018_DWRAT_Precheck.R' is complete!\n\n"))
   
   
   # Return nothing
