@@ -142,7 +142,7 @@ add_dummy_entries <- function (filePath, dummyStart, dummyEnd) {
   
   if (grepl("\\.air$", filePath)) {
     
-    return(add_dummy_air_entries(filePath, dummyStart, dummyEnd))
+    return(add_dummy_air_entries(filePath, dummyEnd))
     
   } else if (grepl("\\.pre$", filePath)) {
     
@@ -167,13 +167,23 @@ add_dummy_entries <- function (filePath, dummyStart, dummyEnd) {
 
 
 
-add_dummy_air_entries <- function (filePath, dummyStart, dummyEnd) {
+add_dummy_air_entries <- function (filePath, dummyEnd) {
   
   # Read in the air weather file
-  # Include the dummy dates at the beginning and end of its dataset
+  # Include the dummy dates at the end of its dataset only
   
-  # There is one challenge related to this type of file
-  # There is metadata at the beginning that must remain intact
+  # One challenge with these files is that header rows are present at the beginning
+  # An ID that appears in the regular rows must be extracted too
+  
+  
+  # Note: No dummy data is added to the beginning of the file
+  
+  # In newer versions of LSPC, the timestep is determined automatically
+  # using the time difference between the first two values
+  
+  # A dummy value can interfere with this assessment
+  
+  # To Do: Calculate a dummy start that maintains the hourly timestep? (Maybe)
   
   
   # Start by reading in the file
@@ -194,21 +204,16 @@ add_dummy_air_entries <- function (filePath, dummyStart, dummyEnd) {
     unlist() |> head(1)
   
   
-  # With this value, row entries can be prepared for 'dummyStart' and 'dummyEnd'
+  # With this value, a row entry can be prepared for 'dummyEnd'
   # Seven column values will be separated by tabs
-  newStartRow <- create_air_row(idVal, dummyStart)
-  
   newEndRow <- create_air_row(idVal, dummyEnd)
   
   
-  # The next step is to insert these dummy rows into 'airVec'
+  # The next step is to insert this dummy row into 'airVec'
   
   
-  # Add 'newStartRow' right after 'headerEnd'
   # Append 'newEndRow' to the very end of the vector
-  airVec <- c(airVec[1:headerEnd],
-              newStartRow,
-              airVec[(headerEnd + 1):length(airVec)],
+  airVec <- c(airVec,
               newEndRow)
   
   
