@@ -61,7 +61,6 @@ source("W3_LSPC_Watershed/scripts/LSPC_003_Setup_Project_Directories.R")
 # Download weather data from "shared" sources (PRISM, CIMIS, and NLDAS)
 source("W3_LSPC_Watershed/scripts/LSPC_004a_Download_Shared_Climate_Data.R")
 
-
 source("W3_LSPC_Watershed/scripts/LSPC_004c_Download_PRISM_Data.R")
 
 
@@ -77,6 +76,8 @@ source("W3_LSPC_Watershed/scripts/LSPC_006_Update_Control_File_Start_Date.R")
 # Download gage data for each watershed
 source("W3_LSPC_Watershed/scripts/LSPC_007a_Download_Watershed_Data.R")
 
+source("W3_LSPC_Watershed/scripts/LSPC_007c_Download_RAWS_Data.R")
+
 
 # Setup an archive directory
 source("W3_LSPC_Watershed/scripts/LSPC_008_Setup_Archive_Directory.R")
@@ -86,26 +87,28 @@ source("W3_LSPC_Watershed/scripts/LSPC_008_Setup_Archive_Directory.R")
 # Update the 100 yr return period from NOAA in each watershed's project control file
 
 
+# Pre-process PRISM data for the staging step
+source("W3_LSPC_Watershed/scripts/LSPC_009_Prep_Candidate_PRISM_Data.R")
+
+
+# Pre-process RAWS data before staging as well
+source("W3_LSPC_Watershed/scripts/LSPC_010_Prep_RAWS_Data.R")
+
+
 # Stage climate data next
-source("W3_LSPC_Watershed/scripts/LSPC_009a_Stage_Climate_Data.R")
+source("W3_LSPC_Watershed/scripts/LSPC_011a_Stage_Climate_Data.R")
+
+
+# Archive files before proceeding
+source("W3_LSPC_Watershed/scripts/LSPC_012_Archive_Raw_and_Staged_Files.R")
 
 
 # Adjust the manual review spreadsheets before users perform the actual review
+source("W3_LSPC_Watershed/scripts/LSPC_013_Adjust_Manual_Review_Sheets.R")
 
 
+# End of Part 1
 
-# Use Python scripts to download and process weather data
-source("W3_LSPC_Watershed/scripts/LSPC_005a_Download_and_Stage_Climate_Data.R")
-
-
-# The next step of the workflow is a manual review
-# Provide the user with instructions about this
-cat("\n\n")
-paste0("Manual review spreadsheets have been generated for each watershed.\n\n",
-       "They are located in \"W3_LSPC_Watershed/data/projects/[Watershed]/candidate/gage/QCSpreadsheets\".\n\n",
-       "Please review the two spreadsheets that contain QC Flags 1, 2, 3, and 4. Delete the ",
-       "entries of values that should be removed. Later scripts will fill in ",
-       "all blank entries with data from PRISM.") |>
-  errWrap() |>
-  cat()
-cat("\n\n")
+# Please complete the manual reviews
+# Then, proceed to the Part 2 master script
+"W3_LSPC_Watershed/scripts/MSTR_v1_LSPC_Part_2.R"

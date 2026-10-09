@@ -108,7 +108,8 @@ mainProcedure <- function () {
 
 
 
-requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
+requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE, 
+                          retryCounter = 1, maxCounter = 10) {
   
   # Prepare a GET request and submit it to CIMIS
   
@@ -180,9 +181,10 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   # Try to submit the GET request
   # (Also, ask for a JSON-formatted response)
-  req <- try(GET(requestURL, add_headers("Ocp-Apim-Subscription-Key" = apiKey,
-                                         "Accept" = "application/json")), 
-             silent = TRUE)
+  req <- catch_warnings_and_errors(
+    GET(requestURL, add_headers("Ocp-Apim-Subscription-Key" = apiKey,
+                                "Accept" = "application/json"))
+  )
   
   
   # Wait a bit after receiving the response
@@ -190,13 +192,27 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   
   
   # Check if an error was received
-  if ("try-error" %in% class(req)) {
+  if (caught_issue(req)) {
     
     # Print out the error message
     cat("\n\n")
     print(req[[1]])
     cat("\n\n")
     
+    
+    # Consider attempting the request again
+    if (retryCounter < maxCounter) {
+      
+      # Notify the user, and attempt to send another request to CIMIS
+      return(retry_cimis(stationVec, startDate, endDate, isSplit, retryCounter, maxCounter))
+      
+      # Note: 'retryCounter' will be incremented inside `retry_cimis`
+      
+    }
+    
+    
+    # If the maximum number of retries has been reached, consider an alternative approach
+
     
     # Prepare a message about the failure
     # Whether it is used as an error message or a regular message depends on 
@@ -214,9 +230,24 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   # Also check if the response is valid
   if (req$status_code != 200) {
     
+    # Output the returned message
     cat("\n\n")
     print(content(req))
     cat("\n\n")
+    
+    
+    # If an error code of 400 is returned, and CIMIS states that a timeout occurred,
+    # consider retrying the call (if 'retryCounter' permits)
+    if (req$status_code == 400 && retryCounter < maxCounter && 
+        any(grepl("Execution Timeout Expired", unlist(content(req))))) {
+      
+      # Notify the user, and then attempt to send another request to CIMIS
+      return(retry_cimis(stationVec, startDate, endDate, isSplit, retryCounter, maxCounter))
+      
+      # Note: 'retryCounter' will be incremented inside `retry_cimis`
+      
+    }
+    
     
     return(paste0("CIMIS API Call Failed\n\n",
                   "A request sent to CIMIS's server returned an error code of ", 
@@ -435,7 +466,7 @@ formatResponse <- function (res, startDate, endDate, stationVec, isSplit) {
     # [2] Every entry in "Records" should contain elements for "Date",  
     #     "Station", and the parameters listed in 'varNames'
     !all(c("Date", "Station", varNames) %in% 
-             names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]])) ||
+         names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]])) ||
     # [3] The parameters in 'varNames' should be lists too
     #     They should each have an element called "Value"
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[1]]])) ||
@@ -657,6 +688,36 @@ splitDays <- function (startDate, endDate, dayGap) {
   
   # Return this vector
   return(dateVec)
+  
+}
+
+
+
+retry_cimis <- function (stationVec, startDate, endDate, isSplit, 
+                         retryCounter, maxCounter) {
+  
+  # Attempt another API call to CIMIS
+  
+  # As long as 'retryCounter' is less than 'maxCounter', retries are allowed
+  # (This function is called only when a retry is valid)
+  
+  
+  # Notify the user first
+  cat("\n\n")
+  paste0("Retrying in a bit (Attempt ", retryCounter + 1, "/", maxCounter, ")...") |> 
+    cat()
+  cat("\n\n")
+  
+  
+  # Wait a while before retrying
+  # As the number of retries increases, the waiting period increases
+  Sys.sleep(runif(1, min = 5 * retryCounter + 1, max = 15 * retryCounter + 5))
+  
+  
+  # Retry the request
+  return(requestCIMIS(stationVec, startDate, endDate, isSplit, retryCounter + 1, maxCounter))
+  
+  # 'retryCounter' is incremented by this function
   
 }
 
@@ -1336,8 +1397,8 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
     cat(paste0("\n\tSplitting procedure into ", length(dateVec) - 1, 
                " form submissions...\n"))
     
-  # Alternatively, if 'startDate' and 'endDate' do not have a large gap,
-  # a single form request can be made to obtain all of the data
+    # Alternatively, if 'startDate' and 'endDate' do not have a large gap,
+    # a single form request can be made to obtain all of the data
   } else {
     
     # Define 'dateVec' to contain only 'startDate' and 'endDate'
@@ -1390,18 +1451,19 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
     
     
     # Next, try to read in "daily_report.csv"
-    cimisDF <- try(getFile(outFile))
+    cimisDF <- catch_warnings_and_errors(
+      getFile(outFile)
+    )
     
     
     # If an error occurred, stop the remote driver and server
-    if ("try-error" %in% class(cimisDF)) {
+    if (caught_issue(cimisDF)) {
       
-      try(rd$quit(), silent = TRUE)
-      try(server$stop(), silent = TRUE)
+      quit_selenium(rd, server)
       
       
       # Print out the error message and stop the script
-      stop(cimisDF)
+      stop(cimisDF[[1]])
       
     }
     
@@ -1438,8 +1500,7 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
   
   
   # Then, close the remote driver and turn off the server
-  try(rd$quit(), silent = TRUE)
-  try(server$stop(), silent = TRUE)
+  quit_selenium(rd, server)
   
   
   # 'compiledDF' contains the data from each downloaded file 
@@ -1480,7 +1541,7 @@ seleniumLogin <- function (rd, server, userLogin) {
   
   # Click on the button to access the login page
   clickButton(rd, server, '//*[@id="top-of-page"]/div/div/nav/div/div[2]/div/a[2]')
-
+  
   loopWait(rd, server, "Password")
   
   
@@ -1629,15 +1690,16 @@ clickButton <- function (rd, server, val, searchType = "xpath") {
   
   
   # Click on the element
-  tryRes <- try(foundElement$clickElement())
+  tryRes <- catch_warnings_and_errors(
+    foundElement$clickElement()
+  )
   
   
   # Check for errors
-  if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
+  if (!is.null(tryRes) && caught_issue(tryRes)) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
@@ -1670,24 +1732,25 @@ locateElement <- function (rd, server, val, searchType = "xpath") {
   
   
   # Use `findElement` to locate the element
-  foundElement <- try(rd$findElement(using = searchType, value = val))
+  foundElement <- catch_warnings_and_errors(
+    rd$findElement(using = searchType, value = val)
+  )
   
   
   # Error Check
   # Stop if no element is found or if more than one element is found
-  if (length(foundElement) != 1 || "try-error" %in% class(foundElement)) {
+  if (length(foundElement) != 1 || caught_issue(foundElement)) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
     paste0("Could Not Find Specified Element\n\n",
            "The element whose ", searchType, " is \"", val, 
            "\" was not found.",
-           if_else(length(foundElement) != 1,
-                   paste0(" The input returned ", length(foundElement), " ",
+           if_else(length(foundElement[[1]]) != 1,
+                   paste0(" The input returned ", length(foundElement[[1]]), " ",
                           "matches."),
                    "")) |>
       errWrap() |>
@@ -1768,8 +1831,7 @@ loopWait <- function (rd, server, breakStr, sleepTime = 3, maxCount = 15) {
   if (counter == maxCount) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
@@ -1843,15 +1905,16 @@ scrollToElement <- function (rd, server, val, searchType = "xpath") {
   
   
   # Scroll to the element
-  tryRes <- try(rd$executeScript("arguments[0].scrollIntoView(true);", 
-                                 list(foundElement)))
+  tryRes <- catch_warnings_and_errors(
+    rd$executeScript("arguments[0].scrollIntoView(true);", 
+                     list(foundElement))
+  )
   
   
-  if (!is.null(tryRes) && "try-error" %in% class(tryRes)) {
+  if (!is.null(tryRes) && caught_issue(tryRes)) {
     
     # Stop the remote driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Then output an error message
@@ -1980,8 +2043,7 @@ waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
       !any(file.exists(c(outFile, paste0(outFile, ".crdownload"))))) {
     
     # Close the web driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Output an error message
@@ -2014,8 +2076,7 @@ waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
   if (!file.exists(outFile)) {
     
     # Close the web driver and server
-    try(rd$quit(), silent = TRUE)
-    try(server$stop(), silent = TRUE)
+    quit_selenium(rd, server)
     
     
     # Generate an error message
@@ -2028,6 +2089,25 @@ waitForFileDL <- function (outFile, server, rd, maxWait = 15) {
   
   
   # Otherwise, once the download is complete, return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+quit_selenium <- function (rd, server) {
+  
+  # Exit out of the dynamic scraping mechanism
+  
+  # Close the Selenium remote driver
+  # Then stop the server
+  
+  
+  catch_warnings_and_errors(rd$quit())
+  catch_warnings_and_errors(server$stop())
+  
+  
+  # Return nothing
   return(invisible(NULL))
   
 }

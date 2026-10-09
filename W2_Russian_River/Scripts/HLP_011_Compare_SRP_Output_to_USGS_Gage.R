@@ -216,8 +216,22 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
     getFile()
   
   
-  currentDF <- currentPath |>
-    getPRISM()
+  # 'currentPath' may not exist if the procedure did not use the "Similar WY"
+  # forecasting methodology
+  if (!file.exists(currentPath)) {
+    
+    # In that case, create a fake tibble
+    # This will contain the expected columns from this file
+    currentDF <- tibble(Name = character(0), 
+                        Date = Date(0), 
+                        `ppt (mm)` = numeric(0))
+    
+  } else {
+    
+    currentDF <- currentPath |>
+      getPRISM()
+    
+  }
   
   
   # Validate these variables
@@ -1278,6 +1292,14 @@ generateStreamflowPlot <- function (streamDF, writePath, yCol,
   }
   
   
+  # If every value for "PRECIP" in 'precipDF' is 0, treat it as NULL
+  if (!is.null(precipDF) && all(precipDF$PRECIP == 0)) {
+    
+    precipDF <- NULL
+    
+  }
+  
+  
   # If daily streamflow will be plotted, the x-axis will be the "DATE" column
   # Otherwise, for monthly streamflow, it is the "YEAR_MONTH" column
   xCol <- if_else(isDaily, "DATE", "YEAR_MONTH")
@@ -2118,7 +2140,7 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
       
     }
     
-  # If no data is available, all metrics should be "NA"
+    # If no data is available, all metrics should be "NA"
   } else {
     
     statDF$MONTHLY_RESULT <- NA_real_

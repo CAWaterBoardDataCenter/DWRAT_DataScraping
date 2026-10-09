@@ -1,12 +1,14 @@
-# Run Python scripts to download weather data for each watershed
-# (e.g., data from NOAA and RAWS)
+# Run Python scripts to create weather files for each watershed
+
+# The staged weather files as well as the manual review worksheets will be
+# examined and processed to develop the final weather files
 
 # This script prepares a temporary Python script that has key information
 # (path to Weather Control file and NLDAS Earth Data credentials)
 
-# Then, using Anaconda, this script executes its Python counterpart (LSPC_007b),
+# Then, using Anaconda, this script executes its Python counterpart (LSPC_014b),
 # which imports values from the temporary script and executes other Python scripts 
-# to download weather data for each watershed
+# to process weather data for each watershed
 
 # Note: The temporary Python script should never be committed
 #       The Python script should have a procedure that deletes it too
@@ -31,7 +33,7 @@ source("Shared_Scripts/!Shared_Functions_Importer.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'LSPC_007a_Download_Watershed_Data.R'!\n")
+  cat("Starting 'LSPC_014a_Generate_Weather_Files.R'!\n")
   
   
   # Import functions from another script
@@ -52,8 +54,8 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  # Call the 005b Python script to obtain weather data
-  cat("[2/2]\tInitiating climate download scripts...\n")
+  # Call the 014b Python script to obtain weather data
+  cat("[2/2]\tInitiating LSPC weather file generation scripts...\n")
   
   
   # Get a path to Anaconda's "activate.bat" script
@@ -61,7 +63,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the Python script next
-  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_007b_Download_Watershed_Data.py" |>
+  scriptPath <- "W3_LSPC_Watershed/scripts/LSPC_014b_Generate_Weather_Files.py" |>
     normalizePath(mustWork = FALSE)
   
   
@@ -82,7 +84,6 @@ mainProcedure <- function () {
   climateRes <- c("cd W3_LSPC_Watershed",
                   paste0(condaPath, " && ",
                          "conda activate lspc-climate-processing-restructure && ",
-                         "conda config --set ssl_verify truststore && ",
                          "python ", shQuote(scriptPath))) |>
     run_temp_bat()
   
@@ -96,7 +97,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  cat(col_green("\n'LSPC_007a_Download_Watershed_Data.R' is complete!\n\n"))
+  cat(col_green("\n'LSPC_014a_Generate_Weather_Files.R' is complete!\n\n"))
   
   
   # Return nothing

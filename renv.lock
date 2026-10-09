@@ -2326,6 +2326,37 @@
       "Repository": "CRAN",
       "Encoding": "UTF-8"
     },
+    "encharter": {
+      "Package": "encharter",
+      "Version": "0.11",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Enhanced Office Open XML Charting for 'openxlsx2'",
+      "Language": "en-US",
+      "Authors@R": "c( person(\"Jan Marvin\", \"Garbuszus\", email = \"jan.garbuszus@ruhr-uni-bochum.de\", role = c(\"aut\", \"cre\")) )",
+      "Description": "Provides a high-level 'R6' interface for creating complex Office Open XML (OOXML) charts. Allows users to build multi-series combo charts with secondary axes and granular styling options, designed to integrate seamlessly with 'openxlsx2'.",
+      "License": "MIT + file LICENSE",
+      "URL": "https://janmarvin.github.io/encharter/, https://github.com/JanMarvin/encharter",
+      "BugReports": "https://github.com/JanMarvin/encharter/issues",
+      "Encoding": "UTF-8",
+      "LinkingTo": [
+        "openxlsx2"
+      ],
+      "Imports": [
+        "R6",
+        "openxlsx2 (>= 1.26)"
+      ],
+      "Suggests": [
+        "testthat (>= 3.0.0)",
+        "viridisLite"
+      ],
+      "Config/testthat/edition": "3",
+      "Config/roxygen2/version": "8.1.0",
+      "NeedsCompilation": "yes",
+      "Author": "Jan Marvin Garbuszus [aut, cre]",
+      "Maintainer": "Jan Marvin Garbuszus <jan.garbuszus@ruhr-uni-bochum.de>",
+      "Repository": "CRAN"
+    },
     "evaluate": {
       "Package": "evaluate",
       "Version": "1.0.5",
