@@ -52,7 +52,7 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
-  # Call the 005b Python script to obtain weather data
+  # Call the 011b Python script to obtain weather data
   cat("[2/2]\tInitiating climate data staging scripts...\n")
   
   

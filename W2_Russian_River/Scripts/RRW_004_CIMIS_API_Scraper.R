@@ -108,7 +108,8 @@ mainProcedure <- function () {
 
 
 
-requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
+requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE, 
+                          retryCounter = 1, maxCounter = 10) {
   
   # Prepare a GET request and submit it to CIMIS
   
@@ -199,6 +200,20 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
     cat("\n\n")
     
     
+    # Consider attempting the request again
+    if (retryCounter < maxCounter) {
+      
+      # Notify the user, and attempt to send another request to CIMIS
+      return(retry_cimis(stationVec, startDate, endDate, isSplit, retryCounter, maxCounter))
+      
+      # Note: 'retryCounter' will be incremented inside `retry_cimis`
+      
+    }
+    
+    
+    # If the maximum number of retries has been reached, consider an alternative approach
+
+    
     # Prepare a message about the failure
     # Whether it is used as an error message or a regular message depends on 
     # whether the follow-up dynamic scraping procedure will be used
@@ -215,9 +230,24 @@ requestCIMIS <- function (stationVec, startDate, endDate, isSplit = FALSE) {
   # Also check if the response is valid
   if (req$status_code != 200) {
     
+    # Output the returned message
     cat("\n\n")
     print(content(req))
     cat("\n\n")
+    
+    
+    # If an error code of 400 is returned, and CIMIS states that a timeout occurred,
+    # consider retrying the call (if 'retryCounter' permits)
+    if (req$status_code == 400 && retryCounter < maxCounter && 
+        any(grepl("Execution Timeout Expired", unlist(content(req))))) {
+      
+      # Notify the user, and then attempt to send another request to CIMIS
+      return(retry_cimis(stationVec, startDate, endDate, isSplit, retryCounter, maxCounter))
+      
+      # Note: 'retryCounter' will be incremented inside `retry_cimis`
+      
+    }
+    
     
     return(paste0("CIMIS API Call Failed\n\n",
                   "A request sent to CIMIS's server returned an error code of ", 
@@ -436,7 +466,7 @@ formatResponse <- function (res, startDate, endDate, stationVec, isSplit) {
     # [2] Every entry in "Records" should contain elements for "Date",  
     #     "Station", and the parameters listed in 'varNames'
     !all(c("Date", "Station", varNames) %in% 
-             names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]])) ||
+         names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]])) ||
     # [3] The parameters in 'varNames' should be lists too
     #     They should each have an element called "Value"
     !("Value" %in% names(res[["Data"]][["Providers"]][[1]][["Records"]][[1]][[varNames[1]]])) ||
@@ -658,6 +688,36 @@ splitDays <- function (startDate, endDate, dayGap) {
   
   # Return this vector
   return(dateVec)
+  
+}
+
+
+
+retry_cimis <- function (stationVec, startDate, endDate, isSplit, 
+                         retryCounter, maxCounter) {
+  
+  # Attempt another API call to CIMIS
+  
+  # As long as 'retryCounter' is less than 'maxCounter', retries are allowed
+  # (This function is called only when a retry is valid)
+  
+  
+  # Notify the user first
+  cat("\n\n")
+  paste0("Retrying in a bit (Attempt ", retryCounter + 1, "/", maxCounter, ")...") |> 
+    cat()
+  cat("\n\n")
+  
+  
+  # Wait a while before retrying
+  # As the number of retries increases, the waiting period increases
+  Sys.sleep(runif(1, min = 5 * retryCounter + 1, max = 15 * retryCounter + 5))
+  
+  
+  # Retry the request
+  return(requestCIMIS(stationVec, startDate, endDate, isSplit, retryCounter + 1, maxCounter))
+  
+  # 'retryCounter' is incremented by this function
   
 }
 
@@ -1337,8 +1397,8 @@ scrapeCIMIS <- function (stationVec, startDate, endDate,
     cat(paste0("\n\tSplitting procedure into ", length(dateVec) - 1, 
                " form submissions...\n"))
     
-  # Alternatively, if 'startDate' and 'endDate' do not have a large gap,
-  # a single form request can be made to obtain all of the data
+    # Alternatively, if 'startDate' and 'endDate' do not have a large gap,
+    # a single form request can be made to obtain all of the data
   } else {
     
     # Define 'dateVec' to contain only 'startDate' and 'endDate'
@@ -1481,7 +1541,7 @@ seleniumLogin <- function (rd, server, userLogin) {
   
   # Click on the button to access the login page
   clickButton(rd, server, '//*[@id="top-of-page"]/div/div/nav/div/div[2]/div/a[2]')
-
+  
   loopWait(rd, server, "Password")
   
   
