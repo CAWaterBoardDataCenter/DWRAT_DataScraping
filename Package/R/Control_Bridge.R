@@ -304,7 +304,7 @@ get_from_lspc_master_control <- function (fieldName) {
                 "RR Workflow Control File\n\n",
                 "Please ensure that the scripts are up-to-date\n\n",
                 "Also, please confirm that the correct version of '",
-                controlPath, "' is in use") |>
+                lspc_master_control_local_path(), "' is in use") |>
            errWrap())
     
   }
@@ -324,7 +324,7 @@ get_from_lspc_master_control <- function (fieldName) {
       stop(paste0("Empty Field in Control File\n\n",
                   "The corresponding 'VALUE' entry for the field '", fieldName, 
                   "' is empty\n\n",
-                  "Please update '", controlPath, "'") |>
+                  "Please update '", lspc_master_control_local_path(), "'") |>
              errWrap())
       
     }
@@ -335,5 +335,62 @@ get_from_lspc_master_control <- function (fieldName) {
   # Extract a string from the "VALUE" column based on the row where
   # 'fieldName' matches the string in "FIELD"
   return(controlDF[["VALUE"]][fieldName == controlDF[["FIELD"]]][1])
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+read_demand_control <- function () {
+  
+  # Read in the demand workflow's control file
+  
+  # This spreadsheet can be stored locally or on SharePoint
+  
+  
+  # For SharePoint paths to be usable, both "INITIAL_SHAREPOINT_FILE_PORTION"
+  # and "SHAREPOINT_DEMAND_CONTROL_FILE" must be specified in 
+  # the master control file
+  if (!is.na(get_from_master_control("INITIAL_SHAREPOINT_FILE_PORTION"))) {
+    
+    # Try and read the SharePoint fragment for the demand control file
+    controlPath <- get_from_master_control("SHAREPOINT_DEMAND_CONTROL_FILE")
+    
+    
+    # If that value is indeed specified, read in that file and return it
+    if (!is.na(controlPath)) {
+      
+      return(controlPath |>
+               makeSharePointPath() |>
+               getXLSX(worksheet = demand_control_worksheet(), skip = 1))
+      
+    }
+    
+  }
+  
+  
+  # In all other cases, use the local version of the control file
+  controlPath <- demand_control_local_path()
+  
+  
+  # Read in the spreadsheet as a data frame and return it
+  return(getXLSX(controlPath, worksheet = demand_control_worksheet(), skip = 1))
   
 }
