@@ -82,6 +82,11 @@ mainProcedure <- function () {
   checkForErrors(dirPath, scriptPath, dwratRes)
   
   
+  # Save 'dwratRes' to the archive folder too
+  dwratRes |>
+    writeOutput(paste0(dirPath, "/DWRAT/Paradigm_DWRAT.log"))
+  
+  
   # Output a completion message
   cat("\tDone!\n\n")
   
