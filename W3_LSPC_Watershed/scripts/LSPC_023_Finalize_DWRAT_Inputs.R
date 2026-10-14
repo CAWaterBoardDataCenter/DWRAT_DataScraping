@@ -1747,8 +1747,9 @@ format_basins <- function (flowsTo) {
   # Adjust the "immediate downstream" table for DWRAT
   
   
-  # First, rename "SUBWATERSHED" to "BASIN"
+  # First, sort the rows and rename "SUBWATERSHED" to "BASIN"
   flowsTo <- flowsTo |>
+    arrange(SUBWATERSHED) |> 
     rename(BASIN = SUBWATERSHED)
   
   
