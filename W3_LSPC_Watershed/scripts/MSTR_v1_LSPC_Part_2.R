@@ -76,16 +76,16 @@ source("W3_LSPC_Watershed/scripts/LSPC_021_Archive_LSPC_Outputs.R")
 
 
 # Ensure that DWRAT is available
-source("W3_LSPC_Watershed/LSPC_021_DWRAT_Precheck.R")
+source("W3_LSPC_Watershed/scripts/LSPC_022_DWRAT_Precheck.R")
 
 
 # Set up DWRAT files
-source("W3_LSPC_Watershed/LSPC_022_Finalize_DWRAT_Inputs.R")
+source("W3_LSPC_Watershed/scripts/LSPC_023_Finalize_DWRAT_Inputs.R")
 
 
 # Run DWRAT
-source("W3_LSPC_Watershed/LSPC_023_Run_DWRAT.R")
+source("W3_LSPC_Watershed/scripts/LSPC_024_Run_DWRAT.R")
 
 
 # Archive DWRAT files
-source("W3_LSPC_Watershed/LSPC_024_DWRAT_Cleanup.R")
+source("W3_LSPC_Watershed/scripts/LSPC_025_DWRAT_Cleanup.R")
