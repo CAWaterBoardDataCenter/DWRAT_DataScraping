@@ -236,17 +236,24 @@ validateStationInputs <- function (inputDF, inputPath,
   # in the PRMS and SRP procedures
   
   
-  # Related to that requirement, make sure 'model' is either "PRMS" or "SRP"
-  if (!(model %in% c("PRMS", "SRP"))) {
+  # Related to that requirement, make sure 'model' is "PRMS", "SRP", or something similar
+  if (!(model %in% c("PRMS", "SRP", "SRPHM"))) {
     
     paste0("Script Error - Unrecognized Value for 'model'\n\n", 
            "The function `validateStationInputs` checks station input ",
            "for connecting weather data to PRMS or SRP DAT files. ",
-           "Therefore, the input variable 'model' should be either \"PRMS\" ",
-           "or \"SRP\". However, it was input as \"", model, "\" instead.\n\n", 
+           "Therefore, the input variable 'model' should be one of: ",
+           c("PRMS", "SRP", "SRPHM") |> vec2QuotedStr(),
+           ". However, it was input as \"", model, "\" instead.\n\n", 
            "Please correct the script and try again.") |>
       stop_script()
     
+  }
+  
+  
+  # If the model is "SRPHM", use "SRP" for the column names and validation process
+  if (model %in% c("SRPHM")) {
+    model <- "SRP"
   }
   
   
@@ -773,7 +780,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
 validateInputDAT <- function (datFile, sourcePath, model, modelCols,
                               startDate, endDate, datType) {
   
-  # Verify the formatting of a DAT file for PRMS or SRP
+  # Verify the formatting of a DAT file for PRMS, SRP, or similar models
   # This function will be applied to the long-running meteorological
   # DAT file, the SPI DAT file, and the final DAT file
   
@@ -785,11 +792,11 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
   # the main DAT file, the SPI DAT file, or the final DAT file
   
   
-  if (!(model %in% c("PRMS", "SRP"))) {
+  if (!(model %in% c("PRMS", "SRP", "SRPHM"))) {
     
     paste0("Script Error - Unknown Value for 'model'\n\n",
-           "The input variable 'model' must be one of two ",
-           "values (", vec2QuotedStr(c("PRMS", "SRP")), 
+           "The input variable 'model' must be one of these ",
+           "values (", vec2QuotedStr(c("PRMS", "SRP", "SRPHM")), 
            "). \"", model, "\" is not a recognized value. ",
            "Please revise the script.") |>
       errWrap() |>

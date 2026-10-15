@@ -207,7 +207,7 @@ mainProcedure <- function (model = "PRMS") {
   # Edit 'prismDF' to prepare it for regression with 'meteorDF'
   prismDF <- prismDF |>
     reformat_climate_data(stationDF, "PRISM", 
-                          model, siPRISM = model %notin% c("SRP"))
+                          model, siPRISM = model %notin% c("SRP", "SRPHM"))
   
   
   # Remove outliers from 'meteorDF'

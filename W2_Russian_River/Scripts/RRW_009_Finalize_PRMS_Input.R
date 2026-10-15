@@ -666,7 +666,7 @@ importLinModels <- function (model) {
                 "MAR" = list(m = 1.10546021129827, b = 25.5273627224535),
                 "APR" = list(m = 1.00852388216750, b = 47.0563971511456)))
     
-  } else if (model == "SRP") {
+  } else if (model %in% c("SRP", "SRPHM")) {
     
     return(list("FEB" = list(m = 1.18889417583887, b = 127.497807635486),
                 "MAR" = list(m = 1.09263349165030, b = 28.1349370455440),
@@ -674,7 +674,7 @@ importLinModels <- function (model) {
     
   } else {
     
-    paste0("Unknown 'model' value (expected \"PRMS\" or \"SRP\")\n\n",
+    paste0("Unknown 'model' value (expected \"PRMS\", \"SRP\", or \"SRPHM\")\n\n",
            "Please revise the script!") |>
       errWrap() |>
       stop()

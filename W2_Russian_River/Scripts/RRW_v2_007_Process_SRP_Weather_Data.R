@@ -42,7 +42,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 
 #### Functions ####
 
-mainProcedure <- function () {
+mainProcedure <- function (archiveFiles = TRUE) {
   
   cat("\n\n")
   cat("Starting 'RRW_v2_007_Process_SRP_Weather_Data.R'!\n")
@@ -60,7 +60,7 @@ mainProcedure <- function () {
   # and QA/QC filepaths 
   
   # Several meteorological files will be added to the "Output" folder
-  merge_weather_data(startDate, endDate, "SRP", 
+  merge_weather_data(startDate, endDate, "SRPHM", 
                      
                      prismInputPath = getFromControl_RR("PRISM_SRP_STATIONS_CSV") |>
                        sharepointPathCheck(isFolder = FALSE), 

@@ -133,7 +133,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRP", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRPHM", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -169,7 +169,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     
     mergedDAT <- predictCurrentWY(mergedDAT,
-                                  startDate, endDate, "SRP", 
+                                  startDate, endDate, "SRPHM", 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
                                   dirPath, filePaths$MAIN_DAT[1])
     
@@ -206,7 +206,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Archive the historic DAT file too
-  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "SRP")
+  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "SRPHM")
   
   
   cat("\tDone!\n\n")

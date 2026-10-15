@@ -19,7 +19,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 merge_weather_data <- function (startDate, endDate, model, 
                                 prismInputPath, prismOutputPath, 
                                 allTempColumnsFromPRISM = TRUE, 
-                                siPRISM = model %notin% c("SRP"),
+                                siPRISM = model %notin% c("SRP", "SRPHM"),
                                 applyFullQAQC = TRUE, 
                                 archiveFiles = TRUE, 
                                 noaaInputPath = NULL, noaaOutputPath = NULL,
@@ -887,7 +887,7 @@ reformat_climate_data <- function (climateDF, climateInput, dataSource,
       convert_climate_units(fieldNameVec, "TMAX", toSI = TRUE) |>
       convert_climate_units(fieldNameVec, "TMIN", toSI = TRUE)
     
-  } else if (model %in% c("SRP") && dataSource %in% c("RAWS", "CIMIS")) {
+  } else if (model %in% c("SRP", "SRPHM") && dataSource %in% c("RAWS", "CIMIS")) {
     
     # Convert SI units to US units
     
