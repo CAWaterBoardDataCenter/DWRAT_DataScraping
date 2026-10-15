@@ -315,7 +315,9 @@ get_from_lspc_master_control <- function (fieldName) {
     
     # Exceptions:
     if (fieldName %in% c("EARTHDATA_LOGIN_CREDENTIALS", 
-                         "PRIOR_MANUAL_REVIEW_SHEETS_LOCATION")) {
+                         "PRIOR_MANUAL_REVIEW_SHEETS_LOCATION",
+                         "ADDITIONAL_ARCHIVE_LOCATION",
+                         "LONG-RUNNING_METADATA_FILE_LOCATION")) {
       
       # These fields are optional, so it is okay if they are "NA"
       

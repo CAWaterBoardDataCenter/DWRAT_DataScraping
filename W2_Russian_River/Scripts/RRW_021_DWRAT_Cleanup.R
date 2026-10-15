@@ -46,7 +46,8 @@ mainProcedure <- function () {
   # "ADDITIONAL_ARCHIVE_LOCATION" in the workflow control file
   # If that's the case, the script will run an extra procedure
   # to copy the files from 'dirPath' to 'extraDir'
-  extraDir <- checkForAdditionalArchive()
+  extraDir <- getFromControl_RR("ADDITIONAL_ARCHIVE_LOCATION") |>
+    check_for_additional_archive()
   
   # 'extraDir' will be "NA" if this extra procedure will NOT be run
   
@@ -59,36 +60,7 @@ mainProcedure <- function () {
   
   # Use "conda export" to write an "environment.yml" file in the hydrology
   # output folder
-  ymlRes <- system(paste0(batPath, " && ",
-                          "conda export -n paradigm-dwrat -f ", 
-                          paste0(dirPath, "/environment.yml") |> 
-                            normalizePath(mustWork = FALSE) |> shQuote()), 
-                   intern = TRUE)
-  
-  
-  # 'ymlRes' should be empty or only contain warning messages
-  # Otherwise, an error may have occurred
-  if (length(ymlRes) > 0) {
-    
-    # Include the output message in the console 
-    cat("\n\nOutput Message(s) from Export Operation:\n\n")
-    print(ymlRes)
-    
-    
-    # Check if the word "error" appears anywhere in 'ymlRes'
-    if (any(grepl("Error", ymlRes, ignore.case = TRUE))) {
-      
-      # If yes, output an error message too
-      paste0("Anaconda Export Error\n\n",
-             "An error was encountered while exporting the \"paradigm-dwrat\" ",
-             "environment to a file. Please investigate the model's output ",
-             "messages above.") |>
-        errWrap() |>
-        stop()
-      
-    }
-    
-  }
+  export_anaconda_env(batPath, dirPath, "paradigm-dwrat")
   
   
   # The task is complete
@@ -137,7 +109,8 @@ mainProcedure <- function () {
   # update or create "RR_Workflow_Tracker.csv" with this run's metadata
   if (!is.na(getFromControl_RR("LONG-RUNNING_METADATA_FILE_LOCATION"))) {
     
-    updateMetadataCompilation(dirPath)
+    update_metadata_compilation(dirPath,
+                                getFromControl_RR("LONG-RUNNING_METADATA_FILE_LOCATION"))
     
   }
   
@@ -156,7 +129,7 @@ mainProcedure <- function () {
 
 
 
-checkForAdditionalArchive <- function () {
+check_for_additional_archive <- function (extraDir) {
   
   # Check if a user supplied a valid directory to "ADDITIONAL_ARCHIVE_LOCATION"
   
@@ -165,10 +138,6 @@ checkForAdditionalArchive <- function () {
   
   # This function will return either the location to this extra directory
   # or "NA" if this process will not be used
-  
-  
-  # First, check if the user supplied a value in the control file
-  extraDir <- getFromControl_RR("ADDITIONAL_ARCHIVE_LOCATION")
   
   
   # If 'extraDir' is "NA", return "NA" and do not use this procedure
@@ -190,10 +159,12 @@ checkForAdditionalArchive <- function () {
   # If the directory does not exist, notify the user and then return "NA"
   if (!dir.exists(extraDir)) {
     
+    cat("\n\n")
+    
     paste0("Additional Archive Location Does Not Exist\n\n",
            "The folder \"", extraDir, "\" does not appear to exist. ",
            "Therefore, no copies will be made of the files stored ", 
-           "in the main hydrology output folder.\n\n",
+           "in the main hydrology archive folder.\n\n",
            "Please correct the path in \"ADDITIONAL_ARCHIVE_LOCATION\" ",
            "of the control file to enable this part of the procedure.") |>
       errWrap() |>
@@ -215,7 +186,51 @@ checkForAdditionalArchive <- function () {
 
 
 
-updateMetadataCompilation <- function (dirPath) {
+export_anaconda_env <- function (batPath, dirPath, envName, 
+                                 outName = "environment.yml") {
+  
+  # Export an Anaconda environment to a YML file
+  
+  # The "conda export" command can help with this
+  # https://docs.conda.io/projects/conda/en/latest/commands/export.html
+  
+  
+  # Submit the command to export the environment to a file
+  ymlRes <- system(paste0(batPath, " && ",
+                          "conda export -n ", envName, " -f ", 
+                          paste0(dirPath, "/", outName) |> 
+                            normalizePath(mustWork = FALSE) |> shQuote()), 
+                   intern = TRUE)
+  
+  
+  # 'ymlRes' should be empty or only contain warning messages
+  # Otherwise, an error may have occurred
+  if (length(ymlRes) > 0) {
+    
+    # Include the output message in the console 
+    cat("\n\nOutput Message(s) from Export Operation:\n\n")
+    print(ymlRes)
+    
+    
+    # Check if the word "error" appears anywhere in 'ymlRes'
+    error_if(any(grepl("Error", ymlRes, ignore.case = TRUE)),
+             paste0("Anaconda Export Error\n\n",
+                    "An error was encountered while exporting the \"", envName, 
+                    "\" environment to a file. Please investigate the output ",
+                    "messages above."))
+    
+  }
+  
+  
+  # Return nothing
+  return(invisible(NULL))
+  
+}
+
+
+
+update_metadata_compilation <- function (dirPath, fileLocation,
+                                         fileName = "RR_Workflow_Tracker.csv") {
   
   # Add data from the current workflow run's "metadata.csv" file to
   # "RR_Workflow_Tracker.csv", which is stored in the folder
@@ -223,7 +238,7 @@ updateMetadataCompilation <- function (dirPath) {
   
   
   # First, locate the folder that contains "RR_Workflow_Tracker.csv"
-  trackerDir <- getFromControl_RR("LONG-RUNNING_METADATA_FILE_LOCATION") |>
+  trackerDir <- fileLocation |>
     sharepointPathCheck(isFolder = TRUE)
   
   
@@ -255,8 +270,8 @@ updateMetadataCompilation <- function (dirPath) {
     getFile()
   
   
-  # Then, check if "RR_Workflow_Tracker.csv" already exists in 'trackerDir'
-  compiledPath <- paste0(trackerDir, "/RR_Workflow_Tracker.csv") |>
+  # Then, check if 'fileName' already exists in 'trackerDir'
+  compiledPath <- paste0(trackerDir, "/", fileName) |>
     normalizePath(mustWork = FALSE)
   
   
