@@ -256,7 +256,7 @@ mainProcedure <- function () {
   
   
   # Record the current time as the approximate time when Part 1 of the workflow concluded
-  updateMetadataCSV(dirPath, list("APPROX_PART_1_COMPLETION_TIME" = Sys.Date()))
+  updateMetadataCSV(dirPath, list("APPROX_PART_1_COMPLETION_TIME" = Sys.time()))
   
   
   cat("\tDone!\n\n")

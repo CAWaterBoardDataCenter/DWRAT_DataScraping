@@ -62,6 +62,10 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
+  # Update metadata about the start time of the "Part 2" procedure
+  updateMetadataCSV(dirPath, list("APPROX_PART_2_START_TIME" = Sys.time()))
+  
+  
   cat(col_green("\n'HLP_003_Confirm_Part_1_Completion.R' is complete!\n\n"))
   
   
