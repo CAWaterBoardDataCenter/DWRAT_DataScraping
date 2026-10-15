@@ -163,16 +163,3 @@ source("W2_Russian_River/Scripts/RRW_021_DWRAT_Cleanup.R")
 
 # Generate a batch file for ease of future use
 source("W2_Russian_River/Scripts/HLP_006_Generate_RR_Workflow_Bat.R")
-
-
-# Data analysis steps
-
-
-
-#### Maintenance Scripts ####
-
-# Generating new long-running DAT file
-
-# Generating new historic precipitation averages 
-# for the PRMS and SRP model domains
-

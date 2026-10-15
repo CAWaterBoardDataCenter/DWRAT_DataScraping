@@ -89,3 +89,9 @@ source("W3_LSPC_Watershed/scripts/LSPC_024_Run_DWRAT.R")
 
 # Archive DWRAT files
 source("W3_LSPC_Watershed/scripts/LSPC_025_DWRAT_Cleanup.R")
+
+
+#### Extra Scripts ####
+
+# Generate batch files for ease of future use
+source("W3_LSPC_Watershed/scripts/HLP_004_Generate_LSPC_Workflow_Bat.R")
