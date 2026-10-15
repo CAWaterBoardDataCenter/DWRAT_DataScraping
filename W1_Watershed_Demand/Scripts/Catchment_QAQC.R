@@ -551,8 +551,8 @@ generateMap <- function (catchDF, fieldName, wsBound, ws) {
   # Initialize the basemaps first (and add a scalebar)
   leafMap <- leaflet(options = leafletOptions(zoomControl = TRUE)) |>
     addTiles() |>
-    addProviderTiles(provider = providers$CartoDB.Positron, 
-                     group = "CartoDB.Positron") |>
+    addProviderTiles(provider = providers$Esri.WorldGrayCanvas, 
+                     group = "Esri.WorldGrayCanvas") |>
     addProviderTiles(provider = providers$CartoDB.DarkMatter, 
                      group = "CartoDB.DarkMatter") |>
     addProviderTiles(provider = providers$OpenStreetMap, 

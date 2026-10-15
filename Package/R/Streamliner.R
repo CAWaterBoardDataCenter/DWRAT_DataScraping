@@ -1,6 +1,78 @@
 # Many of these functions condense repetitive actions into function calls
 
 
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' 
+#' ...
+#' The 'expr' parameter should be encased in curly braces ("{" and "}"), if it 
+#' consists of multiple R code expressions
+#' 
+#' @usage ... 
+#' 
+#' @param expr The line(s) of R code that will be attempted
+#' 
+#' @returns ... 
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+catch_warnings_and_errors <- function (expr) {
+  
+  # This function is a wrapper for `tryCatch`
+  # It will attempt to execute the R code expression ('expr')
+  
+  # The function will return either the result of `expr`, 
+  # or a warning/error message that was encountered while running the code
+  
+  tryCatch(expr,
+           error = function (e) e,
+           warning = function (w) w)
+  
+}
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' 
+#' ...
+#' 
+#' @usage ... 
+#' 
+#' @param ... ...
+#' 
+#' @returns A single Boolean ('TRUE' if an error or warning occurred) 
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+caught_issue <- function (tryCatchRes) {
+  
+  # After `tryCatch` has been applied, this function can help check the result
+  
+  # If an error or warning occurred, this function will return TRUE
+  # Otherwise, if there are no issues, it returns FALSE
+  
+  return(any(c("error", "warning") %in% class(tryCatchRes)))
+  
+}
+
+
+
 #' @title Extract a File Name from a File Path 
 #' 
 #' @description
@@ -49,6 +121,7 @@ extract_filename <- function (path) {
   # (since the search is greedy by default, it will stop at the final slash)
   
 }
+
 
 
 #' @title Find a Match in a Vector

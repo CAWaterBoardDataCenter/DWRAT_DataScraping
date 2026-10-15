@@ -82,6 +82,7 @@ mainProcedure <- function () {
   climateRes <- c("cd W3_LSPC_Watershed",
                   paste0(condaPath, " && ",
                          "conda activate lspc-climate-processing-restructure && ",
+                         "conda config --set ssl_verify truststore && ",
                          "python ", shQuote(scriptPath))) |>
     run_temp_bat()
   
