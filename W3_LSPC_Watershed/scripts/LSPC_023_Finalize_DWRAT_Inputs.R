@@ -196,6 +196,9 @@ mainProcedure <- function () {
   }
   
   
+  cat("\tDone!\n\n")
+  
+  
   cat(col_green("\n'LSPC_023_Finalize_DWRAT_Inputs.R' is complete!\n\n"))
   
   
@@ -1167,17 +1170,10 @@ generate_dwrat_inputs <- function (stream, mdt, catchments, connMat, writePath,
   
   # Generate the three primary input files for DWRAT
   
-  # There are three files:
+  # They are:
   #  (*) formatted_demand.csv
   #  (*) formatted_supply.csv
   #  (*) generated_basins.csv
-  
-  
-  # In reality, distinct flow paths require separate sets of files, 
-  # but that task will not be performed by this script
-  
-  # Instead, only the three files will be created and a later script will have to
-  # split the data to run separate instances of DWRAT
   
   
   # Start by calculating a "Flows To" tibble
@@ -1235,6 +1231,10 @@ format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) 
   #  (*) The DWRAT subwatershed (must be called "BASIN")
   #  (*) The immediately downstream subwatershed in the flow path 
   #      (must be called "FLOWS_TO")
+  
+  
+  # Finally, for flow paths that lack at least one appropriative and one riparian 
+  # right, include dummy entries in this table
   
   
   # Use `find_intersecting_huc12` to add a "huc12" column to the table
@@ -1312,6 +1312,13 @@ format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) 
            BASIN = SUBWATERSHED)
   
   
+  # Second, check for flow paths in the watershed that lack at least one 
+  # appropriative and one riparian right
+  # If any path is missing these, add dummy records to 'mdt'
+  mdt <- mdt |>
+    add_dummy_records(flowsTo)
+  
+  
   # Finally, to prevent issues with type parsing when reading the tables into DWRAT,
   # add strings to the values in "BASIN" and "FLOWS_TO" to ensure that they are
   # parsed as strings
@@ -1322,6 +1329,205 @@ format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) 
   
   # Return 'mdt' after these edits
   return(mdt)
+  
+}
+
+
+
+add_dummy_records <- function (mdt, flowsTo) {
+  
+  # For each distinct flow path in 'flowsTo', confirm that 'mdt' has demand 
+  # entries in its table for them
+  
+  # Otherwise, Paradigm DWRAT will encounter errors during the procedure
+  
+  # Each flow path must have at least one appropriative and one riparian entry
+  
+  
+  # To start this analysis, first get the outlet subwatersheds of each distinct 
+  # flow path
+  # Every outlet subwatershed has its "FLOWS_TO" value as `basin_end_marker`
+  flowOutlets <- flowsTo$SUBWATERSHED[flowsTo$FLOWS_TO == basin_end_marker()] |>
+    unique()
+  
+  
+  # Make sure there's at least one match
+  error_if(length(flowOutlets) == 0,
+           paste0("No Outlet Found in Subwatershed Connectivity\n\n",
+                  "While interpreting the watershed's basin connectivity, the ",
+                  "outlet subwatershed should have been marked as flow into \"",
+                  basin_end_marker(), "\". However, it could not be found in ",
+                  "the table. Please investigate."))
+  
+  
+  # For each of these outlets, identify the subwatersheds in the same path
+  # Take subsets of 'mdt' for each flow path and confirm that appropriative
+  # and riparian rights are present
+  # If not, add dummy rows for the missing right types
+  
+  
+  # Start by iterating through each flow path
+  for (i in 1:length(flowOutlets)) {
+    
+    # Create a vector of subwatersheds in this flow path
+    pathVec <- flowOutlets[i] |>
+      get_basins_in_path(flowsTo)
+    
+    
+    # Get a subset of 'mdt' that has only water rights located within 
+    # the subwatersheds of 'pathVec'
+    subsetDF <- mdt |>
+      filter(BASIN %in% pathVec)
+    
+    
+    # If 'subsetDF' is missing an appropriative right, add one to 'mdt'
+    if ("APPROPRIATIVE" %notin% subsetDF$APPROPRIATIVE) {
+      
+      mdt <- bind_rows(mdt,
+                       create_dummy_row(mdt, flowOutlets[i], 
+                                        flows_to = basin_end_marker(), 
+                                        isRiparian = FALSE))
+      
+    }
+    
+    
+    # Similarly, if 'subsetDF' is missing a riparian  right, add one to 'mdt'
+    if ("Y" %notin% subsetDF$RIPARIAN) {
+      
+      mdt <- bind_rows(mdt,
+                       create_dummy_row(mdt, flowOutlets[i], 
+                                        flows_to = basin_end_marker(), 
+                                        isRiparian = TRUE))
+      
+    }
+    
+  }
+  
+  
+  # Return 'mdt' afterwards
+  return(mdt)
+  
+}
+
+
+
+get_basins_in_path <- function (endBasin, basinsDF) {
+  
+  # Given the outlet subwatershed, create a character vector that contains
+  # all subwatersheds within this flow path
+  
+  
+  # 'basinsDF' is a "FLOWS_TO" table that gives the immediately downstream 
+  # subwatershed for each subwatershed 
+  
+  # Its main column can be named either "BASIN" or "SUBWATERSHED"
+  
+  # For this function's procedure, make sure it's "BASIN"
+  if ("SUBWATERSHED" %in% names(basinsDF)) {
+    basinsDF <- basinsDF |>
+      rename(BASIN = SUBWATERSHED)
+  }
+  
+  
+  # Next, define two variables to help with this procedure
+  
+  
+  # The first variable will be a vector that contains basins within the flow path
+  # As the algorithm progresses, more subwatersheds will be added to it
+  basinVec <- endBasin
+  
+  
+  # The second variable will contain the immediately upstream subwatershed(s)
+  # for one iteration's basin
+  iterBasin <- endBasin
+  
+  
+  # Using a loop, upstream subwatersheds will be identified iteratively
+  # They will be added to 'basinVec' and replace the value(s) in 'iterBasin'
+  # Then, in the next iteration, these subwatersheds will be checked and their
+  # upstream subwatersheds will be identified
+  
+  # This will continue until no further upstream subwatersheds are identified
+  while (length(iterBasin) > 0) {
+    
+    # Update 'iterBasin' to contain all subwatersheds that flow to this basin
+    iterBasin <- basinsDF$BASIN[basinsDF$FLOWS_TO %in% iterBasin]
+    
+    
+    # Add these basins to 'basinVec'
+    basinVec <- c(basinVec, iterBasin)
+    
+  }
+  
+  
+  # Return 'basinVec'
+  return(basinVec)
+  
+}
+
+
+
+create_dummy_row <- function (mdt, subwatershed, flows_to, 
+                              isRiparian = TRUE, demandVal = 1E-10) {
+  
+  # Create a fake appropriative or riparian record that will be appended in 'mdt'
+  
+  
+  # The dummy right will be located within a flow path that lacks a water right
+  # of this type 
+  # (Paradigm DWRAT requires at least one right of each type within each path)
+  
+  # It will have a very small demand value because it is fake
+  # Paradigm DWRAT replaces values of 0 with 0.00002, so this is an opportunity
+  # to use an even smaller value
+  
+  
+  # Initialize a tibble with several of the columns present in 'mdt'
+  dummyDF <- tibble(APPLICATION_NUMBER = "REMOVE_THIS",
+                    ORIGINAL_APPLICATION_NUMBER = "FAKE_RIGHT",
+                    # Diversion Data: Almost zero
+                    TOTAL_EXPECTED_ANNUAL_DIVERSION = demandVal * 12,
+                    TOTAL_MAY_SEPT_DIV = demandVal * 5,
+                    # Priority Date: Always 1000-00-00 for Riparian
+                    # For appropriative, set to 9999-12-31 so it's always the lowest priority
+                    ASSIGNED_PRIORITY_DATE_SUB = if_else(isRiparian, 10000000, 99991231),
+                    # No face value or initial diversion amount
+                    INI_REPORTED_DIV_AMOUNT_AF = if_else(isRiparian, 0, NA_real_),
+                    FACE_VALUE_AMOUNT_AF = if_else(isRiparian, NA_real_, 0),
+                    # Riparian vs Appropriative 
+                    RIPARIAN = if_else(isRiparian, 
+                                       "Y", "N"),
+                    APPROPRIATIVE = if_else(isRiparian, 
+                                            NA_character_, "APPROPRIATIVE"), 
+                    WATER_RIGHT_TYPE = if_else(isRiparian, 
+                                               "Statement of Div and Use", "Appropriative"),
+                    # Take the final DWRAT subwatershed in the flow path
+                    CATCHMENT = NA_character_,
+                    BASIN = subwatershed,
+                    FLOWS_TO = flows_to)
+  
+  
+  # Set all of the monthly demand values equal to a very small value (almost zero)
+  dummyDF[paste0(toupper(month.abb), "_MEAN_DIV")] <- demandVal
+  
+  
+  # Set several yes-or-no columns to "N"
+  dummyDF[c("FULLY NON-CONSUMPTIVE", "POWER_DEMAND_ZEROED",
+            "PRE_1914", "ZERO_DEMAND", "NULL_DEMAND")] <- "N"
+  
+  
+  # Before returning 'dummyDF', make sure all of its columns exist in 'mdt'
+  # (This is a check in case 'mdt' is ever modified in the future)
+  error_if(any(names(dummyDF) %notin% names(mdt)),
+           paste0("Mismatch Between Dummy Row and Demand Dataset\n\n",
+                  "One or more columns in the dummy entry generated by the ",
+                  "script is not actually present in the demand table. Please ",
+                  "revise the dummy row generation function to remove this ",
+                  "column from the procedure."))
+  
+  
+  # If there are no issues, return 'dummyDF'
+  return(dummyDF)
   
 }
 
