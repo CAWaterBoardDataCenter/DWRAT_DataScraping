@@ -62,7 +62,7 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
   # First ensure that a path to a layer was specified for this watershed
   if (is.na(ws[[GIS_FILE_PATH]])) {
     
-    stop(paste0(ws$NAME, " not recognized. ", GIS_FILE_PATH, " has not been specified for this watershed in the spreadsheet."))
+    stop(paste0(ws[["NAME"]], " not recognized. ", GIS_FILE_PATH, " has not been specified for this watershed in the spreadsheet."))
     
   }
   
