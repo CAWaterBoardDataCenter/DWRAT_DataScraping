@@ -67,7 +67,8 @@ mainProcedure <- function () {
     get_lspc_inp_paths()
   
   
-  # Iterate through each input file and ensure that
+  # Iterate through each input file and ensure that the cards have the correct
+  # configurations for these model runs
   cat("\n[1/1]\tUpdating .inp files...\n")
   
   

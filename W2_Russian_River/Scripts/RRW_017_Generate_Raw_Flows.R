@@ -188,7 +188,9 @@ mainProcedure <- function () {
   updateMetadataCSV(dirPath,
                     list("RAW_FLOWS_CSV" = flowName |>
                            str_remove("^.+[/\\\\]"),
-                         "SRP_GAG_REDUCTION_FACTORS" = reductPath))
+                         "SRP_GAG_REDUCTION_FACTORS" = reductPath,
+                         "DWRAT_START_MONTH" = min(adjustedDF$Date),
+                         "DWRAT_END_MONTH" = max(adjustedDF$Date)))
   
   
   cat("\tDone!\n\n")
