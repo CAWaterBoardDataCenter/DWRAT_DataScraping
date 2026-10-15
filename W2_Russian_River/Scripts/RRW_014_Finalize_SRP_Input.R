@@ -185,7 +185,6 @@ mainProcedure <- function (predictWY = TRUE) {
   }
   
   
-  
   # Before writing 'mergedDAT' to a file, make sure that it contains 
   # the correct number of precipitation and temperature stations
   mergedDAT |>

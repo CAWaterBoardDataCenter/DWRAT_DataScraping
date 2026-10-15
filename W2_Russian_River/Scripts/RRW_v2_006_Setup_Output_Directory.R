@@ -63,7 +63,7 @@ mainProcedure <- function () {
   
   
   # Next, generate the directory and its sub-folders
-  outputDirectory <- generateFolders(saveDirectory)
+  outputDirectory <- generateFolders(saveDirectory, models = c("RRIHM", "SRPHM"))
   
   
   cat("\tDone!\n\n")
