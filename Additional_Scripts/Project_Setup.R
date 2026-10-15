@@ -7,12 +7,16 @@
 
 # Install 'renv' if it's not already present
 if (!("renv" %in% installed.packages()[, 1])) {
-  install.packages("renv", repos = "http://cran.us.r-project.org")
+  install.packages("renv", repos = "https://cran.r-project.org")
 }
 
 
 # Use 'renv' to setup the required environment
 require(renv)
+
+
+# Automatically provide consent for use of 'renv' and building a cache in "AppData"
+consent(provided = TRUE)
 
 
 # Configure 'renv' to use "libcurl" instead of "curl" as its default download method
@@ -26,7 +30,7 @@ Sys.setenv(RENV_DOWNLOAD_METHOD = "libcurl")
 
 
 # Setup the R environment
-restore(prompt = FALSE)
+restore(prompt = FALSE, retry = TRUE)
 
 
 # Setup the custom "SDA" package too

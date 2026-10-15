@@ -112,7 +112,7 @@ class FetchRaws(DataFetcher):
     ) -> pd.DataFrame:
         """Fetch WRCC RAWS weather data for a given station and date range."""
 
-        url = "https://wrcc.dri.edu/cgi-bin/wea_dysimts2.pl"
+        url = "https://wrcc-archive.dri.edu/cgi-bin/wea_dysimts2.pl"
 
         start_month = f"{start_date.month:02d}"
         start_day = f"{start_date.day:02d}"

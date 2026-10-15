@@ -16,7 +16,7 @@
 # It will be a text file containing a single line that specifies 
 # the path to the newly generated directory
 
-# Its filename will be "Hydrology_Output_Folder_[startDate]_[endDate].txt"
+# Its filename will be "Archive_Location_[startDate]_[endDate].txt"
 # (This file will be archived too)
 
 
@@ -81,7 +81,7 @@ mainProcedure <- function () {
   
   # Save 'outputDirectory' to a text file in the "Output" folder
   # This will make it easier to reference in later scripts
-  outPath <- paste0("W2_Russian_River/Output/Hydrology_Output_Location_", startDate,
+  outPath <- paste0("W2_Russian_River/Output/Archive_Location_", startDate,
                     "_", endDate, ".txt")
   
   outputDirectory |>
@@ -160,7 +160,8 @@ validateInput <- function (saveDirectory, sourceField) {
 
 
 generateFolders <- function (saveDirectory,
-                             models = c("PRMS", "SRP")) {
+                             models = c("PRMS", "SRP"),
+                             isRussianRiver = TRUE) {
   
   # In 'saveDirectory', a new folder will be created for the imminent 
   # model runs of PRMS, SRP, and DWRAT
@@ -174,24 +175,62 @@ generateFolders <- function (saveDirectory,
   
   
   # Create the directory 'mainName'
-  
   # In addition, create sub-folders for "PRMS", "SRP", and "DWRAT"
   # In each of these folders, create "Input" and "Output" folders
-  newDirectories <- c(paste0(saveDirectory, "/", mainName, "/", models[1], "/Input"),
-                      paste0(saveDirectory, "/", mainName, "/", models[1], "/Output"),
-                      paste0(saveDirectory, "/", mainName, "/", models[2], "/Input"),
-                      paste0(saveDirectory, "/", mainName, "/", models[2], "/Output"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
-                      paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected")) |>
+  # For the Russian River workflow, sub-directories in the DWRAT "Output" folder 
+  # are required for the upper and lower Russian River
+  
+  # For the LSPC workflow, DWRAT should be a sub-directory of the watershed
+  # folders instead
+  
+  
+  # Define a vector that will contain the directories that will be created
+  newDirectories <- c()
+  
+  
+  # For the Russian River workflow, DWRAT is at the root of the archive folder
+  # Its "Output" folder also requires sub-directories for the upper and lower RR
+  if (isRussianRiver) {
+    
+    newDirectories <- c(newDirectories,
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Input"),
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Output"),
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Output/LRR_Connected"),
+                        paste0(saveDirectory, "/", mainName, "/DWRAT/Output/URR_Connected"))
+    
+  }
+  
+  
+  # For each model in 'models', generate "Input" and "Output" folders
+  for (i in 1:length(models)) {
+    
+    newDirectories <- c(newDirectories,
+                        paste0(saveDirectory, "/", mainName, "/", models[i], "/Input"),
+                        paste0(saveDirectory, "/", mainName, "/", models[i], "/Output"))
+    
+    
+    # For watersheds other than the Russian River, DWRAT will be added here too
+    if (!isRussianRiver) {
+      
+      newDirectories <- c(newDirectories,
+                          paste0(saveDirectory, "/", mainName, "/", models[i], "/DWRAT"),
+                          paste0(saveDirectory, "/", mainName, "/", models[i], "/DWRAT/Input"),
+                          paste0(saveDirectory, "/", mainName, "/", models[i], "/DWRAT/Output"))
+      
+    }
+    
+  }
+  
+  
+  # Normalize all of these paths (converting them into absolute paths)
+  newDirectories <- newDirectories |>
     normalizePath(mustWork = FALSE)
   
   
   # Create the folders
   newDirectories |>
-    map_lgl(~ dir.create(., recursive = TRUE))
-    
+    dir_create(recurse = TRUE)
+  
   
   # Ensure that all folders were created successfully
   # If not, output an error

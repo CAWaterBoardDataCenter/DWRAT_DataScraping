@@ -439,11 +439,13 @@ modelPrecip <- function (x, y, xName, yName) {
   
   
   # Generate a linear regression model between 'x' and 'y'
-  precipRes <- try(lm(y ~ x), silent = TRUE)
+  precipRes <- catch_warnings_and_errors(
+    lm(y ~ x)
+  )
   
   
   # If no model could be developed, return an empty row
-  if ("try-error" %in% class(precipRes) ||
+  if (caught_issue(precipRes) ||
       is.nan(summary(precipRes)[["r.squared"]]) ||
       nrow(summary(precipRes)[["coefficients"]]) < 2) {
     

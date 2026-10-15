@@ -659,7 +659,11 @@ getDownstreamSubbasins <- function (dwratConn, hucBased) {
     # get the number of connections for each sub-basin (column sums)
     # Sub-basins that are further downstream have a larger number
     # (since more sub-basins eventually drain into that sub-basin)
-    downstreamSums <- colSums(dwratConn[, names(dwratConn) %in% nonZeroBasins])
+    if (length(nonZeroBasins) == 1) {
+      downstreamSums <- dwratConn[, names(dwratConn) %in% nonZeroBasins] |> sum() |> set_names(nonZeroBasins)
+    } else {
+      downstreamSums <- colSums(dwratConn[, names(dwratConn) %in% nonZeroBasins])
+    }
     
     
     

@@ -27,9 +27,10 @@
 
 # For the LSPC "data" folder, do not ignore its immediate contents either
 # (Include the second level folders after "data" too)
+# (For "projects", keep the watershed folders too)
 !**/data/*
 !**/data/projects/*
-!**/data/shared/*
+!**/data/shared
 
 
 # In the LSPC model folder, ignore log files

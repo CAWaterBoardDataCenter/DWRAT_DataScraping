@@ -617,8 +617,17 @@ getPRISM <- function (prismPath) {
   # If not, apply that type manually
   if (is.character(prismDF$Date[1])) {
     
-    prismDF <- prismDF |>
-      mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+    if (any(grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", prismDF$Date))) {
+      
+      prismDF <- prismDF |>
+        mutate(Date = as.Date(Date, format = "%m/%d/%Y"))
+      
+    } else if (any(grepl("^[0-9]{4}-[0-9]{2}$", prismDF$Date))) {
+      
+      prismDF <- prismDF |>
+        mutate(Date = as_date(Date, format = "%Y-%m"))
+      
+    }
     
   }
   
@@ -1212,7 +1221,8 @@ read_gag <- function (gagPath) {
 ##### File Writing #####
 
 writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
-                         col_names = TRUE, delim = NA_character_, na = "") {
+                         col_names = TRUE, delim = NA_character_, na = "",
+                         sep = "\n") {
   
   # Write a variable 'x' to 'outPath'
   
@@ -1296,7 +1306,7 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
     
   } else if (writeFunction == "write_lines") {
     
-    writeRes <- try(write_lines(x, outPath, na = na))
+    writeRes <- try(write_lines(x, outPath, na = na, sep = sep))
     
   } else if (writeFunction == "write_xlsx") {
     

@@ -35,6 +35,10 @@ mainProcedure <- function () {
   
   # To Do: Validation function for weather control file 
   
+  controlDF <- controlDF |>
+    mutate(start_date = as.Date(start_date),
+           end_date = as.Date(end_date))
+  
   
   cat("\tDone!\n\n")
   
@@ -83,13 +87,13 @@ updateSpreadsheet <- function (sheetDF, path, worksheet) {
   # Read in the workbook object
   # Overwrite the control file's worksheet
   
-  wb <- wb_load(path, worksheet)
+  wb <- wb_load(path)
   
   
-  wb_add_data(wb, sheet = worksheet, sheetDF)
+  wb <- wb_add_data(wb, sheet = worksheet, sheetDF)
   
   
-  wb_save(wb, path, overwrite = TRUE)
+  wb_save(wb, path)
   
   
   # Return nothing
