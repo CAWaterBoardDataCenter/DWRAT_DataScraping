@@ -290,7 +290,7 @@ reformatPRISM <- function (prismDF, stationDF, model) {
   
   # The model precipitation linkage column (like "PRMS_PRECIP_NAME" or 
   # "SRP_PRECIP_NAME") is important in this process to help reformat 'prismDF'
-  precipCol <- paste0(model, "_PRECIP_NAME")
+  precipCol <- get_model_column_name(model, "PRECIP")
   
   
   # Remove rows with "NA" for 'precipCol'
