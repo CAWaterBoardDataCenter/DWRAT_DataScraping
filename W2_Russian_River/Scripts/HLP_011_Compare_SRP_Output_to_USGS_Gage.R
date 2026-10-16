@@ -2084,11 +2084,11 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     statDF <- statDF |>
       mutate(DAILY_RESULT = 
                case_when(
-                 grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Nash", METRIC) ~ calc_nse(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^P.Bias$", METRIC) ~ calc_pbias(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Root", METRIC) ~ calc_rsr(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Modif", METRIC) ~ calc_mkge(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^R Sq", METRIC) ~ calc_r_sqrd(dailyDF$GAGE, dailyDF$MODEL),
                  .default = NA_real_
                ))
     
@@ -2099,7 +2099,7 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     if ("P-Bias" %in% statDF$METRIC) {
       
       statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
-        calcPBias(dailyDF$GAGE, dailyDF$MODEL) |> 
+        calc_pbias(dailyDF$GAGE, dailyDF$MODEL) |> 
         attributes() |> pluck(1)
       
     }
@@ -2118,11 +2118,11 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     statDF <- statDF |>
       mutate(MONTHLY_RESULT = 
                case_when(
-                 grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Nash", METRIC) ~ calc_nse(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^P.Bias$", METRIC) ~ calc_pbias(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Root", METRIC) ~ calc_rsr(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Modif", METRIC) ~ calc_mkge(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^R Sq", METRIC) ~ calc_r_sqrd(monthlyDF$GAGE, monthlyDF$MODEL),
                  .default = NA_real_
                ))
     
@@ -2133,7 +2133,7 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     if ("P-Bias" %in% statDF$METRIC) {
       
       statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
-        calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
+        calc_pbias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
         attributes() |> pluck(1)
       
     }
