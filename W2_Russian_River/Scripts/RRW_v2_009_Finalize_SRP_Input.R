@@ -242,12 +242,12 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   # Write 'finalDAT' to the hydrology folder first
   finalDAT |>
-    writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
+    writeOutput(paste0(dirPath, "/SRPHM/Input/", datName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_lines", quietly = quietly)
   
   
-  # Write 'finalDAT' to the SRP model folder next
+  # Write 'finalDAT' to the SRPHM model folder next
   # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
   finalDAT |>
     writeOutput(paste0(srpPath, "/external_files/", genericName) |> 
