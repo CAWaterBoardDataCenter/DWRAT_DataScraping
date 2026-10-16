@@ -236,17 +236,24 @@ validateStationInputs <- function (inputDF, inputPath,
   # in the PRMS and SRP procedures
   
   
-  # Related to that requirement, make sure 'model' is either "PRMS" or "SRP"
-  if (!(model %in% c("PRMS", "SRP"))) {
+  # Related to that requirement, make sure 'model' is "PRMS", "SRP", or something similar
+  if (!(model %in% c("PRMS", "SRP", "SRPHM"))) {
     
     paste0("Script Error - Unrecognized Value for 'model'\n\n", 
            "The function `validateStationInputs` checks station input ",
            "for connecting weather data to PRMS or SRP DAT files. ",
-           "Therefore, the input variable 'model' should be either \"PRMS\" ",
-           "or \"SRP\". However, it was input as \"", model, "\" instead.\n\n", 
+           "Therefore, the input variable 'model' should be one of: ",
+           c("PRMS", "SRP", "SRPHM") |> vec2QuotedStr(),
+           ". However, it was input as \"", model, "\" instead.\n\n", 
            "Please correct the script and try again.") |>
       stop_script()
     
+  }
+  
+  
+  # If the model is "SRPHM", use "SRP" for the column names and validation process
+  if (model %in% c("SRPHM")) {
+    model <- "SRP"
   }
   
   
@@ -269,9 +276,7 @@ validateStationInputs <- function (inputDF, inputPath,
   #    (*) PRMS_TMIN_NAME / SRP_TMIN_NAME
   #    (*) PRMS_TMAX_NAME / SRP_TMAX_NAME
   inputFieldNames <- c("STATION_ID", 
-                       paste0(model, "_PRECIP_NAME"),
-                       paste0(model, "_TMIN_NAME"),
-                       paste0(model, "_TMAX_NAME"))
+                       get_model_column_name(c("PRECIP", "TMIN", "TMAX")))
   
   
   # Start by confirming that the field names appear in 'inputDF'
@@ -773,7 +778,7 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
 validateInputDAT <- function (datFile, sourcePath, model, modelCols,
                               startDate, endDate, datType) {
   
-  # Verify the formatting of a DAT file for PRMS or SRP
+  # Verify the formatting of a DAT file for PRMS, SRP, or similar models
   # This function will be applied to the long-running meteorological
   # DAT file, the SPI DAT file, and the final DAT file
   
@@ -785,11 +790,11 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
   # the main DAT file, the SPI DAT file, or the final DAT file
   
   
-  if (!(model %in% c("PRMS", "SRP"))) {
+  if (!(model %in% c("PRMS", "SRP", "SRPHM"))) {
     
     paste0("Script Error - Unknown Value for 'model'\n\n",
-           "The input variable 'model' must be one of two ",
-           "values (", vec2QuotedStr(c("PRMS", "SRP")), 
+           "The input variable 'model' must be one of these ",
+           "values (", vec2QuotedStr(c("PRMS", "SRP", "SRPHM")), 
            "). \"", model, "\" is not a recognized value. ",
            "Please revise the script.") |>
       errWrap() |>
@@ -1778,6 +1783,203 @@ check_for_model_outputs <- function (model, modelPath, modelOutput = NULL,
   # Return nothing if there are no issues
   return(invisible(NULL))
   
+}
+
+
+
+get_model_column_name <- function (model, type) {
+  
+  # The weather station input files should contain columns that link 
+  # certain stations to required columns in a model
+  
+  # This function constructs those names in one place so that other functions
+  # can apply these names generically
+  
+  # Model-specific adjustments are possible here as well
+  # For example, if a model uses another model's columns, that is expressed here
+  
+  
+  # Define the main components of these column names
+  # 'type' should match one of the names in this vector
+  colFragments <- c("PRECIP" = "_PRECIP_NAME",
+                    "TMIN" = "_TMIN_NAME",
+                    "TMAX" = "_TMAX_NAME")
+  
+  
+  error_if(any(type %notin% names(colFragments)),
+           paste0("Unrecognized Column Type\n\n",
+                  "While gathering information on model-specific column names ",
+                  "in weather station input files, the script encountered an ",
+                  "issue. A column type of \"", type, "\" was input for ", 
+                  model, " when the only recognized types are ", 
+                  names(colFragments) |> vec2QuotedStr(), ". Please investigate ",
+                  "and revise the script."))
+  
+  
+  # After that, consider model-specific adjustments as needed
+  if (model %in% c("RRIHM")) {
+    
+    # Avoid unnecessary duplication and just use the "PRMS" columns
+    model <- "PRMS"
+    
+  } else if (model %in% c("SRPHM")) {
+    
+    # Use the "SRP" columns
+    model <- "SRP"
+    
+  }
+  
+  
+  # Extract the required column fragment and return the full model column name
+  return(paste0(model, colFragments[type]))
+  
+}
+
+
+
+get_model_historic_DAT_filepath <- function (model) {
+  
+  # Models should have input DAT files that contain historic data
+  # (the workflow relies on these files to avoid downloading weather data for 
+  #  the entire model run dates each time)
+  
+  # Some models may rely on other models' DAT files (if they're equivalent)
+  
+  # Rather than duplicate the file for each model, if the same input can be used,
+  # this function will help map a model to that file
+  
+  
+  # Start by considering model-specific adjustments 
+  if (model %in% c("RRIHM")) {
+    
+    # Use the same PRMS DAT file since the data and formatting is equivalent
+    model <- "PRMS"
+    
+  } else if (model %in% c("SRPHM")) {
+    
+    # Use the same SRP DAT file since the data and formatting is equivalent
+    model <- "SRP"
+    
+  }
+  
+  
+  # An important part of locating the DAT file is a regular expression
+  # The folder may contain multiple DAT files, and this pattern helps 
+  # select the most relevant and recent file
+  
+  # This regex depends on the value of 'model'
+  if (model %in% c("PRMS")) {
+    
+    datRegex <- "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$"
+    
+  } else if (model %in% c("SRP")) {
+    
+    datRegex <- "^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$"
+    
+  } else {
+    
+    paste0("No Regex Specified for \"", model, "\"\n\n",
+           "When locating the DAT file for a model, a regular expression is ",
+           "used to identify files relevant to \"", model, "\" (since other ",
+           "models' DAT files may be present in this folder too). However, ",
+           "no regular expression was specified for this model. Please ",
+           "investigate and revise the script") |>
+      stop_script()
+    
+  }
+  
+  
+  # Finally, use 'model' and 'datRegex' to extract a DAT filepath
+  # The directory containing DAT files is gathered from the workflow control file
+  # Then, the latest version of the DAT file is pulled with the help of 'datRegex'
+  return(paste0("MAIN_", model, "_DAT_FOLDER") |>
+           getFromControl_RR() |>
+           getLatestFile(filePattern = datRegex, 
+                         title = paste0(model, " Main DAT File")))
+  
+}
+
+
+
+get_model_domain_precip_filepath <- function (model, fileType, endDate = NA_Date_,
+                                              startDate = getModeledWY(endDate)[1]) {
+  
+  # The workflow uses PRISM precipitation averages that cover the entire 
+  # model domain for its forecasting procedure
+  
+  # Some models have the same domain, so to reduce duplication, 
+  # this function relates models to model domain PRISM files
+  
+  
+  # 'fileType' must be either "CURRENT" or "HISTORIC"
+  error_if(fileType %notin% c("CURRENT", "HISTORIC"),
+           paste0("Unknown Filetype\n\n",
+                  "This function requires as input the type of model domain ",
+                  "PRISM precipitation file. The expected values are ",
+                  c("CURRENT", "HISTORIC") |> vec2QuotedStr(), ", but ",
+                  "\"", fileType, "\" was received as input instead. Please ",
+                  "investigate and revise the script as needed."))
+  
+  
+  # If 'fileType' is "CURRENT", 'endDate' cannot be NA
+  # (This date is used as part of the filename)
+  error_if(fileType == "CURRENT" && anyNA(c(startDate, endDate)),
+           paste0("Missing Start and/or End Dates\n\n",
+                  "To find the recently downloaded model domain precipitation ",
+                  "data, the function requires the data scraping start and end ",
+                  "dates as input. However, at least one these values was input ",
+                  "as \"NA\". Please investigate."))
+  
+  
+  # Now that file path can be prepared
+  
+  
+  # First, some models will rely on other model files for their processes
+  # Update the value in 'model' to reflect that
+  if (model %in% c("RRIHM")) {
+    
+    # Avoid unnecessary duplication and just use the "PRMS" file
+    model <- "PRMS"
+    
+  } else if (model %in% c("SRPHM")) {
+    
+    # Use the "SRP" file
+    model <- "SRP"
+    
+  }
+  
+  
+  # Then, depending on whether 'fileType' is "CURRENT" or "HISTORIC", 
+  # prepare the path to the required file
+  if (fileType == "CURRENT") {
+    
+    # The current WY precipitation estimates are downloaded during each workflow run
+    # As a result, the file can be found in the "Intermediate" folder
+    return(paste0("W2_Russian_River/Intermediate/PRISM_", model, "_Domain_Data_",
+                  startDate, "_", endDate, ".csv"))
+    
+  } else if (fileType == "HISTORIC") {
+    
+    # The historic precipitation estimates for the model domain are stored in a
+    # folder that is referenced within the workflow control file
+    
+    # Extract that path and obtain the file with the most available data for
+    # this watershed domain
+    return(paste0("PRISM_", model, "_HISTORIC_PRECIP_FOLDER") |>
+             getFromControl_RR() |>
+             getLatestFile(paste0("^RR_Workflow_PRISM_", model, "_Avg_Historic_Precip_",
+                                  "CY1981_to_WY[0-9]{4}\\.csv$"),
+                           paste0(model, " Historic Precip File")))
+    
+  } else {
+    
+    "You forgot to update this! The script should never reach here... ^_^'" |>
+      stop_script()
+    
+  }
+  
+  
   
   
 }
+

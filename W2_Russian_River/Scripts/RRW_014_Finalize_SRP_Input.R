@@ -108,14 +108,7 @@ mainProcedure <- function (predictWY = TRUE) {
   filePaths <- tibble("METEOROLOGICAL" = 
                         paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
-  
-  
-  # "MAIN_DAT" contains a folder path right now
-  # Extract the latest primary DAT file from there
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
-                  "SRP Main DAT File")
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("SRP"))
   
   
   # Read in the two files next (while also verifying that they exist)
@@ -183,7 +176,6 @@ mainProcedure <- function (predictWY = TRUE) {
                        predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
     
   }
-  
   
   
   # Before writing 'mergedDAT' to a file, make sure that it contains 

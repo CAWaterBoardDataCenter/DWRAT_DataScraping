@@ -103,14 +103,7 @@ mainProcedure <- function (predictWY = TRUE) {
   filePaths <- tibble("METEOROLOGICAL" = 
                         paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
-  
-  
-  # "MAIN_DAT" contains a folder path right now
-  # Extract the latest primary DAT file from there
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$", 
-                  title = "PRMS Main DAT File")
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("PRMS"))
   
   
   # Read in the two files after that (Meteorological CSV and Main PRMS DAT file)
@@ -252,11 +245,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
     # the PRMS model domain
     
     # Get the path to that file
-    pastPrecipPath <- paste0("PRISM_", model, "_HISTORIC_PRECIP_FOLDER") |>
-      getFromControl_RR() |>
-      getLatestFile(paste0("^RR_Workflow_PRISM_", model, "_Avg_Historic_Precip_",
-                           "CY1981_to_WY[0-9]{4}\\.csv$"),
-                    paste0(model, " Historic Precip File"))
+    pastPrecipPath <- model |> 
+      get_model_domain_precip_filepath("HISTORIC")
     
     
     # Read in the file and validate it
@@ -586,8 +576,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, model,
   
   # PRISM data that was previously downloaded for the model is also required
   # Locate that file, confirm its existence, and validate the data
-  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_", model, "_Domain_Data_",
-                      getModeledWY(endDate)[1], "_", endDate, ".csv") |>
+  prismPath <- get_model_domain_precip_filepath(model, "CURRENT", endDate) |>
     checkForPreviousOutput()
   
   
@@ -666,7 +655,7 @@ importLinModels <- function (model) {
                 "MAR" = list(m = 1.10546021129827, b = 25.5273627224535),
                 "APR" = list(m = 1.00852388216750, b = 47.0563971511456)))
     
-  } else if (model == "SRP") {
+  } else if (model %in% c("SRP", "SRPHM")) {
     
     return(list("FEB" = list(m = 1.18889417583887, b = 127.497807635486),
                 "MAR" = list(m = 1.09263349165030, b = 28.1349370455440),
@@ -674,7 +663,7 @@ importLinModels <- function (model) {
     
   } else {
     
-    paste0("Unknown 'model' value (expected \"PRMS\" or \"SRP\")\n\n",
+    paste0("Unknown 'model' value (expected \"PRMS\", \"SRP\", or \"SRPHM\")\n\n",
            "Please revise the script!") |>
       errWrap() |>
       stop()

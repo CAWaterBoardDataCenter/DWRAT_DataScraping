@@ -1,27 +1,25 @@
-# Verify that all required PRISM weather data has been downloaded
+# Verify that all required weather data has been downloaded
 # Then, reformat the data into a structure suitable for the SRP DAT file
 
 
-# This script has two required input files:
+# This script has several required input files:
 
-# The first one is the station input file for PRISM
+# The first group of five files consists of the station input files for each source
 
 # This time, in addition to the "STATION_ID" column, the script requires 
 # columns that link these stations to specific columns in the SRP DAT input file
 
-# Thus, the required fields are:
+# Thus, the minimum required fields are:
 #  (1) STATION_ID
 #  (2) SRP_PRECIP_NAME
 #  (3) SRP_TMIN_NAME
 #  (4) SRP_TMAX_NAME
 
 # Every SRP station should be linked to at least one column among the 
-# 2 precipitation columns and 2 max/min temperature columns
+# 45 precipitation columns and 2 max/min temperature columns
 
-# In addition to these files, the output of the PRISM web scraping script 
-# is required:
-#  (1) "W2_Russian_River/Intermediate/PRISM_SRP_Data_[startDate]_[endDate].csv"
-
+# In addition to these files, the output of the web scraping scripts 
+# are required
 
 # These files will be combined into a single output file:
 #  (1) "W2_Russian_River/Output/SRP_Meteorological_[startDate]_[endDate].csv"

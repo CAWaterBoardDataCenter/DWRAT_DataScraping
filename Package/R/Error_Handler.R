@@ -102,6 +102,6 @@ stop_script <- function (message) {
   
   message |>
     errWrap() |>
-    stop()
+    stop(call. = FALSE)
   
 }

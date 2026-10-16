@@ -30,42 +30,13 @@ mainProcedure <- function () {
   cat("Starting 'RRW_v2_012_Setup_RRIHM_Model.R'!\n\n")
   
   
-  # Get the location of the RRIHM model files
-  sourceDir <- getFromControl_RR("RRIHM_SOURCE_LOCATION")
+  # Rely on the functions from the PRMS model setup script to perform these actions
+  c("copy_model_files", "copy_contents") |>
+    map(~ functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", .))
   
   
-  # Validate the user's input and ensure that this directory contains
-  # all required components
-  # (Also, if the directory is on SharePoint, 'sourceDir' will be adjusted
-  #  to reflect that)
-  sourceDir <- validateSourceModelDirectory(
-    sourceDir, 
-    "RRIHM_SOURCE_LOCATION",
-    "RRIHM", 
-    c("RRIHM_post_spinup_WY2021", "RRIHM_post_spinup_WY2021/modflow",
-      "RRIHM_post_spinup_WY2021/prms", "RRIHM_post_spinup_WY2021/windows",
-      "RRIHM_post_spinup_WY2021/modflow/input", 
-      "RRIHM_post_spinup_WY2021/modflow/output",
-      "RRIHM_post_spinup_WY2021/prms/input", 
-      "RRIHM_post_spinup_WY2021/prms/output",
-      "RRIHM_post_spinup_WY2021/windows/bin"),
-    c("RRIHM_post_spinup_WY2021/modflow/input/Mark_West_inflow.dat",
-      "RRIHM_post_spinup_WY2021/modflow/input/restartdata_2020.out",
-      "RRIHM_post_spinup_WY2021/windows/bin/gsflow.exe"))
-  
-  
-  cat("[1/1]\tCopying the RRIHM folder to \"W2_Russian_River/Output/RRIHM\"...\n")
-  
-  
-  # Import a function from the v1 workflow's PRMS model setup script
-  functionStealer("W2_Russian_River/Scripts/RRW_008_Setup_PRMS_Model.R", "copyModel")
-  
-  
-  # Copy the contents from 'sourceDir' to a new folder in "Output"
-  copyModel(sourceDir, "W2_Russian_River/Output/RRIHM")
-  
-  
-  cat("\tDone!\n\n")
+  # Copy the RRIHM model files to the "Output" folder
+  copy_model_files("RRIHM", "RRIHM_SOURCE_LOCATION")
   
   
   # Output a completion message

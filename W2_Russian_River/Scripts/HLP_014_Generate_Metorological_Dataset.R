@@ -19,7 +19,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 merge_weather_data <- function (startDate, endDate, model, 
                                 prismInputPath, prismOutputPath, 
                                 allTempColumnsFromPRISM = TRUE, 
-                                siPRISM = model %notin% c("SRP"),
+                                siPRISM = model %notin% c("SRP", "SRPHM"),
                                 applyFullQAQC = TRUE, 
                                 archiveFiles = TRUE, 
                                 noaaInputPath = NULL, noaaOutputPath = NULL,
@@ -113,6 +113,14 @@ merge_weather_data <- function (startDate, endDate, model,
   
   
   # Validate all of the weather inputs next
+  
+  
+  # To help with this, get a vector of station names
+  # For PRMS and SRP, their entries in 'prismInput' can be used to construct this
+  # Other models may rely on their values too
+  stationNames <- prismInput[[get_model_column_name(model, "PRECIP")]]
+  
+  
   validate_inputs(prismInputPath, prismOutputPath, prismInput, prismDF,
                   noaaInputPath = noaaInputPath, noaaOutputPath = noaaOutputPath, 
                   noaaInput = noaaInput, noaaDF = noaaDF, 
@@ -128,13 +136,13 @@ merge_weather_data <- function (startDate, endDate, model,
   
   # Check 'outlierDF' next too
   validate_outlier_file(outlierDF, precipOutliersPath,
-                        prismInput[[paste0(model, "_PRECIP_NAME")]] |> na.omit(),
+                        stationNames |> na.omit(),
                         model)
   
   
   # Finally, check 'corrDF'
   validate_corr_file(corrDF, precipCorrPath,
-                     prismInput[[paste0(model, "_PRECIP_NAME")]] |> na.omit(),
+                     stationNames |> na.omit(),
                      model)
   
   
@@ -327,8 +335,10 @@ get_num_stations <- function (model, prismInput, prismInputPath, fieldType) {
   #         the same number of values
   
   
-  # Start by confirming that the model columns exist in the PRISM station file 
-  fieldNames <- paste0(model, c("_PRECIP_NAME", "_TMIN_NAME", "_TMAX_NAME")) |>
+  # Confirm that the model columns exist in the PRISM station file 
+  # (Some models may rely on other model's columns instead)
+  fieldNames <- model |>
+    get_model_column_name(c("PRECIP", "TMIN", "TMAX")) |>
     set_names(c("PRECIP", "TMIN", "TMAX"))
   
   
@@ -742,14 +752,20 @@ merge_datasets <- function (startDate, endDate,
   
   # To help specify these column names (and get their ordering right),
   # make a data frame for the planned model column names
-  prmsColumnNames <- c(noaaInput[[paste0(model, "_PRECIP_NAME")]], rawsInput[[paste0(model, "_PRECIP_NAME")]], 
-                       cimisInput[[paste0(model, "_PRECIP_NAME")]], cdecInput[[paste0(model, "_PRECIP_NAME")]],
+  prmsColumnNames <- c(noaaInput[[get_model_column_name(model, "PRECIP")]], 
+                       rawsInput[[get_model_column_name(model, "PRECIP")]], 
+                       cimisInput[[get_model_column_name(model, "PRECIP")]], 
+                       cdecInput[[get_model_column_name(model, "PRECIP")]],
                        
-                       noaaInput[[paste0(model, "_TMIN_NAME")]], rawsInput[[paste0(model, "_TMIN_NAME")]], 
-                       cimisInput[[paste0(model, "_TMIN_NAME")]], cdecInput[[paste0(model, "_TMIN_NAME")]],
+                       noaaInput[[get_model_column_name(model, "TMIN")]], 
+                       rawsInput[[get_model_column_name(model, "TMIN")]], 
+                       cimisInput[[get_model_column_name(model, "TMIN")]], 
+                       cdecInput[[get_model_column_name(model, "TMIN")]],
                        
-                       noaaInput[[paste0(model, "_TMAX_NAME")]], rawsInput[[paste0(model, "_TMAX_NAME")]], 
-                       cimisInput[[paste0(model, "_TMAX_NAME")]], cdecInput[[paste0(model, "_TMAX_NAME")]]) |>
+                       noaaInput[[get_model_column_name(model, "TMAX")]], 
+                       rawsInput[[get_model_column_name(model, "TMAX")]], 
+                       cimisInput[[get_model_column_name(model, "TMAX")]], 
+                       cdecInput[[get_model_column_name(model, "TMAX")]]) |>
     unique() |> sort(na.last = NA) |>
     matrix(ncol = 1) |> data.frame() |> set_names("COLUMN") |>
     filter(!is.na(COLUMN)) |>
@@ -887,7 +903,7 @@ reformat_climate_data <- function (climateDF, climateInput, dataSource,
       convert_climate_units(fieldNameVec, "TMAX", toSI = TRUE) |>
       convert_climate_units(fieldNameVec, "TMIN", toSI = TRUE)
     
-  } else if (model %in% c("SRP") && dataSource %in% c("RAWS", "CIMIS")) {
+  } else if (model %in% c("SRP", "SRPHM") && dataSource %in% c("RAWS", "CIMIS")) {
     
     # Convert SI units to US units
     
@@ -926,15 +942,15 @@ reformat_climate_data <- function (climateDF, climateInput, dataSource,
            NAME_2 = paste0("TMAX_", STATION_ID),
            NAME_3 = paste0("TMIN_", STATION_ID)) |>
     select(NAME_1, NAME_2, NAME_3, 
-           all_of(paste0(model, c("_PRECIP_NAME", "_TMAX_NAME", "_TMIN_NAME"))))
+           all_of(get_model_column_name(model, c("PRECIP", "TMAX", "TMIN"))))
   
   
   # Create a vector from 'equivalentNames' that can be used with rename()
   renameVec <- c(equivalentNames$NAME_1, equivalentNames$NAME_2,
                  equivalentNames$NAME_3) |>
-    set_names(c(equivalentNames[[paste0(model, "_PRECIP_NAME")]], 
-                equivalentNames[[paste0(model, "_TMAX_NAME")]], 
-                equivalentNames[[paste0(model, "_TMIN_NAME")]]))
+    set_names(c(equivalentNames[[get_model_column_name(model, "PRECIP")]], 
+                equivalentNames[[get_model_column_name(model, "TMAX")]], 
+                equivalentNames[[get_model_column_name(model, "TMIN")]]))
   
   
   # Not every station will be used for precipitation and max/min temperature
@@ -1162,8 +1178,12 @@ apply_qc_flags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisOutputPath
   # For convenience, filter 'cimisInput' as well
   # Keep only rows with values in "[MODEL]_PRECIP_NAME"
   # (These stations' precipitation values will be used in the model)
+  precipCol <- model |>
+    get_model_column_name("PRECIP")
+  
+  
   cimisInput <- cimisInput |>
-    filter(!is.na(get(paste0(model, "_PRECIP_NAME"))))
+    filter(!is.na(get(precipCol)))
   
   
   # Next, locate "PRECIP_QC" in 'cimisDF'
@@ -1200,7 +1220,7 @@ apply_qc_flags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisOutputPath
   # "PRMS_PRECIP_NAME" will identify the actual PRMS column names (as it appears
   # in 'meteorDF') that correspond to CIMIS precipitation data
   flaggedDF <- flaggedDF |>
-    left_join(cimisInput |> select(STATION_ID, all_of(paste0(model, "_PRECIP_NAME"))),
+    left_join(cimisInput |> select(STATION_ID, all_of(precipCol)),
               by = "STATION_ID", relationship = "many-to-one")
   
   
@@ -1219,7 +1239,7 @@ apply_qc_flags_CIMIS <- function (meteorDF, cimisInput, cimisDF, cimisOutputPath
     
     # Otherwise, update entries in 'meteorDF' for this CIMIS station column
     # Flagged dates should have their precipitation values set to NA
-    meteorDF[[cimisInput[[paste0(model, "_PRECIP_NAME")]][i]]][meteorDF$DATE %in% errDates] <- NA_real_
+    meteorDF[[cimisInput[[precipCol]][i]]][meteorDF$DATE %in% errDates] <- NA_real_
     
   }
   
@@ -1266,8 +1286,11 @@ apply_qc_flags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecOutputPath,
   # For convenience, filter 'cdecInput' as well
   # Keep only rows with values in "PRMS_PRECIP_NAME"
   # (These stations' precipitation values will be used in the model)
+  precipCol <- model |>
+    get_model_column_name("PRECIP")
+  
   cdecInput <- cdecInput |>
-    filter(!is.na(get(paste0(model, "_PRECIP_NAME"))))
+    filter(!is.na(get(precipCol)))
   
   
   # Next, locate "DATA_FLAG" in 'cdecDF'
@@ -1302,7 +1325,7 @@ apply_qc_flags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecOutputPath,
   # "[MODEL]_PRECIP_NAME" will identify the actual station column names (as it appears
   # in 'meteorDF') that correspond to CDEC precipitation data
   flaggedDF <- flaggedDF |>
-    left_join(cdecInput |> select(STATION_ID, all_of(paste0(model, "_PRECIP_NAME"))),
+    left_join(cdecInput |> select(STATION_ID, all_of(precipCol)),
               by = "STATION_ID", relationship = "many-to-one")
   
   
@@ -1321,7 +1344,7 @@ apply_qc_flags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecOutputPath,
     
     # Otherwise, update entries in 'meteorDF' for this CIMIS station
     # Flagged dates should have their precipitation values set to NA
-    meteorDF[[cdecInput[[paste0(model, "_PRECIP_NAME")]][i]]][meteorDF$DATE %in% errDates] <- NA_real_
+    meteorDF[[cdecInput[[precipCol]][i]]][meteorDF$DATE %in% errDates] <- NA_real_
     
   }
   

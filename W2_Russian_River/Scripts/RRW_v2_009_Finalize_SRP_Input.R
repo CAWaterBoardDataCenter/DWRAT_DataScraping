@@ -107,18 +107,11 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Read in two of the main input files
-  # (The SRP Meteorological CSV and the primary DAT file)
+  # (The SRPHM Meteorological CSV and the primary DAT file)
   filePaths <- tibble("METEOROLOGICAL" = 
-                        paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate,
+                        paste0("W2_Russian_River/Output/SRPHM_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
-  
-  
-  # "MAIN_DAT" contains a folder path right now
-  # Extract the latest primary DAT file from there
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
-                  "SRP Main DAT File")
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("SRP"))
   
   
   # Read in the two files next (while also verifying that they exist)
@@ -133,7 +126,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRP", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRPHM", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -169,7 +162,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     
     mergedDAT <- predictCurrentWY(mergedDAT,
-                                  startDate, endDate, "SRP", 
+                                  startDate, endDate, "SRPHM", 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
                                   dirPath, filePaths$MAIN_DAT[1])
     
@@ -206,7 +199,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Archive the historic DAT file too
-  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "SRP")
+  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -249,12 +242,12 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   # Write 'finalDAT' to the hydrology folder first
   finalDAT |>
-    writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
+    writeOutput(paste0(dirPath, "/SRPHM/Input/", datName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_lines", quietly = quietly)
   
   
-  # Write 'finalDAT' to the SRP model folder next
+  # Write 'finalDAT' to the SRPHM model folder next
   # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
   finalDAT |>
     writeOutput(paste0(srpPath, "/external_files/", genericName) |> 

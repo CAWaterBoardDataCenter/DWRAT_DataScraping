@@ -218,11 +218,13 @@ mainProcedure <- function () {
     as.Date(format = "%Y-%m-%d")
   
   
-  prmsPath <- paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
-                     startDate, "_", endDate, ".csv")
+  prmsPath <- "PRMS" |>
+    get_model_domain_precip_filepath(fileType = "CURRENT",
+                                     startDate = startDate, endDate = endDate)
   
-  srpPath <- paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
-                    startDate, "_", endDate, ".csv")
+  srpPath <- "SRP" |>
+    get_model_domain_precip_filepath(fileType = "CURRENT",
+                                     startDate = startDate, endDate = endDate)
   
   
   # c("scrapePRISM", "validateReqResults", "splitRequest", "combineRawOutputs") |>
