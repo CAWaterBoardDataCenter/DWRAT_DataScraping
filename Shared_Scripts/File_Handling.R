@@ -1342,14 +1342,56 @@ writeOutput <- function (x, outPath, writeFunction = NULL, quietly = FALSE,
     
     if (grepl("Cannot open file for writing", writeRes, ignore.case = TRUE)) {
       
-      stop(paste0("Inaccessible File Issue\n\n",
-                  "The above error message usually occurs if the file already ",
-                  "exists and is open in a program like Excel. This prevents ",
-                  "the script from overwriting the file.\n\nPlease close '", 
-                  filePath, "' and try again.") |>
-             errWrap() |>
-             str_replace("(open)", col_red("\\1")) |>
-             str_replace("(close)", col_green("\\1")))
+      # There are two different reasons this error can happen:
+      # Either the file is on a shared network path, and it's open, or
+      # the directories don't exist
+      
+      # Check if the directory of the file exists
+      if (outPath |> normalizePath(winslash = "/", mustWork = FALSE) |>
+          str_remove("/.+?$") |> dir.exists()) {
+        
+        stop(paste0("Inaccessible File Issue\n\n",
+                    "The above error message usually occurs if the file already ",
+                    "exists and is open in a program like Excel. This prevents ",
+                    "the script from overwriting the file.\n\nPlease close '", 
+                    outPath, "' and try again.") |>
+               errWrap() |>
+               str_replace("(open)", col_red("\\1")) |>
+               str_replace("(close)", col_green("\\1")))
+        
+        # The `if` condition has several steps in its calculation:
+        
+        # (1) 'outPath' is converted into a full, absolute path
+        
+        #     This path is set to use forward slashes "/" in its string
+        
+        # (2) The filename portion is removed from the end of the path
+        
+        #     A lazy regular expression is used. ".+?" matches with one or more
+        #     characters, but the match uses the minimum number of required 
+        #     characters to satisfy the pattern
+        
+        #     As a result, only the last section of the filepath is removed 
+        #     (since the matching algorithm starts from the end of the string 
+        #      because of "$", and it stops at the first forward slash it meets)
+        
+        #     The leftover portion of the path goes up to the folder that would
+        #     have contained this file
+        
+        # (3) `dir.exists` is applied to check if the parent folder actually exists
+        
+        #     If yes, then the error may be due to local cloud path restrictions instead
+        
+      } else {
+        
+        paste0("Parent Directory Does Not Exist\n\n",
+               "The above error likely occurred because the folder that would ",
+               "have contained the file does not appear to exist.\n\n",
+               "(Please investigate \"", 
+               normalizePath(outPath, mustWork = FALSE), "\")") |>
+          stop_script()
+        
+      }
       
       # In all other cases, output a custom acknowledgement 
     } else {
