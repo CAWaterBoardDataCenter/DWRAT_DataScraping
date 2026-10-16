@@ -97,13 +97,13 @@ source("W2_Russian_River/Scripts/RRW_v2_011_SRP_Cleanup.R")
 
 
 # 
-source("W2_Russian_River/Scripts/HLP_011_Compare_SRP_Output_to_USGS_Gage.R")
+source("W2_Russian_River/Scripts/RRW_v2_012_Compare_SRPHM_Output_to_USGS_Gage.R")
 
 
 #### RRIHM ####
 
 # Setup the temporary RRIHM model location
-source("W2_Russian_River/Scripts/RRW_v2_012_Setup_RRIHM_Model.R")
+source("W2_Russian_River/Scripts/RRW_v2_013_Setup_RRIHM_Model.R")
 
 
 
