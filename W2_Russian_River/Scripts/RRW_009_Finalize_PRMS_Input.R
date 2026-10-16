@@ -103,14 +103,7 @@ mainProcedure <- function (predictWY = TRUE) {
   filePaths <- tibble("METEOROLOGICAL" = 
                         paste0("W2_Russian_River/Output/PRMS_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_PRMS_DAT_FOLDER"))
-  
-  
-  # "MAIN_DAT" contains a folder path right now
-  # Extract the latest primary DAT file from there
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile(filePattern = "^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$", 
-                  title = "PRMS Main DAT File")
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("PRMS"))
   
   
   # Read in the two files after that (Meteorological CSV and Main PRMS DAT file)
@@ -252,11 +245,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
     # the PRMS model domain
     
     # Get the path to that file
-    pastPrecipPath <- paste0("PRISM_", model, "_HISTORIC_PRECIP_FOLDER") |>
-      getFromControl_RR() |>
-      getLatestFile(paste0("^RR_Workflow_PRISM_", model, "_Avg_Historic_Precip_",
-                           "CY1981_to_WY[0-9]{4}\\.csv$"),
-                    paste0(model, " Historic Precip File"))
+    pastPrecipPath <- model |> 
+      get_model_domain_precip_filepath("HISTORIC")
     
     
     # Read in the file and validate it
@@ -586,8 +576,7 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, model,
   
   # PRISM data that was previously downloaded for the model is also required
   # Locate that file, confirm its existence, and validate the data
-  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_", model, "_Domain_Data_",
-                      getModeledWY(endDate)[1], "_", endDate, ".csv") |>
+  prismPath <- get_model_domain_precip_filepath(model, "CURRENT", endDate) |>
     checkForPreviousOutput()
   
   

@@ -46,25 +46,13 @@ mainProcedure <- function () {
   
   
   inputFiles <- tibble("PRMS_DAT" = 
-                         getFromControl_RR("MAIN_PRMS_DAT_FOLDER") |>
-                         getLatestFile("^DAT_PRMS_CY1990_to_WY[0-9]{4}\\.csv$", 
-                                       "PRMS Main DAT File"),
+                         get_model_historic_DAT_filepath("PRMS"),
                        "SRP_DAT" = 
-                         getFromControl_RR("MAIN_SRP_DAT_FOLDER") |>
-                         getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$", 
-                                       "SRP Main DAT File"),
+                         get_model_historic_DAT_filepath("SRP"),
                        "PRMS_PRECIP" = 
-                         getFromControl_RR("PRISM_PRMS_HISTORIC_PRECIP_FOLDER") |>
-                         getLatestFile(paste0("^RR_Workflow_PRISM_PRMS_",
-                                              "Avg_Historic_Precip_",
-                                              "CY1981_to_WY[0-9]{4}\\.csv$"),
-                                       "PRMS Historic Precip File"),
+                         get_model_domain_precip_filepath("PRMS", "HISTORIC"),
                        "SRP_PRECIP" = 
-                         getFromControl_RR("PRISM_SRP_HISTORIC_PRECIP_FOLDER") |>
-                         getLatestFile(paste0("^RR_Workflow_PRISM_SRP_",
-                                              "Avg_Historic_Precip_",
-                                              "CY1981_to_WY[0-9]{4}\\.csv$"),
-                                       "SRP Historic Precip File"))
+                         get_model_domain_precip_filepath("SRP", "HISTORIC"))
   
   
   # Extract the second year that appears in each of these filename strings
@@ -80,6 +68,13 @@ mainProcedure <- function () {
   
   # These lookahead and lookbehind patterns are not included in the extracted
   # string, so `as.numeric` can be applied immediately to the result
+  
+  error_if(anyNA(endYears),
+           paste0("Failed to Extract End Year Information\n\n",
+                  "The names for the historic DAT and model domain precipitation ",
+                  "files were standardized such that the ending water year is ",
+                  "present at the end of each name. However, it could not be ",
+                  "extracted for one or more of these files. Please investigate."))
   
   
   cat("\tDone!\n\n")
@@ -681,9 +676,9 @@ createPrecipFile <- function (precipStart, precipEnd, model = "PRMS",
   
   
   # Define the path that will contain the downloaded PRISM data
-  prismPath <- paste0("W2_Russian_River/Intermediate/PRISM_", model, 
-                      "_Domain_Data_", precipStart, 
-                      "_", precipEnd, ".csv")
+  prismPath <- model |>
+    get_model_domain_precip_filepath("CURRENT", startDate = precipStart, 
+                                     endDate = precipEnd)
   
   
   # Then, download PRISM data for the model domain grid cells

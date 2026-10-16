@@ -199,16 +199,14 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
   
   # Otherwise, get both the historic precipitation data and the current WY
   # precipitation files
-  historicPath <- getFromControl_RR(paste0("PRISM_", model, 
-                                           "_HISTORIC_PRECIP_FOLDER")) |>
-    getLatestFile(paste0("^RR_Workflow_PRISM_", model, "_Avg_Historic_Precip_",
-                         "CY1981_to_WY[0-9]{4}\\.csv$"),
-                  paste0(model, " Historic Precip File"))
+  historicPath <- model |>
+    get_model_domain_precip_filepath("HISTORIC")
   
   
-  currentPath <- paste0(dirPath, "/", model, "/Input/PRISM_", model, 
-                        "_Domain_Data_", 
-                        getModeledWY(endDate)[1], "_", endDate, ".csv")
+  currentPath <- paste0(dirPath, "/", model, "/Input/",
+                        model |>
+                          get_model_domain_precip_filepath("CURRENT", endDate) |>
+                          extract_filename())
   
   
   # Read in both files
