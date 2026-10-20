@@ -48,6 +48,10 @@
 #  run procedure, so they will not stick around for long)
 
 
+# To Do: The main procedure can be made more generic to enable more reuse 
+#        between the models' different versions of this process
+
+
 #### Setup ####
 
 # Clear the environment
@@ -226,7 +230,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   
   # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
-  datName <- paste0("DAT_SRP_", startDate, "_", endDate, ".dat")
+  datName <- paste0("DAT_SRPHM_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
