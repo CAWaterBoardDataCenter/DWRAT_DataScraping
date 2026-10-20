@@ -9,6 +9,10 @@
 # the average precipitation among gages in the SRP DAT file
 
 
+# To Do: Most of the main code procedure can be modularized 
+#        and reused for PRMS, SRP, RRIHM, and SRPHM
+
+
 #### Setup ####
 
 # Clear the environment
@@ -111,6 +115,25 @@ mainProcedure <- function (gageID = "11466800") {
   usgsDF <- requestUSGS(stationID = gageID, 
                         startDate = min(gagDF$DATE), endDate = max(gagDF$DATE),
                         apiKey = apiKey)
+  
+  
+  # If 'usgsDF' is an empty tibble, that means that no streamflow data is available
+  if (nrow(usgsDF) == 0) {
+    
+    # Notify the user
+    cat("\n\n")
+    paste0("No streamflow data is available at Station ", gageID, " between ",
+           min(gagDF$DATE), " and ", max(gagDF$DATE)) |>
+      col_red() |>
+      cat()
+    cat("\n\n")
+    cat("Terminating the script run!")
+    cat("\n\n")
+    
+    # Return nothing
+    return(invisible(NULL))
+    
+  }
   
   
   # Validate and process the returned dataset
@@ -554,6 +577,17 @@ requestUSGS <- function (stationID, startDate, endDate,
   
   # Extract the CSV result from 'req'
   usgsDF <- content(req)
+  
+  
+  # If 'usgsDF' is NULL despite 'req' having a status code of 200, 
+  # that generally means that no data is available for the requested time period
+  if (is.null(usgsDF)) {
+    
+    # Return an empty tibble in that case
+    return(tibble())
+    
+  }
+  
   
   
   # If 'usgsDF' contains as many rows as specified in 'limit',

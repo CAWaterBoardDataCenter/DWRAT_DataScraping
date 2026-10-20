@@ -57,7 +57,7 @@ mainProcedure <- function (gageID = "11466800") {
   
   
   # Confirm that the gage's corresponding gag file is present in the model "output" folder
-  gagPath <- paste0(dirPath, "/SRPHM/Output/", gageID, ".gag") |>
+  gagPath <- paste0(dirPath, "/SRPHM/Output/SRP_inflow_", gageID, ".gag") |>
     checkForPreviousOutput()
   
   
@@ -120,6 +120,25 @@ mainProcedure <- function (gageID = "11466800") {
   usgsDF <- requestUSGS(stationID = gageID, 
                         startDate = min(gagDF$DATE), endDate = max(gagDF$DATE),
                         apiKey = apiKey)
+  
+  
+  # If 'usgsDF' is an empty tibble, that means that no streamflow data is available
+  if (nrow(usgsDF) == 0) {
+    
+    # Notify the user
+    cat("\n\n")
+    paste0("No streamflow data is available at Station ", gageID, " between ",
+           min(gagDF$DATE), " and ", max(gagDF$DATE)) |>
+      col_red() |>
+      cat()
+    cat("\n\n")
+    cat("Terminating the script run!")
+    cat("\n\n")
+    
+    # Return nothing
+    return(invisible(NULL))
+    
+  }
   
   
   # Validate and process the returned dataset
