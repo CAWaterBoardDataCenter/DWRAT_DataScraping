@@ -106,8 +106,16 @@ source("W2_Russian_River/Scripts/RRW_v2_012_Compare_SRPHM_Output_to_USGS_Gage.R"
 source("W2_Russian_River/Scripts/RRW_v2_013_Setup_RRIHM_Model.R")
 
 
+# Update the Mark West Creek DAT file that is input into modflow
+source("W2_Russian_River/Scripts/RRW_v2_014_Update_Mark_West.R")
 
 
+# Process the downloaded weather data for use in RRIHM
+source("W2_Russian_River/Scripts/RRW_v2_015_Process_RRIHM_Weather_Data.R")
 
+
+# Generate the main DAT file for RRIHM
+# (But this is not the final adjustment made to the RRIHM inputs)
+source("W2_Russian_River/Scripts/RRW_v2_016_Finalize_RRIHM_Weather_Input.R")
 
 
