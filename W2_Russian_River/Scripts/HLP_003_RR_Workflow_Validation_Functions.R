@@ -237,7 +237,7 @@ validateStationInputs <- function (inputDF, inputPath,
   
   
   # Related to that requirement, make sure 'model' is "PRMS", "SRP", or something similar
-  if (!(model %in% c("PRMS", "SRP", "SRPHM"))) {
+  if (!(model %in% c("PRMS", "SRP", "SRPHM", "RRIHM"))) {
     
     paste0("Script Error - Unrecognized Value for 'model'\n\n", 
            "The function `validateStationInputs` checks station input ",
@@ -248,12 +248,6 @@ validateStationInputs <- function (inputDF, inputPath,
            "Please correct the script and try again.") |>
       stop_script()
     
-  }
-  
-  
-  # If the model is "SRPHM", use "SRP" for the column names and validation process
-  if (model %in% c("SRPHM")) {
-    model <- "SRP"
   }
   
   
@@ -276,7 +270,7 @@ validateStationInputs <- function (inputDF, inputPath,
   #    (*) PRMS_TMIN_NAME / SRP_TMIN_NAME
   #    (*) PRMS_TMAX_NAME / SRP_TMAX_NAME
   inputFieldNames <- c("STATION_ID", 
-                       get_model_column_name(c("PRECIP", "TMIN", "TMAX")))
+                       get_model_column_name(model, c("PRECIP", "TMIN", "TMAX")))
   
   
   # Start by confirming that the field names appear in 'inputDF'
@@ -1787,6 +1781,37 @@ check_for_model_outputs <- function (model, modelPath, modelOutput = NULL,
 
 
 
+get_model_prism_grid_cells <- function (model) {
+  
+  # Each model should have a list of PRISM grid cells 
+  # that correspond to its model domain
+  
+  # Because some models share the same domain, they can be shared
+  
+  # This function will return the field name in the workflow control file
+  # that points to these PRISM grid cell files
+  
+  
+  if (model %in% c("RRIHM")) {
+    
+    # Avoid maintaining extra files and simply use the "PRMS" PRISM grid cells
+    model <- "PRMS"
+    
+  } else if (model %in% c("SRPHM")) {
+    
+    # Use the "SRP" grid cell file
+    model <- "SRP"
+    
+  }
+  
+  
+  # Extract the required column fragment and return the full model column name
+  return(paste0("PRISM_", model, "_GRID_CELLS_CSV"))
+  
+}
+
+
+
 get_model_column_name <- function (model, type) {
   
   # The weather station input files should contain columns that link 
@@ -1978,8 +2003,9 @@ get_model_domain_precip_filepath <- function (model, fileType, endDate = NA_Date
     
   }
   
-  
-  
-  
 }
+
+
+
+
 

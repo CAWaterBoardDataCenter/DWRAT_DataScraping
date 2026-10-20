@@ -289,7 +289,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
                   "runModifiedPRISM")
   
   
-  runModifiedPRISM(paste0("PRISM_", model, "_GRID_CELLS_CSV"), 
+  runModifiedPRISM(get_model_prism_grid_cells(model), 
                    startDate = min(missingDF$Date), 
                    endDate = max(missingDF$Date), 
                    outFile = extraPath,
