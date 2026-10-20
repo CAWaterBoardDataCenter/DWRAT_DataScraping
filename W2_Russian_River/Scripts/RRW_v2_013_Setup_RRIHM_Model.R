@@ -27,7 +27,7 @@ source("W2_Russian_River/Scripts/HLP_003_RR_Workflow_Validation_Functions.R")
 mainProcedure <- function () {
   
   cat("\n\n")
-  cat("Starting 'RRW_v2_012_Setup_RRIHM_Model.R'!\n\n")
+  cat("Starting 'RRW_v2_013_Setup_RRIHM_Model.R'!\n\n")
   
   
   # Rely on the functions from the PRMS model setup script to perform these actions
@@ -40,7 +40,7 @@ mainProcedure <- function () {
   
   
   # Output a completion message
-  cat(col_green("\n'RRW_v2_012_Setup_RRIHM_Model.R' is complete!\n\n"))
+  cat(col_green("\n'RRW_v2_013_Setup_RRIHM_Model.R' is complete!\n\n"))
   
   
   # Return nothing
