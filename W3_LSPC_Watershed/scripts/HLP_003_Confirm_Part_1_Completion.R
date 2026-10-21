@@ -62,6 +62,10 @@ mainProcedure <- function () {
   cat("\tDone!\n\n")
   
   
+  # Get the location of the archive folder
+  dirPath <- get_lspc_archive_folder(startDate, endDate)
+  
+  
   # Update metadata about the start time of the "Part 2" procedure
   updateMetadataCSV(dirPath, list("APPROX_PART_2_START_TIME" = Sys.time()))
   
