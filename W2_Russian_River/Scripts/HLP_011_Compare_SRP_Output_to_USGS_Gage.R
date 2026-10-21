@@ -9,6 +9,10 @@
 # the average precipitation among gages in the SRP DAT file
 
 
+# To Do: Most of the main code procedure can be modularized 
+#        and reused for PRMS, SRP, RRIHM, and SRPHM
+
+
 #### Setup ####
 
 # Clear the environment
@@ -111,6 +115,25 @@ mainProcedure <- function (gageID = "11466800") {
   usgsDF <- requestUSGS(stationID = gageID, 
                         startDate = min(gagDF$DATE), endDate = max(gagDF$DATE),
                         apiKey = apiKey)
+  
+  
+  # If 'usgsDF' is an empty tibble, that means that no streamflow data is available
+  if (nrow(usgsDF) == 0) {
+    
+    # Notify the user
+    cat("\n\n")
+    paste0("No streamflow data is available at Station ", gageID, " between ",
+           min(gagDF$DATE), " and ", max(gagDF$DATE)) |>
+      col_red() |>
+      cat()
+    cat("\n\n")
+    cat("Terminating the script run!")
+    cat("\n\n")
+    
+    # Return nothing
+    return(invisible(NULL))
+    
+  }
   
   
   # Validate and process the returned dataset
@@ -289,7 +312,7 @@ gatherPrecipPRISM <- function (dirPath, endDate, model = "SRP") {
                   "runModifiedPRISM")
   
   
-  runModifiedPRISM(paste0("PRISM_", model, "_GRID_CELLS_CSV"), 
+  runModifiedPRISM(get_model_prism_grid_cells(model), 
                    startDate = min(missingDF$Date), 
                    endDate = max(missingDF$Date), 
                    outFile = extraPath,
@@ -554,6 +577,17 @@ requestUSGS <- function (stationID, startDate, endDate,
   
   # Extract the CSV result from 'req'
   usgsDF <- content(req)
+  
+  
+  # If 'usgsDF' is NULL despite 'req' having a status code of 200, 
+  # that generally means that no data is available for the requested time period
+  if (is.null(usgsDF)) {
+    
+    # Return an empty tibble in that case
+    return(tibble())
+    
+  }
+  
   
   
   # If 'usgsDF' contains as many rows as specified in 'limit',
@@ -2084,11 +2118,11 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     statDF <- statDF |>
       mutate(DAILY_RESULT = 
                case_when(
-                 grepl("^Nash", METRIC) ~ calcNSE(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^P.Bias$", METRIC) ~ calcPBias(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^Root", METRIC) ~ calcRSR(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$GAGE, dailyDF$MODEL),
-                 grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Nash", METRIC) ~ calc_nse(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^P.Bias$", METRIC) ~ calc_pbias(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Root", METRIC) ~ calc_rsr(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^Modif", METRIC) ~ calc_mkge(dailyDF$GAGE, dailyDF$MODEL),
+                 grepl("^R Sq", METRIC) ~ calc_r_sqrd(dailyDF$GAGE, dailyDF$MODEL),
                  .default = NA_real_
                ))
     
@@ -2099,7 +2133,7 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     if ("P-Bias" %in% statDF$METRIC) {
       
       statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
-        calcPBias(dailyDF$GAGE, dailyDF$MODEL) |> 
+        calc_pbias(dailyDF$GAGE, dailyDF$MODEL) |> 
         attributes() |> pluck(1)
       
     }
@@ -2118,11 +2152,11 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     statDF <- statDF |>
       mutate(MONTHLY_RESULT = 
                case_when(
-                 grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^P.Bias$", METRIC) ~ calcPBias(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^Root", METRIC) ~ calcRSR(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$GAGE, monthlyDF$MODEL),
-                 grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Nash", METRIC) ~ calc_nse(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^P.Bias$", METRIC) ~ calc_pbias(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Root", METRIC) ~ calc_rsr(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^Modif", METRIC) ~ calc_mkge(monthlyDF$GAGE, monthlyDF$MODEL),
+                 grepl("^R Sq", METRIC) ~ calc_r_sqrd(monthlyDF$GAGE, monthlyDF$MODEL),
                  .default = NA_real_
                ))
     
@@ -2133,7 +2167,7 @@ calcMetrics <- function (statDF, dailyDF, monthlyDF) {
     if ("P-Bias" %in% statDF$METRIC) {
       
       statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
-        calcPBias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
+        calc_pbias(monthlyDF$GAGE, monthlyDF$MODEL) |> 
         attributes() |> pluck(1)
       
     }

@@ -522,7 +522,7 @@ wb_incorporate_old_review <- function (wb, reviewPath, wsName, qcFile, worksheet
   
   
   # If 'deletedLocs' is empty, return 'wb' without any changes
-  if (length(deletedLocs) == 0) {
+  if (nrow(deletedLocs) == 0) {
     return(wb)
   }
   

@@ -190,7 +190,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # It will be stored in both the "RR_PRMS" folder and the model run 
   # output folder 
   mergedDAT |>
-    outputDAT(startDate, endDate, dirPath, prmsPath, predictWY)
+    outputDAT(startDate, endDate, dirPath, prmsPath, predictWY, "PRMS")
   
   
   # Archive the historic DAT file too
@@ -305,10 +305,19 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
   # Make sure the "Runoff" columns all contain "1" for every row
   # (The meteorological dataset does not have these columns, and that causes
   #  "NA" entries to appear)
-  if (model == "PRMS") {
+  if (model %in% c("PRMS", "RRIHM")) {
     
     finalDAT <- finalDAT |>
       mutate(across(starts_with("RUNOFF"), ~replace_na(., 1)))
+    
+  } else if (model %in% c("SRP", "SRPHM")) {
+    
+    # Do nothing
+    
+  } else {
+    
+    paste0("No action specified for model \"", model, "\"") |>
+      stop_script()
     
   }
   
@@ -1095,7 +1104,7 @@ validate_num_stations <- function (mergedDAT, modelPath, model) {
 
 
 outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath, 
-                       predictWY, quietly = FALSE) {
+                       predictWY, model = "PRMS", quietly = FALSE) {
   
   # Write 'mergedDAT' to two folders:
   #  (1) In the hydrology directory, store the file under "PRMS > Input"
@@ -1104,7 +1113,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   
   
   # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
-  datName <- paste0("DAT_PRMS_", startDate, "_", endDate, ".dat")
+  datName <- paste0("DAT_", model, "_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
@@ -1143,7 +1152,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   
   # Write 'finalDAT' to the hydrology folder first
   finalDAT |>
-    writeOutput(paste0(dirPath, "/PRMS/Input/", datName) |> 
+    writeOutput(paste0(dirPath, "/", model, "/Input/", datName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_tsv", quietly = quietly,
                 col_names = FALSE)
@@ -1153,8 +1162,9 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   # The name will be fixed as "RR_PRMS_Input.dat" 
   # for ease of modeling automation
   finalDAT |>
-    writeOutput(paste0(prmsPath, 
-                       "/PRMS/input/climate_scenarios/", genericName) |> 
+    writeOutput(list_model_components(model)[["DAT_LOC"]] |>
+                  make_abs_model_path(prmsPath, useQuotes = FALSE) |>
+                  paste0("/", genericName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_tsv", quietly = quietly,
                 col_names = FALSE)
@@ -1163,11 +1173,11 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
   # Update the PRMS control file next
   # (Its presence was already confirmed at the beginning of the script in 
   #  `validate_model_copy`)
-  updateControlFilePRMS(dirPath, prmsPath, genericName, endDate, predictWY)
+  updateControlFilePRMS(dirPath, prmsPath, genericName, endDate, predictWY, model)
   
   
   # Update the PRMS batch file
-  updateBatchFilePRMS(prmsPath)
+  updateBatchFilePRMS(prmsPath, model)
   
   
   # Finally, add metadata containing 'datName'
@@ -1183,7 +1193,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, prmsPath,
 
 
 updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate, 
-                                   predictWY) {
+                                   predictWY, model = "PRMS") {
   
   # Update the fields in the "prms_rr" control file
   # This customizes the PRMS model run
@@ -1193,7 +1203,7 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   # First, read in the file
   controlPath <- paste0(prmsPath, "/",
-                        list_model_components("PRMS")[["CONTROL"]]) |>
+                        list_model_components(model)[["CONTROL"]]) |>
     normalizePath(mustWork = TRUE)
   
   
@@ -1242,8 +1252,13 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # Three lines after "data_file", the DAT filename is specified
-  prmsControl[targetLoc + 3] <- paste0("..\\PRMS\\input\\climate_scenarios\\",
-                                       datName)
+  
+  # This path should be specified relative to the batch file's location
+  
+  prmsControl[targetLoc + 3] <- list_model_components(model)[["DAT_LOC"]] |>
+    make_abs_model_path(prmsPath, useQuotes = FALSE) |> 
+    paste0("/", datName) |> 
+    normalizePath(mustWork = FALSE)
   
   
   # The final parameter to change is the name of the output file
@@ -1252,9 +1267,12 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
   
   
   # Three lines after "nsubOutBaseFileName", the final output name is specified
-  # To make the automated process easier, the name will always 
-  # be "RR_PRMS_Output_"
-  prmsControl[targetLoc + 3] <- "..\\PRMS\\output\\RR_PRMS_Output_"
+  # To make the automated process easier, the names will always start with 
+  # "RR_PRMS_Output_"
+  prmsControl[targetLoc + 3] <- list_model_components(model)[["OUT_LOC"]] |>
+    make_abs_model_path(prmsPath, useQuotes = FALSE) |> 
+    paste0("/RR_PRMS_Output_") |> 
+    normalizePath(mustWork = FALSE)
   
   
   # Write 'prmsControl' back to a file (overwriting the previous version)
@@ -1276,30 +1294,50 @@ updateControlFilePRMS <- function (dirPath, prmsPath, datName, endDate,
 
 
 
-updateBatchFilePRMS <- function (prmsPath) {
+updateBatchFilePRMS <- function (prmsPath, model = "PRMS") {
   
-  # Update the "run.bat" file that initiates PRMS
+  # Update the "run.bat" file that initiates PRMS (or a similar model)
   
   
   # This file contains two commands:
-  # cd [RR_PRMS "WINDOW" FOLDER]
-  # [PATH TO GSFLOW.EXE] [PATH TO CONTROL FILE]
+  # cd [LOCATION OF BATCH FILE]
+  # [PATH TO EXE] [PATH TO CONTROL FILE]
   
   
-  batchCommands <- c(paste0("cd ", prmsPath, "\\windows"),
-                     "..\\bin\\gsflow.exe prms_rr.control")
-  
-  # The first command changes the working directory to the "windows" sub-folder
-  # of "RR_PRMS"
-  # The second command then executes gsflow.exe using "prms_rr.control" (which
-  # is also located in the "windows" sub-folder)
+  # Get the planned directory location for the batch file
+  batchDir <- list_model_components(model)[["BATCH"]] |>
+    str_remove("[/\\\\].+?$") |>
+    make_abs_model_path(prmsPath)
   
   
-  # Write these commands to "run.bat"
+  # After that, prepare a path for the model executable file (like gsflow.exe)
+  exePath <- list_model_components(model)[["EXE"]] |>
+    make_abs_model_path(prmsPath)
+  
+  
+  # Get an absolute path to the model control file too (like prms_rr.control)
+  controlPath <- list_model_components(model)[["CONTROL"]] |>
+    make_abs_model_path(prmsPath, useQuotes = TRUE)
+  
+  
+  batchCommands <- c(paste0("cd ", batchDir),
+                     paste0(exePath, " ", controlPath))
+  
+  # The first command changes the working directory to the location of the 
+  # batch file in the model directory
+  # The second command then calls the model executable file, using the 
+  # model control file as an argument
+  
+  
+  # Write these commands to a batch file
   batchCommands |>
-    writeOutput(paste0(prmsPath, "/windows/run.bat") |> 
+    writeOutput(paste0(batchDir |> str_remove_all("\""), "/", 
+                       list_model_components(model)[["BATCH"]] |> extract_filename()) |> 
                   normalizePath(mustWork = FALSE),
                 quietly = TRUE)
+  
+  # Note: 'batchDir' is encased within quotation marks for use in the Windows OS commands
+  #       When using this string for making a path, those quotation marks must be removed
   
   
   # Return nothing

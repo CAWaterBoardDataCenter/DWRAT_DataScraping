@@ -137,6 +137,25 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
                         apiKey = apiKey)
   
   
+  # If 'usgsDF' is an empty tibble, that means that no streamflow data is available
+  if (nrow(usgsDF) == 0) {
+    
+    # Notify the user
+    cat("\n\n")
+    paste0("No streamflow data is available at Station ", gageID, " between ",
+           min(gagDF$DATE), " and ", max(gagDF$DATE)) |>
+      col_red() |>
+      cat()
+    cat("\n\n")
+    cat("Terminating the script run!")
+    cat("\n\n")
+    
+    # Return nothing
+    return(invisible(NULL))
+    
+  }
+  
+  
   # Validate and process the returned dataset
   usgsDF <- usgsDF |>
     validateUSGS()

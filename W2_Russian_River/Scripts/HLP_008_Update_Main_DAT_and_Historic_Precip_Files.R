@@ -682,7 +682,7 @@ createPrecipFile <- function (precipStart, precipEnd, model = "PRMS",
   
   
   # Then, download PRISM data for the model domain grid cells
-  runModifiedPRISM(paste0("PRISM_", model, "_GRID_CELLS_CSV"), 
+  runModifiedPRISM(get_model_prism_grid_cells(model), 
                    precipStart, precipEnd, prismPath,
                    useHighRes = TRUE, interpCells = FALSE,
                    getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
