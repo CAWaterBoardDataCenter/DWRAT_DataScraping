@@ -345,7 +345,7 @@ calculate_stat_metric <- function (metric, obs, sim, na.rm) {
 
 
 
-input_checks <- function (obs, sim) {
+check_input_vectors <- function (obs, sim) {
   
   # Make sure 'obs' and 'sim' are equivalent in size and type
   
