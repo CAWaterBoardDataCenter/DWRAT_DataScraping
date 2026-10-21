@@ -115,7 +115,7 @@ mainProcedure <- function (predictWY = TRUE) {
   filePaths <- tibble("METEOROLOGICAL" = 
                         paste0("W2_Russian_River/Output/SRPHM_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = get_model_historic_DAT_filepath("SRP"))
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("SRPHM"))
   
   
   # Read in the two files next (while also verifying that they exist)
