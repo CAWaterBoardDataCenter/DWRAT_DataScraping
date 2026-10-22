@@ -195,10 +195,16 @@ export_anaconda_env <- function (batPath, dirPath, envName,
   # https://docs.conda.io/projects/conda/en/latest/commands/export.html
   
   
+  # The YML file will originally be written as "environment.yml"
+  # Otherwise, there may be an "EnvironmentExporterNotDetected" error
+  # It will be renamed afterwards if 'outName' is something different
+  tempName <- "environment.yml"
+  
+  
   # Submit the command to export the environment to a file
   ymlRes <- system(paste0(batPath, " && ",
                           "conda export -n ", envName, " -f ", 
-                          paste0(dirPath, "/", outName) |> 
+                          paste0(dirPath, "/", tempName) |> 
                             normalizePath(mustWork = FALSE) |> shQuote()), 
                    intern = TRUE)
   
@@ -219,6 +225,13 @@ export_anaconda_env <- function (batPath, dirPath, envName,
                     "\" environment to a file. Please investigate the output ",
                     "messages above."))
     
+  }
+  
+  
+  # If 'envName' is not "environment.yml", rename the file to match 'envName'
+  if (envName != tempName) {
+    file.rename(paste0(dirPath, "/", tempName),
+                paste0(dirPath, "/", envName))
   }
   
   
