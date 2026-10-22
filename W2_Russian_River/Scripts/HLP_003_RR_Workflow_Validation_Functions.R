@@ -1081,6 +1081,110 @@ validateInputDAT <- function (datFile, sourcePath, model, modelCols,
 
 
 
+validate_rrihm_dat <- function (datDF, datPath, datName = "Mark West") {
+  
+  # Validate a DAT file for RRIHM
+  
+  # Mark West, Lake Sonoma, Lake Mendocino, and similar have a unique structure 
+  # for their DAT files
+  
+  # The original file should contain three columns 
+  # (And `read_dat` can add a "DATE" column)
+  
+  
+  # Return 'datDF' with column name edits (and potentially a new "DATE" column)
+  
+  
+  # These are the columns that should have been imported from 'datDF'
+  # ("X1", "X2", and "X3" are the expected names)
+  # (The other strings are what they would be renamed to)
+  expectedCols <- c("Time" = "X1", "Flow" = "X2", "Date" = "X3")
+  
+  
+  # Check if any columns are missing
+  if (!all(expectedCols %in% names(datDF))) {
+    
+    paste0("DAT File - Column Issue\n\n",
+           "The ", datName, " DAT file for RRIHM does not have all ", 
+           length(expectedCols), " of the required columns (missing ",
+           vec2QuotedStr(expectedCols[!(expectedCols %in% names(datDF))]), 
+           "). Please investigate this file.\n\n", 
+           "(This error occurred for \"", datPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Make sure no "NA" values are present in 'datDF'
+  if (anyNA(datDF)) {
+    
+    # Output the indices of the rows and columns where "NA" values were detected
+    cat("\n\n")
+    cat("Missing Value Indices:\n")
+    print(which(is.na(datDF), arr.ind = TRUE))
+    cat("\n\n")
+    
+    
+    paste0("DAT File - Missing Data Issue\n\n",
+           "The ", datName, " DAT file for RRIHM has one or more entries with ",
+           "\"NA\" values. Please check the entries noted above and investigate ",
+           "the file.\n\n", 
+           "(This error occurred for \"", datPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # Next, update the column names in 'datDF'
+  # (These renames are meant to match the naming conventions in GAG files)
+  datDF <- datDF |>
+    rename(all_of(expectedCols))
+  
+  
+  # Check the "Time", "Flow", and "Date" columns for proper formatting
+  
+  
+  # The "Time" column should contain integers that increment from 0 onwards
+  # The final number should be one less than the total number of rows in 'datDF'
+  if (!all(0:(nrow(datDF) - 1) == datDF[["Time"]]) ||
+      !is.numeric(datDF[["Time"]])) {
+    
+    paste0("DAT File - Time Increment Issue\n\n",
+           "The first column in the ", datName, " DAT file should contain integers ",
+           "that start from 0 and end at ", nrow(datDF) - 1, ". Its type should ",
+           "be numeric too. However, this was not the case. Please investigate ",
+           "the file.\n\n", 
+           "(This error occurred for \"", datPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # The "Flow" column should contain non-negative numbers
+  if (!is.numeric(datDF[["Flow"]]) || any(datDF[["Flow"]] < 0)) {
+    
+    paste0("DAT File - Flow Column Issue\n\n",
+           "The second column in the ", datName, " DAT file should contain ",
+           "non-negative flow volumes (in m^3/s). However, this was not the ",
+           "case. Please investigate.\n\n", 
+           "(This error occurred for \"", datPath, "\")") |>
+      errWrap() |>
+      stop()
+    
+  }
+  
+  
+  # If there are no issues, return 'datDF'
+  # (It now has updated column names)
+  return(datDF)
+  
+}
+
+
+
 validateHistoricPrecipFile <- function (precipDF, sourcePath, wyStart) {
   
   # For both PRMS and SRP DAT files, calculations are performed 
