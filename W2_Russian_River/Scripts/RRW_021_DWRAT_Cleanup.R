@@ -228,10 +228,10 @@ export_anaconda_env <- function (batPath, dirPath, envName,
   }
   
   
-  # If 'envName' is not "environment.yml", rename the file to match 'envName'
-  if (envName != tempName) {
+  # If 'outName' is not "environment.yml", rename the file to match 'outName'
+  if (outName != tempName) {
     file.rename(paste0(dirPath, "/", tempName),
-                paste0(dirPath, "/", envName))
+                paste0(dirPath, "/", outName))
   }
   
   
