@@ -225,7 +225,7 @@ mainProcedure <- function () {
     # some of the outputs can be combined and stored in the root of the DWRAT Output folder
     if (length(flowOutlets) > 1) {
       
-      combine_dwrat_outputs(outputPath, length(flowOutlets))
+      combine_dwrat_outputs(writePath, length(flowOutlets))
       
     }
     
