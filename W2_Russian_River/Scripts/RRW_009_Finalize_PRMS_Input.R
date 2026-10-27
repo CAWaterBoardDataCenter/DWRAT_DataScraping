@@ -266,7 +266,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
       # as predictions for the remaining months of the current water year
       finalDAT <- spiPrediction(mergedDAT, pastPrecip, 
                                 startDate, endDate, 
-                                model, modelCols)
+                                model, modelCols, dirPath)
       
       
       # Update the metadata file next
@@ -334,7 +334,7 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
 
 
 
-spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols) {
+spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols, dirPath) {
   
   # Use the 12-month Standard Precipitation Index (SPI) to predict precipitation
   # and temperature for the rest of the water year
@@ -494,6 +494,17 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, mod
   # Then, append it to 'mergedDAT'
   finalDAT <- mergedDAT |>
     bind_rows(spiDAT |> filter(DATE > max(mergedDAT$DATE)))
+  
+  
+  # Finally, add metadata about the months chosen for this forecast
+  # The "YEAR_MONTH" column in 'monthDF' can be used for this
+  
+  updateMetadataCSV(dirPath, 
+                    list(monthDF |> select(YEAR_MONTH) |> 
+                           mutate(YEAR_MONTH = as_date(YEAR_MONTH, format = "%Y-%m") |> 
+                                    format("%Y-%m")) |> 
+                           unlist() |> paste0(collapse = "; ")) |>
+                      set_names(paste0(model, "_SPI_COMPONENTS")))
   
   
   return(finalDAT)
