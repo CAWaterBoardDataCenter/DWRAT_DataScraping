@@ -247,3 +247,69 @@ get_archive_path <- function (startDate, endDate, dir, nameStr = "Archive_Locati
   return(dirPath)
   
 }
+
+
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' \dontrun{
+#' # ...
+#' }
+get_column_from_metadata <- function (dirPath, colNames, filename = "metadata.csv") {
+  
+  # Check a metadata file for specific fields
+  # Return a data frame containing only those columns
+  
+  # Given a path to an archive directory containing a metadata file ('dirPath'),
+  # read in the file denoted by 'filename'
+  
+  # Return a subset of that tibble (only the columns whose names appear in 'colNames')
+  
+  
+  # First, read in the metadata file
+  metaDF <- paste0(dirPath, "/", filename) |>
+    normalizePath(mustWork = FALSE) |>
+    getFile(delim = ",")
+  
+  
+  # Confirm that the desired columns are in 'metaDF'
+  if (!all(colNames %in% names(metaDF))) {
+    
+    missingNames <- which(!(colNames %in% names(metaDF)))
+    
+    
+    paste0("Metadata File - Column",
+           if_else(length(missingNames) > 1, "s", ""), 
+           " Not Found\n\n",
+           "The metadata file (located within \"", dirPath, "\") ",
+           "is missing ", length(missingNames), " column",
+           if_else(length(missingNames) > 1, "s", ""), " (", 
+           vec2QuotedStr(colNames[missingNames]), ").\n\n", 
+           "Please investigate and revise the scripts to address this ",
+           "issue.") |>
+      stop_script()
+    
+  }
+  
+  
+  # If there are no issues, return only the specified columns from 'metaDF'
+  return(metaDF |>
+           select(all_of(colNames)))
+  
+}

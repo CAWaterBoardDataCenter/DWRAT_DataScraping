@@ -67,8 +67,7 @@ mainProcedure <- function (gageID = "11466800") {
   
   # Validate the contents of 'gagDF'
   # To do this, borrow the "validateGag" function from the Raw Flows script
-  c("validateGag", "getColsFromMetadata") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", .))
+  functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", "validateGag")
   
   
   gagDF <- gagDF |>

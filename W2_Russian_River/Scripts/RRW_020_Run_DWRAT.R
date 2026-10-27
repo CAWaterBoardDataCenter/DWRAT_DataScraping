@@ -24,10 +24,6 @@ mainProcedure <- function () {
   cat("Starting 'RRW_020_Run_DWRAT.R'!\n")
   
   
-  functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R",
-                  "getColsFromMetadata")
-  
-  
   # Import the start and end date
   source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
@@ -61,8 +57,8 @@ mainProcedure <- function () {
   
   # Get the start and end dates for the DWRAT model run too
   # (This will be used in the console message)
-  dwratDates <- getColsFromMetadata(dirPath,
-                                    c("DWRAT_START_MONTH", "DWRAT_END_MONTH"))
+  dwratDates <- get_column_from_metadata(dirPath,
+                                         c("DWRAT_START_MONTH", "DWRAT_END_MONTH"))
   
   
   # Notify the user of the imminent model run
