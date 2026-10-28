@@ -62,8 +62,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   
   # Validate the contents of 'subDF'
   # To do this, borrow the "validateSubCSV" function from the Raw Flows script
-  c("validateSubCSV", "getColsFromMetadata") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", .))
+  functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", "validateSubCSV")
   
   
   subDF <- subDF |>

@@ -282,7 +282,7 @@ validateSubCSV <- function (subDF, subPath, dirPath, type = "inq", nsub = 22) {
   # "metadata.csv" contains this information
   # Read in the required columns (while making sure that the fields are dates)
   metaDF <- dirPath |>
-    getColsFromMetadata(c("PRMS_MODEL_START_DATE", "PRMS_MODEL_END_DATE")) |>
+    get_column_from_metadata(c("PRMS_MODEL_START_DATE", "PRMS_MODEL_END_DATE")) |>
     mutate(PRMS_MODEL_START_DATE = as.Date(PRMS_MODEL_START_DATE, 
                                            format = "%m/%d/%Y"),
            PRMS_MODEL_END_DATE = as.Date(PRMS_MODEL_END_DATE, 
@@ -330,47 +330,6 @@ validateSubCSV <- function (subDF, subPath, dirPath, type = "inq", nsub = 22) {
   
   # Return 'subDF' after that
   return(subDF)
-  
-}
-
-
-
-getColsFromMetadata <- function (dirPath, colNames) {
-  
-  # Check "metadata.csv" for specific fields
-  # Return a data frame containing only those columns
-  
-  
-  # First, read in the metadata CSV file
-  metaDF <- paste0(dirPath, "/metadata.csv") |>
-    normalizePath(mustWork = FALSE) |>
-    getFile(delim = ",")
-  
-  
-  # Confirm that the desired columns are in 'metaDF'
-  if (!all(colNames %in% names(metaDF))) {
-    
-    missingNames <- which(!(colNames %in% names(metaDF)))
-    
-    
-    paste0("Metadata CSV File - Column",
-           if_else(length(missingNames) > 1, "s", ""), 
-           " Not Found\n\n",
-           "The metadata file (located within \"", dirPath, "\") ",
-           "is missing ", length(missingNames), " column",
-           if_else(length(missingNames) > 1, "s", ""), " (", 
-           vec2QuotedStr(colNames[missingNames]), ").\n\n", 
-           "Please investigate and revise the scripts to address this ",
-           "issue.") |>
-      errWrap() |>
-      stop()
-    
-  }
-  
-  
-  # If there are no issues, return only the specified columns from 'metaDF'
-  return(metaDF |>
-           select(all_of(colNames)))
   
 }
 
@@ -433,7 +392,7 @@ validateGag <- function (gagDF, gagPath, dirPath) {
   # "metadata.csv" contains this information
   # Read in the required columns (while making sure that the fields are dates)
   metaDF <- dirPath |>
-    getColsFromMetadata(c("SRP_MODEL_START_DATE", "SRP_MODEL_END_DATE")) |>
+    get_column_from_metadata(c("SRP_MODEL_START_DATE", "SRP_MODEL_END_DATE")) |>
     mutate(SRP_MODEL_START_DATE = as.Date(SRP_MODEL_START_DATE, 
                                            format = "%m/%d/%Y"),
            SRP_MODEL_END_DATE = as.Date(SRP_MODEL_END_DATE, 

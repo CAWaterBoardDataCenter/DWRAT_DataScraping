@@ -12,6 +12,8 @@
 # To Do:
 # Implement setting Cards 30, 31, and 45
 
+# To Do: 
+# Make sure the ps file appears correctly in the inp file too
 
 #### Setup ####
 
@@ -46,6 +48,13 @@ mainProcedure <- function () {
   functionStealer("W3_LSPC_Watershed/scripts/LSPC_018_Migrate_Weather_Files.R",
                   "get_lspc_inp_paths")
   
+  functionStealer("W3_LSPC_Watershed/scripts/LSPC_012_Archive_Raw_and_Staged_Files.R",
+                  "get_lspc_archive_folder")
+  
+  
+  # Get the location of the archive folder
+  dirPath <- get_lspc_archive_folder(startDate, endDate)
+  
   
   # Read in the LSPC weather control file
   controlDF <- read_lspc_weather_control()
@@ -65,6 +74,11 @@ mainProcedure <- function () {
   # After that, get the paths to LSPC input files for each watershed
   inpPaths <- modelFolder |>
     get_lspc_inp_paths()
+  
+  
+  # Get the point source file paths too
+  psPaths <- modelFolder |>
+    get_lspc_ps_paths()
   
   
   # Iterate through each input file and ensure that the cards have the correct
@@ -140,6 +154,19 @@ mainProcedure <- function () {
     # However, the LSPC executable file explicitly requires "\r\n"
     # Otherwise, the inp file will fail to parse (without any error message)
     
+    
+    # Archive the inp files too
+    inpPaths[i] |>
+      copy_file_to_archive(dirPath, 
+                           model = controlDF$project_name[i])
+    
+    
+    # Although this loop has been focused on the inp files, 
+    # use this opportunity to archive the corresponding ps files as well
+    psPaths[i] |>
+      copy_file_to_archive(dirPath, 
+                           model = controlDF$project_name[i])
+    
   }
   
   
@@ -151,6 +178,52 @@ mainProcedure <- function () {
   
   # Return nothing
   return(invisible(NULL))
+  
+}
+
+
+
+get_lspc_ps_paths <- function (modelPath) {
+  
+  # Given the path to one or more watersheds' LSPC model directories, 
+  # get the path to the LSPC point source file
+  
+  # There should be only one ps file in each directory
+  
+  
+  # The point source file should be located in the model "Input" folder
+  # Add "/Input" to the model directory path and search for "ps" files in
+  # that location
+  psPath <- modelPath |>
+    paste0("/Input") |>
+    map(~ list.files(., pattern = "\\.ps$", full.names = TRUE))
+  
+  # Even if 'modelPath' contains multiple paths, `map` will ensure that 
+  # each directory will be examined for ps files
+  
+  
+  # Make sure that exactly one match was found in each watershed folder
+  error_if(!all(lengths(psPath) == 1),
+           paste0("Mismatch of LSPC Point Source Files\n\n",
+                  "Each watershed should have exactly one point source file in ",
+                  "its model directory. However, this is not the case. ",
+                  "Please investigate."))
+  
+  
+  # Convert 'psPath' from a list into a vector
+  psPath <- psPath |> unlist()
+  
+  
+  # Confirm that the number of ps paths in 'psPath' match the number of model paths
+  error_if(length(modelPath) != length(psPath),
+           paste0("Mismatch of LSPC Point Source Files\n\n",
+                  "The expected number of .ps files that should have been ",
+                  "detcted is ", length(modelPath), ". However, the number of ",
+                  "files found is ", length(psPath), ". Please investigate."))
+  
+  
+  # If there are no issues, return 'psPath'
+  return(psPath)
   
 }
 

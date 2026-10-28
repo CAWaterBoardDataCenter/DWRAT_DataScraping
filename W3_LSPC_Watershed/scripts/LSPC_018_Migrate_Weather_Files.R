@@ -168,7 +168,7 @@ mainProcedure <- function () {
 
 get_lspc_inp_paths <- function (modelPath) {
   
-  # Given the path to one or more watershed's LSPC model directory, 
+  # Given the path to one or more watersheds' LSPC model directories, 
   # get the path to the LSPC input file
   
   # There should be only one inp file in each directory

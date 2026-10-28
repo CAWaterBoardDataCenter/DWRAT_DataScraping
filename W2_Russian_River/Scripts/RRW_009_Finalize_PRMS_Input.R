@@ -170,7 +170,8 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1],
+                       model = "PRMS")
     
   }
   
@@ -230,7 +231,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
     # But still update the metadata file after that
     updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE),
                        modelEndDate = endDate, 
-                       "Not Required", pathMainDAT)
+                       "Not Required", pathMainDAT,
+                       model = model)
     
   } else {
     
@@ -266,15 +268,10 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
       # as predictions for the remaining months of the current water year
       finalDAT <- spiPrediction(mergedDAT, pastPrecip, 
                                 startDate, endDate, 
-                                model, modelCols)
+                                model, modelCols, dirPath, pathMainDAT,
+                                pastPrecipPath)
       
-      
-      # Update the metadata file next
-      updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
-                         modelEndDate = getModeledWY(endDate)[2],
-                         predictionMethod = "SPI", 
-                         pathMainDAT = pathMainDAT, 
-                         pathPastPrecip = pastPrecipPath)
+      # (The metadata file will be updated in this function's procedure too)
       
       # If 'endDate' is within March - September, the most similar WY will be used
     } else {
@@ -334,7 +331,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
 
 
 
-spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols) {
+spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols, 
+                           dirPath, pathMainDAT, pastPrecipPath) {
   
   # Use the 12-month Standard Precipitation Index (SPI) to predict precipitation
   # and temperature for the rest of the water year
@@ -496,6 +494,20 @@ spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, mod
     bind_rows(spiDAT |> filter(DATE > max(mergedDAT$DATE)))
   
   
+  # Finally, add metadata about this procedure
+  updateMetadata_DAT(dirPath, datStartDate = min(finalDAT$DATE), 
+                     modelEndDate = getModeledWY(endDate)[2],
+                     predictionMethod = "SPI", 
+                     pathMainDAT = pathMainDAT, 
+                     pathPastPrecip = pastPrecipPath,
+                     spiMonths = monthDF |> select(YEAR_MONTH) |> 
+                       mutate(YEAR_MONTH = as_date(YEAR_MONTH, format = "%Y-%m") |> 
+                                format("%Y-%m")) |> 
+                       unlist() |> paste0(collapse = "; "),
+                     model = model)
+  
+  
+  # Return 'finalDAT' afterwards
   return(finalDAT)
   
 }
@@ -507,26 +519,39 @@ updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate,
                                 pathPastPrecip = NA_character_, 
                                 pathCurrentPrecip = NA_character_,
                                 similarWY = NA_real_, 
-                                linModel = list(m = NA_real_, b = NA_real_)) {
+                                linModel = list(m = NA_real_, b = NA_real_),
+                                spiMonths = NA_character_,
+                                model = "PRMS") {
   
   # Update "metadata.csv" in the model run hydrology folder
   
   # Add information about the water year prediction method and the 
   # component DAT files
   
+  newCols <- list(pathMainDAT,
+                  predictionMethod,
+                  pathPastPrecip,
+                  pathCurrentPrecip,
+                  spiMonths,
+                  similarWY,
+                  linModel$m,
+                  linModel$b,
+                  datStartDate,
+                  modelEndDate) |>
+    set_names(c(paste0(model, "_MAIN_DAT_FILE"),
+                paste0(model, "_WY_PREDICTION_METHOD"),
+                paste0(model, "_MODEL_DOMAIN_HISTORIC_PRECIP"),
+                paste0(model, "_MODEL_DOMAIN_CURRENT_WY_PRECIP"),
+                paste0(model, "_SPI_COMPONENTS"),
+                paste0(model, "_MOST_SIMILAR_WY"),
+                paste0(model, "_REGRESSION_MODEL_SLOPE"),
+                paste0(model, "_REGRESSION_MODEL_INTERCEPT"),
+                paste0(model, "_DAT_START_DATE"),
+                paste0(model, "_MODEL_END_DATE")))
   
-  updateMetadataCSV(dirPath,
-                    newCols = list("PRMS_MAIN_DAT_FILE" = pathMainDAT,
-                                   "PRMS_WY_PREDICTION_METHOD" = predictionMethod,
-                                   "PRMS_MODEL_DOMAIN_HISTORIC_PRECIP" = 
-                                     pathPastPrecip,
-                                   "PRMS_MODEL_DOMAIN_CURRENT_WY_PRECIP" = 
-                                     pathCurrentPrecip,
-                                   "PRMS_MOST_SIMILAR_WY" = similarWY,
-                                   "PRMS_REGRESSION_MODEL_SLOPE" = linModel$m,
-                                   "PRMS_REGRESSION_MODEL_INTERCEPT" = linModel$b,
-                                   "PRMS_DAT_START_DATE" = datStartDate,
-                                   "PRMS_MODEL_END_DATE" = modelEndDate))
+  
+  # Update the metadata file using the values in 'newCols'
+  updateMetadataCSV(dirPath, newCols)
   
   
   # Return nothing
@@ -633,7 +658,8 @@ similarWYPrediction <- function (mergedDAT, pastPrecip, endDate, model,
                      predictionMethod = "WY", pathMainDAT = pathMainDAT,
                      pathPastPrecip = pathPastPrecip, 
                      pathCurrentPrecip = prismPath,
-                     similarWY = similarWY, linModel = linModel)
+                     similarWY = similarWY, linModel = linModel,
+                     model = model)
   
   
   # The original files for 'pastPrecip' and 'currentPrecip' should be

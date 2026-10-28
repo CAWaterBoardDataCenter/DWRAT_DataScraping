@@ -81,10 +81,11 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Import functions from the v1 PRMS and SRP scripts
   c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
-    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations") |>
+    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations",
+    "updateMetadata_DAT") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
   
-  c("updateMetadata_DAT", "finalizeDAT") |>
+  c("finalizeDAT") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_014_Finalize_SRP_Input.R", .))
   
   
@@ -180,7 +181,8 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1],
+                       model = "SRPHM")
     
   }
   

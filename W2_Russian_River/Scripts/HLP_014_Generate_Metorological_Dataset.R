@@ -1342,7 +1342,7 @@ apply_qc_flags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecOutputPath,
     }
     
     
-    # Otherwise, update entries in 'meteorDF' for this CIMIS station
+    # Otherwise, update entries in 'meteorDF' for this CDEC station
     # Flagged dates should have their precipitation values set to NA
     meteorDF[[cdecInput[[precipCol]][i]]][meteorDF$DATE %in% errDates] <- NA_real_
     

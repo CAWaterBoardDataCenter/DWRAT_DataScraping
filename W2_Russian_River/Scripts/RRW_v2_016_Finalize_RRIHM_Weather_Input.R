@@ -179,7 +179,8 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1],
+                       model = "RRIHM")
     
   }
   

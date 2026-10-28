@@ -54,7 +54,6 @@ mainProcedure <- function () {
   
   
   # Locate "Mark_West_inflow.dat" within the "RRIHM" folder
-  # (This file was confirmed to exist via `validateModelCopy_RRIHM`)
   markPath <- paste0(rrPath, "/modflow/input/",
                      "Mark_West_inflow.dat") |>
     checkForPreviousOutput()
@@ -69,8 +68,7 @@ mainProcedure <- function () {
   
   # Validate the contents of 'gagDF'
   # To do this, borrow the "validateGag" function from the Raw Flows script
-  c("validateGag", "getColsFromMetadata") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", .))
+  functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", "validateGag")
   
   
   gagDF <- gagDF |>
