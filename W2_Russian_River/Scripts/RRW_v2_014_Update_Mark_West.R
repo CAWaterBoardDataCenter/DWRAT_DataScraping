@@ -54,7 +54,6 @@ mainProcedure <- function () {
   
   
   # Locate "Mark_West_inflow.dat" within the "RRIHM" folder
-  # (This file was confirmed to exist via `validateModelCopy_RRIHM`)
   markPath <- paste0(rrPath, "/modflow/input/",
                      "Mark_West_inflow.dat") |>
     checkForPreviousOutput()
