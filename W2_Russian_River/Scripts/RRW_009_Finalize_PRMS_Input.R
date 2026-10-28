@@ -268,7 +268,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
       # as predictions for the remaining months of the current water year
       finalDAT <- spiPrediction(mergedDAT, pastPrecip, 
                                 startDate, endDate, 
-                                model, modelCols, dirPath)
+                                model, modelCols, dirPath, pathMainDAT,
+                                pastPrecipPath)
       
       # (The metadata file will be updated in this function's procedure too)
       
@@ -330,7 +331,8 @@ predictCurrentWY <- function (mergedDAT, startDate, endDate, model,
 
 
 
-spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols, dirPath) {
+spiPrediction <- function (mergedDAT, pastPrecip, startDate, endDate, model, modelCols, 
+                           dirPath, pathMainDAT, pastPrecipPath) {
   
   # Use the 12-month Standard Precipitation Index (SPI) to predict precipitation
   # and temperature for the rest of the water year
