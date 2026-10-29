@@ -72,10 +72,10 @@ mainProcedure <- function () {
     map(~ paste0("W3_LSPC_Watershed/",
                  
                  filter(., scope == "project" & level == "root") |>
-                   select(path) |> unlist(use.names = FALSE),
+                   pull(path),
                  "/",
                  filter(., level == "curated") |>
-                   select(path) |> unlist(use.names = FALSE)))
+                   pull(path)))
   
   # To Do: Confirm that each directory exists
   

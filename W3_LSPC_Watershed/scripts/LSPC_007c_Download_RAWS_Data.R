@@ -84,10 +84,10 @@ mainProcedure <- function () {
   rawFolder <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/",
                      filter(., scope == "shared" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE),
+                       pull(path),
                      "/",
                      filter(., scope == "project" & level == "raw" & source == "raws") |>
-                       select(path) |> unlist(use.names = FALSE))) |>
+                       pull(path))) |>
     unique()
   
   stopifnot(length(rawFolder) == 1)

@@ -82,10 +82,10 @@ mainProcedure <- function () {
   qcDir <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/",
                      filter(., scope == "project" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE),
+                       pull(path),
                      "/",
                      filter(., scope == "project" & level == "candidate" & source == "gage") |>
-                       select(path) |> unlist(use.names = FALSE),
+                       pull(path),
                      "/QCSpreadsheets"))
   
   

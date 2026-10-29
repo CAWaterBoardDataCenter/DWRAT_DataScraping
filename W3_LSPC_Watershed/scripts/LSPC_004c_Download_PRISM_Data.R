@@ -99,10 +99,10 @@ mainProcedure <- function () {
   rawFolder <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/",
                      filter(., scope == "shared" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE),
+                       pull(path),
                      "/",
                      filter(., scope == "shared" & level == "raw" & source == "prism") |>
-                       select(path) |> unlist(use.names = FALSE))) |>
+                       pull(path))) |>
     unique()
   
   stopifnot(length(rawFolder) == 1)
@@ -153,12 +153,12 @@ mainProcedure <- function () {
     initialPath <- paste0("W3_LSPC_Watershed/",
                           
                           wsDir[[1]] |> filter(scope == "shared" & level == "root") |> 
-                            select(path) |> unlist(use.names = FALSE), 
+                            pull(path), 
                           
                           "/",
                           
                           wsDir[[1]] |> filter(scope == "shared" & level == "raw" & source == "prism") |> 
-                            select(path) |> unlist(use.names = FALSE),
+                            pull(path),
                           
                           "/", 
                           
@@ -258,8 +258,7 @@ remove_duplicate_prism_ids <- function (prismDF) {
     group_by(prism_id) |>
     summarize(COUNT = n(), .groups = "drop") |>
     filter(COUNT > 1) |> # IDs with a recorded count greater than 1
-    select(prism_id) |>
-    unlist(use.names = FALSE)
+    pull(prism_id)
   
   
   # If 'dupIDs' is empty, return 'prismDF'
