@@ -476,7 +476,19 @@ def adjustRiparianShortedBasinsConnectivity(
         rip_short_basins_matrix: npt.ArrayLike,
         basin_connectivity: pd.DataFrame
 ) -> npt.ArrayLike:
-    """ Adjust the shorted basins matrix """
+    """ 
+    Adjust the shorted basins matrix 
+
+    Each row of this matrix corresponds to a different sub-basin, while each column corresponds to a different date
+    
+    Initially, the matrix has zeros and ones based on whether an individual basin was shorted
+    However, if a basin is shorted (i.e., it has a "0" in the matrix), its upstream sub-basins should also be marked as "shorted"
+
+    This function checks the upstream basins of each shorted basin (separately for each individual year-month)
+    It replaces their values in the matrix with "0" (to match the shorted basin)
+
+    Basically, if a basin was shorted, its upstream basins should be shorted too
+    """
 
     # Validation checks
     if len(rip_short_basins_matrix) < 1:
@@ -486,13 +498,28 @@ def adjustRiparianShortedBasinsConnectivity(
         raise ValueError('The provided basin connectivity matrix is empty. Please ensure it is initialized correctly.')
 
     # Loop through the shorted basins matrix
-    for k, basin in enumerate(rip_short_basins_matrix):
-        # If the basin is shorted check its connecting basins
-        if rip_short_basins_matrix[k].any() == 0:
-            for i, connectivity in enumerate(basin_connectivity.to_numpy().T[k]):
-                # If a basin is connected to a shorted basin, mark it as shorted
-                if connectivity == 1:
-                    rip_short_basins_matrix[i] = 0
+
+    # Iterate through each date (corresponding to different columns in 'rip_short_basins_matrix')
+    for j, basinRow in enumerate(rip_short_basins_matrix.T):
+
+        # Iterate through each basin in this array
+        for k, basin in enumerate(basinRow):
+
+            # If the basin is shorted, check its connecting basins
+            
+            # For this month, if this basin has a zero in the matrix, it was shorted to some extent
+            if rip_short_basins_matrix[k][j] == 0:
+
+                # Look for sub-basins that are upstream of this basin
+                # Make sure they have zero for this month in 'rip_short_basins_matrix' too
+
+                # Iterate through each row of the transposed connectivity matrix
+                # 'basin_connectivity' gives the downstream sub-basins for each row sub-basin (wherever there's a 1)
+                # When transposed, it gives the upstream sub-basins for each row sub-basin (wherever there's a 1)
+                for i, connectivity in enumerate(basin_connectivity.to_numpy().T[k]):
+                    # If a basin is upstream of a shorted basin, mark it as shorted too
+                    if connectivity == 1:
+                        rip_short_basins_matrix[i][j] = 0
 
     return rip_short_basins_matrix
 
