@@ -155,8 +155,8 @@ mainProcedure <- function () {
   # Prepare the POST request for precipitation data
   # No grid cell interpolation will be performed for this request
   scrapePRISM(stationDF, wyStart, endDate, 
-              paste0("W2_Russian_River/Intermediate/PRISM_PRMS_Domain_Data_", 
-                     wyStart, "_", endDate, ".csv"),
+              get_model_domain_precip_filepath("PRMS", "CURRENT", 
+                                               startDate = wyStart, endDate = endDate),
               useHighRes = TRUE, interpCells = FALSE,
               getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
   
@@ -185,8 +185,8 @@ mainProcedure <- function () {
   # Prepare and submit POST requests
   # No grid cell interpolation will be performed for this request
   scrapePRISM(stationDF, wyStart, endDate, 
-              paste0("W2_Russian_River/Intermediate/PRISM_SRP_Domain_Data_", 
-                     wyStart, "_", endDate, ".csv"),
+              get_model_domain_precip_filepath("SRP", "CURRENT", 
+                                               startDate = wyStart, endDate = endDate),
               useHighRes = TRUE, interpCells = FALSE,
               getPrecip = TRUE, getTemp = FALSE, useMetric = TRUE)
   

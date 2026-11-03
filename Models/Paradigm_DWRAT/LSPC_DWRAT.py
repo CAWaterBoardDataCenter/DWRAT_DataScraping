@@ -11,7 +11,8 @@ from dwrat.modeling import dwrat
 # (This is relevant when there are multiple appropriative rights with the same priority date)
 random.seed(10)
 
-outlet = None#'NC_001'
+outlet = 'SUBBASIN_180101090202_9'
+#None  #'NC_001'
 # add your supply file name
 supply_file = 'GL_formatted_supply_43.csv'
 #os.path.join('examples','Mad_example','_inputs','formatted_supply.csv')
@@ -42,8 +43,13 @@ riparian,appropriative = dp.processDemand(
 
 dates = flows.columns[flows.columns!='FLOWS_TO'].values
 
+# Filter 'flows' to only contain basins that appear in 
+# the flow path within 'basinConnectivity' 
+flows = flows.loc[flows.index.isin(basinConnectivity.index)]
+
 model = dwrat.Model(
-    modelName='Paradigm_DWRAT',#'Mad_example',
+    modelName='Gualala_SUBBASIN_180101090202_9',
+    #'Mad_example',
     riparian=riparian,
     appropriative=appropriative,
     flows=flows,

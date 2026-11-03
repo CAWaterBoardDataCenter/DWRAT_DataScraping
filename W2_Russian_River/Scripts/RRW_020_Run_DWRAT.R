@@ -55,8 +55,16 @@ mainProcedure <- function () {
   }
   
   
+  # Get the start and end dates for the DWRAT model run too
+  # (This will be used in the console message)
+  dwratDates <- get_column_from_metadata(dirPath,
+                                         c("DWRAT_START_MONTH", "DWRAT_END_MONTH"))
+  
+  
   # Notify the user of the imminent model run
-  cat("[1/1]\tStarting up model...\n")
+  paste0("[1/1]\tStarting up model (from ", dwratDates$DWRAT_START_MONTH[1], 
+         " to ", dwratDates$DWRAT_END_MONTH[1], ")...\n") |>
+    cat()
   
   
   # Run Paradigm DWRAT
@@ -68,6 +76,11 @@ mainProcedure <- function () {
   
   # Check for errors
   checkForErrors(dirPath, scriptPath, dwratRes)
+  
+  
+  # Save 'dwratRes' to the archive folder too
+  dwratRes |>
+    writeOutput(paste0(dirPath, "/DWRAT/Paradigm_DWRAT.log"))
   
   
   # Output a completion message

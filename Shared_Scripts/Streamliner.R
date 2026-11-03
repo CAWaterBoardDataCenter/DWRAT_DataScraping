@@ -79,38 +79,6 @@ any_null <- function (...) {
 
 
 
-error_if <- function (condition, message) {
-  
-  # If a 'condition' resolves to TRUE, 
-  # output an error message (contained in 'message')
-  
-  if (condition == TRUE) {
-    
-    message |>
-      stop_script()
-    
-  }
-  
-  
-  # Return nothing otherwise
-  return(invisible(NULL))
-  
-}
-
-
-
-errWrap <- function (message, widthRatio = 0.99) {
-  
-  # Modify the wrapping of an error message 
-  # This reduces the need for horizontal scrolling
-  return(message |>
-           strwrap(width = widthRatio * getOption("width")) |>
-           paste0(collapse = "\n"))
-  
-}
-
-
-
 functionStealer <- function (scriptPath, functionName) {
   
   # Extract a function that is present in another script ('scriptPath')
@@ -574,20 +542,6 @@ spaceSplit <- function (str) {
   return(str|>
            str_split("\\s") |> unlist(use.names = FALSE) |>
            str_subset("^$", negate = TRUE))
-  
-}
-
-
-
-stop_script <- function (message) {
-  
-  # Stop running a script
-  
-  # For a given string 'mesage', adjust its formatting before displaying the error
-  
-  message |>
-    errWrap() |>
-    stop()
   
 }
 

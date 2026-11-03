@@ -270,3 +270,41 @@ find_matches <- function (x, pattern, minMatches = 1, maxMatches = 1,
 }
 
 
+
+#' @title Convert Forward Slashes to Backslashes in a Path
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' 
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # Given a file or folder path, replace every instance of "/" with "\"
+#' myPath <- "example/path/to/somewhere"
+#' 
+#' # Each forward slash will become a backslash
+#' print(use_backslash(myPath))
+#' 
+#' 
+#' # If there's no forward slash, the string will not change
+#' print(use_backslash("no_slash"))
+#' 
+#' 
+#' # If there's just one slash, only that forward slash will be changed
+#' print(use_backslash("one/slash"))
+use_backslash <- function (path) {
+  
+  # Replace every instance of a forward slash with a backslash
+  return(stringr::str_replace_all(path, "/", "\\\\"))
+  
+}

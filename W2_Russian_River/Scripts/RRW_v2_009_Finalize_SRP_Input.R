@@ -48,6 +48,10 @@
 #  run procedure, so they will not stick around for long)
 
 
+# To Do: The main procedure can be made more generic to enable more reuse 
+#        between the models' different versions of this process
+
+
 #### Setup ####
 
 # Clear the environment
@@ -77,10 +81,11 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Import functions from the v1 PRMS and SRP scripts
   c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
-    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations") |>
+    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations",
+    "updateMetadata_DAT") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
   
-  c("updateMetadata_DAT", "finalizeDAT") |>
+  c("finalizeDAT") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_014_Finalize_SRP_Input.R", .))
   
   
@@ -107,18 +112,11 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Read in two of the main input files
-  # (The SRP Meteorological CSV and the primary DAT file)
+  # (The SRPHM Meteorological CSV and the primary DAT file)
   filePaths <- tibble("METEOROLOGICAL" = 
-                        paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate,
+                        paste0("W2_Russian_River/Output/SRPHM_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
-  
-  
-  # "MAIN_DAT" contains a folder path right now
-  # Extract the latest primary DAT file from there
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
-                  "SRP Main DAT File")
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("SRPHM"))
   
   
   # Read in the two files next (while also verifying that they exist)
@@ -133,7 +131,7 @@ mainProcedure <- function (predictWY = TRUE) {
   # Validate the primary DAT file next
   # (This function also adds a "DATE" column to 'primaryDAT')
   # (That column enables matching with 'meteorDF')
-  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRP", 
+  primaryDAT <- validateInputDAT(primaryDAT, filePaths$MAIN_DAT[1], "SRPHM", 
                                  names(meteorDF)[names(meteorDF) != "DATE"],
                                  startDate, endDate, datType = "Main")
   
@@ -169,7 +167,7 @@ mainProcedure <- function (predictWY = TRUE) {
     
     
     mergedDAT <- predictCurrentWY(mergedDAT,
-                                  startDate, endDate, "SRP", 
+                                  startDate, endDate, "SRPHM", 
                                   names(meteorDF)[names(meteorDF) != "DATE"],
                                   dirPath, filePaths$MAIN_DAT[1])
     
@@ -183,7 +181,8 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1],
+                       model = "SRPHM")
     
   }
   
@@ -206,7 +205,7 @@ mainProcedure <- function (predictWY = TRUE) {
   
   
   # Archive the historic DAT file too
-  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "SRP")
+  copy_file_to_archive(filePaths$MAIN_DAT, dirPath, "SRPHM")
   
   
   cat("\tDone!\n\n")
@@ -233,7 +232,7 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   
   # The final filename of 'mergedDAT' will contain 'startDate' and 'endDate'
-  datName <- paste0("DAT_SRP_", startDate, "_", endDate, ".dat")
+  datName <- paste0("DAT_SRPHM_", startDate, "_", endDate, ".dat")
   
   
   # 'datName' will appear in the hydrology folder only
@@ -249,12 +248,12 @@ outputDAT <- function (mergedDAT, startDate, endDate, dirPath, srpPath,
   
   # Write 'finalDAT' to the hydrology folder first
   finalDAT |>
-    writeOutput(paste0(dirPath, "/SRP/Input/", datName) |> 
+    writeOutput(paste0(dirPath, "/SRPHM/Input/", datName) |> 
                   normalizePath(mustWork = FALSE),
                 writeFunction = "write_lines", quietly = quietly)
   
   
-  # Write 'finalDAT' to the SRP model folder next
+  # Write 'finalDAT' to the SRPHM model folder next
   # The name will be fixed as "RR_SRP_Input.dat" for ease of modeling automation
   finalDAT |>
     writeOutput(paste0(srpPath, "/external_files/", genericName) |> 

@@ -256,7 +256,7 @@ mainProcedure <- function () {
   
   
   # Record the current time as the approximate time when Part 1 of the workflow concluded
-  updateMetadataCSV(dirPath, list("APPROX_PART_1_COMPLETION_TIME" = Sys.Date()))
+  updateMetadataCSV(dirPath, list("APPROX_PART_1_COMPLETION_TIME" = Sys.time()))
   
   
   cat("\tDone!\n\n")
@@ -522,7 +522,7 @@ wb_incorporate_old_review <- function (wb, reviewPath, wsName, qcFile, worksheet
   
   
   # If 'deletedLocs' is empty, return 'wb' without any changes
-  if (length(deletedLocs) == 0) {
+  if (nrow(deletedLocs) == 0) {
     return(wb)
   }
   

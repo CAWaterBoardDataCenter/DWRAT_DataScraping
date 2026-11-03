@@ -1,4 +1,4 @@
-# Run the SRP model
+# Run the SRPHM model
 # Use the copy of the model files in the "Output" folder 
 
 
@@ -30,7 +30,7 @@ mainProcedure <- function () {
   
   
   # Get the path to the batch file stored in the root directory
-  batPath <- paste0(srpPath, "/run_SRPHM_spinup.bat") |>
+  batPath <- paste0(srpPath, "/", list_model_components("SRPHM")[["BATCH"]]) |>
     normalizePath(mustWork = TRUE)
   
   
