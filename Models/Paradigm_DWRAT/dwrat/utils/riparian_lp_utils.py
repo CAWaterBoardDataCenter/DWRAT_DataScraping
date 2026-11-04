@@ -410,7 +410,7 @@ def calculateNetAvailableFlow(
     # To perform the appropriative optimization correctly, our "Available Flow" matrix will actually require cumulative flows for each sub-basin
     # That is, in an entry for a given sub-basin, available flow from its upstream sub-basins will also be included in its value 
 
-    # In those sub-basins with available flow, we'll remove the riparian users' demands, and that will give the flow available to appropriative users
+    # In those sub-basins that were not shorted, we'll remove the riparian users' demands, and that will give the flow available to appropriative users
 
 
     # Calculate the matrix of shorted basins
@@ -578,8 +578,19 @@ def calculateCumulativeFlow(
     if not np.array_equal(dates, flows.columns.to_list()):
         raise ValueError('There is a mismatch between the provided dates and the dates in the flows dataframe.')
 
-    # Calculate cumulative flow: Flow * rip_short_basins_matrix will give flow values only in non-shorted basins / flow paths; the transposed connectivity matrix will apply these flows will give the flow in each sub-basin based on the flow values of its upstream basins
+    # Calculate cumulative flow 
     return np.dot(basin_connectivity.to_numpy().T, np.array(flows[dates].values * rip_short_basins_matrix))
+
+    # 'Flow * rip_short_basins_matrix' will give flow values only in non-shorted basins' flow paths
+    # (Shorted basins will have values of zero)
+    # 
+    # The transposed connectivity matrix will apply these flows to each sub-basin, 
+    # while also account for flow values from a sub-basin's upstream basins
+    # 
+    # That means that, for each non-shorted sub-basin, we'll have the total flow generated in that basin, 
+    # plus the generated flows in its upstream sub-basins
+    # 
+    # (Shorted basins will have values of zero, which makes sense since all flow in that path was allocated)
 
 def calculateUserAllocationWithoutShortage(
         riparian: dp.UserGroup,
@@ -594,8 +605,19 @@ def calculateUserAllocationWithoutShortage(
     if len(rip_short_basins_matrix) < 1:
         raise ValueError('The provided shortage basins matrix has no elements. Please ensure it is initialized correctly.')
 
-    # Recalculate user allocations excluding the shorted basins - Basins without shortages mean that all users in the non-shorted basins have their demands met - this is an element-wise operation in the last step, not matrix multiplication
+    # Recalculate user allocations excluding the shorted basins 
     return np.dot(riparian.userMatrix.to_numpy().T, rip_short_basins_matrix) * riparian.modelDemand.to_numpy()
+  
+    # In shorted basins, there is not enough flow to meet all riparian demands
+    # But in non-shorted basins, there is
+    #
+    # When calculating the remaining available flow in a non-shorted basin, 
+    # we need to know the total riparian demand in that basin
+    #
+    # That is the purpose of this computation
+    # 
+    # Side Note: This is an element-wise operation in the very last step of the `return` operation, not matrix multiplication
+    #            (when multiplying by 'riparian.modelDemand.to_numpy()')
 
 def calculateUpstreamAllocationWithoutShortage(
         riparian: dp.UserGroup,
@@ -612,6 +634,18 @@ def calculateUpstreamAllocationWithoutShortage(
 
     # Recalculate upstream allocation excluding the shorted basins
     return np.dot(riparian.connectivityMatrix.to_numpy(), rip_user_allocations_matrix)
+  
+    # For each non-shorted sub-basin, we need the flow available in that sub-basin,
+    # inclusive of its upstream sub-basins' flows
+    #
+    # Similarly, we need the demands in these non-shorted sub-basins,
+    # as well as the demands of riparian users in upstream sub-basins
+    #
+    # The difference between these two matrices will give the cumulative available flow
+    # for each sub-basin after riparian allocations are complete 
+    # (Leftover flow can go to appropriative users)
+    # (Shorted basins have no flow available in them, nor in their upstream sub-basins, 
+    #  so we have them as zero in all these steps)
 
 def generateAvailableFlow(
         cumulative_flow_matrix: npt.ArrayLike,
@@ -641,5 +675,19 @@ def generateAvailableFlow(
         columns=dates
     )
     availableFlow.index.name = 'BASIN'
+    
+    # 'availableFlow' contains cumulative values for each sub-basin
+    
+    # The total flow generated in each sub-basin (and their upstream sub-basins)
+    # minus the total demand in each sub-basin (and their upstream sub-basins)
+    
+    # For basins with shortages, we know that they have zero leftover flows
+    # (including in their upstream basins)
+    
+    # For basins that were not short on flow, we calculated the total cumulative
+    # flow generated as well as the total cumulative riparian demand 
+    
+    # 'cumulative_flow_matrix' and 'rip_upstream_allocations_matrix'  
+    # reflect these circumstances for both shorted and non-shorted basins
 
     return availableFlow
