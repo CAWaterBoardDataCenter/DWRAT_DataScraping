@@ -458,11 +458,15 @@ def calculateRiparianShortedBasins(
     # Initialize a shorted basin matrix
     rip_short_basins_matrix = np.zeros(basin_proportion_matrix.shape)
 
+
+    # Calculate a matrix of demands for each sub-basin
+    basinDemands = riparian.userMatrix.dot(riparian.modelDemand)
+
     # Loop over each basin and date
     for k, basin in enumerate(basin_proportion_matrix):
         for i, date in enumerate(dates):
             # Calculate demand for the current basin and date
-            demand = riparian.userMatrix.dot(riparian.modelDemand).iloc[k, i]
+            demand = basinDemands.iloc[k, i]
 
             # Checking if the basin is shorted
             if basin_proportion_matrix[k][i] < 1 and demand > 0:
@@ -500,10 +504,13 @@ def adjustRiparianShortedBasinsConnectivity(
     # Loop through the shorted basins matrix
 
     # Iterate through each date (corresponding to different columns in 'rip_short_basins_matrix')
-    for j, basinRow in enumerate(rip_short_basins_matrix.T):
+    for j, matCol in enumerate(rip_short_basins_matrix.T):
+
+        # 'matCol' contains a column of 'rip_short_basins_matrix'
+        # Each element corresponds to one of the sub-basins for that particular year-month pair
 
         # Iterate through each basin in this array
-        for k, basin in enumerate(basinRow):
+        for k, basin in enumerate(matCol):
 
             # If the basin is shorted, check its connecting basins
             
@@ -565,7 +572,7 @@ def calculateUserAllocationWithoutShortage(
 
 def calculateUpstreamAllocationWithoutShortage(
         riparian: dp.UserGroup,
-        rip_user_allocations_matrix
+        rip_user_allocations_matrix: npt.ArrayLike
 ) -> npt.ArrayLike:
     """ Calculate upstream allocations excluding shorted basins """
 
