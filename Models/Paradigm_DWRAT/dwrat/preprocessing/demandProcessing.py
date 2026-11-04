@@ -155,21 +155,60 @@ def separateUserGroups(
         10000000
     )
 
+
+    # Check for the priority date and total diversion columns in the demand dataset
+    # (These are needed to rank appropriative water rights by priority in the optimization routine)
     if demandDataFrame.columns.__contains__('ASSIGNED_PRIORITY_DATE'):
         priorityCol = 'ASSIGNED_PRIORITY_DATE'
     else:
         priorityCol = 'ASSIGNED_PRIORITY_DATE_SUB'
-    appropriative = demandDataFrame.loc[demandDataFrame["RIPARIAN"]=='N']
-    appropriative.insert(
-        len(appropriative.columns),
-        'PRIORITY',
-        appropriative[priorityCol]\
-            .sample(frac=1)\
-            .rank(axis=0,method='first')\
-            .reindex_like(appropriative[priorityCol])
-    ) # TODO: what to do when multiple users have the same assigned priority date?
 
+    if demandDataFrame.columns.__contains__('TOTAL_EXPECTED_ANNUAL_DIVERSION'):
+        divColumn = 'TOTAL_EXPECTED_ANNUAL_DIVERSION'
+    else:
+        raise ValueError('Unknown column name for total average annual diversion')
+      
+
+    # Get a subset of the demand dataset (all non-riparian rights--so, appropriative rights)
+    appropriative = demandDataFrame.loc[demandDataFrame["RIPARIAN"]=='N']
+    
+    
+    # Make sure the rows of 'appropriative' are sorted by Water Right ID (the index of the data frame)
     appropriative = appropriative.sort_index(axis='index',inplace=False)
+
+    
+    # Sort water rights by priority date and total annual diversion
+    # Then, assign them an integer rank based on this ordering 
+    # (In this ranking, the earliest priority date is first)
+    # (If there are multiple rights with the same priority date, the right that has a smaller total diversion volume is ranked first)
+    # (If there's a tie in both priority date and total demand, the ranking assignment is based on the sorted index and which ID appears first)
+    appropriative.insert(
+        len(appropriative.columns),    # This column will be inserted at the end of the 'appropriative' data frame
+        'PRIORITY',
+        appropriative\
+        .sort_values(by = [priorityCol, divColumn], axis = 0, ascending = True)\
+            .loc[:, [priorityCol, divColumn]]\
+                .apply(tuple, axis = 1)\
+                    .rank(method = 'first')
+    )
+
+    # Note 1:
+    # 
+    # When breaking priority date ties, the ranking is based on the total average diversion for a year,
+    # but for a given month, it's possible that the ordering should be different
+    # (i.e., a right that has a smaller average total than another right might have a larger value 
+    #  in a particular month--but with this ranking assignment, the former still has a higher priority)
+    #
+    # The solution would be to have different "PRIORITY" columns for each months, but that would 
+    # then make priority rankings inconsistent month-to-month
+    
+    # Note 2:
+    #
+    # Water rights in the demand dataset are sometimes split if their points of diversion are 
+    # spread out across different branches in the flow path
+    #
+    # Should they be assigned the same "PRIORITY" values?
+
 
     for demand in [appropriative,riparian]:
         if priorityOverride is not None:

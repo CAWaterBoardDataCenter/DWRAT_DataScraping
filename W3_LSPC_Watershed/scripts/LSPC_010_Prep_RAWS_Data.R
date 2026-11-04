@@ -81,11 +81,11 @@ mainProcedure <- function () {
       dir_create(paste0("W3_LSPC_Watershed/",
                         wsDir[[i]] |>
                           filter(scope == "project" & level == "root") |>
-                          select(path) |> unlist(use.names = FALSE), 
+                          pull(path), 
                         "/",
                         wsDir[[i]] |>
                           filter(scope == "project" & level == "raw" & source == "raws") |>
-                          select(path) |> unlist(use.names = FALSE)))
+                          pull(path)))
     )
     
     # To Do: Optimize extracting paths from the storage worksheet with functions
@@ -114,10 +114,10 @@ mainProcedure <- function () {
   rawFolder <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/",
                      filter(., scope == "shared" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE),
+                       pull(path),
                      "/",
                      filter(., scope == "project" & level == "raw" & source == "raws") |>
-                       select(path) |> unlist(use.names = FALSE))) |>
+                       pull(path))) |>
     unique()
   
   stopifnot(length(rawFolder) == 1)
@@ -213,11 +213,11 @@ mainProcedure <- function () {
       outPath <- paste0("W3_LSPC_Watershed/",
                         wsDir[[relevantWS[j]]] |>
                           filter(scope == "project" & level == "root") |>
-                          select(path) |> unlist(use.names = FALSE),
+                          pull(path),
                         "/",
                         wsDir[[relevantWS[j]]] |>
                           filter(scope == "project" & level == "raw" & source == "raws") |>
-                          select(path) |> unlist(use.names = FALSE),
+                          pull(path),
                         "/",
                         rawsDF$station_id[i], "_RAWS_daily.csv")
       

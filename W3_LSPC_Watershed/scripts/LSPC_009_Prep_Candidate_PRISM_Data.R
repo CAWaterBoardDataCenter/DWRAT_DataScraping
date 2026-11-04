@@ -76,11 +76,11 @@ mainProcedure <- function () {
       dir_create(paste0("W3_LSPC_Watershed/",
                         wsDir[[i]] |>
                           filter(scope == "project" & level == "root") |>
-                          select(path) |> unlist(use.names = FALSE), 
+                          pull(path), 
                         "/",
                         wsDir[[i]] |>
                           filter(scope == "project" & level == "candidate" & source == "prism") |>
-                          select(path) |> unlist(use.names = FALSE)))
+                          pull(path)))
     )
     
     # To Do: Optimize extracting paths from the storage worksheet with functions
@@ -112,10 +112,10 @@ mainProcedure <- function () {
   rawFolder <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/",
                      filter(., scope == "shared" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE),
+                       pull(path),
                      "/",
                      filter(., scope == "shared" & level == "raw" & source == "prism") |>
-                       select(path) |> unlist(use.names = FALSE))) |>
+                       pull(path))) |>
     unique()
   
   stopifnot(length(rawFolder) == 1)
@@ -224,11 +224,11 @@ mainProcedure <- function () {
       outPath <- paste0("W3_LSPC_Watershed/",
                         wsDir[[relevantWS[j]]] |>
                           filter(scope == "project" & level == "root") |>
-                          select(path) |> unlist(use.names = FALSE),
+                          pull(path),
                         "/",
                         wsDir[[relevantWS[j]]] |>
                           filter(scope == "project" & level == "candidate" & source == "prism") |>
-                          select(path) |> unlist(use.names = FALSE),
+                          pull(path),
                         "/",
                         prismDF$prism_id[i], "_", round(prismDF$lon[i], digits = 3), 
                         "_", round(prismDF$lat[i], digits = 3), ".csv")

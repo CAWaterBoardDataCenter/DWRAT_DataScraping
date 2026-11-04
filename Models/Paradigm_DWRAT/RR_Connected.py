@@ -4,7 +4,7 @@ import random
 from dwrat.preprocessing import basinProcessing as bp
 from dwrat.preprocessing import supplyProcessing as sp
 from dwrat.preprocessing import demandProcessing as dp
-from dwrat.preprocessing import PVP_Processor as pvp
+from dwrat.preprocessing import PVP_Processor as pvpSetup
 from dwrat.modeling import dwrat
 from dwrat.utils import RR
 
@@ -36,7 +36,7 @@ urrFlows = sp.processPRMSFlows(
     supplyFilePath=supply_file
     ).loc[basinInfo.index] # remove unnecessary basins
 
-dates = urrFlows.columns[urrFlows.columns!='FLOWS_TO'].to_list()
+dates = urrFlows.columns[urrFlows.columns!='FLOWS_TO'].to_list() # ['2026-09']
 
 ##############################################################################
 # PVP preprocessing
@@ -50,7 +50,7 @@ SimilarDry = 'Dry' # <- Similar WY or Dry WY, 'Similar' or 'Dry'; set to Dry if 
                         # (this is the case for the Oct- Feb portion of the water year)
 ForecastKeep = Variance + '_' + SimilarDry
 ###
-pvp.createConfigFiles(
+pvpSetup.createConfigFiles(
     dates, urr_config_file, lrr_config_file,
     LakeMendoBalance_FileLocation, SCWAForecast_FileLocation, ForecastKeep)
 ##############################################################################
@@ -61,12 +61,10 @@ urrFlows,pvp = RR.processConnectedURRFlows(
     urrFlows,
     dates=dates)
 
-# Normally, the PVP + Natural flows are included at this step, 
-# replacing the (currently 0) mainstem Sub-Basin 2 flows
 
-# Instead of applying PVP data here and making it available for all water users,
-# this adjustment will occur after Riparian users have been allocated water
-urrFlows.loc['R_02_M',dates] = pvp
+# Adjust the formatting of the PVP variable into a data frame that includes all sub-basins (even if their flow value is zero)
+pvp = pvpSetup.reformat_PVP(pvp, basinInfo, 'R_02_M')
+
 
 riparian,appropriative = dp.processDemand(
     basinConnectivityMatrix=basinConnectivity,
@@ -104,6 +102,9 @@ lrrFlows = RR.processConnectedLRRFlows(
     lrr_config_file,
     upperModel,
     lrrFlows,
+    basinConnectivity,
+    basinInfo,
+    pvp,
     dates=dates
 )
 

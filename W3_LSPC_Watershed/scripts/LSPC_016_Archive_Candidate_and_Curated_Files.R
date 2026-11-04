@@ -76,7 +76,7 @@ mainProcedure <- function () {
   fromPath <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/", 
                      filter(., scope == "project" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE)))
+                       pull(path)))
   
   # Right now, this vector contains the paths to the root watershed folders
   # Adding "/candidate" or "/curated" to these root paths will give the paths to those
