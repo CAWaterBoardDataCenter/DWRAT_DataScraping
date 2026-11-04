@@ -36,7 +36,7 @@ urrFlows = sp.processPRMSFlows(
     supplyFilePath=supply_file
     ).loc[basinInfo.index] # remove unnecessary basins
 
-dates = ['2026-01'] # urrFlows.columns[urrFlows.columns!='FLOWS_TO'].to_list() # ['2026-09']
+dates = urrFlows.columns[urrFlows.columns!='FLOWS_TO'].to_list() # ['2026-09']
 
 ##############################################################################
 # PVP preprocessing
