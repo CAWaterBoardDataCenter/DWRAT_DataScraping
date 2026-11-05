@@ -188,7 +188,8 @@ class StageNldas(DataStager):
             
             with time_block(log, "Setting negatives to nan", extra=ctx):
                 # NOTE: After fixing nldas_id grid, set check to see that interpolation results in no nan values for all var                
-                ds = helpers.xr.set_negative_to_nan(ds) # This should be done regardless of whether negatives already exist
+                if helpers.xr.nans_exist_in_dataset(ds, exclude_vars=['nldas_id']):                                                                   
+                    ds = helpers.xr.set_negative_to_nan(ds) # This should be done regardless of whether negatives already exist
             
             with time_block(log, "Filling nan with linear interpolation along time dim", extra=ctx):
                 # NOTE: After fixing nldas_id grid, set check to see that interpolation results in no nan values for all var

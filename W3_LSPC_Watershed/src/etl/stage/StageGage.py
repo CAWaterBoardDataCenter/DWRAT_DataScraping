@@ -31,14 +31,14 @@ class StageGage(DataStager):
         for index, row in gage_mapping.iterrows():
             # Read Hourly NLDAS data 
             print("Reading NLDAS file")
-            nldas_file_prefix = "nldas_" + str(row['nldas_id'])
+            nldas_file_prefix = "nldas_" + str(row['nldas_id']) + "_"
             nldas_file = next(nldas_staged_storage.glob(f"{nldas_file_prefix}*"),None)
             print(nldas_file)
             NLDAS_hourly_daily_merged = StageGage.read_nldas_gage(nldas_file,start_datetime,end_datetime)
 
             # Read Daily Gage data
             print("Reading Gage file")
-            gage_file_prefix = str(row['station_id'])
+            gage_file_prefix = str(row['station_id']) + "_"
             gage_file = next(gage_storage.glob(f"{gage_file_prefix}*"),None)
             print(gage_file)
             Ground_station_daily_data = StageGage.read_gage(gage_file,start_datetime,end_datetime)
@@ -302,4 +302,3 @@ class StageGage(DataStager):
         
         df_filled.columns = ['datetime', 'hourly_obs_data','Code']
         return df_filled
-
