@@ -223,7 +223,7 @@ mainProcedure <- function () {
     
     # (The column name is dynamically generated since it incorporates the watershed name)
     # (This is why the name has to be added through a separate operation)
-    # (`set_names` can work too)
+    # (`set_names` can work too, this just seems a little cleaner)
     
     # Add this metadata to the CSV file in the archive folder
     updateMetadataCSV(dirPath, runType)
