@@ -173,13 +173,30 @@ mainProcedure <- function () {
     # to generate Paradigm DWRAT input files
     if (subbasinType == "CATCHMENT") {
       
+      useCatchments <- TRUE
+      
+    } else if (subbasinType == "HUC12") {
+      
+      useCatchments <- FALSE
+      
+    } else {
+      
+      # This decision can be automatically determined too
+      useCatchments <- choose_catchment_or_HUC12(catchments, huc12)
+      
+    }
+    
+    
+    # Once 'useCatchments' has been set to TRUE or FALSE, run the corresponding procedure
+    if (useCatchments == TRUE) {
+      
       cat("\n\n")
       cat("\tUsing LSPC catchments for DWRAT files!")
       cat("\n\n")
       
       prep_dwrat_files_catchments(stream, mdt, catchments, connMat, writePath, huc12)
       
-    } else if (subbasinType == "HUC12") {
+    } else if (useCatchments == FALSE) {
       
       cat("\n\n")
       cat("\tUsing HUC-12 sub-basins for DWRAT files!")
@@ -189,9 +206,27 @@ mainProcedure <- function () {
       
     } else {
       
-      prep_dwrat_files_auto(stream, mdt, catchments, connMat, writePath, huc12)
+      paste0("Please revise the script. The code should never reach this point.") |>
+        stop_script()
       
     }
+    
+    
+    # After that, add some metadata about the chosen procedure for this watershed
+    # Based on 'useCatchments' the metadata value will be either "CATCHMENT" or "HUC-12"
+    runType <- if_else(useCatchments == TRUE, "CATCHMENT", "HUC-12")
+    
+    
+    # This string was saved as a vector without a name
+    # In this next step, the actual metadata column name will be assigned
+    names(runType) <- paste0("DWRAT_RUN_TYPE_", controlDF$project_name[i])
+    
+    # (The column name is dynamically generated since it incorporates the watershed name)
+    # (This is why the name has to be added through a separate operation)
+    # (`set_names` can work too)
+    
+    # Add this metadata to the CSV file in the archive folder
+    updateMetadataCSV(dirPath, runType)
     
   }
   
@@ -368,12 +403,12 @@ get_lspc_connectivity <- function (ws) {
 
 
 
-prep_dwrat_files_auto <- function (stream, mdt, catchments, connMat, writePath, huc12) {
+choose_catchment_or_HUC12 <- function (catchments, huc12) {
   
-  # Automatically determine whether HUC-12 sub-basins or LSPC catchments 
+  # Determine whether HUC-12 sub-basins or LSPC catchments 
   # should be the basis of the DWRAT model run
   
-  # If every catchment is contained within a single sub-basin, use catchments
+  # If every catchment is contained within a single HUC-12 sub-basin, use catchments
   
   # Otherwise, use HUC-12 sub-basins
   
@@ -390,25 +425,12 @@ prep_dwrat_files_auto <- function (stream, mdt, catchments, connMat, writePath, 
     unique()
   
   
-  # If that's the case, use the catchment-based pathway
-  if (length(intersectingSubbasins) == 1) {
-    
-    cat("\n\n")
-    cat("\tUsing LSPC catchments for DWRAT run!")
-    cat("\n\n")
-    
-    return(prep_dwrat_files_catchments(stream, mdt, catchments, connMat, writePath, huc12))
-    
-  # Otherwise, use HUC-12 sub-basins instead
-  } else {
-    
-    cat("\n\n")
-    cat("\tUsing HUC-12 sub-basins for DWRAT run!")
-    cat("\n\n")
-    
-    return(prep_dwrat_files_huc12(stream, mdt, catchments, connMat, writePath, huc12))
-    
-  }
+  # Return 'TRUE' if there is only one intersecting HUC-12 sub-basin for all catchments
+  # (That means a catchment-based DWRAT run should be used)
+  
+  # If there are multiple intersecting sub-basins, a HUC-12 based DWRAT run is valid
+  # (so FALSE will be returned)
+  return(length(intersectingSubbasins) == 1)
   
 }
 
