@@ -30,7 +30,7 @@ mainProcedure <- function () {
   
   
   # Import the start and end date
-  source("W2_Russian_River/Scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
+  source("W3_LSPC_Watershed/scripts/HLP_002_Validate_and_Import_Data_Scraping_Bounds.R")
   
   
   # Get the location of the archive folder
