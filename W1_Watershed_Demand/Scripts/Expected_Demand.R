@@ -1494,6 +1494,12 @@ makeKey_APP_YEAR_AMOUNT <- function (dataDF) {
   #   (3) YEAR_TOTAL
   
   
+  # If 'dataDF' is empty, just return it with an empty "KEY" field
+  if (nrow(dataDF) == 0) {
+    return(dataDF |> mutate(KEY = character(0)))
+  }
+  
+  
   # Older spreadsheets either had "CALENDAR_YEAR_TOTAL" only
   # or both "CALENDAR_YEAR_TOTAL" and "WATER_YEAR_TOTAL" as separate columns
   # Newer versions of this script produce a single column "YEAR_TOTAL" instead

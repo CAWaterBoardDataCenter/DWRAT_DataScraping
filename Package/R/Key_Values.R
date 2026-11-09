@@ -278,6 +278,38 @@ lspc_master_control_worksheet <- function () {
 
 
 
+#### GIS Preferences ####
+
+#' @title ...
+#' 
+#' @description
+#' ...
+#' 
+#' @details
+#' ...
+#' 
+#' @usage ...
+#' 
+#' @param ... ...
+#' 
+#' @returns ...
+#' 
+#' @export
+#' 
+#' @examples
+#' # ...
+preferred_crs <- function () {
+  
+  # Return the coordinate reference system code that is used as the default
+  # for all geospatial analysis
+  
+  return("epsg:3488")
+  
+  # It should be a projected coordinate system that applies to California
+  
+}
+
+
 #### Weather Data Start Dates ####
 
 #' @title Get the Start Date for PRISM

@@ -59,8 +59,7 @@ mainProcedure <- function () {
   # Copy output files into the hydrology folder
   copy_model_outputs("SRPHM", srpPath, dirPath, startDate, endDate,
                      additionalInputFiles = c("external_files/prms_ic_WY1975_toWY2021.out",
-                                              "external_files/restartdata_WY1975_to_WY2021.out"), 
-                     archiveModelName = "SRP")
+                                              "external_files/restartdata_WY1975_to_WY2021.out"))
   
   
   cat("\tDone!\n\n")

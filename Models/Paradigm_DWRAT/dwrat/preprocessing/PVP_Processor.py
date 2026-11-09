@@ -258,6 +258,54 @@ def createConfigFiles(
 
 
 
+def reformat_PVP(pvp: pd.Series, basinInfo: pd.DataFrame, basinLoc: str = 'R_02_M') -> pd.DataFrame:
+    """
+    Convert 'pvp' into a data frame with rows for every 
+    
+
+    At the start of this function, 'pvp' is a Pandas Series that has one value per year-month pair
+
+    
+    In this function, it will be restructured into a data frame where each date has its own column
+    
+    Each row will correspond to a different sub-basin in the watershed 
+    (though the PVP values will be assigned to the basin identified in 'basinLoc')
+
+    """
+
+    # Start by converting 'pvp' from a series into a data frame
+    # Then, transpose it
+    # This will result in a [1 x N] data frame, with each column corresponding to a year-month pair in 'pvp'
+    pvpDF = pd.DataFrame(pvp).T
+
+    # Add a "BASIN" column to 'pvpDF' and set its value to 'basinLoc'
+    # This column will become the index of 'pvpDF'
+    pvpDF['BASIN'] = basinLoc
+
+    pvpDF = pvpDF.set_index('BASIN')
+
+
+    # After that, take the index of 'basinInfo' and convert it into a standalone data frame
+    basinDF = basinInfo.index.to_frame()
+
+
+    # Join 'pvpDF' and 'basinDF' together into a single data frame
+    # (This is an outer join across columns that occurs based on the shared 'BASIN' index values)
+    joinedDF = pd.concat([basinDF, pvpDF], join = "outer", axis = 1, verify_integrity = True)
+
+
+    # Drop the "BASIN" column next (this information is already present in the index)
+    joinedDF = joinedDF.drop(columns = "BASIN")
+
+
+    # Finally, replace all "NA" values in 'joinedDF' with zeros
+    joinedDF = joinedDF.fillna(0)
+
+
+    # Return this joined data frame as the new value for 'pvp' 
+    return joinedDF
+
+
 # boolVal = False
 
 # def downloadUSGSData(start_date, end_date):

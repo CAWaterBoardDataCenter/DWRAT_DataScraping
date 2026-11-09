@@ -1,5 +1,6 @@
 name: lspc-climate-processing-restructure
 dependencies:
+  - python==3.12.*
   - shapely<=2.0.7
   - pip
   - pip:

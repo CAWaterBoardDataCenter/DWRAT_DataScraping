@@ -515,54 +515,169 @@ def processConnectedURRFlows(
     urrPercentET = urrConfig.loc['EVAP_LOSS']/urrTotalSupply
     urrReduction = 1 - urrPercentET
 
+
+    # If the evaporative losses are greater than the total available supply, 'urrReduction' will be negative
+    # In that case, make it zero instead
+    if any(urrReduction < 0):
+        urrReduction[urrReduction < 0] = 0
+
+
     # Multiply the simulated flows in the URR by urr_reduction
-    urrPVPReduced = pvp*urrReduction
-    urrFlows = urrNaturalFlow*urrReduction
+    urrPVPReduced = pvp*urrReduction.astype(float)
+    urrFlows = urrNaturalFlow*urrReduction.astype(float)
+    
+    # Technically, these reductions should be applied to mainstem flows only, but those are already zeroed out in this process
+    # As a result, only tributary flows are affected--are we okay with that?
+
     return urrFlows,urrPVPReduced
 
 def processConnectedLRRFlows(
         configFile,
         upperModel,
         flows,
+        basinConnectivity,
+        basinInfo,
+        pvp,
         dates = None
 ):
     """
+    Prepare the Lower Russian River 'flows' data frame for modeling with DWRAT
+
+    The first step is to transfer leftover Upper Russian River flows into the LRR
+
+    The surplus of generated flows + PVP flows will be included in the flow values for the LRR
+
+    In addition, this function will perform evapotranspiration adjustments 
+    (on top of the ET modeling done by PRMS and SRP)
+
     """
+    # If dates are not specified, assume they are the columns that appear in the flows data frame
+    # (excluding the "FLOWS_TO" column)
     if dates is None:
         dates = flows.columns[flows.columns!='FLOWS_TO'].to_list()
 
+
+    # Import the LRR configuration file that was generated during the initial PVP processing steps
+    # (The ET values in this file will be required for each year-month pair in 'dates')
     lrrConfig = pd.read_csv(configFile,index_col=0).loc[:,dates]
 
-    upperRipAllocations = upperModel.riparian.basinAllocations.sum()
-    upperAppAllocations = upperModel.appropriative.basinAllocations.sum()
 
-    upperAllocations = upperRipAllocations+upperAppAllocations
-    # calculate surplus pvp
-    surplusPVP = upperModel.flows.sum()-upperAllocations
-    # TODO: should this use RAW urr flows rather than the reduced flows?
-    #       seems like the reduced flows would better represent what is really
-    #       available to the lower river from upstream.
-    #       (Reason for raw flows: After processing, the "Available Flows" data has 
-    #        some flows duplciated in its subbasin values. For example, PVP
-    #        flows may appear in multiple downstream subbasins' total values.)
+    # The first step will be to calculate the leftover URR flow
+    # This value will be assigned to 'R_17_M' (Mainstem Sub-Basin 17) in the LRR 'flows' data frame
+    surplusURR = calculate_leftover_URR_flows(upperModel, pvp, dates)
 
-    # Using "flows" is fine
-    # These are the pre-adjusted flows, and they represent flows generated in each sub-basin
-    # (Not total available flow available in that location)
 
-    lrrTotalSupply = flows.loc[:,dates].sum(axis=0)+surplusPVP
+    # Insert 'surplusURR' into 'flows'
+    # (All mainstem flows are zero, so 'surplusURR' is being added in similar to how PVP flows are incorporated into Mainstem Sub-Basin 2) 
+    flows.loc['R_17_M',dates] = surplusURR
+
+
+    # Something to consider: 
+    # 
+    # The surplus flow values from the URR include PVP flows
+    # That is unnatural flow, so it shouldn't be available to riparian users
+    # However, with this current setup, LRR riparian users will be modeled with this flow available
+    # 
+    # This might be a good reason to model the URR and LRR as one watershed
+
+
+    # After that, apply evapotranspiration adjustments to the LRR flow values
+
+    # For each date, sum the generated flow values across the LRR (including the leftover URR flows)
+    lrrTotalSupply = flows.loc[:,dates].sum(axis = 0)
+
+    # Then, use that to calculate reduction ratios using the corresponding ET values in 'lrrConfig'
     lrrPercentET = lrrConfig.loc['EVAP_LOSS']/lrrTotalSupply
     lrrReduction = 1 - lrrPercentET
-    surplusReduced = surplusPVP*lrrReduction
 
-    flows.loc[:,dates] = flows.loc[:,dates]*lrrReduction.astype(float)
 
-    flows.loc['R_17_M',dates] = surplusReduced
-    # TODO: in the current flows_generator.R this is set for R_17, but that
-    #       tributary already has flow associated with it, and it seems more
-    #       intuitive that the upper river would flow into the mainstem rather
-    #       than into a tributary. Easily fixed if incorrect.
+    # If the evaporative losses are greater than the total available supply, 'lrrReduction' will be negative
+    # In that case, make it zero instead
+    if any(lrrReduction < 0):
+        lrrReduction[lrrReduction < 0] = 0
+
+    
+    # Finally, reduce the LRR flows using 'lrrReduction'
+    flows.loc[:,dates] = flows.loc[:,dates] * lrrReduction.astype(float)
+
+
+    # Return 'flows' after these adjustments are complete
     return flows
+
+def calculate_leftover_URR_flows(upperModel: dwrat.Model, pvp: pd.DataFrame, dates: list):
+    """
+    Calculate the remaining available flow after modeling in the Upper Russian River has completed
+
+    The "flows" data frame stored within 'upperModel' contains the volume of flow generated within each individual URR sub-basin (in acre-feet)
+
+    Meanwhile, 'pvp' contains the total unnatural flow provided by the Potter Valley Project
+
+    The sum of these two data frames' values given the total flow available in the Upper Russian River
+
+    'upperModel' also contains the model's allocations for riparian and appropriative users
+
+    Subtracting these allocations from the total available flow gives the leftover URR flow (which would enter the Lower Russian River)
+    """
+
+    # The leftover URR flow is equal to:
+    # The total flows generated in the URR + the PVP flows - the riparian URR allocations - the appropriative URR allocations
+
+    # The post-ET generated flows for the URR are stored within 'upperModel' (under 'flows')
+    # The post-ET PVP flows for the URR are stored within 'pvp'
+    # (Both data frames have a row for each sub-basin and a column for each date)
+    
+    # Add the URR flows and the flows in 'pvp' together to get the total available URR flow for each date
+    urrTotalSupply = upperModel.flows.sum(axis = 0) + pvp.loc[:,dates].sum(axis = 0)
+
+    # Before the addition operation, both data frames are summed across their rows 
+    # (leaving a single value per date column in each data frame)
+
+
+    # The next required value is the total allocations assigned to riparian and appropriative users in the URR
+
+    # In 'upperModel', there are 'basinAllocations' variables that contain the amount of flow assigned to riparian and appropriative users
+    # (Just like 'flows' and 'pvp', these are data frames with a row for each sub-basin and a column for each date)
+
+    # Sum both 'basinAllocations' across their rows (giving one value per date)
+    # Then, add them together to get the total flow allocated in the URR
+    totalAllocations = upperModel.riparian.basinAllocations.sum(axis = 0) + upperModel.appropriative.basinAllocations.sum(axis = 0)
+
+
+    # Calculate the surplus remaining URR flow next
+    netFlow = urrTotalSupply - totalAllocations
+
+
+    # Check 'newFlow' for negative values next
+
+    # A value in 'netFlow' could be slightly negative due to rounding errors, but it should be a "small value" (like -0.001)
+    # If the value is more negative than that, it might instead be a sign of a modeling error
+    # Arbitrarily, let's say that, if a net flow value is smaller than negative one, there might be an issue with the procedure
+    if any(netFlow < -1):
+        print("URR Net Flow Results:")
+        print(netFlow)
+
+        raise ValueError("Total URR Flow minus URR Allocations resulted in a negative number (see above)")
+
+
+    # Small negative values should be replaced with zero if they occur
+    if any(netFlow < 0):
+        netFlow[netFlow < 0] = 0
+
+
+    # Finally, return 'netFlow'
+    return netFlow
+
+# Why do we use 'flows' for the URR rather than the 'availableFlow' data frame?
+# 'availableFlow' has a slightly different formatting from 'flows' 
+# 
+# 'flows' represents the total flow generated in a specific sub-basin
+
+# Meanwhile, 'availableFlow' is the amount of flow available to each URR sub-basin
+# The same water available in one sub-basin may also be available to its downstream sub-basin
+# For example, PVP flows are added to the 'availableFlow' values in multiple sub-basins
+# 
+# This means that, if we sum up all the values for a given date, we wouldn't actually get the total available flow in the URR
+# In contrast, summing up all values in 'flows' is closer to what we're trying to calculate
 
 def outputCombinedConnected(
         upperModel,

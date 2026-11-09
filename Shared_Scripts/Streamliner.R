@@ -79,38 +79,6 @@ any_null <- function (...) {
 
 
 
-error_if <- function (condition, message) {
-  
-  # If a 'condition' resolves to TRUE, 
-  # output an error message (contained in 'message')
-  
-  if (condition == TRUE) {
-    
-    message |>
-      stop_script()
-    
-  }
-  
-  
-  # Return nothing otherwise
-  return(invisible(NULL))
-  
-}
-
-
-
-errWrap <- function (message, widthRatio = 0.99) {
-  
-  # Modify the wrapping of an error message 
-  # This reduces the need for horizontal scrolling
-  return(message |>
-           strwrap(width = widthRatio * getOption("width")) |>
-           paste0(collapse = "\n"))
-  
-}
-
-
-
 functionStealer <- function (scriptPath, functionName) {
   
   # Extract a function that is present in another script ('scriptPath')
@@ -579,20 +547,6 @@ spaceSplit <- function (str) {
 
 
 
-stop_script <- function (message) {
-  
-  # Stop running a script
-  
-  # For a given string 'mesage', adjust its formatting before displaying the error
-  
-  message |>
-    errWrap() |>
-    stop()
-  
-}
-
-
-
 twoDigitText <- function (num) {
   
   # This function is called when a number is being written to a string
@@ -655,12 +609,12 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   # Update a CSV file containing metadata 
   # Add new columns to it using 'newCols'
   
-  # 'newCols' should be a list containing named elements
+  # 'newCols' should be a list or vector containing named elements
   
   
   # Start by validating 'newCols'
   # Every element should have a name
-  if (is.null(names(newCols)) || "" %in% names(newCols)) {
+  if (is.null(names(newCols)) || anyNA(names(newCols)) || "" %in% names(newCols)) {
     
     cat("\n\nNames in 'newCols':\n")
     print(names(newCols))

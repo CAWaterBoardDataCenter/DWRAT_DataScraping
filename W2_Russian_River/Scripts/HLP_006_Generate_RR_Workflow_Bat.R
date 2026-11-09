@@ -1,7 +1,7 @@
 # Create a batch file for the Russian River Workflow in the "Workflows" folder
 
 # This file updates the repository using git and then runs through the 
-# entire RR Workflow procedure using "RRW_000A_Run_RR_Process_Today.R"
+# entire RR Workflow procedure using "MSTR_v1_RRW_AUTO.R"
 
 # All outputs are saved in a log file
 

@@ -1,37 +1,11 @@
 # PURPOSE -----------------------------------------------------------------------
 
+# This script downloads the calwatrs flat files and performs basic manipulations
 
-# Last Updated By: Payman Alemi on 3/11/2026
+# Last Updated By: Payman Alemi on 10/12/2026
 
-
-# This script is for testing the Calwatrs Flat Files for compliance with the SDA
-# section's requirements. I want to catch any fields that we need that are missing.
-
-
-# Get Data from ReportManager ----
-# require(odbc)
-# require(DBI)
-# require(tidyverse)
-# 
-# report_manager <- dbConnect(odbc(),
-#                            Driver = "SQL Server",
-#                            Server = "reportmanager,1542",
-#                            Trusted_Connection = "Yes",
-#                            Database = "ReportDB")
-# 
-# ## Import the water_use_report_extended
-# flat_file_pods <- dbGetQuery(ReportManager,
-#                              "Select * from ReportDB.FLAT_FILE.ewrims_water_use_report_extended")
-
-# Get Data from Snowflake ----
-
-remove(list = ls())
-
-
-
-#### Procedure ####
-
-# Log into Snowflake
+# SNOWFLAKE STUFF----------------------------------------------------------------
+## Log into Snowflake----
 sf_con <- DBI::dbConnect(drv = odbc::odbc(), 
                          dsn = "snowflake", 
                          server = "gb51005.west-us-2.azure.snowflakecomputing.com", 
@@ -40,7 +14,7 @@ sf_con <- DBI::dbConnect(drv = odbc::odbc(),
                          database = "SWRCB_INTERNAL_PROD",
                          schema = "WR_CALWATRS_FLATFILES",
                          role = "DWR_DEV_DEMAND_DATA_FLAGS_RWC_ACROLE",
-                         warehouse = "WR_WH")
+                         warehouse = "DWR_WH")
 
 
 # Extract the annual reports table
@@ -54,20 +28,26 @@ participants <- dbGetQuery(sf_con,
 
 
 # Extract  geospatial relationships table
-gr <- dbGetQuery(sf_con,
+geospatial_relationships <- dbGetQuery(sf_con,
                  "Select * from swrcb_internal_prod.wr_calwatrs_flatfiles.geospatial_relationships")
 
 # Grab the Data Dictionary Table
 data_dictionary <-dbGetQuery(sf_con,
                "Select * from swrcb_internal_prod.wr_calwatrs_flatfiles.data_dictionary")
 
-# Log out of Snowflake
-# dbDisconnect(sf_con)
 
-# Export the data_dictionary table to a spreadsheet with a date-stamp
-require(openxlsx)
-write.xlsx(x = data_dictionary,
-           file = "OutputData/data_dictionary.xlsx")
+## Export the data_dictionary table to a spreadsheet with a date-stamp
+data_dictionary_excel_path <- paste0(
+  "W4_Calwatrs_Demand/OutputData/calwatrs_data_dictionary_",
+  format(Sys.Date(), "%Y-%m-%d"),
+  ".xlsx"
+)
+
+openxlsx::write.xlsx(
+  x = data_dictionary,
+  file = data_dictionary_file,
+  asTable = FALSE
+)
 
 # Subset the fields in the snowflake tables----
 

@@ -538,19 +538,19 @@ calculateStats <- function (timescale, dailyDF, monthlyDF) {
   statDF <- statDF |>
     mutate(DAILY_RESULT = 
              case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("Bias$", METRIC) ~ calcPBias(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("^Root", METRIC) ~ calcRSR(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("^Modif", METRIC) ~ calcMKGE(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(dailyDF$PRECIP, dailyDF$PRMS_PRECIP)
+               grepl("^Nash", METRIC) ~ calc_nse(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("Bias$", METRIC) ~ calc_pbias(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("^Root", METRIC) ~ calc_rsr(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("^Modif", METRIC) ~ calc_mkge(dailyDF$PRECIP, dailyDF$PRMS_PRECIP),
+               grepl("^R Sq", METRIC) ~ calc_r_sqrd(dailyDF$PRECIP, dailyDF$PRMS_PRECIP)
              )) |>
     mutate(MONTHLY_RESULT = 
              case_when(
-               grepl("^Nash", METRIC) ~ calcNSE(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("Bias$", METRIC) ~ calcPBias(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("^Root", METRIC) ~ calcRSR(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("^Modif", METRIC) ~ calcMKGE(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
-               grepl("^R Sq", METRIC) ~ calcRSqrd(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP)
+               grepl("^Nash", METRIC) ~ calc_nse(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("Bias$", METRIC) ~ calc_pbias(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("^Root", METRIC) ~ calc_rsr(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("^Modif", METRIC) ~ calc_mkge(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP),
+               grepl("^R Sq", METRIC) ~ calc_r_sqrd(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP)
              ))
   
   
@@ -558,12 +558,12 @@ calculateStats <- function (timescale, dailyDF, monthlyDF) {
   # overprediction or underprediction (this interpretation varies depending 
   # on the exact formula used)
   statDF$DAILY_NOTES[statDF$METRIC == "P-Bias"] <- 
-    calcPBias(dailyDF$PRECIP, dailyDF$PRMS_PRECIP) |> 
+    calc_pbias(dailyDF$PRECIP, dailyDF$PRMS_PRECIP) |> 
     attributes() |> pluck(1)
   
   
   statDF$MONTHLY_NOTES[statDF$METRIC == "P-Bias"] <- 
-    calcPBias(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP) |> 
+    calc_pbias(monthlyDF$PRECIP, monthlyDF$PRMS_PRECIP) |> 
     attributes() |> pluck(1)
   
   

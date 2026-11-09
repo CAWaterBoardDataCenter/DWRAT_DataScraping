@@ -207,7 +207,7 @@ mainProcedure <- function (model = "PRMS") {
   # Edit 'prismDF' to prepare it for regression with 'meteorDF'
   prismDF <- prismDF |>
     reformat_climate_data(stationDF, "PRISM", 
-                          model, siPRISM = model %notin% c("SRP"))
+                          model, siPRISM = model %notin% c("SRP", "SRPHM"))
   
   
   # Remove outliers from 'meteorDF'
@@ -290,7 +290,7 @@ reformatPRISM <- function (prismDF, stationDF, model) {
   
   # The model precipitation linkage column (like "PRMS_PRECIP_NAME" or 
   # "SRP_PRECIP_NAME") is important in this process to help reformat 'prismDF'
-  precipCol <- paste0(model, "_PRECIP_NAME")
+  precipCol <- get_model_column_name(model, "PRECIP")
   
   
   # Remove rows with "NA" for 'precipCol'
@@ -439,11 +439,13 @@ modelPrecip <- function (x, y, xName, yName) {
   
   
   # Generate a linear regression model between 'x' and 'y'
-  precipRes <- try(lm(y ~ x), silent = TRUE)
+  precipRes <- catch_warnings_and_errors(
+    lm(y ~ x)
+  )
   
   
   # If no model could be developed, return an empty row
-  if ("try-error" %in% class(precipRes) ||
+  if (caught_issue(precipRes) ||
       is.nan(summary(precipRes)[["r.squared"]]) ||
       nrow(summary(precipRes)[["coefficients"]]) < 2) {
     

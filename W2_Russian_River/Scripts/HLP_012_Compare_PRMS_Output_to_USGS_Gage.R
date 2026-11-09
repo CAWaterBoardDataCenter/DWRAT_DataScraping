@@ -62,8 +62,7 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   
   # Validate the contents of 'subDF'
   # To do this, borrow the "validateSubCSV" function from the Raw Flows script
-  c("validateSubCSV", "getColsFromMetadata") |>
-    map(~ functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", .))
+  functionStealer("W2_Russian_River/Scripts/RRW_017_Generate_Raw_Flows.R", "validateSubCSV")
   
   
   subDF <- subDF |>
@@ -135,6 +134,25 @@ mainProcedure <- function (gageID = "11464000", subbasin = 13) {
   usgsDF <- requestUSGS(stationID = gageID, 
                         startDate = min(subDF$DATE), endDate = max(subDF$DATE),
                         apiKey = apiKey)
+  
+  
+  # If 'usgsDF' is an empty tibble, that means that no streamflow data is available
+  if (nrow(usgsDF) == 0) {
+    
+    # Notify the user
+    cat("\n\n")
+    paste0("No streamflow data is available at Station ", gageID, " between ",
+           min(gagDF$DATE), " and ", max(gagDF$DATE)) |>
+      col_red() |>
+      cat()
+    cat("\n\n")
+    cat("Terminating the script run!")
+    cat("\n\n")
+    
+    # Return nothing
+    return(invisible(NULL))
+    
+  }
   
   
   # Validate and process the returned dataset

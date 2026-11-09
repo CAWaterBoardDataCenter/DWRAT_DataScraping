@@ -29,7 +29,10 @@ source("Additional_Scripts/Load_Packages.R")
 ##### User Inputs #####
 
 # Please open the following script and update it:
-"CTR_001_Set_Start_and_End_Dates.R"
+"W2_Russian_River/Scripts/CTR_001_Set_Start_and_End_Dates.R"
+
+# Tip: If the "DWRAT_DataScraping" R Project is active, you can press Ctrl 
+#      and left click on the filename above to open it automatically
 
 
 ##### Process Pre-Check #####
@@ -160,16 +163,3 @@ source("W2_Russian_River/Scripts/RRW_021_DWRAT_Cleanup.R")
 
 # Generate a batch file for ease of future use
 source("W2_Russian_River/Scripts/HLP_006_Generate_RR_Workflow_Bat.R")
-
-
-# Data analysis steps
-
-
-
-#### Maintenance Scripts ####
-
-# Generating new long-running DAT file
-
-# Generating new historic precipitation averages 
-# for the PRMS and SRP model domains
-

@@ -77,7 +77,8 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Import functions from the PRMS counterpart script
   c("predictCurrentWY", "spiPrediction", "similarWYPrediction", "importLinModels",
-    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations") |>
+    "similarWY_findWY", "similarWY_appendDAT", "validate_num_stations",
+    "updateMetadata_DAT") |>
     map(~ functionStealer("W2_Russian_River/Scripts/RRW_009_Finalize_PRMS_Input.R", .))
   
   
@@ -108,14 +109,7 @@ mainProcedure <- function (predictWY = TRUE) {
   filePaths <- tibble("METEOROLOGICAL" = 
                         paste0("W2_Russian_River/Output/SRP_Meteorological_", startDate,
                                "_", endDate, ".csv"),
-                      "MAIN_DAT" = getFromControl_RR("MAIN_SRP_DAT_FOLDER"))
-  
-  
-  # "MAIN_DAT" contains a folder path right now
-  # Extract the latest primary DAT file from there
-  filePaths$MAIN_DAT[1] <- filePaths$MAIN_DAT[1] |>
-    getLatestFile("^DAT_SRP_WY1948_to_WY[0-9]{4}\\.csv$",
-                  "SRP Main DAT File")
+                      "MAIN_DAT" = get_model_historic_DAT_filepath("SRP"))
   
   
   # Read in the two files next (while also verifying that they exist)
@@ -180,10 +174,10 @@ mainProcedure <- function (predictWY = TRUE) {
     
     updateMetadata_DAT(dirPath, datStartDate = min(mergedDAT$DATE),
                        modelEndDate = endDate, 
-                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1])
+                       predictionMethod = NA_character_, filePaths$MAIN_DAT[1],
+                       model = "SRP")
     
   }
-  
   
   
   # Before writing 'mergedDAT' to a file, make sure that it contains 
@@ -212,40 +206,6 @@ mainProcedure <- function (predictWY = TRUE) {
   
   # Output a completion message
   cat(col_green("\n'RRW_014_Finalize_SRP_Input.R' is complete!\n\n"))
-  
-  
-  # Return nothing
-  return(invisible(NULL))
-  
-}
-
-
-
-updateMetadata_DAT <- function (dirPath, datStartDate, modelEndDate, 
-                                predictionMethod, pathMainDAT, 
-                                pathPastPrecip = NA_character_, 
-                                pathCurrentPrecip = NA_character_,
-                                similarWY = NA_real_, 
-                                linModel = list(m = NA_real_, b = NA_real_)) {
-  
-  # Update "metadata.csv" in the model run hydrology folder
-  
-  # Add information about the water year prediction method and the 
-  # component DAT files
-  
-  
-  updateMetadataCSV(dirPath,
-                    newCols = list("SRP_MAIN_DAT_FILE" = pathMainDAT,
-                                   "SRP_WY_PREDICTION_METHOD" = predictionMethod,
-                                   "SRP_MODEL_DOMAIN_HISTORIC_PRECIP" = 
-                                     pathPastPrecip,
-                                   "SRP_MODEL_DOMAIN_CURRENT_WY_PRECIP" = 
-                                     pathCurrentPrecip,
-                                   "SRP_MOST_SIMILAR_WY" = similarWY,
-                                   "SRP_REGRESSION_MODEL_SLOPE" = linModel$m,
-                                   "SRP_REGRESSION_MODEL_INTERCEPT" = linModel$b,
-                                   "SRP_DAT_START_DATE" = datStartDate, 
-                                   "SRP_MODEL_END_DATE" = modelEndDate))
   
   
   # Return nothing
