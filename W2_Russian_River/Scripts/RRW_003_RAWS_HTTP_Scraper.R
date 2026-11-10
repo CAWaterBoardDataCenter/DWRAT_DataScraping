@@ -364,7 +364,7 @@ adjustScrapingBounds <- function (stationID, startDate, endDate) {
 
 
 
-getDatasetBounds <- function (stationID) {
+getDatasetBounds <- function (stationID, counter = 1, maxRetries = 10) {
   
   # For the RAWS station denoted by 'stationID', extract its start date 
   # and end date
@@ -391,15 +391,42 @@ getDatasetBounds <- function (stationID) {
   Sys.sleep(runif(1, min = 1.0, max = 1.3))
   
   
-  # If an error occurred while querying the website, try again
+  # If an error occurred while querying the website, consider trying again
   if (caught_issue(pageContent)) {
     
-    # Wait a bit before retrying
-    Sys.sleep(runif(1, min = 5, max = 10))
+    # Output the error message to the console
+    cat("\n\n")
+    print(pageContent$message)
+    cat("\n\n")
     
     
-    # Call this function again
-    return(getDatasetBounds(stationID))
+    # Retry the call after a bit if 'maxRetries' has not been reached yet
+    if (counter < maxRetries) {
+      
+      # Notify the user
+      cat("\n\n")
+      paste0("\tCould not obtain station metadata! Retrying soon... ",
+             "[Attempt ", counter + 1, "/", maxRetries, "]") |>
+        cat()
+      cat("\n\n")
+      
+      
+      # Wait a bit before retrying
+      Sys.sleep(runif(1, min = 5 * counter, max = 10 * counter))
+      
+      
+      # Call this function again with 'counter' incremented by one
+      return(getDatasetBounds(stationID, counter = counter + 1))
+      
+    } else {
+      
+      # Output an error message and stop the script
+      paste0("Could Not Access RAWS Data\n\n",
+             "Station metadata for \"", stationID, "\" could not be obtained ",
+             "from RAWS. Please investigate the messages output above.") |>
+        stop_script()
+      
+    }
     
   }
   
