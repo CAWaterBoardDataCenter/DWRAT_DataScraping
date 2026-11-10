@@ -70,7 +70,7 @@ mainProcedure <- function () {
   fromPath <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/",
                      filter(., scope == "shared" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE))) |>
+                       pull(path))) |>
     unique()
   
   stopifnot(length(fromPath) == 1)
@@ -102,7 +102,7 @@ mainProcedure <- function () {
   newFromPaths <- wsDir |>
     map_chr(~ paste0("W3_LSPC_Watershed/", 
                      filter(., scope == "project" & level == "root") |>
-                       select(path) |> unlist(use.names = FALSE)))
+                       pull(path)))
   
   # Right now, this vector contains the paths to the root watershed folders
   # Adding "/raw" or "/staged" to these root paths will give the paths to those

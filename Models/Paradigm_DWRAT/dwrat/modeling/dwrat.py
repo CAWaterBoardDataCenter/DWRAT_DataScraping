@@ -136,36 +136,74 @@ class Model():
             )
 
 
-        # Once flows have been allocated to riparian users, consider PVP flows for appropriative users
-        # 'pvp' contains Mainstem Sub-Basin 2 flows (with PVP releases incorporated into the values)
+        # Once flows have been allocated to riparian users, consider including unnatural flows for appropriative users
+        # (e.g., PVP flows are available in the Upper Russian River watershed starting from Mainstem Sub-Basin 2)
+
+        # Water Rights Note: Riparian water claims only allow usage of *natural flows* in a watercourse
+        # Water introduced by projects, transfers, etc. are not usually available under their claims
+        # Appropriative rights, on the other hand, may be able to access this water
+
+        # Check if 'self' contains data related to unnatural flows
+        # If so, it will now be incorporated into the available flows matrix
+        if self.pvp is not None:
+
+            # 'self.pvp' is a [N x M] data frame where each row corresponds to a different sub-basin (N)
+            # Each column represents a different date (M)
+
+            # In its current configuration, 'self.pvp' has non-zero flows only in the sub-basin(s) where this non-natural flow is introduced
+            # (e.g., for the Upper Russian River, 'self.pvp' would only have non-zero values for 'R_02_M')
+
+            # However, this flow will also be available in all sub-basins that are downstream of the starting basin 
+            # (e.g., in the URR, all sub-basins downstream of 'R_02_M' may receive this water)
+
+            # Thus, 'self.availableFlow' will be updated such that, every basin with non-zero values in 'self.pvp', 
+            # AS WELL AS their downstream sub-basins, will be eligible to receive these non-natural flows
+
+            # To accomplish this, we will use an upstream version of the connectivity matrix [N x N]
+            # (i.e., in an upstream matrix, a row sub-basin is downstream of a column sub-basin if a "1" appears in that row)
+            # (This is the transpose of 'self.basinConnectivity')
+            
+            # This connectivity matrix can be multiplied with 'self.pvp'
+            # [N x N] * [N x M] = [N x M]
+
+            # The resultant matrix will have a row for each sub-basin and a column for each year-month date
+            # (Basically the same shape as 'self.pvp')
+            # However, all sub-basins that are downstream of the starting non-natural flow basin will have the same flow value 
+            # that the starting basin has in 'self.pvp'
+
+            # This result can be added to 'self.availableFlow' to update the available flow in each sub-basin
+            # ('self.availableFlow' will be used in the appropriative allocations procedure)
+
+
+            # Begin the procedure by multiplying self.basinConnectivity.T by self.pvp
+            # This produces an [N x M] matrix of non-natural flows potentially available to certain sub-basins in the watershed
+            pvp_flow_mod_matrix = np.matmul(self.basinConnectivity.T, self.pvp)
+
+            
+            # Update 'self.availableFlow' with this additional source of water
+            self.availableFlow = self.availableFlow + pvp_flow_mod_matrix
+
+            # Side Note: Even if the ordering of the columns and/or index are different between 'self.availableFlow' and 'pvp_flow_mod_matrix',
+            #            this operation will align the values correctly and still succeed
+
+
+        # Additional thoughts related to the Russian River and its PVP flows:
+        #
+        # Wherever the Capella gage data is used to represent 'pvp' flows, these values are technically a representation of both 
+        # the natural flow in the watercourse AND the PVP release(s) that occurred
         # (Basically "Natural" + "PVP")
-        # Subtract the allocated flows to riparian users from this value to get the available flow
+        #
+        # We would probably want to subtract the allocated flows to riparian users from this value to get the available flow
         # for appropriative users
-        # ("Natural" - "Natural_Allocated_to_Riparian" + "PVP")
-
-        if False and self.pvp is not None:
-            
-
-            # Formula for Historic Data & Projections (if values represent only "PVP" flows)
-            newAvailableFlow = self.availableFlow.loc['R_02_M'] + self.pvp
-            
-            
-            # Formula for Calpella Gage data
-            # Remove riparian allocations done with natural flows from self.pvp (which contains "Natural" + "PVP" flows)
-            newAvailableFlow = self.pvp - self.riparian.basinAllocations.loc['R_02_M']
+        # ("Natural" + "PVP" - "Natural_Allocated_to_Riparian")
+        #
+        # In that case, maybe we should include 'self.riparian.basinAllocations' somehow into this operation?
+        # Before creating 'pvp_flow_mod_matrix', we would want to adjust 'self.pvp' like this:
+        # self.pvp = self.pvp - self.riparian.basinAllocations  # Extracting riparian usage from the allocated natural flows
+        # self.pvp = self.pvp.mask(self.pvp < 0, 0)             # Removing any unintentional negative values
 
 
-
-
-            # Replace negative flow values with zero
-            #newAvailableFlow[newAvailableFlow < 0] = 0
-            # (Not needed since negative values are handled through the optimization routine)
-
-            # Update the sub-basin 2 mainstem available flows with this value
-            self.availableFlow.loc['R_02_M'] = newAvailableFlow
-
-
-
+        # The next step is allocations for appropriative users
         self.appropriative.userAllocations, \
             self.appropriative.basinAllocations = appropriativeLP(
                 self.dates,

@@ -118,15 +118,13 @@ generate_subfolders <- function (controlDF) {
     sharedRoot <- projectList[[i]] |>
       filter(scope == "shared") |>
       filter(level == "root") |> 
-      select(path) |>
-      unlist(use.names = FALSE)
+      pull(path)
     
     
     sharedPaths <- projectList[[i]] |>
       filter(scope == "shared") |> 
       filter(level != "root") |>
-      select(path) |>
-      unlist(use.names = FALSE)
+      pull(path)
     
     
     # Append these paths to 'sharedRoot'

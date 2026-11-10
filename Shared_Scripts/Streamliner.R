@@ -609,12 +609,12 @@ updateMetadataCSV <- function (dirPath, newCols, filename = "metadata.csv") {
   # Update a CSV file containing metadata 
   # Add new columns to it using 'newCols'
   
-  # 'newCols' should be a list containing named elements
+  # 'newCols' should be a list or vector containing named elements
   
   
   # Start by validating 'newCols'
   # Every element should have a name
-  if (is.null(names(newCols)) || "" %in% names(newCols)) {
+  if (is.null(names(newCols)) || anyNA(names(newCols)) || "" %in% names(newCols)) {
     
     cat("\n\nNames in 'newCols':\n")
     print(names(newCols))
