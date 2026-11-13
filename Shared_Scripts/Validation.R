@@ -53,7 +53,9 @@ checkMissingCol <- function (df, colNames, sourcePath = NA_character_,
              "key columns. However, ", length(missingVals), " column", 
              if_else(length(missingVals) > 1, "s are", " is"), " missing. Please ",
              "investigate the dataset for issues.\n\n",
-             "(This error occurred for ", vec2QuotedStr(sourcePath), ")") |>
+             if_else(is.na(sourcePath), 
+                     "", 
+                     paste0("(This error occurred for ", vec2QuotedStr(sourcePath), ")"))) |>
         errWrap() |>
         stop()
       

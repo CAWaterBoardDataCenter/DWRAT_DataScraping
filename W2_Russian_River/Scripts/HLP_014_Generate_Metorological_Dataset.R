@@ -871,8 +871,7 @@ reformat_climate_data <- function (climateDF, climateInput, dataSource,
   if (dataSource == "CDEC") {
     
     climateDF <- climateDF |>
-      mutate(!! fieldNameVec[names(fieldNameVec) == "TMIN"] := NA,
-             !! fieldNameVec[names(fieldNameVec) == "TMAX"] := NA)
+      mutate(TMIN = NA_real_, TMAX = NA_real_)
     
   }
   
@@ -1278,9 +1277,9 @@ apply_qc_flags_CDEC <- function (meteorDF, cdecInput, cdecDF, cdecOutputPath,
   fieldNameVec <- validateWebData_expectedColumnNames("CDEC", siPRISM = TRUE)
   
   
-  # Rename some columns in 'cdecDF'
+  # Rename the columns in 'cdecDF'
   cdecDF <- cdecDF |>
-    rename(any_of(fieldNameVec))
+    rename(all_of(fieldNameVec))
   
   
   # For convenience, filter 'cdecInput' as well

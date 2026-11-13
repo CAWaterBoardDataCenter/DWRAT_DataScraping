@@ -42,7 +42,7 @@ error_if <- function (condition, message) {
 
 
 
-#' @title ...
+#' @title Text Wrapping in Error Messages
 #' 
 #' @description
 #' ...

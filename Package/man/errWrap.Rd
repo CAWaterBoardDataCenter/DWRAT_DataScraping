@@ -2,7 +2,7 @@
 % Please edit documentation in R/Error_Handler.R
 \name{errWrap}
 \alias{errWrap}
-\title{...}
+\title{Text Wrapping in Error Messages}
 \usage{
 ...
 }
