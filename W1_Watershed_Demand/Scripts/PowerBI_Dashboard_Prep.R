@@ -74,9 +74,9 @@ mainProcedure <- function () {
   
   # Catchment/sub-basin assignments to each POD
   assignedDF <- getXLSX(ws, 
-                     "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
-                     "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
-                     "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME") %>% 
+                        "IS_SHAREPOINT_PATH_SUBBASIN_ASSIGNMENT_SPREADSHEET",
+                        "SUBBASIN_ASSIGNMENT_SPREADSHEET_PATH",
+                        "SUBBASIN_ASSIGNMENT_WORKSHEET_NAME") %>% 
     filter(APPLICATION_NUMBER %in% mdtDF$APPLICATION_NUMBER) %>%
     select(APPLICATION_NUMBER, POD_ID, LONGITUDE, LATITUDE,
            all_of(ws$SUBBASIN_FIELD_ID_NAMES %>% 
@@ -135,7 +135,7 @@ mainProcedure <- function () {
   # Rename the catchment ID column in 'assignedDF" and 'catchDF'
   assignedDF <- assignedDF %>%
     rename(ASSIGNED_NHD_CAT = all_of(ws$SUBBASIN_FIELD_ID_NAMES %>% 
-                                        str_split(";") %>% unlist() %>% pluck(1)))
+                                       str_split(";") %>% unlist() %>% pluck(1)))
   
   
   
@@ -174,7 +174,7 @@ mainProcedure <- function () {
   
   # Reduce the size of 'huc12' to only ones relevant to the watershed
   huc12 <- huc12[st_intersects(st_buffer(wsBound, -5), huc12) %>%
-          unlist(), ]
+                   unlist(), ]
   
   
   # Clip the extent of the HUC12 boundaries to the watershed boundaries
@@ -254,7 +254,7 @@ mainProcedure <- function () {
   
   catchDF[["HUC12_NAME"]] <- huc12$name[catchDF$HUC12 %>%
                                           map_int(~ which(. == huc12$huc12))]
-    
+  
   
   
   # Alter the formatting of 'monthlyDF'
@@ -309,8 +309,8 @@ mainProcedure <- function () {
               by = "APPLICATION_NUMBER", relationship = "many-to-one") %>%
     rename(Primary_Use_Raw = PRIMARY_USE) %>%
     mutate(Primary_Use = if_else(is.na(Primary_Use_Raw), "Other",
-                                       if_else(grepl("Municipal", Primary_Use_Raw, ignore.case = TRUE),
-                                               "Municipal", Primary_Use_Raw)),
+                                 if_else(grepl("Municipal", Primary_Use_Raw, ignore.case = TRUE),
+                                         "Municipal", Primary_Use_Raw)),
            Date = paste0(YEAR, "-", MONTH, "-01") %>%
              as.Date(format = "%Y-%m-%d"))
   
@@ -355,11 +355,11 @@ mainProcedure <- function () {
     mutate(Concat_AppID_PrimaryOwner = paste0(AppID_Trim, "_", Primary_Owner),
            `Current Month Shortage` = round(`Demand - Allocations`, digits = 2)) %>%
     mutate(`Shorted?` = if_else(Status %in% c("Cancelled", "Inactive", "Revoked"),
-                                              "Right Inactive",
-                                              if_else(is.na(`Current Month Shortage`),
-                                                      NA_character_,
-                                                      if_else(`Current Month Shortage` > 0,
-                                                              "Yes", "No"))))
+                                "Right Inactive",
+                                if_else(is.na(`Current Month Shortage`),
+                                        NA_character_,
+                                        if_else(`Current Month Shortage` > 0,
+                                                "Yes", "No"))))
   
   
   
@@ -451,7 +451,7 @@ mainProcedure <- function () {
   
   
   # For each catchment, identify its final outlet catchment (and HUC-12 sub-basin)
-  outletDF <- findOutlets(catchDF, connMat)
+  outletDF <- findOutlets(catchDF, connMat, huc12)
   
   
   
@@ -462,18 +462,20 @@ mainProcedure <- function () {
   
   
   
-  write_xlsx(list("Sheet1" = allocationsDF %>%
-                    select(APPLICATION_NUMBER, ALLOCATIONS,
-                           Curtailment, DEMAND, `SHORTAGE %`,
-                           BASIN, PRIORITY, Month) %>%
-                    rename(`Application ID` = APPLICATION_NUMBER)),
-             paste0("W1_Watershed_Demand/Output/", ws$ID, "_DWRAT_Allocations.xlsx"))
+  writexl::write_xlsx(list("Sheet1" = allocationsDF %>%
+                             select(APPLICATION_NUMBER, ALLOCATIONS,
+                                    Curtailment, DEMAND, `SHORTAGE %`,
+                                    BASIN, PRIORITY, Month) %>%
+                             rename(`Application ID` = APPLICATION_NUMBER)),
+                      paste0("W1_Watershed_Demand/Output/", ws$ID, "_DWRAT_Allocations.xlsx"), 
+                      na = NA)
   
   
   
-  write_xlsx(list("Sheet1" = appDF %>%
-                    select(APPLICATION_NUMBER)),
-             paste0("W1_Watershed_Demand/Output/", ws$ID, "_AppID_List.xlsx"))
+  writexl::write_xlsx(list("Sheet1" = appDF %>%
+                             select(APPLICATION_NUMBER)),
+                      paste0("W1_Watershed_Demand/Output/", ws$ID, "_AppID_List.xlsx"), 
+                      na = NA)
   
   
   
@@ -492,20 +494,22 @@ mainProcedure <- function () {
   
   
   
-  write_xlsx(list("TD_PODs" = assignedDF %>% 
-                    st_drop_geometry() %>%
-                    select(APPLICATION_NUMBER, POD_ID,
-                           LATITUDE, LONGITUDE, HUC12,
-                           HUC12_NAME, NHD_CAT)),
-             paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs.xlsx"))
+  writexl::write_xlsx(list("TD_PODs" = assignedDF %>% 
+                             st_drop_geometry() %>%
+                             select(APPLICATION_NUMBER, POD_ID,
+                                    LATITUDE, LONGITUDE, HUC12,
+                                    HUC12_NAME, NHD_CAT)),
+                      paste0("W1_Watershed_Demand/Output/", ws$ID, "_PODs.xlsx"), 
+                      na = NA)
   
   
   
-  write_xlsx(list("Out_Cat" = outletDF %>%
-                    st_drop_geometry() %>%
-                    select(NHD_CAT, HUC12, HUC12_NAME, NHD_OUTLET, HUC12_OUTLET,
-                           NHD_DOWNSTREAM, HUC12_DOWNSTREAM)),
-             paste0("W1_Watershed_Demand/Output/", ws$ID, "_Catchments.xlsx"))
+  writexl::write_xlsx(list("Out_Cat" = outletDF %>%
+                             st_drop_geometry() %>%
+                             select(NHD_CAT, HUC12, HUC12_NAME, NHD_OUTLET, HUC12_OUTLET,
+                                    NHD_DOWNSTREAM, HUC12_DOWNSTREAM)),
+                      paste0("W1_Watershed_Demand/Output/", ws$ID, "_Catchments.xlsx"), 
+                      na = NA)
   
   
   
@@ -609,85 +613,133 @@ verticalizeData <- function (inputDF) {
 
 
 
-findOutlets <- function (catchDF, connMat) {
+findOutlets <- function (catchDF, connMat, huc12) {
   
   # Find the outlet catchment for each catchment
   # Note that outlet catchment and its corresponding HUC-12 subbasin
-  # Also prepare a string of every downstream catchment and downstream HUC-12 subbasin
+  
+  # Also note the immediately downstream catchment and the immediately downstream HUC-12 subbasin
   
   
-  
-  # Create new columns in 'catchDF' to identify the outlet catchment and HUC-12 IDs
-  outletDF <- catchDF %>%
-    mutate(NHD_OUTLET = NA_real_,
-           HUC12_OUTLET = NA_real_,
-           NHD_DOWNSTREAM = NA_character_,
-           HUC12_DOWNSTREAM = NA_character_)
+  # Import functions from the LSPC workflow
+  c("get_immediate_downstream_basin", "get_most_downstream_basin",
+    "basin_end_marker", "get_huc12_subbasin_outlet", "find_intersecting_huc12",
+    "get_huc12_connectivity", "link_catchments_to_huc12_subwatersheds") |>
+    map(~ functionStealer("W3_LSPC_Watershed/scripts/LSPC_023_Finalize_DWRAT_Inputs.R", .))
   
   
+  # Several of these LSPC functions expect the catchments GIS layer 
+  # to contain a field called "BASIN", which contains the catchment IDs
+  catchDF <- catchDF |>
+    mutate(BASIN = as.character(NHD_CAT))
   
-  # Iterate through the catchments in 'outletDF'
-  for (i in 1:nrow(outletDF)) {
-    
-    
-    # Find the row in 'connMat' that has this iteration's catchment ID
-    rowIndex <- which(connMat$BASIN == outletDF$NHD_CAT[i])
-    
-    
-    
-    stopifnot(length(rowIndex) == 1)
-    
-    
-    
-    # Identify the columns with non-zero values in this row of 'connMat'
-    # (Get their catchment IDs, which are stored as column names)
-    # (Don't let the "BASIN" name appear in this vector)
-    nonzeroCols <- names(connMat)[which(connMat[rowIndex, ] > 0)] %>%
-      str_subset("^BASIN$", negate = TRUE) %>%
-      as.numeric()
-    
-    
-    
-    # Get the row sum for each catchment
-    catchRowSums <- connMat[, -1] %>% rowSums()
-    
-    
-    
-    # The catchment that is the outlet should not drain into any other catchment
-    # That means that its row sum would be equal to 1 (since it only drains into itself)
-    
-    
-    
-    # Among the catchments in 'nonzeroCols' find the one with a row sum equal to 1
-    # (There should only be 1)
-    outCatch <- connMat$BASIN[which(connMat$BASIN %in% nonzeroCols & catchRowSums == 1)]
-    
-    
-    
-    # There should be exactly one match
-    stopifnot(length(outCatch) == 1)
-    
-    
-    
-    # Update 'outletDF' accordingly
-    outletDF$NHD_OUTLET[i] <- outCatch
-    outletDF$HUC12_OUTLET[i] <- outletDF$HUC12[outletDF$NHD_CAT == outCatch]
-    
-    
-    
-    # Also get the HUC-12 subbasins of each of the catchments in 'nonzeroCols'
-    nonzeroCols_HUC <- nonzeroCols %>%
-      map(~ outletDF$HUC12[outletDF$NHD_CAT == .]) %>%
-      unlist()
-    
-    
-    
-    # Input 'nonzeroCols' and 'nonzeroCols_HUC' as comma-separated strings into 'outletDF'
-    outletDF$NHD_DOWNSTREAM[i] <- paste0("\"", nonzeroCols, "\"", collapse = ",")
-    outletDF$HUC12_DOWNSTREAM[i] <- paste0("\"", nonzeroCols_HUC, "\"", collapse = ",")
-    
-  }
   
+  # Next, use the LSPC functions to get downstream catchment information
+  outletCatch <- get_most_downstream_basin(connMat) |>
+    rename(BASIN = SUBWATERSHED, NHD_OUTLET = LAST_BASIN)
+  
+  
+  downstreamCatch <- get_immediate_downstream_basin(connMat) |>
+    rename(BASIN = SUBWATERSHED, NHD_DOWNSTREAM = FLOWS_TO)
+  
+  
+  # "SUBWATERSHED" is renamed to "NHD_CAT" to match 'catchDF'
+  # Similarly, "FLOWS_TO" and "LAST_BASIN" will be renamed to be more specific
+  # to catchments (since HUC-12 counterpart columns will be created too)
+  
+  
+  # Create a new variable called 'outletDF' that uses 'catchDF' as a base
+  # 'downstreamCatch' and 'outletCatch' will be joined to it
+  outletDF <- catchDF |>
+    left_join(outletCatch, by = "BASIN", relationship = "one-to-one") |>
+    left_join(downstreamCatch, by = "BASIN", relationship = "one-to-one")
+  
+  # NOTE: If a catchment is the most downstream catchment in a flow path, 
+  #       it contains a value of "000" / 0 in "NHD_DOWNSTREAM"
+  
+  
+  # The next step is to get the outlet HUC-12 and immediately downstream HUC-12
+  
+  
+  # First, get the last catchment in each HUC-12 subbasin 
+  # If there are multiple distinct flow paths that divide a subbasin, 
+  # 'lastCatch' will reflect that split 
+  lastCatch <- catchDF |>
+    get_huc12_subbasin_outlet(connMat, huc12)
+  
+  
+  # With the last catchment in each HUC-12 subbasin known, we can use them 
+  # to link each catchment to a HUC-12 sub-basin (or its sub-division)
+  catchLink <- connMat |>
+    link_catchments_to_huc12_subwatersheds(lastCatch, catchDF, huc12) |>
+    rename(BASIN = CATCHMENT, HUC12_DWRAT = SUBWATERSHED)
+  
+  
+  # Incorporate the "HUC12_DWRAT" column into 'catchDF'
+  # The catchment 
+  outletDF <- outletDF |>
+    left_join(catchLink, by = "BASIN", relationship = "many-to-one")
+  
+  
+  # Now, with "HUC12_DWRAT" added, 'outletDF' contains the actual HUC-12 
+  # assignment if a DWRAT run was performed with HUC-12 sub-basins
+  # (this differs from the "HUC12" field for cases like Gualala and Mattole,
+  #  where some sub-basins contain distinct flow paths)
+  
+  # With this information, we can now get the outlet HUC-12 as well as 
+  # the immediately downstream HUC-12
+  
+  
+  # For that, a connectivity matrix for the HUC-12 subbasins is necessary
+  
+  
+  # Use 'lastCatch' to get a HUC-12 subbasin connectivity matrix
+  huc12Conn <- connMat |>
+    get_huc12_connectivity(lastCatch)
+  
+  
+  # With 'huc12conn', we can get the most downstream and immediate downstream subbasins
+  outletHUC <- huc12Conn |>
+    get_most_downstream_basin() |>
+    rename(HUC12_DWRAT = SUBWATERSHED, HUC12_OUTLET = LAST_BASIN)
+  
+  
+  # That, in turn, can let us determine the immediate downstream HUC-12 subbasin
+  # for each of the HUC-12 subbasins
+  downstreamHUC <- huc12Conn |>
+    get_immediate_downstream_basin() |>
+    rename(HUC12_DWRAT = SUBWATERSHED, HUC12_DOWNSTREAM = FLOWS_TO)
+  
+  # NOTE: If a HUC-12 subbasin is the most downstream subbasin in a flow path, 
+  #       it contains a value of "000" / 0 in "HUC12_DOWNSTREAM"
+  
+  
+  # Finally, 'outletDF' will be updated to include the outlet HUC-12 and 
+  # immediately downstream HUC-12
+  outletDF <- outletDF |>
+    left_join(outletHUC, by = "HUC12_DWRAT", relationship = "many-to-one") |>
+    left_join(downstreamHUC, by = "HUC12_DWRAT", relationship = "many-to-one")
+  
+  
+  # Make sure none of the newly added columns are missing values
+  stopifnot(!anyNA(outletDF$NHD_OUTLET))
+  stopifnot(!anyNA(outletDF$NHD_DOWNSTREAM))
+  stopifnot(!anyNA(outletDF$HUC12_OUTLET))
+  stopifnot(!anyNA(outletDF$HUC12_DOWNSTREAM))
+  
+  
+  # Finally, add some intentional NA entries to 'outletDF'
+  outletDF <- outletDF |>
+    mutate(NHD_DOWNSTREAM = if_else(NHD_CAT == NHD_OUTLET, 
+                                    NA_character_, NHD_DOWNSTREAM),
+           HUC12_DOWNSTREAM = if_else(HUC12_DOWNSTREAM == basin_end_marker(), 
+                                      NA_character_, HUC12_DOWNSTREAM))
+  
+  # If an NHD catchment is the most downstream catchment in its flow path, 
+  # set its downstream catchment entry to NA
+  
+  # Similarly, if a catchment is located in an outlet HUC-12 subbasin, 
+  # set its downstream HUC-12 subbasin to NA
   
   
   # Return 'outletDF'
@@ -732,7 +784,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
                                  str_split(";") %>% unlist() %>%
                                  trimws() %>% head(1)))
   
-    
+  
   
   # Keep only the column that uniquely identifies different flowlines
   flowLines <- flowLines %>%
@@ -829,7 +881,7 @@ generateGPKG <- function (ws, wsBound, assignedDF, huc12, catchDF, mdtDF) {
            paste0("W1_Watershed_Demand/Output/", ws$ID, "_GIS_Layers.gpkg"),
            layer = "Hydro_Model_NHD_Flowlines",
            append = FALSE)
-
+  
   
   
   st_write(wsMask |> 
@@ -1062,9 +1114,9 @@ generateMetadata <- function (ws) {
                "<h2>Terms of Use</h2>",
                paste0("<p>",
                       paste0("This dataset is provided for planning, assessment, and coordination purposes only. ",
-                      "It is not a legal survey product and cannot be used to establish legal standing. ",
-                      "While reasonable efforts have been made to ensure the accuracy of the data, ",
-                      "no warranty is made regarding its completeness, timeliness, or accuracy."),
+                             "It is not a legal survey product and cannot be used to establish legal standing. ",
+                             "While reasonable efforts have been made to ensure the accuracy of the data, ",
+                             "no warranty is made regarding its completeness, timeliness, or accuracy."),
                       "</p>"),
                paste0("<p>",
                       paste0("By using this data, the user acknowledges these limitations and ",
