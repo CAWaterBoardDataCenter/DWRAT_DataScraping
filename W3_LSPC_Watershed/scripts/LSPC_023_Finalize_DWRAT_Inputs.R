@@ -484,7 +484,7 @@ find_intersecting_huc12 <- function (catchments, huc12) {
 
 prep_dwrat_files_catchments <- function (stream, mdt, catchments, connMat, writePath, huc12) {
   
-  # Prepare DWRAT input files using catchments as DWRAT sub-watersheds
+  # Prepare DWRAT input files using catchments as DWRAT subwatersheds
   
   
   # Several precursor files are necessary to generate the DWRAT input files
@@ -492,21 +492,30 @@ prep_dwrat_files_catchments <- function (stream, mdt, catchments, connMat, write
   # Once they are all established, the actual inputs will be prepared
   
   
-  # First, identify the outlet catchment in each sub-watershed
-  
-  # Since every catchment is its own sub-watershed in this case, 
-  # each catchment is its own "outlet catchment" 
-  lastCatch <- catchments |>
+  # First, link each LSPC catchment to a DWRAT subwatershed
+  # In this case, every catchment is its own subwatershed
+  # As a result, the variable can be defined relatively easily
+  catchLink <- catchments |>
     st_drop_geometry() |>
-    select(BASIN) |>
-    mutate(BASIN = as.character(BASIN)) |> 
-    rename(SUBWATERSHED = BASIN) |> 
-    mutate(OUTLET_CATCH = SUBWATERSHED)
+    mutate(CATCHMENT = as.character(BASIN)) |>
+    select(CATCHMENT) |>
+    mutate(SUBWATERSHED = CATCHMENT)
   
-  # This is a two-column tibble with each unique subwatershed that will be used
-  # in the DWRAT run (alongside their outlet catchments)
+  # This is a two-column tibble with each catchment and its corresponding 
+  # subwatershed in the DWRAT run
   
-  # (Both columns are coerced into character-type columns too)
+  # (Both columns have been coerced into character-type values too)
+  
+  
+  # After that, identify the outlet catchment in each subwatershed
+  
+  # There is a single catchment in each subwatershed, 
+  # so the outlet catchment is just itself
+  lastCatch <- catchLink |>
+    rename(OUTLET_CATCH = CATCHMENT)
+  
+  # For a catchment-based DWRAT run, this variable is essentially identical
+  # to 'catchLink' (only the column name is different)
   
   
   # The next step is to prepare a connectivity matrix for the DWRAT subwatersheds
@@ -515,12 +524,12 @@ prep_dwrat_files_catchments <- function (stream, mdt, catchments, connMat, write
   dwratConn <- connMat |>
     rename(SUBWATERSHED = BASIN)
   
-  # Though, in 'dwratConn', instead of "BASIN", use "SUBWATERSHED" 
+  # Though, in 'dwratConn', instead of "BASIN", use "SUBWATERSHED" as the column name 
   
   
   # Use these variables to generate the required input files for DWRAT
   generate_dwrat_inputs(stream, mdt, catchments, connMat, writePath, huc12,
-                        lastCatch, dwratConn)
+                        catchLink, lastCatch, dwratConn)
   
   
   # Return nothing
@@ -532,7 +541,7 @@ prep_dwrat_files_catchments <- function (stream, mdt, catchments, connMat, write
 
 prep_dwrat_files_huc12 <- function (stream, mdt, catchments, connMat, writePath, huc12) {
   
-  # Prepare DWRAT input files using HUC-12 sub-basins* as DWRAT sub-watersheds
+  # Prepare DWRAT input files using HUC-12 sub-basins* as DWRAT subwatersheds
   
   # * = If multiple distinct flow paths exist within a sub-basin, it will be split
   
@@ -542,7 +551,7 @@ prep_dwrat_files_huc12 <- function (stream, mdt, catchments, connMat, writePath,
   # Once they are all established, the actual inputs will be prepared
   
   
-  # First, identify the outlet catchment in each sub-watershed
+  # First, identify the outlet catchment in each subwatershed
   # Each HUC-12 sub-basin will have at least one outlet catchment
   lastCatch <- catchments |>
     get_huc12_subbasin_outlet(connMat, huc12)
@@ -550,6 +559,16 @@ prep_dwrat_files_huc12 <- function (stream, mdt, catchments, connMat, writePath,
   # This tibble will contain two columns: "SUBWATERSHED" and "OUTLET_CATCH"
   # These are the HUC-12 sub-basins (and sub-divisions, if required)
   # as well as the outlet catchments for each subwatershed
+  
+  
+  # Next, link each catchment to a HUC-12 sub-basin (or its sub-division)
+  catchLink <- connMat |>
+    link_catchments_to_huc12_subwatersheds(lastCatch, catchments, huc12)
+  
+  # This is a two-column tibble with each catchment in "CATCHMENT" 
+  # and the corresponding subwatershed in "SUBWATERSHED"
+  
+  # (Both columns are character-type values too)
   
   
   # After that, set up a connectivity matrix for the DWRAT subwatersheds
@@ -883,6 +902,162 @@ get_huc12_subbasin_outlet <- function (catchments, connMat, huc12) {
 
 
 
+link_catchments_to_huc12_subwatersheds <- function (connMat, lastCatch, 
+                                                    catchments, huc12) {
+  
+  
+  # Connect each catchment to a HUC-12 subwatershed
+  
+  # This can be achieved using a spatial join between 'catchments' and 'huc12'
+  
+  # However, if a HUC-12 sub-basin has been split (as indicated by 'lastCatch'),
+  # the catchment connectivity matrix can help with these cases
+  
+  # The end result will be a two-column tibble with:
+  # The catchments in one column (called "CATCHMENT") 
+  # and the HUC-12 subwatersheds in another column (called "SUBWATERSHED")
+  
+  # (Both columns will be set as character-type)
+  
+  
+  # To start, link each catchment to a HUC-12 sub-basin
+  catchments <- catchments |>
+    left_join(find_intersecting_huc12(catchments, huc12), 
+              by = "BASIN", relationship = "one-to-one")
+  
+  
+  # Use the results from this join as the initial output tibble for this function
+  catchLink <- catchments |>
+    st_drop_geometry() |>
+    select(BASIN, huc12) |>
+    rename(CATCHMENT = BASIN, SUBWATERSHED = huc12)
+  
+  
+  # Join 'catchLink' and 'lastCatch' together
+  # This will add "OUTLET_CATCH" to 'catchLink'
+  catchLink <- catchLink |>
+    left_join(lastCatch, by = "SUBWATERSHED", relationship = "many-to-one")
+  
+  
+  # If there are any NA values in "OUTLET_CATCH", this means that 
+  # the HUC-12 code does not appear as a subwatershed in 'lastCatch'
+  
+  # The reason for that would be if the HUC-12 sub-basin was further subdivided 
+  # for DWRAT (due to containing multiple flow paths)
+  
+  
+  if (anyNA(catchLink$OUTLET_CATCH)) {
+    
+    # Get a list of the HUC-12 sub-basins that have been split
+    splitHUC12 <- catchLink |>
+      filter(is.na(OUTLET_CATCH)) |>
+      pull(SUBWATERSHED) |>
+      unique()
+    
+    
+    # Iterate through these sub-basins and try to assign their catchments 
+    # to one of the sub-divisions of this HUC-12
+    for (i in 1:length(splitHUC12)) {
+      
+      # Get a vector of catchments that are in this HUC-12 sub-basin 
+      # and missing assignments in 'catchLink'
+      unassignedCatch <- catchLink |>
+        filter(is.na(OUTLET_CATCH)) |>
+        filter(SUBWATERSHED == splitHUC12[i]) |>
+        pull(CATCHMENT)
+      
+      
+      # Similarly, find all split versions of this HUC-12 sub-basin
+      splitBasins <- lastCatch |>
+        filter(grepl(paste0("^", splitHUC12[i], "_[0-9]+$"), SUBWATERSHED))
+      
+      # NOTE: In `get_huc12_subbasin_outlet`, sub-division labels were defined as 
+      #       the HUC-12 code, followed by an underscore, and an integer
+      #
+      #       This regular expression looks for a string that matches that 
+      #       exact specification
+      # 
+      #       The "SUBWATERSHED" label should begin with the HUC-12 code, 
+      #       followed by an underscore and one or more digits
+      #       (with nothing else in the string)
+      
+      
+      # For each of the unassigned catchments, use the connectivity matrix 
+      # to relate them to one of the outlet catchments in 'splitBasins'
+      for (j in 1:length(unassignedCatch)) {
+        
+        # Filter 'connMat' to just this iteration's catchment
+        # Also, only look at catchments that are outlets for the HUC-12 sub-divisions
+        iterConn <- connMat |>
+          filter(BASIN == unassignedCatch[j]) |>
+          select(any_of(as.character(splitBasins$OUTLET_CATCH)))
+        
+        
+        # Look for a column that contains a "1"
+        # In 'connMat', these entries correspond to catchments that are downstream 
+        # of (or equal to) the row catchment
+        downstreamCatch <- which(iterConn == 1)
+        
+        # In this case, 'downstreamCatch' will point to the catchment 
+        # that is the outlet for this unassigned catchment
+        
+        # 'downstreamCatch' should have exactly one match
+        # If no match is found, the catchment does not drain into any of
+        # the outlets in this HUC-12 sub-basin
+        error_if(length(downstreamCatch) == 0,
+                 paste0("No Outlet Catchment Found\n\n",
+                        "Among the sub-divisions of \"", splitHUC12[i], "\", ",
+                        "no outlet was found for Catchment \"", unassignedCatch[j],
+                        "\". Please investigate."))
+        
+        # If there are multiple matches, there is a key logical error somewhere
+        # (Each flow path in a HUC-12 should be disconnected)
+        error_if(length(downstreamCatch) > 1,
+                 paste0("Multiple Outlet Catchment Found\n\n",
+                        "Even though they represent separate flow paths, ",
+                        "among the sub-divisions of \"", splitHUC12[i], "\", ",
+                        "more than one of their outlets are downstream of ",
+                        "Catchment \"", unassignedCatch[j],
+                        "\". This should not happen. Please investigate."))
+        
+        
+        
+        # Get the name of the sub-division outlet that this catchment connects to
+        outletCatch <- names(iterConn)[downstreamCatch]
+        
+        
+        # Update 'catchLink' for this particular catchment entry
+        # Replace its "SUBWATERSHED" and "OUTLET_CATCH" assignments with 
+        # the sub-division information that corresponds to 'outletCatch'
+        catchLink$OUTLET_CATCH[catchLink$CATCHMENT == unassignedCatch[j]] <-
+          outletCatch
+        
+        catchLink$SUBWATERSHED[catchLink$CATCHMENT == unassignedCatch[j]] <-
+          splitBasins$SUBWATERSHED[splitBasins$OUTLET_CATCH == outletCatch]
+        
+      } # End of 'j' loop through 'unassignedCatch'
+      
+    } # End of 'i' loop through 'splitHUC12'
+    
+  }
+  
+  
+  # If there are no issues, finalize 'catchLink' and return it
+  
+  # Keep only "CATCHMENT" and "SUBWATERSHED"
+  # Make sure they are character columns too
+  catchLink <- catchLink |>
+    select(CATCHMENT, SUBWATERSHED) |>
+    mutate(across(everything(), as.character))
+  
+  
+  # Return 'catchLink'
+  return(catchLink)
+  
+}
+
+
+
 get_huc12_connectivity <- function (connMat, lastCatch) {
   
   # Given the connectivity matrix for LSPC catchments, 
@@ -1206,7 +1381,7 @@ basin_end_marker <- function () {
 
 
 generate_dwrat_inputs <- function (stream, mdt, catchments, connMat, writePath, 
-                                   huc12, lastCatch, dwratConn) {
+                                   huc12, catchLink, lastCatch, dwratConn) {
   
   # Generate the three primary input files for DWRAT
   
@@ -1226,7 +1401,7 @@ generate_dwrat_inputs <- function (stream, mdt, catchments, connMat, writePath,
   
   # First, adjust the formatting of the demand dataset ('mdt')
   formattedDemand <- mdt |> 
-    format_demand(catchments, huc12, connMat, lastCatch, flowsTo)
+    format_demand(catchments, huc12, connMat, catchLink, lastCatch, flowsTo)
   
   
   # Then, adjust the data in 'stream' into the proper formatting
@@ -1259,16 +1434,17 @@ generate_dwrat_inputs <- function (stream, mdt, catchments, connMat, writePath,
 
 
 
-format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) {
+format_demand <- function (mdt, catchments, huc12, connMat, catchLink, lastCatch, flowsTo) {
   
   # Update the Master Demand Table to include additional columns
   
   # Right now, it has "BASIN", which contains catchment IDs
   
-  # These columns include:
+  # The additional columns to include are:
   #  (*) HUC-12 sub-basin
   #  (*) The last LSPC catchment in the flow path
-  #  (*) The DWRAT subwatershed (must be called "BASIN")
+  #  (*) The last DWRAT subwatershed in the flow path
+  #  (*) The water right's DWRAT subwatershed location (must be called "BASIN")
   #  (*) The immediately downstream subwatershed in the flow path 
   #      (must be called "FLOWS_TO")
   
@@ -1285,8 +1461,8 @@ format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) 
   
   
   # Next, check 'connMat' and get the most downstream catchment for each LSPC catchment
-  # This column will serve as a stepping stone that helps link 'mdt' to 'lastCatch'
-  # Thus, this step is necessary to link each water right to a "SUBWATERSHED" assignment
+  # Together with 'lastCatch', these two variables will add information on the 
+  # outlet catchment and subwatershed for each water right
   
   
   # Connect each LSPC catchment to its most downstream catchment
@@ -1311,16 +1487,32 @@ format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) 
   # This adds "OUTLET_CATCH" to 'mdt'
   # With this column, now 'mdt' and 'lastCatch' can be merged
   mdt <- mdt |>
-    left_join(lastCatch, 
+    left_join(lastCatch |> rename(OUTLET_SUBWATERSHED = SUBWATERSHED), 
               by = "OUTLET_CATCH", relationship = "many-to-one")
   
   
-  # Now 'mdt' has gained the "SUBWATERSHED" column
-  # These are the assignments required for DWRAT
-  # (Note: This column will have to be renamed to "BASIN")
+  # With this, we now have the outlet information attached to each water right
+  
+  # The next step is to focus on the actual subwatershed where each right is located
+  # 'mdt' requires that and the immediate downstream subwatershed
+  
+  # These columns are required for DWRAT
+  # (Their names must be "BASIN" and "FLOWS_TO")
   
   
-  # Now that each water right has its subwatershed assignment, 
+  # First, rename "BASIN" in 'mdt' to "CATCHMENT"
+  # ("BASIN" will contain the subwatershed assignment instead)
+  mdt <- mdt |>
+    rename(CATCHMENT = BASIN)
+  
+  
+  # 'catchLink' will help connect each catchment location to its corresponding 
+  # DWRAT subwatershed
+  mdt <- mdt |>
+    left_join(catchLink, by = "CATCHMENT", relationship = "many-to-one")
+  
+  
+  # Now that each water right has its subwatershed assignment (in "SUBWATERSHED"), 
   # the "FLOWS_TO" column must be added
   
   # "SUBWATERSHED" can bridge 'mdt' and 'flowsTo'
@@ -1345,11 +1537,10 @@ format_demand <- function (mdt, catchments, huc12, connMat, lastCatch, flowsTo) 
   # Now proceed with the final adjustments
   
   
-  # First, rename the catchments column ("BASIN") to "CATCHMENT"
-  # Then, rename "SUBWATERSHED" to "BASIN"
+  # First, rename the "SUBWATERSHED" column to "BASIN"
+  # (This is required for DWRAT)
   mdt <- mdt |>
-    rename(CATCHMENT = BASIN,
-           BASIN = SUBWATERSHED)
+    rename(BASIN = SUBWATERSHED)
   
   
   # Second, check for flow paths in the watershed that lack at least one 
@@ -1623,6 +1814,9 @@ format_supply <- function (stream, lastCatch, flowsTo) {
   # Only keep the final catchment's value for each subwatershed
   RO <- RO |>
     filter(rchid %in% lastCatch$OUTLET_CATCH)
+  
+  # For a catchment run, each catchment is its own DWRAT subwatershed and 
+  # "OUTLET_CATCH", so no catchments are removed in that case
   
   
   # For the next steps, rename "rchid" into "OUTLET_CATCH" and 
