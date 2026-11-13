@@ -757,12 +757,30 @@ get_huc12_subbasin_outlet <- function (catchments, connMat, huc12) {
       
       
       # For this flow path, find the catchment in 'filteredConn' with the most connections
-      maxIndex <- which.max(colSums(filteredConn[, -1]))
+      if (ncol(filteredConn) > 2) {
+        
+        # As long as there are at least two catchments in 'filteredConn', 
+        # `colSums` can help extract a catchment
+        maxIndex <- which.max(colSums(filteredConn[, -1]))
+        
+        # When there is only one catchment left in 'filteredConn', 
+        # this tibble will have TWO columns
+        
+        # (One column is "BASIN", which contains the catchment IDs)
+        
+      } else {
+        
+        # If there is only one catchment left in 'filteredConn', 
+        # 'maxIndex' can just be specified directly
+        maxIndex <- 1
+        
+      }
       
       
       targetCatch <- names(filteredConn)[maxIndex + 1]
       
       # NOTE: 'maxIndex' was incremented by 1 again to account for the "BASIN" column
+      #       (the `which.max` function call excludes that column from the index matching)
       
       
       # After that, take a look at 'subsetConn' again
