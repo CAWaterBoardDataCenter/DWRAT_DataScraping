@@ -13,9 +13,9 @@ source("W1_Watershed_Demand/Scripts/Shared_Functions_Demand.R")
 
 # IMPORT MATTOLE DATASETS---------------------------------------------------------
 mattole_pod_path <- makeSharePointPath("Program Watersheds/1. Watershed Folders/Mattole River/Data/GIS_Preprocessing/Final_Mattole_Paradigm_List.xlsx")
-mattole_pods <- read_xlsx(file = mattole_pod_path, sheet = "Final_List_Ben_2026") # 667 PODs
-mattole_pods$POD_ID <- as.integer(mattole_pods$POD_ID)
-  
+mattole_pods <- read_xlsx(file = mattole_pod_path, sheet = "Final_List_Ben_2026")
+  n_distinct(mattole_pods$POD_ID) #667 unique PODs
+
 mattole_rights_path <- makeSharePointPath(paste0(
   "Program Watersheds/1. Watershed Folders/Mattole River/",
   "Data/Demand_QAQC/MATT_2017_2024_MDT_2026-11-03.csv"
@@ -28,7 +28,6 @@ mattole_rights$APPLICATION_NUMBER <-gsub(pattern = "_[0-9]$",
                                          replacement = "",
                                          x = mattole_rights$APPLICATION_NUMBER)
 n_distinct(mattole_rights$APPLICATION_NUMBER) # Returns 539 rights
-
 
 # EWRIMS TABLES----------------------------------------------------------------
 # Whittle to Mattole dataset only to save space
@@ -104,17 +103,8 @@ annual_reports_mattole <- dbGetQuery(sf_con,
                         where AR_ANNUALREPORTYEAR >= 2016") %>%
   inner_join(y = mattole_rights, by = c("WR_APP_CLAIM_NAME" = "APPLICATION_NUMBER"))
 
+### Count unique water rights
 n_distinct(annual_reports_mattole$WR_APP_CLAIM_NAME)
-
-# Returns 539 rights with semi_join
-# Return 539 rights with inner_join
-
-#### Are Any Mattole rights missing?----
-# missing_mattole_rights <- anti_join(x = mattole_rights, 
-#                                     y = annual_reports_mattole,
-#                                     by = c("APPLICATION_NUMBER" = "WR_APP_CLAIM_NAME")) %>%
-#   select(APPLICATION_NUMBER) %>% 
-#   n_distinct() # 0 rights are missing
 
 
 ## Participants Flat File----
@@ -122,15 +112,54 @@ participants <- dbGetQuery(sf_con,
                     "Select * from swrcb_internal_prod.wr_calwatrs_flatfiles.participants") %>%
   inner_join(y = mattole_rights, by = c("WR_APP_CLAIM_NAME" = "APPLICATION_NUMBER"))
 
+### Count unique water rights
+n_distinct(participants$WR_APP_CLAIM_NAME) # Returns 539 rights
+
 
 ## Geospatial relationships Flat File----
-geospatial_relationships <- dbGetQuery(sf_con,
-                 "Select * from swrcb_internal_prod.wr_calwatrs_flatfiles.geospatial_relationships")
+geospatial_relationships_mattole <- dbGetQuery(sf_con,
+                 "Select * from swrcb_internal_prod.wr_calwatrs_flatfiles.geospatial_relationships") %>%
+  inner_join(y = mattole_pods, by = c("POLY_LEGACYNAME" = "POD_ID"))
 
-# Data Dictionary Table----
+### Convert POLY_LEGACYNAME to integer
+geospatial_relationships_mattole$POLY_LEGACYNAME <- as.integer(geospatial_relationships_mattole$POLY_LEGACYNAME)
+
+
+### Count unique PODS, rights, and geospatial IDs
+n_distinct(geospatial_relationships_mattole$GR_ID) #1183 records
+
+n_distinct(geospatial_relationships_mattole$POLY_LEGACYNAME)
+# 667 records, which matches the number of PODs in the Mattole dataset--inner joins
+# only work with exact matches, so this confirms that POLY_LEGACYNAME and POD_ID are identical
+
+n_distinct(geospatial_relationships_mattole$GR_APPLICATION_NUMBER)
+
+### Field Comparisons----
+# You have to filter to:
+  # 1. Active geospatial relationships only because uniqueness is based on geospatial relationships, not POD IDs
+  # 2. Points of diversion because the gr flat file also houses points of storage, points of complaint,
+      # and points of investigation
+
+colnames(geospatial_relationships_mattole) %>% sort()
+
+## Types of Geospatial Features
+geospatial_relationships_mattole$GR_FEATURE_TYPE %>%unique()
+
+
+#### Latitude and Longitude
+gr_subset <- geospatial_relationships_mattole %>% select(POLY_LEGACYNAME, LATITUDE, POLY_LATITUDE,
+                                                         LONGITUDE, POLY_LONGITUDE, GR_STATUS,
+                                                         GR_RELATIONSHIP_TYPE) %>%
+  arrange(POLY_LEGACYNAME) %>%
+  filter(GR_STATUS == "Active")
+head(gr_subset,20)
+
+## Data Dictionary Table----
 data_dictionary <-dbGetQuery(sf_con,
                              "Select * from swrcb_internal_prod.wr_calwatrs_flatfiles.data_dictionary")
 
+### Geospatial relationship fields
+gr_fields <- data_dictionary %>% filter(TABLE_NAME == "GEOSPATIAL_RELATIONSHIPS")
 
 
 ## Compare Annual Reports and Participants tables
