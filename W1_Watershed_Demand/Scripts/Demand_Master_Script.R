@@ -13,6 +13,7 @@ require(janitor)
 require(writexl)
 require(polylabelr)
 require(webshot)
+require(arcgis)
 
 options(viewer = NULL) # For mapview
 
