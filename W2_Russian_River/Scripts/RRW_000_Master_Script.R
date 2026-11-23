@@ -17,15 +17,8 @@ if (!grepl("[/\\\\]DWRAT_DataScraping$", getwd())) {
 # Import packages next
 
 # Install 'renv' if it's not already present
-if (!("renv" %in% installed.packages()[, 1])) {
-  install.packages("renv")
-}
+source("Shared_Scripts/Project_Setup.R")
 
-
-# Use 'renv' to setup the required environment
-require(renv)
-
-restore()
 
 source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
@@ -40,9 +33,6 @@ source("W2_Russian_River/Scripts/HLP_000_Load_Packages.R")
 
 
 ##### Process Pre-Check #####
-
-# Check that the directory is correctly set
-source("W2_Russian_River/Scripts/HLP_004_Check_Working_Directory.R")
 
 
 # Check if updates are required for the models' core DAT and Precipitation files

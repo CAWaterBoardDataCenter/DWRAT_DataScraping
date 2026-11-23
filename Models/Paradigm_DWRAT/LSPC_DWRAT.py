@@ -1,9 +1,15 @@
 #%%
 import os
+import random
 from dwrat.preprocessing import basinProcessing as bp
 from dwrat.preprocessing import supplyProcessing as sp
 from dwrat.preprocessing import demandProcessing as dp
 from dwrat.modeling import dwrat
+
+# Set a random seed for reproducibility
+# (i.e., for the exact same inputs, always get the exact same outputs)
+# (This is relevant when there are multiple appropriative rights with the same priority date)
+random.seed(10)
 
 outlet = None#'NC_001'
 # add your supply file name
