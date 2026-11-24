@@ -68,28 +68,59 @@ getGIS <- function (ws, GIS_SHAREPOINT_BOOL, GIS_FILE_PATH, GIS_FILE_LAYER_NAME)
   
   
   
-  # Then, define 'gisPath' to be equal to the value in "GIS_FILE_PATH"
-  # If "GIS_SHAREPOINT_BOOL" is TRUE, then makeSharePointPath() will be applied too
-  if (ws[[GIS_SHAREPOINT_BOOL]] == TRUE) {
+  # Check if the input path for the geospatial layer is a SharePoint path
+  gisPath <- ws[[GIS_FILE_PATH]] |>
+    sharepointPathCheck()
+  
+  
+  
+  # Next, check if 'gisPath' contains a URL
+  # If that's the case, assume it's a Portal layer in a FeatureServer or FeatureLayer
+  # Use ArcGIS functions to read it in
+  if (grepl("^http", gisPath, ignore.case = TRUE) || 
+      grepl("\\.ca\\.gov", gisPath, ignore.case = TRUE)) {
     
-    gisPath <- ws[[GIS_FILE_PATH]] %>%
-      makeSharePointPath()
     
-    # If "GIS_SHAREPOINT_BOOL" is FALSE, no function call is needed
-  } else if (ws[[GIS_SHAREPOINT_BOOL]] == FALSE) {
-    
-    gisPath <- ws[[GIS_FILE_PATH]]
-    
-    # Error Check
-  } else {
-    
-    stop(paste0("Invalid value for '", GIS_SHAREPOINT_BOOL, "'. Expected 'TRUE' or 'FALSE'."))
+    # If "GIS_FILE_LAYER_NAME" has a value, assume that it is a FeatureLayer selection
+    # In that case, 'gisPath' should be a URL to a FeatureServer
+    if (!is.na(ws[[GIS_FILE_LAYER_NAME]])) {
+      
+      # There are two ways to specify a layer name:
+      # Either using the numeric ID or the layer name
+      
+      # If "GIS_FILE_LAYER_NAME" contains something integer-like, 
+      # assume it is meant to be an ID
+      if (grepl("^[0-9]+$", ws[[GIS_FILE_LAYER_NAME]])) {
+        
+        return(arc_open(gisPath) |>
+                 get_layer(id = ws[[GIS_FILE_LAYER_NAME]]) |>
+                 arc_select())
+        
+      # Otherwise, assume that the layer is being selected by name
+      } else {
+        
+        return(arc_open(gisPath) |>
+                 get_layer(name = ws[[GIS_FILE_LAYER_NAME]]) |>
+                 arc_select())
+        
+      }
+      
+    # Otherwise, if "GIS_FILE_LAYER_NAME" is blank, 
+    # assume the URL in 'gisPath' directly points to a specific FeatureLayer
+    } else {
+      
+      return(arc_open(gisPath) |>
+               arc_select())
+      
+    }
     
   }
   
   
   
-  # Next, if "GIS_FILE_LAYER_NAME" has a value, 
+  # For regular files (not URLs), use `st_read`
+  
+  # Similar to before, if "GIS_FILE_LAYER_NAME" has a value, 
   # that means that "GIS_FILE_PATH" is a geodatabase/geopackage/GIS container
   # If that is NOT the case, then st_read() should be called directly on "GIS_FILE_PATH"
   

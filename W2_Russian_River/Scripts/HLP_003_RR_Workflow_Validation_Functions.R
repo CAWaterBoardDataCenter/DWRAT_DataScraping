@@ -582,16 +582,6 @@ validateWebData <- function (climateDF, dataSource, inputPath, stationVec,
   }
   
   
-  # CDEC is only used for precipitation data, so its dataset requires 
-  # some slight modifications for this validation procedure
-  if (dataSource == "CDEC") {
-    
-    # Add dummy "TMAX" and "TMIN" columns called "NA_1" and "NA_2"
-    climateDF <- climateDF |>
-      mutate(NA_1 = NA, NA_2 = NA) 
-  }
-  
-  
   # After that, get a vector of the expected column names for this dataset
   colVec <- validateWebData_expectedColumnNames(dataSource, siPRISM = siPRISM)
   
@@ -759,6 +749,15 @@ validateWebData_expectedColumnNames <- function (dataSource, siPRISM = TRUE) {
       errWrap() |>
       stop()
     
+  }
+  
+  
+  # For CDEC, now that the final validation check has passed, 
+  # remove the two dummy temperature columns from 'nameVec'
+  if (dataSource == "CDEC") {
+    
+    nameVec <- nameVec[names(nameVec) %notin% c("TMIN", "TMAX")]
+      
   }
   
   
